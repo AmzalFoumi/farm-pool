@@ -5,17 +5,6 @@ to market buyers, removing the middlemen who currently take a third of a smallho
 
 Group **SE-38** · SE3050 (User Experience Engineering) and SE3080 (Software Project Management).
 
-## Team
-
-<!-- Replace the placeholders below with each member's registration number and GitHub username. -->
-
-| Name | Student ID | GitHub | Role |
-| ---- | ---------- | ------ | ---- |
-| Mohamed Amzal | ITxxxxxxxx | [@AmzalFoumi](https://github.com/AmzalFoumi) | |
-| _TBD_ | ITxxxxxxxx | | |
-| _TBD_ | ITxxxxxxxx | | |
-| _TBD_ | ITxxxxxxxx | | |
-
 ## Stack
 
 | Workspace | Stack |
@@ -68,8 +57,8 @@ Work lands on `main` through pull requests, each reviewed by another member.
 
 | | |
 | ---- | --- |
-| Jira board | _added at SETUP-4_ |
-| Confluence space | _added at SETUP-6_ |
+| Jira board | _added once the board is live_ |
+| Confluence space | _added once the space exists_ |
 
 ## Verifying a change
 

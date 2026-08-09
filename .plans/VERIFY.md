@@ -75,8 +75,18 @@ gh api repos/AmzalFoumi/farm-pool/invitations --jq '.[].invitee.login'
 
 **Branch protection holds**
 
-Push directly to `main` — it must be rejected. Open a PR without a review — merge must be blocked.
-Catches: protection configured but not actually enforcing.
+Push directly to `main` — it must be rejected with `GH013: Repository rule violations found`. Open
+a PR without a review — merge must be blocked. Catches: a ruleset left at enforcement `evaluate`
+rather than `active`, which records the violation and lets the push through. The settings page
+looks identical either way.
+
+Use an empty commit so there is nothing to clean up but the commit itself:
+
+```
+git commit --allow-empty -m "chore(repo): FARM-0 verify branch protection"
+git push          # must fail
+git reset --hard origin/main
+```
 
 **Contributions are distributed**
 

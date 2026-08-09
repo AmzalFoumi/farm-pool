@@ -69,6 +69,11 @@ Work happens on branches and lands via pull request. `main` requires a review fr
 - **Coursework artefacts** — reports, meeting minutes, retrospectives, sprint documentation,
   submission drafts. Those live in Confluence and the group's report tooling, not here. This repo
   holds code, what is needed to run it, and the engineering reasoning behind it.
+- **Personal details of team members** — registration numbers, real-name-to-username rosters,
+  emails, phone numbers. This repository is public, and a committed roster cannot be un-published:
+  it stays in the history and in every clone and fork. The roster lives in Confluence. Per-member
+  contribution is evidenced by `git shortlog` and the pull request record, which is what the module
+  assesses anyway.
 - **Secrets** — `.env` files, API keys, signing certificates, keystores. Commit `.env.example`
   with empty or dummy values instead.
 
