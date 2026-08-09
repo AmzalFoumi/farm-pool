@@ -1,0 +1,104 @@
+# Verify
+
+How to check each piece of the setup actually works. Each check names the failure it catches —
+a check you cannot fail is not a check.
+
+## Repository hygiene
+
+**`.gitignore` is doing its job**
+
+```
+git status --short
+```
+
+after any `npm install`. `node_modules/` must not appear. Catches: dependencies entering history,
+which later requires rewriting every subsequent commit to remove — and rewriting history destroys
+the per-member contribution record.
+
+**The local layer is ignored, the shared layer is not**
+
+```
+git check-ignore -v CLAUDE.local.md .plans.local/SETUP.md
+git status --short .plans/
+```
+
+The first must report both paths as ignored. The second must show `.plans/` files as untracked and
+addable. Catches: private notes about to be published, or shared decisions invisible to teammates.
+
+**No secrets staged**
+
+```
+git diff --cached --name-only
+```
+
+before every commit. Watch for `.env`, `*.key`, `*.jks`, `*.p12`. Note that the root ignore rule is
+`.env*.local`, which does **not** match a plain `.env`.
+
+## Collaboration
+
+**All four members have push access**
+
+```
+gh api repos/AmzalFoumi/farm-pool/collaborators --jq '.[].login'
+```
+
+Four logins. Catches: the whole team's work landing under one author, which is the single most
+damaging thing for SE3080's per-member contribution requirement and the individual viva.
+
+**Branch protection holds**
+
+Push directly to `main` — it must be rejected. Open a PR without a review — merge must be blocked.
+Catches: protection configured but not actually enforcing.
+
+**Contributions are distributed**
+
+```
+git shortlog -sn
+```
+
+All four names, with work spread across them. Run this weekly, not at the end — an imbalance found
+on 24 August cannot be fixed.
+
+## Jira integration
+
+**The single test that proves the GitHub↔Jira link works**
+
+1. Branch: `feature/FARM-1-setup`
+2. Commit: `chore: FARM-1 verify jira link`
+3. Push, open a PR
+4. Open `FARM-1` in Jira
+
+The Development panel must show the branch, the commit and the pull request. Catches: the
+integration appearing connected while linking nothing — which stays silent until you look, and by
+then a sprint of commits has no traceability.
+
+If it fails, the cause is almost certainly that the repo is under a personal GitHub account rather
+than an organization. See `DECISIONS.md`.
+
+## Application
+
+**Mobile runs on a real device**
+
+```
+npx expo start
+```
+
+Scan the QR code from a phone on the same Wi-Fi. The app must load. Catches: a project that only
+works in a simulator on the machine that built it — which is exactly the situation that ruins a
+live demo.
+
+**Backend reachable from the phone**
+
+With the API running, hit an endpoint from the app on a physical device — not from a browser on the
+development machine. Catches: a server bound to `localhost` only, invisible to every other device
+on the network. This works on the machine and fails in the demo.
+
+**Shared types resolve**
+
+Import something from `packages/shared` inside `mobile/`. If it type-checks but fails to resolve at
+runtime, `mobile/metro.config.js` is not configured for monorepo symlinks.
+
+## CI
+
+Open a PR: the checks must go green. Then push a deliberate type error and confirm they go red.
+Catches: a workflow that runs but asserts nothing — passing on everything, including broken code.

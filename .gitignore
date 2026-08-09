@@ -1,0 +1,50 @@
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+# Re-anchored from Expo's /ios and /android: the app lives in mobile/, not at the repo root.
+mobile/ios/
+mobile/android/
+
+# build output (dist/ already covered under Expo above)
+build/
+
+# local working record — see .plans/STRUCTURE.md
+CLAUDE.local.md
+.plans.local/
+
+# Backend entries are deliberately absent until the api/ framework is chosen.
+# See .plans/DECISIONS.md, open question 3.
