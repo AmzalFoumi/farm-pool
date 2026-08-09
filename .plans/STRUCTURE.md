@@ -63,6 +63,42 @@ disagree. Neither compiler can see the drift.
 Put a type or zod schema there the moment a second workspace needs it. Not before — a shared
 package with one consumer is indirection for its own sake.
 
+#### The workspaces are still independent packages
+
+npm workspaces is **dependency management on the developer's machine, not architecture**. Each of
+the three keeps its own `package.json`, dependencies, scripts and tsconfig. What the root
+`workspaces` key changes is where things get installed — one hoisted `node_modules` and one
+lockfile — and it makes `@farm-pool/shared` resolve through a symlink rather than a registry
+version.
+
+Nothing here forecloses splitting later. Moving `api/` to its own repository is a directory copy
+and an install; splitting it into several services means adding more workspaces, which is *easier*
+in a monorepo than across repositories — the services keep importing one definition of the domain
+instead of each drifting from its own copy. The symlink is the only thing a split has to resolve,
+and the answer is either publishing `packages/shared` or bundling it at build time.
+
+#### Untested: `packages/shared` ships raw TypeScript
+
+`packages/shared` declares `"main": "./src/index.ts"` — source, not build output. Metro compiles
+TypeScript from anywhere, so `mobile/` is fine. **`api/` may not be.** Nest builds with `tsc`, and
+TypeScript by default refuses to compile files outside its `rootDir`, so `nest build` can fail the
+first time a Nest module imports `@farm-pool/shared`.
+
+**This has not been tested.** No shared import exists in `api/` yet, so nothing has exercised it.
+Treat the current setup as unproven on the backend side, not as known-good.
+
+If it fails, two fixes:
+
+1. **Give `packages/shared` a build step** emitting `dist/` with declarations, and point `main` and
+   `types` at it.
+2. **Add `paths` and project `references`** to `api/tsconfig.json`.
+
+Prefer (1). It is the more durable of the two, and it is the one that keeps working if the repo is
+ever split — a consumer in another repository can use a built package, but cannot follow a
+`tsconfig` path into a directory that is no longer there.
+
+`.plans/VERIFY.md` carries the check that settles this.
+
 ### `api/` is NestJS, one module per feature
 
 Scaffolded with `nest new`. The generated `app.module.ts` is the root; feature modules sit beside

@@ -147,6 +147,24 @@ configuration where an older guide added it. Catches: the failure mode where cac
 from before the workspace existed survive an otherwise correct setup — and the much worse one where
 someone "fixes" it with obsolete config that then breaks the next person's build.
 
+**Shared types compile in `api/` — run this at the first shared import, not later**
+
+`packages/shared` ships raw TypeScript (`"main": "./src/index.ts"`). Metro handles that; `tsc` may
+not, because TypeScript refuses by default to compile files outside its `rootDir`. Import the
+schema in a Nest module and build for real:
+
+```
+npm run build --workspace api
+```
+
+`nest start` alone is not enough — `ts-node` is more forgiving than a production `tsc` build, so
+watch mode can pass while the thing you actually deploy fails.
+
+Catches: a shared package that works all through development and breaks the first time anyone
+builds the backend for deployment — which, on this calendar, would be the week of the demo. If it
+fails, see `STRUCTURE.md`: give `packages/shared` a build step emitting `dist/`, rather than
+patching `api/tsconfig.json`.
+
 ## CI
 
 Open a PR: the checks must go green. Then push a deliberate type error and confirm they go red.
