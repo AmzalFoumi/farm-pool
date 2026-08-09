@@ -66,6 +66,13 @@ gh api repos/AmzalFoumi/farm-pool/collaborators --jq '.[].login'
 Four logins. Catches: the whole team's work landing under one author, which is the single most
 damaging thing for SE3080's per-member contribution requirement and the individual viva.
 
+This endpoint lists **accepted** collaborators only. If it returns fewer than four, check whether
+the rest are simply un-clicked invitations before assuming the grant failed:
+
+```
+gh api repos/AmzalFoumi/farm-pool/invitations --jq '.[].invitee.login'
+```
+
 **Branch protection holds**
 
 Push directly to `main` — it must be rejected. Open a PR without a review — merge must be blocked.
