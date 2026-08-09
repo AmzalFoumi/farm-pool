@@ -95,6 +95,9 @@ read.
 should live. Duplicating a type into both sides is how the two drift apart, and it is not caught by
 either side's type checker.
 
-Expo in a monorepo needs `mobile/metro.config.js` configured to resolve symlinked workspace
-packages. If an import from `packages/shared` fails to resolve in the app but type-checks fine,
-that is the cause.
+**Do not hand-configure Metro for the monorepo.** Since SDK 52, `expo/metro-config` resolves
+workspace packages automatically, and the Expo docs now say to *delete* `watchFolders`,
+`resolver.nodeModulesPaths`, `resolver.extraNodeModules` and `resolver.disableHierarchicalLookup`
+if an older guide put them there. If an import from `packages/shared` type-checks but fails to
+resolve at runtime, clear the Metro cache first — `npx expo start --clear` — rather than adding
+config. Most advice online predates SDK 52 and will make this worse.

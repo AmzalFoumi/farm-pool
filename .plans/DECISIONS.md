@@ -43,17 +43,71 @@ script and a manual install step.
 where a teammate ends up committing without the hooks. It is also a single Go binary rather than a
 set of shell scripts, which matters on a team split across Windows and macOS.
 
-The pattern is taken from `sliit-foss/sliitfoss-web`. Two things there were deliberately **not**
-copied: their `eslint-config-next` (a web config — the mobile equivalent is `eslint-config-expo`),
-and their capitalised commit types (`Feat`, `Fix`), which contradict the lowercase Conventional
-Commits format in `CLAUDE.md`.
+Two things  bundled with this setup in Amzal's reference repo elsewhere were deliberately **not** adopted:
+`eslint-config-next`, which is a web config where the mobile equivalent is `eslint-config-expo`;
+and capitalised commit types (`Feat`, `Fix`), which contradict the lowercase Conventional Commits
+format in `CLAUDE.md`.
 
-Added beyond that pattern: commitlint's `references-empty` rule with `issuePrefixes: ["FARM-"]`,
-which rejects a commit that cites no Jira issue. This is the rule worth having — a missing key
-fails *silently*, producing a commit that looks fine and is invisible to Jira forever after.
+Added on top: commitlint's `references-empty` rule with `issuePrefixes: ["FARM-"]`, which rejects a
+commit that cites no Jira issue. This is the rule worth having — a missing key fails *silently*,
+producing a commit that looks fine and is invisible to Jira forever after.
 
 None of this tooling reaches the app bundle. It runs on the developer's machine between the
 keyboard and the commit, so React Native compatibility does not enter into it.
+
+### Backend: NestJS + TypeScript
+
+Decided 10 August 2026, from three live options (Express + TS, and Expo Router API routes were the
+others).
+
+The deciding argument is **assessment shape, not engineering taste**. SE3080 grades per-member
+contribution and puts each member through an individual viva. Nest's module-per-feature layout
+gives each of the four an ownable slice — `listings/`, `orders/`, `auth/` — with a controller, a
+service and a module they can explain end to end. Express would produce the same features with the
+boundaries drawn by convention rather than by the framework, and conventions erode fastest exactly
+when four people are working in parallel against a deadline.
+
+Accepted cost, stated plainly: **1–2 days of learning curve across the team**, on a calendar that
+has already lost time to the Jira approval block. Dependency injection and decorators are new to
+most people. The mitigation is that Nest's CLI generates the boilerplate (`nest g resource`), so
+what has to be learned is the shape, not the typing.
+
+Nest's `ValidationPipe` is not used for request validation. The zod schemas in `packages/shared`
+are, so the mobile app and the API validate against one definition — that is the whole reason
+`packages/shared` exists, and running a second `class-validator` definition alongside it recreates
+the drift it was built to prevent.
+
+### Mobile navigation: Expo Router
+
+File-based routing in `mobile/app/`, the default in the current `create-expo-app` template.
+
+**This is not the same thing as Expo Router API routes.** Router-as-navigation is a client concern
+and costs nothing extra. API routes (`+api.ts`) are a server, and were rejected as *the* backend —
+Nest is the backend.
+
+### Expo API routes: available, not enabled
+
+Kept as an option a team member can turn on, rather than switched on now. Verified against current
+Expo docs, 10 August 2026.
+
+Turning them on is one line — `web.output: "server"` in `app.json` — and that line is why it is not
+already there. It changes what the Expo build produces for every member, not just the one who
+wanted an API route, and two further requirements follow it:
+
+- production **native** builds need `origin` set in the expo-router plugin config, pointing at a
+  deployed server, or relative `fetch` calls resolve to nothing on a real phone
+- a Node server has to be deployed regardless — the "no separate backend" appeal is not real
+
+To enable, when someone actually has a use for it:
+
+```json
+{ "web": { "output": "server" },
+  "plugins": [["expo-router", { "origin": "https://<deployed-host>" }]] }
+```
+
+Then verify on a **physical device**, not the simulator — that is where the missing `origin` shows
+up. Business logic belongs in `api/` either way; if an API route starts holding domain logic, the
+two backends have begun to diverge and the shared zod schemas stop being the single definition.
 
 ### Backend: not Next.js
 
@@ -70,26 +124,12 @@ It is eliminated:
 
 ## Open
 
-### 1. What `api/` is — decided before scaffolding
+### 1. Persistence
 
-Three live options. Whichever wins, `packages/shared` holds the types and zod schemas both sides
-import, so the choice does not leak into `mobile/`.
+No database chosen. This is now the blocking question: Nest is settled, so the framework no longer
+constrains the answer, and nothing can be built past a stub controller without it.
 
-| Option | For | Against |
-| ------ | --- | ------- |
-| **NestJS + TypeScript** | Module-per-feature splits work cleanly across four people and gives each member an ownable slice to explain at the viva. Dependency injection and validation pipes are built in. | 1–2 days of learning curve; needs a real Node host |
-| **Express + TypeScript** | Least friction — everyone can contribute on day one. Lowest risk of code nobody on the team understands. For CRUD over two sprints, there is not much to assemble. | You build structure, validation and error handling yourself |
-| **Expo Router API routes** (no `api/` at all) | One codebase, one language surface. `+api.ts` files inside the Expo app; requires `web.output: "server"`. | Still needs a Node server deployed. Native builds require `origin` configured in the expo-router plugin — an extra failure mode, and it fails during a live demo on someone else's phone |
-
-Until this is answered, `api/` stays a `.gitkeep` and the root `.gitignore` carries no
-backend-specific entries.
-
-### 2. Persistence
-
-No database chosen. Deliberately downstream of question 1 — the framework shapes what ORM or
-client is idiomatic.
-
-### 3. Authentication
+### 2. Authentication
 
 Not designed. The app has at least three distinct roles (farmer, buyer, logistics provider) with
 genuinely different permissions, so this is not a detail to bolt on late. Flagged here so nobody
