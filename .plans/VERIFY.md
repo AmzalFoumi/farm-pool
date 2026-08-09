@@ -34,6 +34,27 @@ git diff --cached --name-only
 before every commit. Watch for `.env`, `*.key`, `*.jks`, `*.p12`. Note that the root ignore rule is
 `.env*.local`, which does **not** match a plain `.env`.
 
+**Line endings are normalised**
+
+```
+git ls-files --eol | grep -v "w/lf"
+```
+
+Should return nothing but binaries. Catches: a working copy checked out as CRLF while Prettier
+writes LF — the two fight, and the loser's next commit is a whole-repo diff that cannot be reviewed
+and rewrites `git blame` for every file. `.gitattributes` prevents it; this confirms it took.
+
+**Git hooks actually installed**
+
+```
+npx lefthook run pre-commit
+```
+
+Then try a deliberately bad commit message — `git commit -m "broke it"` — and confirm it is
+rejected. Catches: hooks configured in `lefthook.yml` but never installed into `.git/hooks/`,
+which happens if `npm install` ran with `--ignore-scripts`. The config looks correct and enforces
+nothing. Fix with `npx lefthook install`.
+
 ## Collaboration
 
 **All four members have push access**

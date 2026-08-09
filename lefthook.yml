@@ -1,0 +1,21 @@
+# Git hooks, shared by everyone.
+#
+# Installed automatically: the lefthook npm package runs `lefthook install -f` on postinstall,
+# so `npm install` is the whole setup. There is no separate command to run and no way for a
+# teammate to end up without the hooks — which is the entire reason this is not husky.
+#
+# To skip a hook once, deliberately:  git commit --no-verify
+# To see what would run:              npx lefthook run pre-commit
+
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: "*.{js,jsx,ts,tsx,mjs,cjs,json,md,yml,yaml,css}"
+      run: npx prettier --write --cache {staged_files}
+      stage_fixed: true
+
+commit-msg:
+  commands:
+    commitlint:
+      run: npx commitlint --edit {1} --color

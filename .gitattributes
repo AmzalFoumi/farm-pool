@@ -1,0 +1,31 @@
+# Normalise line endings to LF, everywhere, for everyone.
+#
+# Without this, Git on Windows checks files out as CRLF while Prettier always writes LF. The
+# pre-commit hook then reflows every file it touches, and someone's first commit after cloning
+# arrives as a whole-repo diff that cannot be reviewed and poisons git blame.
+#
+# This overrides each developer's core.autocrlf setting, so it works without anyone configuring
+# anything on their machine.
+* text=auto eol=lf
+
+# Windows-only files that genuinely need CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary — never touch, never diff as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.mp4 binary
+*.jks binary
+*.keystore binary
+
+# Generated — collapse in diffs and mark as not-authored in GitHub's language stats.
+package-lock.json linguist-generated=true -diff

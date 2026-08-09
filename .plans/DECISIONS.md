@@ -32,6 +32,29 @@ Not `SE38`. Jira's development-panel linker and Smart Commits match issue keys a
 risks silently failing to match, which would break every commit-to-issue link without any error
 message to explain why.
 
+### Git hooks: lefthook, not husky
+
+Commit linting was initially rejected as setup friction — a tool three teammates must install and
+configure before they can contribute. That reasoning was about **husky**, which needs a `prepare`
+script and a manual install step.
+
+**Lefthook** removes the objection rather than accepting it. Its npm package runs
+`lefthook install -f` on postinstall, so `npm install` is the whole setup and there is no path
+where a teammate ends up committing without the hooks. It is also a single Go binary rather than a
+set of shell scripts, which matters on a team split across Windows and macOS.
+
+The pattern is taken from `sliit-foss/sliitfoss-web`. Two things there were deliberately **not**
+copied: their `eslint-config-next` (a web config — the mobile equivalent is `eslint-config-expo`),
+and their capitalised commit types (`Feat`, `Fix`), which contradict the lowercase Conventional
+Commits format in `CLAUDE.md`.
+
+Added beyond that pattern: commitlint's `references-empty` rule with `issuePrefixes: ["FARM-"]`,
+which rejects a commit that cites no Jira issue. This is the rule worth having — a missing key
+fails *silently*, producing a commit that looks fine and is invisible to Jira forever after.
+
+None of this tooling reaches the app bundle. It runs on the developer's machine between the
+keyboard and the commit, so React Native compatibility does not enter into it.
+
 ### Backend: not Next.js
 
 Next.js was named as the stack early on and carried forward for a while without being argued for.

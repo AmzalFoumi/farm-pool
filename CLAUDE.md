@@ -42,9 +42,18 @@ developer run it. This holds even when the work obviously ends in a commit.
 Example: `feat(mobile): FARM-12 add produce listing form`
 
 The `FARM-n` key is what links the commit to its Jira work item — without it, the commit does not
-appear in Jira's Development panel and the traceability is lost. `<type>` follows Conventional
-Commits (`feat`, `fix`, `chore`, `refactor`, `docs`, `test`). `<scope>` is the workspace:
-`mobile`, `api`, `shared`, or omitted for repo-wide changes.
+appear in Jira's Development panel and the traceability is lost. `<type>` is one of `feat`, `fix`,
+`chore`, `refactor`, `docs`, `test`, `ci` — lowercase. `<scope>` is the workspace: `mobile`, `api`,
+`shared`, `repo`, or omitted for repo-wide changes.
+
+**This is enforced, not merely documented.** A `commit-msg` hook runs commitlint and rejects a
+malformed message before the commit exists. The rules live in `commitlint.config.js`; the hooks in
+`lefthook.yml`.
+
+Hooks install themselves — the `lefthook` package sets them up during `npm install`, so there is no
+setup step to forget. A `pre-commit` hook also runs Prettier over staged files and re-stages them.
+
+`git commit --no-verify` skips both. Use it deliberately or not at all.
 
 ### Branch format
 

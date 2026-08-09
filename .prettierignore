@@ -1,0 +1,17 @@
+node_modules/
+package-lock.json
+
+# Expo / build output
+.expo/
+dist/
+web-build/
+mobile/ios/
+mobile/android/
+
+# Planning prose is hand-wrapped for readability; leave it alone.
+.plans/
+.plans.local/
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+README.md
