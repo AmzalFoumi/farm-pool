@@ -6,8 +6,7 @@ The monorepo layout and what each directory is for. Rules an agent must *follow*
 ```
 farm-pool/
 ├── .gitignore, README.md, CLAUDE.md, AGENTS.md
-├── package.json                # npm workspaces root
-├── tsconfig.base.json
+├── package.json                # npm workspaces root: mobile, api, packages/*
 ├── .claude/                    # shared agent config, committed
 ├── .plans/                     # committed: this file, DECISIONS.md, VERIFY.md
 ├── .plans.local/               # gitignored — individual working records
@@ -15,25 +14,42 @@ farm-pool/
 ├── .github/
 │   ├── pull_request_template.md
 │   └── workflows/ci.yml
-├── mobile/                     # Expo, managed workflow
-│   ├── app/                    # expo-router — file-based routes
-│   │   ├── _layout.tsx         # root layout (navigation container)
-│   │   ├── (tabs)/             # route group: groups files without adding a URL segment
-│   │   └── +not-found.tsx      # the "+" prefix marks special routes
-│   ├── components/
-│   ├── constants/
-│   ├── hooks/
-│   ├── assets/{images,fonts}/
+├── mobile/                     # Expo SDK 57, managed workflow
+│   ├── src/
+│   │   ├── app/                # expo-router — file-based routes
+│   │   │   ├── _layout.tsx     # root layout (navigation container)
+│   │   │   ├── (tabs)/         # route group: groups files without adding a URL segment
+│   │   │   └── +not-found.tsx  # the "+" prefix marks special routes
+│   │   ├── components/
+│   │   ├── constants/
+│   │   └── hooks/
+│   ├── assets/images/
 │   ├── app.json                # Expo config
-│   ├── metro.config.js         # patched for monorepo symlink resolution
 │   ├── package.json, tsconfig.json
 │   └── .gitignore              # written by create-expo-app — merge, never replace
-├── api/                        # the backend — framework not yet chosen
-│   └── .gitkeep                # placeholder; see DECISIONS.md open question 3
+├── api/                        # NestJS + TypeScript
+│   ├── src/
+│   │   ├── main.ts             # bootstrap
+│   │   └── app.module.ts       # root module; feature modules are siblings
+│   ├── test/                   # e2e specs (unit specs sit beside their source)
+│   └── nest-cli.json, package.json, tsconfig.json
 └── packages/shared/            # types + zod schemas used by both sides
     ├── src/index.ts
     └── package.json, tsconfig.json
 ```
+
+Two things are absent from that tree on purpose.
+
+**No `metro.config.js`.** Since SDK 52 `expo/metro-config` resolves workspace packages on its own,
+and the Expo docs now say to *delete* the monorepo config older guides told you to add. If a
+`packages/shared` import type-checks but fails to resolve at runtime, clear the Metro cache —
+`npx expo start --clear` — rather than adding config back. `CLAUDE.md` carries this as a rule.
+
+**Routes live in `src/app/`, not `app/`.** This is the current `create-expo-app` default, and
+Expo's own resolver prefers it — `getRouterDirectory()` checks `src/app` before falling back to
+`app`. The `@/*` alias in `mobile/tsconfig.json` points at `./src/*` to match. Do not move it: a
+custom root is possible through the expo-router plugin's `root` option, but the docs discourage it
+because tooling broadly assumes one of the two standard locations.
 
 ## Why it is shaped this way
 
@@ -47,15 +63,20 @@ disagree. Neither compiler can see the drift.
 Put a type or zod schema there the moment a second workspace needs it. Not before — a shared
 package with one consumer is indirection for its own sake.
 
-### `api/` is deliberately empty
+### `api/` is NestJS, one module per feature
 
-It holds a `.gitkeep` and nothing else. The backend framework is an open decision, recorded in
-`DECISIONS.md`. Nothing else in the repo depends on the answer, so there is no cost to leaving it
-open — and guessing wrong costs a re-scaffold.
+Scaffolded with `nest new`. The generated `app.module.ts` is the root; feature modules sit beside
+it as siblings — `listings/`, `orders/`, `auth/` — each with its own controller, service and
+module. That boundary is the point: it is what gives each member a slice they can own and explain,
+rather than four people editing the same router file.
 
-### `mobile/app/` is expo-router
+Request validation uses the zod schemas in `packages/shared`, **not** Nest's `ValidationPipe` with
+`class-validator`. A second definition alongside the shared one recreates exactly the drift
+`packages/shared` exists to prevent. See `DECISIONS.md`.
 
-File-based routing: a file at `app/listings/[id].tsx` becomes the route `/listings/:id`. Two
+### `mobile/src/app/` is expo-router
+
+File-based routing: a file at `src/app/listings/[id].tsx` becomes the route `/listings/:id`. Two
 conventions that look like typos but are not:
 
 - **`(tabs)/`** — parentheses make a *route group*. It organises files without contributing a URL

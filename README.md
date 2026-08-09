@@ -28,19 +28,19 @@ path is Expo Go over the local network.
 
 ## Running the app
 
-> **Not yet scaffolded.** The workspaces are placeholders until the setup gate that runs the
-> generators. Until then the commands below will not resolve — this section documents the intended
-> entry point so it is not invented differently by four people.
-
 ```bash
 npm install          # once, from the repo root — installs every workspace
-npm run mobile       # or: npx expo start --cwd mobile
+npm run mobile       # Expo dev server
+npm run api          # NestJS, watch mode
 ```
+
+**Install from the root, never from inside a workspace.** This is an npm workspaces monorepo: the
+root install resolves `mobile/`, `api/` and `packages/*` together into one `package-lock.json`.
+Running `npm install` inside `mobile/` or `api/` creates a second, competing lockfile and a nested
+`node_modules` that shadows the shared one.
 
 Scan the QR code with Expo Go. If the app fails to load, confirm the phone is on the same network —
 the development server is reachable at the machine's LAN IP, not `localhost`.
-
-The backend is not scaffolded yet; nothing in `api/` runs.
 
 ## Working here
 

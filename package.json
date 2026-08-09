@@ -4,9 +4,16 @@
   "private": true,
   "description": "Rural Farmer-to-Market Direct Connect — Group SE-38",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.13"
   },
+  "workspaces": [
+    "mobile",
+    "api",
+    "packages/*"
+  ],
   "scripts": {
+    "mobile": "npm run start --workspace mobile",
+    "api": "npm run start:dev --workspace api",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,mjs,cjs,json,md,yml,yaml,css}\" --cache",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,mjs,cjs,json,md,yml,yaml,css}\""
   },

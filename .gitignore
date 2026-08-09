@@ -19,17 +19,34 @@ expo-env.d.ts
 # Metro
 .metro-health-check*
 
-# debug
+# debug and logs
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+logs/
+*.log
 
 # macOS
 .DS_Store
 *.pem
 
+# editors — the team is split across VS Code and JetBrains.
+# The `**/` prefix matters: a pattern containing a slash is anchored to this file's directory, so a
+# bare `.vscode/*` would miss mobile/.vscode/ entirely. Shared editor config is re-admitted;
+# personal state (workspace layout, local launch tweaks) is not.
+.idea/
+*.iml
+**/.vscode/*
+!**/.vscode/settings.json
+!**/.vscode/extensions.json
+!**/.vscode/launch.json
+
 # local env files
-.env*.local
+# Expo's template ships only `.env*.local`, which does NOT match a plain `.env` — the single most
+# likely file to leak a database URL or API key. Ignore every .env, then re-admit the example.
+.env
+.env.*
+!.env.example
 
 # typescript
 *.tsbuildinfo
@@ -46,5 +63,7 @@ build/
 CLAUDE.local.md
 .plans.local/
 
-# Backend entries are deliberately absent until the api/ framework is chosen.
-# See .plans/DECISIONS.md, open question 3.
+# NestJS (api/) — the entries deferred at SETUP-1 until the framework was chosen.
+# dist/ and node_modules/ are already covered above; these are what Nest adds on top.
+coverage/
+.nest/

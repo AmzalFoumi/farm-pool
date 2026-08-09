@@ -133,8 +133,19 @@ on the network. This works on the machine and fails in the demo.
 
 **Shared types resolve**
 
-Import something from `packages/shared` inside `mobile/`. If it type-checks but fails to resolve at
-runtime, `mobile/metro.config.js` is not configured for monorepo symlinks.
+Import something from `packages/shared` inside `mobile/` — `import { roleSchema } from
+'@farm-pool/shared'` — and render its output. If it type-checks but fails to resolve at runtime,
+**clear the Metro cache first**:
+
+```
+npx expo start --clear
+```
+
+Do *not* add `watchFolders` or `resolver.extraNodeModules` to a `metro.config.js`. Since SDK 52
+`expo/metro-config` resolves workspace packages by itself, and the Expo docs now say to delete that
+configuration where an older guide added it. Catches: the failure mode where cached module maps
+from before the workspace existed survive an otherwise correct setup — and the much worse one where
+someone "fixes" it with obsolete config that then breaks the next person's build.
 
 ## CI
 

@@ -41,3 +41,14 @@ example
 # generated native folders
 /ios
 /android
+
+# --- appended, not from create-expo-app. Merge additions below this line. ---
+
+# Expo ships only `.env*.local` above, which does not match a plain `.env`.
+.env
+.env.*
+!.env.example
+
+# JetBrains — the team is split across editors
+.idea/
+*.iml
