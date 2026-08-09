@@ -5,30 +5,20 @@ to market buyers, removing the middlemen who currently take a third of a smallho
 
 Group **SE-38** · SE3050 (User Experience Engineering) and SE3080 (Software Project Management).
 
-## Team
-
-<!-- Replace the placeholders below with each member's registration number and GitHub username. -->
-
-| Name | Student ID | GitHub | Role |
-| ---- | ---------- | ------ | ---- |
-| Mohamed Amzal | ITxxxxxxxx | [@AmzalFoumi](https://github.com/AmzalFoumi) | |
-| _TBD_ | ITxxxxxxxx | | |
-| _TBD_ | ITxxxxxxxx | | |
-| _TBD_ | ITxxxxxxxx | | |
-
 ## Stack
 
 | Workspace | Stack |
 | --------- | ----- |
 | `mobile/` | Expo (React Native), managed workflow, expo-router |
-| `api/` | Backend — **framework not yet chosen**, see [.plans/DECISIONS.md](.plans/DECISIONS.md) |
+| `api/` | NestJS + TypeScript |
 | `packages/shared/` | TypeScript types and zod schemas shared by both sides |
 
 npm workspaces monorepo. Layout and reasoning: [.plans/STRUCTURE.md](.plans/STRUCTURE.md).
 
 ## Prerequisites
 
-- **Node.js 20 LTS or newer** and npm 10+ (`node -v`, `npm -v`)
+- **Node.js 22.13 or newer** and npm 10+ (`node -v`, `npm -v`). Expo SDK 57 requires it; Node 20
+  fails during install with an error that does not obviously name the cause.
 - **Expo Go** on a physical Android or iOS device — the phone and the development machine must be
   on the same Wi-Fi network
 - Git
@@ -38,19 +28,19 @@ path is Expo Go over the local network.
 
 ## Running the app
 
-> **Not yet scaffolded.** The workspaces are placeholders until the setup gate that runs the
-> generators. Until then the commands below will not resolve — this section documents the intended
-> entry point so it is not invented differently by four people.
-
 ```bash
 npm install          # once, from the repo root — installs every workspace
-npm run mobile       # or: npx expo start --cwd mobile
+npm run mobile       # Expo dev server
+npm run api          # NestJS, watch mode
 ```
+
+**Install from the root, never from inside a workspace.** This is an npm workspaces monorepo: the
+root install resolves `mobile/`, `api/` and `packages/*` together into one `package-lock.json`.
+Running `npm install` inside `mobile/` or `api/` creates a second, competing lockfile and a nested
+`node_modules` that shadows the shared one.
 
 Scan the QR code with Expo Go. If the app fails to load, confirm the phone is on the same network —
 the development server is reachable at the machine's LAN IP, not `localhost`.
-
-The backend is not scaffolded yet; nothing in `api/` runs.
 
 ## Working here
 
@@ -68,8 +58,8 @@ Work lands on `main` through pull requests, each reviewed by another member.
 
 | | |
 | ---- | --- |
-| Jira board | _added at SETUP-4_ |
-| Confluence space | _added at SETUP-6_ |
+| Jira board | _added once the board is live_ |
+| Confluence space | _added once the space exists_ |
 
 ## Verifying a change
 

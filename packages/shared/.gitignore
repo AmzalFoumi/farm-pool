@@ -1,0 +1,9 @@
+# packages/shared
+#
+# This package ships TypeScript source and is consumed directly through workspace resolution, so
+# there is normally no build output at all. These entries cover the case where someone adds a
+# build step later and the artefacts land here before anyone thinks to ignore them.
+
+/node_modules
+/dist
+*.tsbuildinfo

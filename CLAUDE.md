@@ -69,6 +69,11 @@ Work happens on branches and lands via pull request. `main` requires a review fr
 - **Coursework artefacts** — reports, meeting minutes, retrospectives, sprint documentation,
   submission drafts. Those live in Confluence and the group's report tooling, not here. This repo
   holds code, what is needed to run it, and the engineering reasoning behind it.
+- **Personal details of team members** — registration numbers, real-name-to-username rosters,
+  emails, phone numbers. This repository is public, and a committed roster cannot be un-published:
+  it stays in the history and in every clone and fork. The roster lives in Confluence. Per-member
+  contribution is evidenced by `git shortlog` and the pull request record, which is what the module
+  assesses anyway.
 - **Secrets** — `.env` files, API keys, signing certificates, keystores. Commit `.env.example`
   with empty or dummy values instead.
 
@@ -90,6 +95,9 @@ read.
 should live. Duplicating a type into both sides is how the two drift apart, and it is not caught by
 either side's type checker.
 
-Expo in a monorepo needs `mobile/metro.config.js` configured to resolve symlinked workspace
-packages. If an import from `packages/shared` fails to resolve in the app but type-checks fine,
-that is the cause.
+**Do not hand-configure Metro for the monorepo.** Since SDK 52, `expo/metro-config` resolves
+workspace packages automatically, and the Expo docs now say to *delete* `watchFolders`,
+`resolver.nodeModulesPaths`, `resolver.extraNodeModules` and `resolver.disableHierarchicalLookup`
+if an older guide put them there. If an import from `packages/shared` type-checks but fails to
+resolve at runtime, clear the Metro cache first — `npx expo start --clear` — rather than adding
+config. Most advice online predates SDK 52 and will make this worse.

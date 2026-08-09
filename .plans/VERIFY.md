@@ -75,8 +75,18 @@ gh api repos/AmzalFoumi/farm-pool/invitations --jq '.[].invitee.login'
 
 **Branch protection holds**
 
-Push directly to `main` — it must be rejected. Open a PR without a review — merge must be blocked.
-Catches: protection configured but not actually enforcing.
+Push directly to `main` — it must be rejected with `GH013: Repository rule violations found`. Open
+a PR without a review — merge must be blocked. Catches: a ruleset left at enforcement `evaluate`
+rather than `active`, which records the violation and lets the push through. The settings page
+looks identical either way.
+
+Use an empty commit so there is nothing to clean up but the commit itself:
+
+```
+git commit --allow-empty -m "chore(repo): FARM-0 verify branch protection"
+git push          # must fail
+git reset --hard origin/main
+```
 
 **Contributions are distributed**
 
@@ -123,8 +133,37 @@ on the network. This works on the machine and fails in the demo.
 
 **Shared types resolve**
 
-Import something from `packages/shared` inside `mobile/`. If it type-checks but fails to resolve at
-runtime, `mobile/metro.config.js` is not configured for monorepo symlinks.
+Import something from `packages/shared` inside `mobile/` — `import { roleSchema } from
+'@farm-pool/shared'` — and render its output. If it type-checks but fails to resolve at runtime,
+**clear the Metro cache first**:
+
+```
+npx expo start --clear
+```
+
+Do *not* add `watchFolders` or `resolver.extraNodeModules` to a `metro.config.js`. Since SDK 52
+`expo/metro-config` resolves workspace packages by itself, and the Expo docs now say to delete that
+configuration where an older guide added it. Catches: the failure mode where cached module maps
+from before the workspace existed survive an otherwise correct setup — and the much worse one where
+someone "fixes" it with obsolete config that then breaks the next person's build.
+
+**Shared types compile in `api/` — run this at the first shared import, not later**
+
+`packages/shared` ships raw TypeScript (`"main": "./src/index.ts"`). Metro handles that; `tsc` may
+not, because TypeScript refuses by default to compile files outside its `rootDir`. Import the
+schema in a Nest module and build for real:
+
+```
+npm run build --workspace api
+```
+
+`nest start` alone is not enough — `ts-node` is more forgiving than a production `tsc` build, so
+watch mode can pass while the thing you actually deploy fails.
+
+Catches: a shared package that works all through development and breaks the first time anyone
+builds the backend for deployment — which, on this calendar, would be the week of the demo. If it
+fails, see `STRUCTURE.md`: give `packages/shared` a build step emitting `dist/`, rather than
+patching `api/tsconfig.json`.
 
 ## CI
 
