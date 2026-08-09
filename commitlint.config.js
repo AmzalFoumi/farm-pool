@@ -36,6 +36,11 @@ module.exports = {
     // live; that is the point at which a missing key actually costs traceability.
     "references-empty": [1, "never"],
 
+    // Off, deliberately. config-conventional rejects an upper-case subject — but our format puts
+    // the Jira key first, so *every* subject starts with "FARM-n" and trips it. The rule and the
+    // convention cannot both hold; the convention is the one that earns marks.
+    "subject-case": [0],
+
     "header-max-length": [2, "always", 100],
     "body-max-line-length": [2, "always", 100]
   }
