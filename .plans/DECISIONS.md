@@ -77,6 +77,38 @@ are, so the mobile app and the API validate against one definition — that is t
 `packages/shared` exists, and running a second `class-validator` definition alongside it recreates
 the drift it was built to prevent.
 
+### Backend architecture: light DDD, domains by capability
+
+Decided 7 September 2026. `api/src/` is organised as five domain modules — `identity`, `catalog`,
+`orders`, `logistics`, `coordination` — each split into three layers: `domain/` (entities,
+value-objects, repository *interfaces* — pure rules), `application/` (services and DTOs), and
+`infrastructure/` (repository *implementations*).
+
+**Domains are drawn by capability, not by persona.** The four personas — farmer, buyer,
+coordinator, logistics provider — are *roles*, modelled once in the `identity` domain. Every other
+domain acts on behalf of whichever role is calling. Modelling by persona instead produces a
+`Farmer` module that swells to hold listings, orders and payouts together, and a `Buyer` module
+that copies half of it — the copy then drifts, which is the exact failure `packages/shared` exists
+to prevent. `coordination` is a domain and not merely a role because a coordinator takes
+independent action — managing a cooperative's combined supply — rather than only acting for one
+farmer.
+
+**Light DDD, not flat modules and not full DDD.** Flat Nest modules (controller + service +
+module) were the alternative. The three-layer split wins because persistence is still open
+(question 1 below): with the repository interface in `domain/` and its implementation in
+`infrastructure/`, a domain can be built now against an in-memory repository and have the real
+database dropped in later as one file, without `domain/` ever changing. Full DDD — aggregates,
+domain events, a rich `shared/kernel` — was rejected as too heavy for four people on a short
+project; the reference repo the team looked at had applied it fully to only one of its six
+contexts, and the rest had bypassed their own layers.
+
+**Accepted cost:** more files per feature than a flat module, and the team must hold the layer
+boundary by discipline — Nest does not enforce it. Mitigation: one worked example (`catalog`) is
+scaffolded first for everyone to copy.
+
+**Kept DB-agnostic:** no ORM, no `schemas/` folder, no database package under any domain until
+question 1 is answered. Adding one silently closes that decision.
+
 ### Mobile navigation: Expo Router
 
 File-based routing in `mobile/app/`, the default in the current `create-expo-app` template.

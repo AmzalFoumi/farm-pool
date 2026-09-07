@@ -15,6 +15,9 @@
  */
 import { z } from "zod";
 
-export const roleSchema = z.enum(["farmer", "buyer", "logistics"]);
+// The four personas. They are roles here, not backend modules — the `identity` domain in
+// `api/` owns them, and the other domains (catalog, orders, logistics, coordination) act
+// on behalf of whichever role is calling. See `.plans/STRUCTURE.md`.
+export const roleSchema = z.enum(["farmer", "buyer", "coordinator", "logistics"]);
 
 export type Role = z.infer<typeof roleSchema>;
