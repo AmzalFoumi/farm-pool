@@ -30,7 +30,15 @@ farm-pool/
 ├── api/                        # NestJS + TypeScript
 │   ├── src/
 │   │   ├── main.ts             # bootstrap
-│   │   └── app.module.ts       # root module; feature modules are siblings
+│   │   ├── app.module.ts       # root module; imports the five domain modules
+│   │   ├── shared/kernel/      # base classes reused across domains (no module)
+│   │   └── <domain>/           # one per business capability, not per persona:
+│   │       │                   #   identity, catalog, orders, logistics, coordination
+│   │       ├── domain/         # entities, value-objects, repository INTERFACES — pure rules
+│   │       ├── application/    # services (use-cases) + dto
+│   │       ├── infrastructure/ # repository IMPLEMENTATIONS (no DB chosen yet)
+│   │       ├── <domain>.controller.ts
+│   │       └── <domain>.module.ts
 │   ├── test/                   # e2e specs (unit specs sit beside their source)
 │   └── nest-cli.json, package.json, tsconfig.json
 └── packages/shared/            # types + zod schemas used by both sides
@@ -99,12 +107,46 @@ ever split — a consumer in another repository can use a built package, but can
 
 `.plans/VERIFY.md` carries the check that settles this.
 
-### `api/` is NestJS, one module per feature
+### `api/` is NestJS, one module per domain, light DDD inside
 
-Scaffolded with `nest new`. The generated `app.module.ts` is the root; feature modules sit beside
-it as siblings — `listings/`, `orders/`, `auth/` — each with its own controller, service and
-module. That boundary is the point: it is what gives each member a slice they can own and explain,
-rather than four people editing the same router file.
+Scaffolded with `nest new`. The generated `app.module.ts` is the root; five domain modules sit
+beside it as siblings and are listed in its `imports`:
+
+| Domain | Owns |
+| ------ | ---- |
+| `identity` | accounts, the four roles, permissions, verification |
+| `catalog` | produce listings: crop, quantity, price, location, photos |
+| `orders` | deals: quantity, agreed price, status from offer to accepted to fulfilled to paid |
+| `logistics` | pickup, routing, maps, delivery tracking |
+| `coordination` | farmer groups / cooperatives, the aggregated supply a coordinator represents |
+
+**Domains are drawn by capability, not by persona.** farmer, buyer, coordinator and logistics
+provider are *roles* — they live in `identity`, and every other domain acts on behalf of whichever
+role is calling. A `Farmer` module would swell to hold listings, orders and payouts all at once,
+while a `Buyer` module copied half of it; the copy then drifts. `coordination` is a domain rather
+than a role because a coordinator takes independent action (managing a cooperative's combined
+supply), not only acting for one farmer. Full reasoning: `DECISIONS.md`.
+
+Inside each domain, **light DDD** — three layers:
+
+- **`domain/`** — `entities/`, `value-objects/`, `repositories/`. The last holds *interfaces only*
+  ("something that can store an order"). No NestJS, no database code. This is the layer that must
+  never know which database was chosen.
+- **`application/`** — `services/` (use-cases that orchestrate the domain) and `dto/` (request and
+  response shapes).
+- **`infrastructure/`** — `repositories/`: the real implementations of the `domain/` interfaces.
+
+The `<domain>.module.ts` binds each interface to its implementation and registers the controller.
+The controller is thin — it calls an application service and returns the result.
+
+**No database, on purpose.** Persistence is open (`DECISIONS.md`, question 1). There is no ORM, no
+`schemas/` folder, no database package anywhere under `api/src/<domain>/`. A first repository
+implementation can be in-memory; swapping in the real store later is one file in
+`infrastructure/repositories/`, because `domain/` only ever imports the interface. This is the
+main reason light DDD was chosen over flat Nest modules.
+
+`shared/kernel/` holds base classes reused across domains (a base `Entity`, a `Result` type). It is
+not a module — just types and helpers. Put something there only once a second domain needs it.
 
 Request validation uses the zod schemas in `packages/shared`, **not** Nest's `ValidationPipe` with
 `class-validator`. A second definition alongside the shared one recreates exactly the drift
