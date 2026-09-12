@@ -39,10 +39,18 @@ export default function RootLayout() {
         <GluestackUIProvider mode={colorScheme === "dark" ? "dark" : "light"}>
           <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
             <AnimatedSplashOverlay />
-            {/* The tab shell now sits one level in, at `(tabs)`, so that screens
-                outside the tabs can be added in front of it. Headers are off —
-                screens draw their own app bar where they need one. */}
+            {/* Onboarding is the root stack, so `index` (the welcome screen) is
+                what a cold start lands on. The tab shell lives one level in, at
+                `(tabs)`, and is reached by replacing the route once a role has
+                been picked — replace, not push, so the hardware back button
+                does not walk the user back into sign-up.
+
+                Headers are off throughout: both onboarding screens draw their
+                own app bar, which is the only way to match the design's
+                50px bordered back button and Poppins title. */}
             <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="sign-up-as" />
               <Stack.Screen name="(tabs)" />
             </Stack>
           </ThemeProvider>
