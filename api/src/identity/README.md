@@ -6,7 +6,7 @@
 
 | Folder | Holds | Depends on |
 | ------ | ----- | ---------- |
-| `domain/` | `entities/`, `value-objects/`, and `repositories/` (**interfaces only** — "something that can store a identity thing"). Pure business rules, no NestJS, no database code. | nothing |
+| `domain/` | `entities/`, `value-objects/`, and `repositories/` (**interfaces only** — "something that can store an identity record"). Pure business rules, no NestJS, no database code. | nothing |
 | `application/` | `services/` (use-cases that orchestrate the domain) and `dto/` (request/response shapes). | `domain/` |
 | `infrastructure/` | `repositories/` — the real implementations of the interfaces in `domain/repositories/`. | `domain/` |
 | `identity.controller.ts` | HTTP handlers. Thin: call an application service, return the result. | `application/` |
