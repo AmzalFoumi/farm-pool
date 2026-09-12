@@ -18,6 +18,10 @@ A monorepo with npm workspaces:
 | `api/` | The backend. **Framework not yet chosen** — see `.plans/DECISIONS.md` |
 | `packages/shared/` | Types and zod schemas imported by both sides |
 
+What the app is functionally meant to do, for whom, and why: **`.plans/PRODUCT.md`**. This is
+synthesized from research notes and prior lab submissions, not a signed-off spec — treat it as the
+current best understanding, not something binding. Where it conflicts with a decision made
+elsewhere (`.plans/DECISIONS.md`, Jira), the other source wins.
 Full layout and the reasoning behind it: **`.plans/STRUCTURE.md`**.
 Stack decisions and what is still open: **`.plans/DECISIONS.md`**.
 How to check things work: **`.plans/VERIFY.md`**.
