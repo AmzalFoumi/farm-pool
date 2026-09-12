@@ -109,6 +109,57 @@ scaffolded first for everyone to copy.
 **Kept DB-agnostic:** no ORM, no `schemas/` folder, no database package under any domain until
 question 1 is answered. Adding one silently closes that decision.
 
+### Mobile UI: gluestack-ui v5, styled by UniWind
+
+Decided 12 September 2026. Verified against the live docs and the published CLI source on the day.
+
+**Two layers, decided together.** UniWind is the styling engine — it makes `className="flex-row
+gap-2 bg-background"` work on React Native components, and nothing more. gluestack-ui is the
+component layer built on top of it: Actionsheet, Select, Modal, Toast, FormControl, and the rest,
+with focus management, portal hosting and screen-reader wiring already done. They are not
+alternatives to each other.
+
+**Why a component library at all.** SE3050 assesses user experience, and the components where UX
+is actually won — an accessible bottom sheet, a Select that is keyboard- and screen-reader-navigable,
+a form field whose error text is announced rather than merely displayed — are exactly the ones that
+are tedious and easy to get subtly wrong. The second reason is drift: with four people building in
+parallel, hand-rolled buttons become four different buttons by the third week. That is the same
+failure `packages/shared` exists to prevent, one layer up.
+
+**Why UniWind rather than NativeWind.** gluestack v5 requires one of three engines. NativeWind v5
+is published only as `5.0.0-preview.4` and its own documentation says it is "not intended for
+production use". NativeWind v4 is stable but is Tailwind v3, and gluestack pairs it with a v4-alpha
+core. UniWind is at `1.12.0`, MIT, Tailwind v4, and needs no Babel plugin or PostCSS step. Its one
+restriction — Expo only, no bare React Native, no Next.js — costs this project nothing, because
+`mobile/` is Expo and the backend is Nest.
+
+**Accepted cost, stated plainly.** The gluestack CLI still prints "v5 alpha" on init, and five of
+the twenty-three generated components did not type-check against React 19.2 / RN 0.86 / TS 6.0
+strict. Those are patched in place with comments naming the upstream cause, which is possible
+precisely because gluestack is copy-paste: the source in `src/components/ui/` is ours, not a
+dependency. The flip side is that re-running the CLI to update a component will overwrite those
+patches, so component updates need reviewing rather than accepting blind.
+
+**Deviations from what the CLI generated**, all of which it got wrong for this repo's layout:
+
+- the generated `babel.config.js` aliased `@` to the project root, contradicting `@/* → ./src/*`
+  in `tsconfig.json`. Deleted rather than corrected — `babel-preset-expo` already resolves
+  tsconfig paths and injects the worklets plugin, so the file bought nothing
+- `metro.config.js` pointed `cssEntryFile` at `./global.css`; ours is `src/global.css`
+- `src/global.css` is **replaced wholesale** by `init` on the UniWind path, not merged. The
+  existing `--font-*` custom properties, read by `src/constants/theme.ts`, were restored and are
+  also re-exported through `@theme inline` so `font-display` works as a utility
+- `tsconfig.json` had `"./*"` appended to `@/*`; reverted
+- the provider was inserted with `mode="dark"` hardcoded; now follows `useColorScheme()`
+
+Components live in `src/components/ui/`, not the CLI default of `components/ui/`, matching the
+`src/` layout this workspace already uses. Run the CLI from `mobile/`, never the repo root, and
+never with `--monorepo` — that flag is for extracting a shared UI package and silently forces
+NativeWind v4.
+
+Verified by `tsc --noEmit` clean and by `expo export` on both iOS and web, with all
+twenty-three components imported.
+
 ### Mobile navigation: Expo Router
 
 File-based routing in `mobile/app/`, the default in the current `create-expo-app` template.
