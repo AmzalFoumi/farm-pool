@@ -13,7 +13,9 @@ export default function AppTabs() {
       indicatorColor={colors.backgroundElement}
       labelStyle={{ selected: { color: colors.text } }}
     >
-      <NativeTabs.Trigger name="index">
+      {/* `home`, not `index`: the root `index` route is now the welcome screen,
+          so the tab shell's first screen is `(tabs)/home.tsx`. */}
+      <NativeTabs.Trigger name="home">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           src={require("@/assets/images/tabIcons/home.png")}

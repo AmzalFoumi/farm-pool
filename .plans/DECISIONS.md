@@ -109,6 +109,166 @@ scaffolded first for everyone to copy.
 **Kept DB-agnostic:** no ORM, no `schemas/` folder, no database package under any domain until
 question 1 is answered. Adding one silently closes that decision.
 
+### Mobile UI: gluestack-ui v5, styled by UniWind
+
+Decided 12 September 2026. Verified against the live docs and the published CLI source on the day.
+
+**Two layers, decided together.** UniWind is the styling engine — it makes `className="flex-row
+gap-2 bg-background"` work on React Native components, and nothing more. gluestack-ui is the
+component layer built on top of it: Actionsheet, Select, Modal, Toast, FormControl, and the rest,
+with focus management, portal hosting and screen-reader wiring already done. They are not
+alternatives to each other.
+
+**Why a component library at all.** SE3050 assesses user experience, and the components where UX
+is actually won — an accessible bottom sheet, a Select that is keyboard- and screen-reader-navigable,
+a form field whose error text is announced rather than merely displayed — are exactly the ones that
+are tedious and easy to get subtly wrong. The second reason is drift: with four people building in
+parallel, hand-rolled buttons become four different buttons by the third week. That is the same
+failure `packages/shared` exists to prevent, one layer up.
+
+**Why UniWind rather than NativeWind.** gluestack v5 requires one of three engines. NativeWind v5
+is published only as `5.0.0-preview.4` and its own documentation says it is "not intended for
+production use". NativeWind v4 is stable but is Tailwind v3, and gluestack pairs it with a v4-alpha
+core. UniWind is at `1.12.0`, MIT, Tailwind v4, and needs no Babel plugin or PostCSS step. Its one
+restriction — Expo only, no bare React Native, no Next.js — costs this project nothing, because
+`mobile/` is Expo and the backend is Nest.
+
+**Accepted cost, stated plainly.** The gluestack CLI still prints "v5 alpha" on init, and five of
+the twenty-three generated components did not type-check against React 19.2 / RN 0.86 / TS 6.0
+strict. Those are patched in place with comments naming the upstream cause, which is possible
+precisely because gluestack is copy-paste: the source in `src/components/ui/` is ours, not a
+dependency. The flip side is that re-running the CLI to update a component will overwrite those
+patches, so component updates need reviewing rather than accepting blind.
+
+**Deviations from what the CLI generated**, all of which it got wrong for this repo's layout:
+
+- the generated `babel.config.js` aliased `@` to the project root, contradicting `@/* → ./src/*`
+  in `tsconfig.json`. Deleted rather than corrected — `babel-preset-expo` already resolves
+  tsconfig paths and injects the worklets plugin, so the file bought nothing
+- `metro.config.js` pointed `cssEntryFile` at `./global.css`; ours is `src/global.css`
+- `src/global.css` is **replaced wholesale** by `init` on the UniWind path, not merged. The
+  existing `--font-*` custom properties, read by `src/constants/theme.ts`, were restored and are
+  also re-exported through `@theme inline` so `font-display` works as a utility
+- `tsconfig.json` had `"./*"` appended to `@/*`; reverted
+- the provider was inserted with `mode="dark"` hardcoded; now follows `useColorScheme()`
+
+Components live in `src/components/ui/`, not the CLI default of `components/ui/`, matching the
+`src/` layout this workspace already uses. Run the CLI from `mobile/`, never the repo root, and
+never with `--monorepo` — that flag is for extracting a shared UI package and silently forces
+NativeWind v4.
+
+Verified by `tsc --noEmit` clean and by `expo export` on both iOS and web, with all
+twenty-three components imported.
+
+### Mobile design system: Figma tokens in CSS, not a TypeScript theme object
+
+Decided 12 September 2026, amended 13 September on building the first two screens. Lives in
+`mobile/src/styles/` as three CSS files — `colors.css`, `typography.css`, `layout.css` — imported by
+`src/global.css`. Derived from the Figma file `YpAf6FAzdLDEf8g6ZPTZXU`. The rules for using it are in
+`CLAUDE.md` → "Building UI".
+
+**Why CSS rather than an exported `theme.ts`.** A TypeScript constants object would have to be
+imported and threaded into every style, and it cannot be read by a `className`. UniWind compiles
+Tailwind v4 CSS, so tokens declared in `@theme` become utility classes directly. The decisive point
+is that **the twenty-three gluestack components already consume the semantic names** (`background`,
+`card`, `primary`, `muted`, `border`, `ring`). Re-pointing those names at the FarmPool palette
+re-skins Button, Input, Select and Badge in one edit; a parallel `theme.ts` would have left them on
+the CLI's default black-and-white and created a second source of truth.
+
+**Two layers, deliberately.** Raw brand ramps (`leaf`, `harvest`, `river`, `lilac`) are static and
+hold the actual hues. Semantic tokens (`primary`, `card`, `brand-deep`, `muted`,
+`success`/`warning`/`info`/`destructive`) flip with the theme and are what app code uses. Building
+screens on the ramps instead is what breaks dark mode, so `CLAUDE.md` states the preference as a rule
+rather than a suggestion.
+
+Semantic values are stored as `R G B` triplets rather than hex so Tailwind's slash syntax works —
+`bg-primary/10`. A hex would make every opacity modifier in the app silently no-op.
+
+**Type styles name the font face, never a weight.** `type-h1` sets `font-family: Poppins_700Bold` and
+no `font-weight`. React Native does not resolve a weight to a face the way a browser does; Android
+synthesises a fake bold that is visibly wrong beside real Poppins Bold. Hence `type-body` and
+`type-body-bold` as separate classes rather than one class plus `font-bold`. Poppins Bold, Mulish
+Regular and Mulish Bold are loaded via `@expo-google-fonts/*` in `src/app/_layout.tsx`; only those
+three cuts, because each additional face is ~40 KB for users often on rural 3G.
+
+**The Figma file contradicts itself, and the screens win.** The palette and type frames (`121:*`) are
+older than the screens (`196:*`) and disagree with them:
+
+| | Palette / type frames | The screens |
+| --- | --- | --- |
+| Green surface | `#0D3B2E` | `#1E6B48` |
+| Mint tint | `#E3F9EC` | `#E3EFE8` |
+| Screen background | `#F2F2F2` | `#F9F8F6` |
+| Secondary text | `#8A8A8A` | `#5A625C` |
+| Card / button radius | 12 / 10 | 16 / 14 |
+
+The `196:*` nodes are the newest artefacts; the earlier onboarding frame (`184:19`) already used
+`#1E6B48`, so the screens agree with each other and the palette frame is the outlier; and the screens
+are what a reviewer will hold the built app against. The semantic tokens follow the screens, and the
+raw ramps kept both values (`leaf-50` is the palette's mint, `leaf-100` the screens'), so reversing
+this is a handful of edits in one block rather than a hunt through every screen — which is the whole
+reason the two layers are separate. **Still to confirm with the designer.**
+
+Not reconciled: the screens' `#00B34F` primary against the palette's `#00B14F`, two steps in one
+channel and below the threshold of visible difference.
+
+**Three colours were invented, and it is worth knowing which.** The Figma palette names thirteen
+colours and none of them is a hairline, a body-text ink or a red:
+
+- `--border` `#E2E0DC` — taken from the screens, which the palette frame has no equivalent for
+- `--foreground` `#191F1B` — the one value both sources agree on
+- `--destructive` `#C82F2A` — harvest orange could not carry it, because orange already means
+  "order pending" and a cancellation confirmation must not look like an order awaiting pickup
+
+Added when the screens needed them, each a recurring role rather than a one-off: `type-display`
+(40/44), `type-title` (20/25, app-bar titles), `type-caption` (14/20), `--radius-chip`/`-tile`/
+`-sheet`, `--spacing-control` 58px, and the `lilac` ramp for the wholesale-buyer persona tile.
+
+**Accepted cost:** `gluestack-ui init` replaces `src/global.css` wholesale on the UniWind path, so
+re-running the CLI drops the three `@import` lines. The token files themselves survive, and the
+header comment in `global.css` says what to restore.
+
+**Light is the designed theme.** FarmPool is used outdoors in daylight. The dark variant exists so
+`useColorScheme() === "dark"` does not produce an unreadable app; it is a faithful inversion, not a
+separately designed theme, and the brand green is lifted there because the flat `#00B14F` does not
+read as an action on a dark card.
+
+Verified by `tsc --noEmit` clean, `expo export` on web and iOS, and by grepping the emitted CSS to
+confirm each token produces the utility class it is supposed to.
+
+### Mobile onboarding: root stack, tabs one level in
+
+Decided 13 September 2026, building the welcome and role-picker screens (Figma `196:5544`,
+`196:5575`). They are the first thing on app open, so onboarding is the root stack and the tab shell
+moved from the root layout into `src/app/(tabs)/`. The old `app/index.tsx` became `(tabs)/home.tsx` —
+a root `index` and a `(tabs)/index` both resolve to `/` and collide — and the tab triggers were
+renamed `index` → `home` on both the native and web variants of `AppTabs`.
+
+The role picker is entered with `push` and leaves with `replace`, so Android's back button does not
+walk a user back into sign-up after they have completed it.
+
+**Figma's absolute coordinates are not reproduced.** Both frames are 393×852 with every element at a
+fixed offset. Only the relationships are kept, in flex, with safe-area insets from
+`useSafeAreaInsets()`. A screen built from the raw coordinates is broken on every device that is not
+a 393×852 iPhone.
+
+**Two deviations from the mock, both deliberate.** The frame shows "Delivery partner" already
+selected, because a static mock has to show the selected state somewhere; a real first visit has
+nothing selected, so the footer button starts disabled and its label ("Continue as delivery partner")
+is treated as a template. And the welcome screen's "Log in" button is inert — there is no log-in
+screen yet. It is left visible because removing it would make the screen read as sign-up-only, which
+is not the intent.
+
+**Icons are the Figma exports, not an icon package.** `src/components/app/icons.tsx` holds the exact
+SVG bytes for all eleven glyphs, rendered through `react-native-svg`'s `SvgXml`. That avoids adding
+`react-native-svg-transformer` and the Metro config change it needs, which this file elsewhere says
+not to make. Figma exported the mail glyph as two separately-positioned vectors; both path strings
+are unaltered and the group translates reproduce Figma's exact offsets.
+
+**Not verified on hardware.** Both screens are confirmed by `tsc`, `expo export` on web and iOS, and
+by server-rendering both routes — but layout under real safe-area insets has not been seen on a
+device.
+
 ### Mobile navigation: Expo Router
 
 File-based routing in `mobile/app/`, the default in the current `create-expo-app` template.

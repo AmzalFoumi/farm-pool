@@ -1,3 +1,31 @@
+/* ===========================================================================
+   FarmPool design system — entry point.
+
+   Import order is load-bearing:
+   `tailwindcss` and `uniwind` first so the token files below override
+   Tailwind's own theme defaults rather than being overridden by them.
+
+   The system itself lives in `src/styles/` — three files, split by what they
+   describe. Edit those, not this file.
+
+   NOTE FOR ANYONE RE-RUNNING THE GLUESTACK CLI: `gluestack-ui init` REPLACES
+   this file wholesale on the UniWind path (see `.plans/DECISIONS.md`). If that
+   happens, the three imports below are what must be restored — the token files
+   themselves are untouched.
+   =========================================================================== */
+
+@import "tailwindcss";
+@import "uniwind";
+
+@import "./styles/colors.css";
+@import "./styles/typography.css";
+@import "./styles/layout.css";
+
+/* ─── Legacy font stacks ────────────────────────────────────────────────────
+   Pre-date the design system and are read by `src/constants/theme.ts` and the
+   Expo template components (`themed-text`, `app-tabs`). Kept so those keep
+   working; not part of the FarmPool system. New UI uses `font-heading` /
+   `font-body` from `styles/typography.css` instead. */
 :root {
   --font-display:
     Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
@@ -6,4 +34,11 @@
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
   --font-rounded: "SF Pro Rounded", "Hiragino Maru Gothic ProN", Meiryo, "MS PGothic", sans-serif;
   --font-serif: Georgia, "Times New Roman", serif;
+}
+
+@theme inline {
+  --font-display: var(--font-display);
+  --font-rounded: var(--font-rounded);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
 }

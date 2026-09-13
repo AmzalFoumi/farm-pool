@@ -1,0 +1,252 @@
+/* ===========================================================================
+   COLORS — FarmPool design tokens
+   Source of truth: Figma "FarmPool" → Color Palette frame (node 121:28500).
+   Every hex below is named in that frame; the three marked `derived` are not,
+   and why they had to be invented is stated inline.
+
+   Two layers, and the distinction matters:
+
+   1. RAW RAMPS (`@theme`, static)      — leaf / harvest / river.
+      The brand's actual hues. Same in light and dark. Generates `bg-leaf-500`,
+      `text-harvest-500`, `border-river-200`, …
+      Reach for these only when a colour is genuinely decorative.
+
+   2. SEMANTIC TOKENS (`@layer theme`)  — background / card / primary / muted / …
+      What a colour *means*. These flip with the theme, and they are the names
+      every gluestack component in `src/components/ui/` already consumes, so
+      re-pointing them here re-skins Button, Input, Card, Badge, Select and the
+      rest in one move. Prefer these in app code.
+
+   Semantic values are stored as `R G B` triplets, not hex, so Tailwind's slash
+   syntax works: `bg-primary/10` → `rgb(0 177 79 / 0.1)`. A hex here would make
+   every opacity modifier in the app silently no-op.
+   =========================================================================== */
+
+/* ── 1. Raw brand ramps ─────────────────────────────────────────────────── */
+@theme {
+  /* Leaf — the brand. Produce, growth, "go". */
+  --color-leaf-50: #e3f9ec; /* mint wash, palette frame */
+  --color-leaf-100: #e3efe8; /* mint wash as the SCREENS draw it — very slightly
+                                 warmer/greyer than leaf-50. This is the one that
+                                 ships; see the note at the foot of this file. */
+  --color-leaf-200: #9fe1cb; /* soft mint — borders on tinted surfaces, charts */
+  --color-leaf-500: #00b14f; /* PRIMARY — every primary button and CTA */
+  --color-leaf-700: #1e6b48; /* mid forest — the green the screens actually use for
+                                 full-bleed panels, selected borders and icon tiles */
+  --color-leaf-900: #0d3b2e; /* deepest forest — reserved for text on mint */
+  --color-leaf-950: #0e3a26; /* on-mint label colour, as drawn on the screens */
+
+  /* Lilac — the wholesale-buyer persona tint. Not in the palette frame; the role
+     picker (node 196:5575) needs a second persona colour that is neither leaf
+     (farmer) nor a status colour, and orange/blue are both already spoken for. */
+  --color-lilac-50: #efe6f3;
+  --color-lilac-900: #3d2149;
+
+  /* Harvest — ripeness, money, "attention needed". Order pending, price change. */
+  --color-harvest-50: #fdeedd;
+  --color-harvest-200: #f9c68a;
+  --color-harvest-500: #f5821f;
+
+  /* River — logistics and delivery. Routes, transit, informational notices. */
+  --color-river-50: #e6f1fb;
+  --color-river-200: #bfe3f5;
+  --color-river-500: #4fa9d6;
+
+  /* Neutrals. Only the three the Figma palette names, plus ink.
+     Everything else neutral is expressed semantically below. */
+  --color-paper: #ffffff; /* palette #FFFFFF — card and sheet surfaces */
+  --color-mist: #f9f8f6; /* screen background — warm off-white, as the screens
+                              draw it. The palette frame's flat #F2F2F2 reads
+                              cold beside the warm #E2E0DC hairline. */
+  --color-stone: #5a625c; /* secondary text and inactive icons. The palette's
+                              #8A8A8A is a pure grey; the screens use this
+                              green-cast grey, which sits with the brand. */
+  --color-ink: #191f1b; /* body text — near-black with a green cast. The one
+                             value the palette frame and the screens agree on. */
+}
+
+/* ── 2. Semantic tokens ─────────────────────────────────────────────────── */
+/* Light is the primary theme. FarmPool is used outdoors in daylight by farmers
+   and drivers, so the light palette is the one designed against and the one to
+   check first. Dark exists so `useColorScheme() === "dark"` does not produce an
+   unreadable app; it is a faithful inversion, not a separately designed theme. */
+@layer theme {
+  :root {
+    @variant light {
+      /* Surfaces */
+      --background: 249 248 246; /* #F9F8F6 — screen */
+      --foreground: 25 31 27; /* #191F1B — primary text on screen/card */
+      --card: 255 255 255; /* #FFFFFF — raised surface */
+      --card-foreground: 25 31 27;
+      --popover: 255 255 255; /* menus, actionsheets, toasts */
+      --popover-foreground: 25 31 27;
+
+      /* Primary action — the green button */
+      --primary: 0 177 79; /* #00B14F */
+      --primary-foreground: 255 255 255;
+
+      /* Secondary — the mint wash. Icon tiles, active nav pill, quiet chips. */
+      --secondary: 227 239 232; /* #E3EFE8 */
+      --secondary-foreground: 14 58 38; /* #0E3A26 — deep forest reads on mint */
+
+      /* Muted — de-emphasised text and fills */
+      --muted: 242 242 242;
+      --muted-foreground: 90 98 92; /* #5A625C */
+
+      /* Accent — pressed/hover wash on neutral surfaces. Same mint as secondary
+         so a pressed list row and a selected chip share one visual language. */
+      --accent: 227 239 232;
+      --accent-foreground: 14 58 38;
+
+      /* Brand deep — full-bleed green panels (welcome hero, onboarding), the
+         selected-card border, and icon tiles on a selected row.
+         Not `primary`: this is a surface, primary is an action. */
+      --brand-deep: 30 107 72; /* #1E6B48 */
+      --brand-deep-foreground: 255 255 255;
+
+      /* Brand deep, muted — body copy on a brand-deep panel. Pure white is too
+         loud for a subtitle at 17px across a full-width green field. */
+      --brand-deep-muted: 220 235 227; /* #DCEBE3 */
+
+      /* Persona tints — the role picker (node 196:5575). Farmer reuses
+         `secondary`; these two complete the set. */
+      --persona-buyer: 239 230 243; /* #EFE6F3 */
+      --persona-buyer-foreground: 61 33 73; /* #3D2149 */
+
+      /* Lines */
+      --border: 226 224 220; /* #E2E0DC — warm hairline. Visible on both the
+                                  #F9F8F6 screen and white cards. */
+      --input: 226 224 220;
+      --ring: 0 177 79; /* focus ring is brand green, not grey — the focused
+                            field must be findable at arm's length in sunlight */
+
+      /* Status. Maps to the order lifecycle this app actually models:
+         pending → warning, in transit → info, delivered/paid → success. */
+      --success: 0 177 79; /* leaf-500 */
+      --success-subtle: 227 249 236; /* leaf-50 */
+      --warning: 245 130 31; /* harvest-500 */
+      --warning-subtle: 253 238 221; /* harvest-50 */
+      --info: 79 169 214; /* river-500 */
+      --info-subtle: 230 241 251; /* river-50 */
+
+      --destructive: 200 47 42; /* derived: the palette names no red. Harvest
+                                    orange cannot carry destructive — it already
+                                    means "pending", and a farmer confirming a
+                                    cancellation must not see the same colour as
+                                    an order awaiting pickup. Chosen to clear
+                                    4.5:1 on both #FFFFFF and #F2F2F2. */
+      --destructive-foreground: 255 255 255;
+      --destructive-subtle: 253 235 234;
+    }
+
+    @variant dark {
+      --background: 11 20 16; /* near-black, green-cast */
+      --foreground: 237 242 239;
+      --card: 20 32 26;
+      --card-foreground: 237 242 239;
+      --popover: 20 32 26;
+      --popover-foreground: 237 242 239;
+
+      --primary: 34 197 94; /* lifted off #00B14F — the flat brand green is
+                                 too dark to read as an action on a dark card */
+      --primary-foreground: 6 17 11;
+
+      --secondary: 22 48 37;
+      --secondary-foreground: 159 225 203; /* leaf-200 */
+
+      --muted: 28 42 35;
+      --muted-foreground: 150 163 156;
+
+      --accent: 22 48 37;
+      --accent-foreground: 159 225 203;
+
+      --brand-deep: 30 107 72;
+      --brand-deep-foreground: 255 255 255;
+      --brand-deep-muted: 220 235 227;
+
+      --persona-buyer: 52 38 60;
+      --persona-buyer-foreground: 225 205 235;
+
+      --border: 40 56 48;
+      --input: 40 56 48;
+      --ring: 34 197 94;
+
+      --success: 34 197 94;
+      --success-subtle: 22 48 37;
+      --warning: 249 198 138; /* harvest-200 — the 500 vibrates on dark */
+      --warning-subtle: 58 38 18;
+      --info: 191 227 245; /* river-200, same reason */
+      --info-subtle: 20 41 56;
+
+      --destructive: 248 113 113;
+      --destructive-foreground: 26 8 8;
+      --destructive-subtle: 58 22 22;
+    }
+  }
+}
+
+/* ── 3. Semantic tokens → Tailwind colour utilities ─────────────────────────
+   `@theme inline` keeps the `var()` reference intact rather than snapshotting
+   its value, which is what lets a single utility class resolve differently per
+   theme at runtime. Adding a token above without adding it here defines a
+   variable no class can reach. */
+@theme inline {
+  --color-background: rgb(var(--background));
+  --color-foreground: rgb(var(--foreground));
+  --color-card: rgb(var(--card));
+  --color-card-foreground: rgb(var(--card-foreground));
+  --color-popover: rgb(var(--popover));
+  --color-popover-foreground: rgb(var(--popover-foreground));
+
+  --color-primary: rgb(var(--primary));
+  --color-primary-foreground: rgb(var(--primary-foreground));
+  --color-secondary: rgb(var(--secondary));
+  --color-secondary-foreground: rgb(var(--secondary-foreground));
+  --color-muted: rgb(var(--muted));
+  --color-muted-foreground: rgb(var(--muted-foreground));
+  --color-accent: rgb(var(--accent));
+  --color-accent-foreground: rgb(var(--accent-foreground));
+
+  --color-brand-deep: rgb(var(--brand-deep));
+  --color-brand-deep-foreground: rgb(var(--brand-deep-foreground));
+  --color-brand-deep-muted: rgb(var(--brand-deep-muted));
+  --color-persona-buyer: rgb(var(--persona-buyer));
+  --color-persona-buyer-foreground: rgb(var(--persona-buyer-foreground));
+
+  --color-border: rgb(var(--border));
+  --color-input: rgb(var(--input));
+  --color-ring: rgb(var(--ring));
+
+  --color-success: rgb(var(--success));
+  --color-success-subtle: rgb(var(--success-subtle));
+  --color-warning: rgb(var(--warning));
+  --color-warning-subtle: rgb(var(--warning-subtle));
+  --color-info: rgb(var(--info));
+  --color-info-subtle: rgb(var(--info-subtle));
+
+  --color-destructive: rgb(var(--destructive));
+  --color-destructive-foreground: rgb(var(--destructive-foreground));
+  --color-destructive-subtle: rgb(var(--destructive-subtle));
+}
+
+/* ── Why the semantic values do not all match the palette frame ─────────────
+   The Figma file contains two sets of colours that disagree:
+
+     Palette frame (node 121:28500, older)  →  #0D3B2E  #E3F9EC  #F2F2F2  #8A8A8A
+     The actual screens (nodes 196:*, newer) →  #1E6B48  #E3EFE8  #F9F8F6  #5A625C
+
+   The screens win, and the semantic tokens above are set from them. Three
+   reasons: the 196:* nodes are the newest artefacts in the file; the earlier
+   onboarding frame (184:19) already used #1E6B48 for its green panel, so the
+   screens are consistent with each other and the palette frame is the outlier;
+   and these are the values a reviewer will hold the built app against.
+
+   The RAW RAMPS above still carry both — `leaf-50` is the palette's mint,
+   `leaf-100` is the screens'. Nothing was deleted, so if the designer confirms
+   the palette frame is authoritative after all, this is a handful of edits in
+   this one block rather than a hunt through every screen. That is the entire
+   point of keeping the two layers apart.
+
+   Not reconciled, deliberately: the screens' primary green is #00B34F against
+   the palette's #00B14F. Two steps in one channel is below the threshold of
+   visible difference, and `leaf-500` stays as the palette defines it. */

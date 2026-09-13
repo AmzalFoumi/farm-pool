@@ -1,0 +1,173 @@
+/* ===========================================================================
+   TYPOGRAPHY — FarmPool design tokens
+   Source of truth: Figma "FarmPool" → Typography frame (node 121:28499) and
+   the `font/*` Figma variables. Two families, seven styles. That is all of it.
+
+     Headings  Poppins Bold   H1 30/36 · H2 26/32 · H3 22/28 · H4 18/24
+     Body      Mulish         Large 17/26 · Body 15/22 · Small 13/18
+                              (each with a Bold counterpart)
+
+   WHY THE FACE IS NAMED, NOT THE WEIGHT
+   On the web, `font-family: Poppins; font-weight: 700` picks the bold cut.
+   React Native has no such lookup — Android in particular will take a Regular
+   face and *synthesise* a fake bold, which looks visibly wrong next to real
+   Poppins Bold. So each token names the exact loaded face
+   (`Poppins_700Bold`), and the `type-*` utilities below deliberately set NO
+   `font-weight`. Do not add one: it can only make the rendering worse.
+
+   The face names must match the keys passed to `useFonts()` in
+   `src/app/_layout.tsx` exactly — that is the contract between the two files.
+   =========================================================================== */
+
+@theme {
+  /* Families → `font-heading`, `font-body`, `font-body-bold`.
+     Use these only when composing something the `type-*` scale does not cover.
+     For anything that came from Figma, use a `type-*` utility instead. */
+  --font-heading: "Poppins_700Bold";
+  --font-body: "Mulish_400Regular";
+  --font-body-bold: "Mulish_700Bold";
+
+  /* Raw size tokens → `text-h1`, `text-body`, … Sizes and metrics only, no
+     family. Present so the scale is reachable from a component that sets its
+     own family, and so `tailwind-variants` presets can compose it. */
+  --text-display: 40px;
+  --text-display--line-height: 44px;
+  --text-display--letter-spacing: -0.8px;
+
+  --text-h1: 30px;
+  --text-h1--line-height: 36px;
+  --text-h1--letter-spacing: -0.6px;
+
+  --text-h2: 26px;
+  --text-h2--line-height: 32px;
+  --text-h2--letter-spacing: -0.26px;
+
+  --text-h3: 22px;
+  --text-h3--line-height: 28px;
+  --text-h3--letter-spacing: -0.22px;
+
+  --text-h4: 18px;
+  --text-h4--line-height: 24px;
+  --text-h4--letter-spacing: 0px;
+
+  --text-title: 20px;
+  --text-title--line-height: 25px;
+
+  --text-body-lg: 17px;
+  --text-body-lg--line-height: 26px;
+
+  --text-body: 15px;
+  --text-body--line-height: 22px;
+
+  --text-caption: 14px;
+  --text-caption--line-height: 20px;
+
+  --text-body-sm: 13px;
+  --text-body-sm--line-height: 18px;
+}
+
+/* ── Complete type styles ──────────────────────────────────────────────────
+   One class per Figma text style, family included. This is the layer to reach
+   for in screens: if the design file says "H2", write `type-h2` and the size,
+   line height, tracking and face are all correct by construction. Colour is
+   deliberately NOT set — pair with `text-foreground`, `text-muted-foreground`,
+   `text-primary`, etc. so the same style works on every surface. */
+
+/* Display — the wordmark on the welcome hero, and nothing smaller than that.
+   Larger than H1 and outside the Figma type frame, which stops at H1; the
+   welcome screen (node 196:5544) sets it at 40/44/-0.8 and it is a real,
+   recurring role, so it belongs in the ramp rather than as a one-off. */
+@utility type-display {
+  font-family: var(--font-heading);
+  font-size: 40px;
+  line-height: 44px;
+  letter-spacing: -0.8px;
+}
+
+@utility type-h1 {
+  font-family: var(--font-heading);
+  font-size: 30px;
+  line-height: 36px;
+  letter-spacing: -0.6px;
+}
+
+@utility type-h2 {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  line-height: 32px;
+  letter-spacing: -0.26px;
+}
+
+@utility type-h3 {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  line-height: 28px;
+  letter-spacing: -0.22px;
+}
+
+@utility type-h4 {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  line-height: 24px;
+  letter-spacing: 0px;
+}
+
+/* Title — the label in a screen's app bar. Sits between H3 and H4 because an
+   app-bar title has to read as a heading without competing with the content
+   below it; both neighbouring steps were tried on node 196:5575 and are wrong. */
+@utility type-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  line-height: 25px;
+}
+
+@utility type-body-lg {
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 26px;
+}
+
+@utility type-body-lg-bold {
+  font-family: var(--font-body-bold);
+  font-size: 17px;
+  line-height: 26px;
+}
+
+@utility type-body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+@utility type-body-bold {
+  font-family: var(--font-body-bold);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+/* Caption — supporting line under a title: the description in a role card, the
+   helper text under a field, the "Need help?" row. Distinct from `body-sm`,
+   which is for genuinely small print (legal, timestamps, tab labels). */
+@utility type-caption {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+@utility type-caption-bold {
+  font-family: var(--font-body-bold);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+@utility type-body-sm {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+@utility type-body-sm-bold {
+  font-family: var(--font-body-bold);
+  font-size: 13px;
+  line-height: 18px;
+}

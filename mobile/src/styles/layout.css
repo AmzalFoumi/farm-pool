@@ -1,0 +1,52 @@
+/* ===========================================================================
+   LAYOUT — radius, spacing and elevation
+   Source of truth: Figma "FarmPool" → the onboarding and navigation frames
+   (nodes 184:19, 196:6638). Deliberately small: Tailwind's default 4px spacing
+   scale already covers spacing, so only the values that are genuinely FarmPool
+   decisions are declared here.
+   =========================================================================== */
+
+@theme {
+  /* ── Radius ──
+     Named by what they go on rather than by size, so the choice is a lookup
+     instead of a judgement call. Picking `rounded-xl` because it "looks about
+     right" is how four people end up with four card radii.
+     Values measured off the screens (nodes 196:5544, 196:5575). */
+  --radius-chip: 12px; /* language toggles, filter chips, small selectors */
+  --radius-field: 14px; /* buttons, inputs, selects */
+  --radius-card: 16px; /* cards, list rows, icon tiles */
+  --radius-tile: 20px; /* the logo lockup tile — a squircle, not a card */
+  --radius-sheet: 28px; /* the top corners of a sheet that rises over a panel */
+  --radius-pill: 999px; /* badges, avatars, check marks, status dots */
+
+  /* ── Minimum tap target → `h-tap`, `min-h-tap`, `w-tap`, `p-tap` ──
+     48dp, the Android accessibility floor and above Apple's 44pt. This is not
+     a cosmetic token: FarmPool's users tap mid-field, one-handed, sometimes
+     with wet or gloved hands. Every interactive row, icon button and tab must
+     clear it, even when the visible artwork inside is smaller. */
+  --spacing-tap: 48px;
+
+  /* ── Standard control height → `h-control` ──
+     58px, the height of every primary and secondary button on the screens.
+     Comfortably above `--spacing-tap` because a full-width button is the one
+     control a user must never miss. Chips and icon buttons use `tap` instead. */
+  --spacing-control: 58px;
+
+  /* ── Screen gutter → `px-gutter` ──
+     16px, matching the Figma frames. Use it on screen containers so every
+     screen's content aligns to the same vertical edge. */
+  --spacing-gutter: 16px;
+}
+
+/* ── Elevation ─────────────────────────────────────────────────────────────
+   One shadow, not a scale. The Figma uses a single soft lift for white cards
+   on the mist background and nothing else; a five-step elevation ramp would be
+   inventing depth the design does not have.
+
+   Declared as a `@utility` rather than a `--shadow-*` theme token because
+   React Native needs `elevation` for Android alongside `box-shadow` for iOS
+   and web, and a theme token can only carry the latter. */
+@utility elevation-card {
+  box-shadow: 0px 1px 3px rgb(25 31 27 / 0.08);
+  elevation: 2;
+}
