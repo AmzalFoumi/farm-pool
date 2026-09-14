@@ -94,6 +94,7 @@ export function DesignSystemPreview() {
         <HStack className="flex-wrap gap-3">
           <Swatch className="bg-primary" label="primary" />
           <Swatch className="bg-secondary" label="secondary" />
+          <Swatch className="bg-tertiary" label="tertiary" />
           <Swatch className="bg-card" label="card" />
           <Swatch className="bg-muted" label="muted" />
           <Swatch className="bg-brand-deep" label="brand-deep" />

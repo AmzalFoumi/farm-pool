@@ -378,6 +378,41 @@ The grid affordance is therefore composed from four small `Box` squares in a 2×
 imported. If a later screen needs several genuinely absent glyphs, reopen this — but reopen it
 here, with the `className` problem answered, rather than by running `npm install`.
 
+### 4. `tertiary` — a third action rank, and its contrast
+
+Added 14 September 2026, building the listing detail screen (FARM-22). **The token exists; what is
+open is whether its light-mode value should stay.**
+
+The listing detail screen ends in two footer buttons: "Request call" (outlined, quiet) and "Book
+pickup" (filled orange, as the wireframe draws it). Orange had no semantic token. The only one
+holding that hue is `warning`, which means *order pending* on the lifecycle, and rule 5 in
+`CLAUDE.md` exists precisely to stop a status colour being borrowed as a brand colour — a farmer
+must not see "awaiting pickup" orange on a button that books one.
+
+`--tertiary` / `--tertiary-foreground` in `src/styles/colors.css` is therefore a **rank**, not a
+status: primary is what the screen is asking for, tertiary is a real commitment the user may make
+instead. It holds the same hue as `warning` today and is still a separate variable, so re-pointing
+one never silently re-points the other.
+
+What is unresolved is the light-mode pairing. White on `#F5821F` is about 2.9:1. At button-label
+size (18px bold) the applicable WCAG bar is 3:1 rather than 4.5:1, so it scrapes through as a large
+text control — but this app is used outdoors in direct sunlight by people who are not looking
+carefully, which is the condition where a thin ratio actually fails. Dark mode has no such problem:
+it steps down to `harvest-200` with ink text, about 8.9:1.
+
+Three ways out, for whoever owns the design system:
+
+1. **Dark text on the orange in light mode too** — `#191F1B` on `#F5821F` is about 8.3:1. One line,
+   and it stops matching the wireframe.
+2. **Darken the orange** until white clears 4.5:1, which means somewhere near `#C25A00` and is no
+   longer the brand's harvest.
+3. **Leave it.** Defensible — `primary` (`#00B14F` with white, about 2.4:1) is already in the same
+   position across the whole app, so fixing tertiary alone would make it the odd one out. If the
+   answer is "leave it", the honest version of that is to look at `primary` at the same time.
+
+Option 3 is why this is recorded rather than quietly fixed: the button is not the problem, the
+convention is, and that is a decision for the group.
+
 ---
 
 ## How to record a decision here

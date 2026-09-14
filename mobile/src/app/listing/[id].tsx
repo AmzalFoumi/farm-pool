@@ -111,12 +111,10 @@ export default function ListingDetailScreen() {
           rounded-field`, same pressed-opacity treatment — so the two stay
           visually identical if either changes.
 
-          "Book pickup" is orange in the wireframe, and `bg-harvest-500` is a raw
-          ramp, which rule 2 discourages. There is no semantic token for a
-          secondary commitment action, and `warning` already means "pending" on
-          the order lifecycle (rule 5), so reusing it here would say the wrong
-          thing. It goes in as the wireframe draws it; the gap is one to raise
-          with whoever owns the design system, not to close from a screen. */}
+          "Book pickup" is orange in the wireframe. It uses `bg-tertiary` — the
+          third action rank — rather than `bg-harvest-500`, so it flips with the
+          theme. It deliberately does not reuse `warning`, which holds the same
+          hue but means "order pending" (rule 5). See `colors.css`. */}
       <HStack
         className="gap-3 border-t border-border bg-card px-gutter pt-3"
         style={{ paddingBottom: Math.max(insets.bottom, 23) }}
@@ -133,10 +131,10 @@ export default function ListingDetailScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Book a pickup for this listing"
-          className="h-control flex-1 flex-row items-center justify-center gap-2.5 rounded-field bg-harvest-500 active:opacity-80"
+          className="h-control flex-1 flex-row items-center justify-center gap-2.5 rounded-field bg-tertiary active:opacity-80"
         >
-          <Icon as={CalendarDaysIcon} className="text-primary-foreground" />
-          <Text className="type-h4 text-primary-foreground">Book pickup</Text>
+          <Icon as={CalendarDaysIcon} className="text-tertiary-foreground" />
+          <Text className="type-h4 text-tertiary-foreground">Book pickup</Text>
         </Pressable>
       </HStack>
     </View>
