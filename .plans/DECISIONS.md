@@ -332,21 +332,32 @@ assumes a decision exists.
 Surfaced 14 September 2026, building the temporary wholesale-buyer screens (FARM-22). Two related
 gaps, neither closed here.
 
-**The tab bar needs PNG files, and only two exist.** `src/components/app-tabs.tsx` uses `NativeTabs`
-from `expo-router/unstable-native-tabs`, whose `NativeTabs.Trigger.Icon` takes
-`src={require(...)}` — an image asset, not a React component. `assets/images/tabIcons/` holds
-`home.png` and `explore.png` at 1x/2x/3x and nothing else. The buyer shell needs five tabs, so
-**Listings, Map, Calls and Profile currently all reuse `explore.png`** and therefore show the same
-wrong glyph. That is deliberate and temporary, not an oversight.
+**The tab bar uses OS symbol sets, not brand icons.** `src/components/app-tabs.tsx` uses
+`NativeTabs` from `expo-router/unstable-native-tabs`. Its `NativeTabs.Trigger.Icon` cannot take a
+React component, so the FarmPool SVGs in `src/components/app/icons.tsx` are unusable there. It does
+accept `sf` (SF Symbols, iOS) and `md` (Material Symbols, Android) alongside `src={require(...)}`,
+and all five tabs use the `sf`/`md` pair.
 
-Two ways out, and the choice belongs with whoever owns the design system:
+That is a placeholder, chosen because it needs no assets and touches nothing else: these are the
+operating system's glyphs, not the design system's. The tab bar therefore does not look like the
+Figma navigation frame (`196:6638`) and is not meant to yet.
 
-1. **Export four more PNG triples from Figma.** Smallest change; keeps the platform-native tab bar
-   and its OS-correct behaviour.
+Two ways to finish it, and the choice belongs with whoever owns the design system:
+
+1. **Export five PNG triples from Figma** and swap each `sf`/`md` pair for one
+   `src={require(...)}`. One line per tab, keeps the platform-native bar and its OS-correct
+   behaviour, and gets the brand glyphs. This is the expected path.
 2. **Move to expo-router's JS `Tabs`**, which takes a `tabBarIcon` render function. That would let
-   the bar use SVG icon components and the semantic tokens, matching the wireframe's green active
-   state — but it replaces a native bar with a JS one for the whole team, which is a real trade and
-   not one to make as a side effect of building a screen.
+   the bar render the existing SVG components and use semantic tokens for the active state — but it
+   replaces a native bar with a JS one for the whole team, which is a real trade and not one to make
+   as a side effect of building a screen.
+
+`assets/images/tabIcons/home.png` and `explore.png` are now unreferenced. They are left in place
+rather than deleted, because option 1 puts files back in that directory.
+
+**Android allows at most five tabs.** The buyer shell is at exactly that limit. A sixth destination
+cannot simply be added — it needs a "More" screen, or the tab bar has to leave `NativeTabs`. Expo's
+docs are explicit that exceeding five breaks the Material tab component with no fallback.
 
 **No icon library is installed, and that is the position, not an accident.** There is no
 `lucide-react-native`, no `@expo/vector-icons` — only `react-native-svg`. Two icon sets already
@@ -366,6 +377,41 @@ so every use would read a token into JS and pass a raw colour — which the "Bui
 The grid affordance is therefore composed from four small `Box` squares in a 2×2 rather than
 imported. If a later screen needs several genuinely absent glyphs, reopen this — but reopen it
 here, with the `className` problem answered, rather than by running `npm install`.
+
+### 4. `tertiary` — a third action rank, and its contrast
+
+Added 14 September 2026, building the listing detail screen (FARM-22). **The token exists; what is
+open is whether its light-mode value should stay.**
+
+The listing detail screen ends in two footer buttons: "Request call" (outlined, quiet) and "Book
+pickup" (filled orange, as the wireframe draws it). Orange had no semantic token. The only one
+holding that hue is `warning`, which means *order pending* on the lifecycle, and rule 5 in
+`CLAUDE.md` exists precisely to stop a status colour being borrowed as a brand colour — a farmer
+must not see "awaiting pickup" orange on a button that books one.
+
+`--tertiary` / `--tertiary-foreground` in `src/styles/colors.css` is therefore a **rank**, not a
+status: primary is what the screen is asking for, tertiary is a real commitment the user may make
+instead. It holds the same hue as `warning` today and is still a separate variable, so re-pointing
+one never silently re-points the other.
+
+What is unresolved is the light-mode pairing. White on `#F5821F` is about 2.9:1. At button-label
+size (18px bold) the applicable WCAG bar is 3:1 rather than 4.5:1, so it scrapes through as a large
+text control — but this app is used outdoors in direct sunlight by people who are not looking
+carefully, which is the condition where a thin ratio actually fails. Dark mode has no such problem:
+it steps down to `harvest-200` with ink text, about 8.9:1.
+
+Three ways out, for whoever owns the design system:
+
+1. **Dark text on the orange in light mode too** — `#191F1B` on `#F5821F` is about 8.3:1. One line,
+   and it stops matching the wireframe.
+2. **Darken the orange** until white clears 4.5:1, which means somewhere near `#C25A00` and is no
+   longer the brand's harvest.
+3. **Leave it.** Defensible — `primary` (`#00B14F` with white, about 2.4:1) is already in the same
+   position across the whole app, so fixing tertiary alone would make it the odd one out. If the
+   answer is "leave it", the honest version of that is to look at `primary` at the same time.
+
+Option 3 is why this is recorded rather than quietly fixed: the button is not the problem, the
+convention is, and that is a decision for the group.
 
 ---
 

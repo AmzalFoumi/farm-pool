@@ -108,6 +108,25 @@
          loud for a subtitle at 17px across a full-width green field. */
       --brand-deep-muted: 220 235 227; /* #DCEBE3 */
 
+      /* Tertiary — the third action rank. A commitment the user is meant to
+         make, but not the one the screen is primarily asking for: "Book pickup"
+         beside "Request call" on a listing, and the same shape wherever that
+         pattern recurs.
+
+         This is RANK, not STATUS. It shares its hue with `warning` because the
+         Figma screens draw both in harvest orange, but the two must never be
+         swapped: `warning` means an order is pending, and re-pointing one of
+         these is not licence to re-point the other. Rule 5 in CLAUDE.md is the
+         reason they are separate variables despite holding the same value.
+
+         Known gap: white on #F5821F is about 2.9:1, under the 4.5:1 WCAG AA
+         needs for body text. It is button-label size (18px bold), where 3:1 is
+         the applicable bar, so it passes as a large-text control — but it is
+         thin, and an outdoor app should not be running thin. Raised in
+         `.plans/DECISIONS.md`, open question 4. */
+      --tertiary: 245 130 31; /* harvest-500 */
+      --tertiary-foreground: 255 255 255;
+
       /* Persona tints — the role picker (node 196:5575). Farmer reuses
          `secondary`; these two complete the set. */
       --persona-buyer: 239 230 243; /* #EFE6F3 */
@@ -164,6 +183,13 @@
       --brand-deep-foreground: 255 255 255;
       --brand-deep-muted: 220 235 227;
 
+      /* Harvest-500 vibrates on a dark ground, the same reason `warning` steps
+         down here. A filled button needs the lighter orange to carry dark text
+         rather than white — #191F1B on #F9C68A is about 8.9:1, so dark mode is
+         the theme where this control is comfortably readable. */
+      --tertiary: 249 198 138; /* harvest-200 */
+      --tertiary-foreground: 25 31 27;
+
       --persona-buyer: 52 38 60;
       --persona-buyer-foreground: 225 205 235;
 
@@ -206,6 +232,9 @@
   --color-muted-foreground: rgb(var(--muted-foreground));
   --color-accent: rgb(var(--accent));
   --color-accent-foreground: rgb(var(--accent-foreground));
+
+  --color-tertiary: rgb(var(--tertiary));
+  --color-tertiary-foreground: rgb(var(--tertiary-foreground));
 
   --color-brand-deep: rgb(var(--brand-deep));
   --color-brand-deep-foreground: rgb(var(--brand-deep-foreground));
