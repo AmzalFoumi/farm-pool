@@ -58,8 +58,7 @@ Work lands on `main` through pull requests, each reviewed by another member.
 
 | | |
 | ---- | --- |
-| Jira board | _added once the board is live_ |
-| Confluence space | _added once the space exists_ |
+| Jira space | [_link_ ](https://tharushi742.atlassian.net/jira/software/projects/FARM/summary)|
 
 ## Verifying a change
 
