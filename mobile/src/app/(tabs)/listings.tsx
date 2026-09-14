@@ -5,6 +5,7 @@
  * not a backend. See that file for why.
  */
 
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { FlatList, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -45,6 +46,7 @@ function GridGlyph({ className }: { className: string }) {
 
 export default function ListingsScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [view, setView] = useState<ViewMode>("grid");
   const [range, setRange] = useState<RangeId>("today");
   const [query, setQuery] = useState("");
@@ -158,9 +160,14 @@ export default function ListingsScreen() {
         columnWrapperClassName={view === "grid" ? "gap-3" : undefined}
         contentContainerClassName="gap-3 px-gutter"
         contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
-        renderItem={({ item }) =>
-          view === "grid" ? <ListingGridCard listing={item} /> : <ListingListRow listing={item} />
-        }
+        renderItem={({ item }) => {
+          const open = () => router.push({ pathname: "/listing/[id]", params: { id: item.id } });
+          return view === "grid" ? (
+            <ListingGridCard listing={item} onPress={open} />
+          ) : (
+            <ListingListRow listing={item} onPress={open} />
+          );
+        }}
         ListEmptyComponent={
           <Text className="type-body mt-8 text-center text-muted-foreground">
             No listings match “{query.trim()}”.

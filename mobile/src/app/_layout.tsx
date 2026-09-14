@@ -52,6 +52,9 @@ export default function RootLayout() {
               <Stack.Screen name="index" />
               <Stack.Screen name="sign-up-as" />
               <Stack.Screen name="(tabs)" />
+              {/* Listing detail sits in the root stack, not in `(tabs)`: the
+                  design gives it no tab bar, and it is pushed over the shell. */}
+              <Stack.Screen name="listing/[id]" />
             </Stack>
           </ThemeProvider>
         </GluestackUIProvider>
