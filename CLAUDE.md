@@ -63,7 +63,7 @@ setup step to forget. A `pre-commit` hook also runs Prettier over staged files a
 ### Branch format
 
 ```
-feature/FARM-12-listing-form
+feat/FARM-12-listing-form
 fix/FARM-31-price-rounding
 ```
 
