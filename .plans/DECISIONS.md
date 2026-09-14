@@ -332,21 +332,32 @@ assumes a decision exists.
 Surfaced 14 September 2026, building the temporary wholesale-buyer screens (FARM-22). Two related
 gaps, neither closed here.
 
-**The tab bar needs PNG files, and only two exist.** `src/components/app-tabs.tsx` uses `NativeTabs`
-from `expo-router/unstable-native-tabs`, whose `NativeTabs.Trigger.Icon` takes
-`src={require(...)}` — an image asset, not a React component. `assets/images/tabIcons/` holds
-`home.png` and `explore.png` at 1x/2x/3x and nothing else. The buyer shell needs five tabs, so
-**Listings, Map, Calls and Profile currently all reuse `explore.png`** and therefore show the same
-wrong glyph. That is deliberate and temporary, not an oversight.
+**The tab bar uses OS symbol sets, not brand icons.** `src/components/app-tabs.tsx` uses
+`NativeTabs` from `expo-router/unstable-native-tabs`. Its `NativeTabs.Trigger.Icon` cannot take a
+React component, so the FarmPool SVGs in `src/components/app/icons.tsx` are unusable there. It does
+accept `sf` (SF Symbols, iOS) and `md` (Material Symbols, Android) alongside `src={require(...)}`,
+and all five tabs use the `sf`/`md` pair.
 
-Two ways out, and the choice belongs with whoever owns the design system:
+That is a placeholder, chosen because it needs no assets and touches nothing else: these are the
+operating system's glyphs, not the design system's. The tab bar therefore does not look like the
+Figma navigation frame (`196:6638`) and is not meant to yet.
 
-1. **Export four more PNG triples from Figma.** Smallest change; keeps the platform-native tab bar
-   and its OS-correct behaviour.
+Two ways to finish it, and the choice belongs with whoever owns the design system:
+
+1. **Export five PNG triples from Figma** and swap each `sf`/`md` pair for one
+   `src={require(...)}`. One line per tab, keeps the platform-native bar and its OS-correct
+   behaviour, and gets the brand glyphs. This is the expected path.
 2. **Move to expo-router's JS `Tabs`**, which takes a `tabBarIcon` render function. That would let
-   the bar use SVG icon components and the semantic tokens, matching the wireframe's green active
-   state — but it replaces a native bar with a JS one for the whole team, which is a real trade and
-   not one to make as a side effect of building a screen.
+   the bar render the existing SVG components and use semantic tokens for the active state — but it
+   replaces a native bar with a JS one for the whole team, which is a real trade and not one to make
+   as a side effect of building a screen.
+
+`assets/images/tabIcons/home.png` and `explore.png` are now unreferenced. They are left in place
+rather than deleted, because option 1 puts files back in that directory.
+
+**Android allows at most five tabs.** The buyer shell is at exactly that limit. A sixth destination
+cannot simply be added — it needs a "More" screen, or the tab bar has to leave `NativeTabs`. Expo's
+docs are explicit that exceeding five breaks the Material tab component with no fallback.
 
 **No icon library is installed, and that is the position, not an accident.** There is no
 `lucide-react-native`, no `@expo/vector-icons` — only `react-native-svg`. Two icon sets already
