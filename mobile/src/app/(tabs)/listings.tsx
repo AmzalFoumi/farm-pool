@@ -22,14 +22,22 @@ import { ListingGridCard, ListingListRow } from "@/features/listings/listing-car
 
 type ViewMode = "grid" | "list";
 
-/** Today / This week / Custom date, as the wireframe draws them. */
+/** Today / This week / Custom date, as the wireframe draws them.
+ *
+ *  Not selectable. The fixtures carry no dates, so there is nothing to filter
+ *  on, and a chip that takes a tap and reports itself "selected" tells a screen
+ *  reader a filter was applied when none was. The comment saying so lives here,
+ *  where that user will never reach it — so the control does not make the claim
+ *  in the first place. "Today" is shown as the current range because that is
+ *  what the screen is in fact showing: everything.
+ *
+ *  Same treatment as the category chips on the home screen. Both become real
+ *  controls the moment a listing carries a date and a category. */
 const RANGES = [
-  { id: "today", label: "Today" },
-  { id: "week", label: "This week" },
-  { id: "custom", label: "Custom date" }
+  { label: "Today", current: true },
+  { label: "This week", current: false },
+  { label: "Custom date", current: false }
 ] as const;
-
-type RangeId = (typeof RANGES)[number]["id"];
 
 /** No grid glyph exists in either icon set, and pulling in an icon package for
  *  one square is poor value (`.plans/DECISIONS.md`, open question 3). Four
@@ -48,7 +56,6 @@ export default function ListingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [view, setView] = useState<ViewMode>("grid");
-  const [range, setRange] = useState<RangeId>("today");
   const [query, setQuery] = useState("");
 
   const needle = query.trim().toLowerCase();
@@ -68,11 +75,17 @@ export default function ListingsScreen() {
         <HStack className="items-center justify-between">
           <Text className="type-title text-brand-deep-foreground">Listings</Text>
 
-          {/* View toggle. The container clears the tap minimum as a whole and
-              each half is a full 48dp target in its own right. */}
+          {/* View toggle. Each half is drawn 40dp tall to match the header the
+              wireframe draws, and `hitSlop={4}` extends the touch area to the
+              48dp rule 4 requires — 40 + 4 top + 4 bottom. Putting `min-h-tap`
+              on the halves instead would satisfy the class name and push the
+              whole control to 56dp; a parent's `min-h-tap` does not grow a
+              child's hit area, which is what the first version of this got
+              wrong. The rule is about the touch target, not the box. */}
           <HStack className="min-h-tap items-center rounded-chip bg-brand-deep-foreground/15 p-1">
             <Pressable
               onPress={() => setView("grid")}
+              hitSlop={4}
               accessibilityRole="button"
               accessibilityState={{ selected: view === "grid" }}
               accessibilityLabel="Grid view"
@@ -85,6 +98,7 @@ export default function ListingsScreen() {
 
             <Pressable
               onPress={() => setView("list")}
+              hitSlop={4}
               accessibilityRole="button"
               accessibilityState={{ selected: view === "list" }}
               accessibilityLabel="List view"
@@ -118,34 +132,25 @@ export default function ListingsScreen() {
         </Input>
       </VStack>
 
-      {/* ── Date chips ───────────────────────────────────────────────────
-          Visual only. The fixtures carry no dates, so wiring these to a filter
-          would mean inventing a field the wireframe never shows. They select
-          and restyle; they deliberately filter nothing. */}
+      {/* ── Date chips — labels, not controls. See RANGES above. ─────────── */}
       <HStack className="gap-2 px-gutter py-3">
-        {RANGES.map(({ id, label }) => {
-          const selected = range === id;
-          return (
-            <Pressable
-              key={id}
-              onPress={() => setRange(id)}
-              accessibilityRole="button"
-              accessibilityState={{ selected }}
-              className={[
-                "min-h-tap justify-center rounded-chip px-4",
-                selected ? "bg-brand-deep" : "border border-border bg-card"
-              ].join(" ")}
+        {RANGES.map(({ label, current }) => (
+          <Box
+            key={label}
+            className={[
+              "justify-center rounded-chip px-4 py-2.5",
+              current ? "bg-brand-deep" : "border border-border bg-card"
+            ].join(" ")}
+          >
+            <Text
+              className={`type-body-sm-bold ${
+                current ? "text-brand-deep-foreground" : "text-muted-foreground"
+              }`}
             >
-              <Text
-                className={`type-body-sm-bold ${
-                  selected ? "text-brand-deep-foreground" : "text-muted-foreground"
-                }`}
-              >
-                {label}
-              </Text>
-            </Pressable>
-          );
-        })}
+              {label}
+            </Text>
+          </Box>
+        ))}
       </HStack>
 
       {/* ── Results ──────────────────────────────────────────────────────

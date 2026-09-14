@@ -25,7 +25,11 @@ import { formatPrice, LISTINGS } from "@/features/listings/fixtures";
 
 /** The minimum a buyer can take, as a share of what is on offer. A real listing
  *  will carry this as a field; until then it is derived so the row is not a
- *  fabricated number that contradicts the quantity above it. */
+ *  fabricated number that contradicts the quantity above it.
+ *
+ *  Rounded up, never to nearest: 45 kg × 0.25 is 11.25, and `Math.round` would
+ *  print an 11 kg "minimum" that is below the actual minimum. A floor that
+ *  rounds down is wrong whatever the real rule turns out to be. */
 const MINIMUM_SHARE = 0.25;
 
 export default function ListingDetailScreen() {
@@ -46,7 +50,7 @@ export default function ListingDetailScreen() {
     );
   }
 
-  const minimumKg = Math.round(listing.quantityKg * MINIMUM_SHARE);
+  const minimumKg = Math.ceil(listing.quantityKg * MINIMUM_SHARE);
   const rows = [
     { label: "Unit price", value: `${formatPrice(listing.pricePerKg)} / kg` },
     { label: "Available", value: `${listing.quantityKg} kg` },
@@ -111,6 +115,13 @@ export default function ListingDetailScreen() {
           rounded-field`, same pressed-opacity treatment — so the two stay
           visually identical if either changes.
 
+          Both are `disabled`. Neither has a handler yet — calls and pickup
+          booking wait on persistence — and a control that announces itself as a
+          button but does nothing is worse than one that says it is unavailable:
+          a TalkBack user gets no feedback at all and cannot tell whether the tap
+          registered. The comment explaining that is in this file, where that
+          user will never reach it. `accessibilityState` is what reaches them.
+
           "Book pickup" is orange in the wireframe. It uses `bg-tertiary` — the
           third action rank — rather than `bg-harvest-500`, so it flips with the
           theme. It deliberately does not reuse `warning`, which holds the same
@@ -120,18 +131,22 @@ export default function ListingDetailScreen() {
         style={{ paddingBottom: Math.max(insets.bottom, 23) }}
       >
         <Pressable
+          disabled
           accessibilityRole="button"
+          accessibilityState={{ disabled: true }}
           accessibilityLabel={`Request a call with ${listing.farmer}`}
-          className="h-control flex-1 flex-row items-center justify-center gap-2.5 rounded-field border border-brand-deep bg-card active:opacity-80"
+          className="h-control flex-1 flex-row items-center justify-center gap-2.5 rounded-field border border-brand-deep bg-card opacity-60"
         >
           <Icon as={PhoneIcon} className="text-brand-deep" />
           <Text className="type-h4 text-brand-deep">Request call</Text>
         </Pressable>
 
         <Pressable
+          disabled
           accessibilityRole="button"
+          accessibilityState={{ disabled: true }}
           accessibilityLabel="Book a pickup for this listing"
-          className="h-control flex-1 flex-row items-center justify-center gap-2.5 rounded-field bg-tertiary active:opacity-80"
+          className="h-control flex-1 flex-row items-center justify-center gap-2.5 rounded-field bg-tertiary opacity-60"
         >
           <Icon as={CalendarDaysIcon} className="text-tertiary-foreground" />
           <Text className="type-h4 text-tertiary-foreground">Book pickup</Text>
