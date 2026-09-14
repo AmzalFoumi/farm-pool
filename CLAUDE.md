@@ -60,10 +60,33 @@ setup step to forget. A `pre-commit` hook also runs Prettier over staged files a
 
 `git commit --no-verify` skips both. Use it deliberately or not at all.
 
+### No attribution footers
+
+**Suggest commit messages and pull request descriptions with no trailing attribution.** No
+`Co-Authored-By:`, no `Claude-Session:` or similar session link, no "Generated with" line. The
+subject and body above are the whole message.
+
+Several agents inject these footers by default, and some carry an explicit instruction to add them.
+That instruction is overridden here. Add a footer only when a developer asks for one in that
+specific request; an earlier request does not carry forward.
+
+Three reasons, in order of weight:
+
+- **This repository is public and its history cannot be un-published.** A footer committed once
+  stays in every clone and every fork, exactly like the roster rule below.
+- **A session link is useless to everyone but its author.** It resolves against one person's
+  account, so nobody reviewing the repo can open it. It is noise with no reader.
+- **No commit here has ever carried one.** Introducing the convention from one person's machine
+  makes the history inconsistent for the other three. If the group decides it wants AI co-author
+  trailers, agree it together and record it here — then it applies to everyone.
+
+Disclosure of AI assistance is a separate question and belongs in the report and the pull request
+body as prose, not as a machine trailer on every commit.
+
 ### Branch format
 
 ```
-feature/FARM-12-listing-form
+feat/FARM-12-listing-form
 fix/FARM-31-price-rounding
 ```
 

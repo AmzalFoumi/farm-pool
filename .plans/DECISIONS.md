@@ -327,6 +327,46 @@ Not designed. The app has at least three distinct roles (farmer, buyer, logistic
 genuinely different permissions, so this is not a detail to bolt on late. Flagged here so nobody
 assumes a decision exists.
 
+### 3. Iconography beyond the Figma exports
+
+Surfaced 14 September 2026, building the temporary wholesale-buyer screens (FARM-22). Two related
+gaps, neither closed here.
+
+**The tab bar needs PNG files, and only two exist.** `src/components/app-tabs.tsx` uses `NativeTabs`
+from `expo-router/unstable-native-tabs`, whose `NativeTabs.Trigger.Icon` takes
+`src={require(...)}` — an image asset, not a React component. `assets/images/tabIcons/` holds
+`home.png` and `explore.png` at 1x/2x/3x and nothing else. The buyer shell needs five tabs, so
+**Listings, Map, Calls and Profile currently all reuse `explore.png`** and therefore show the same
+wrong glyph. That is deliberate and temporary, not an oversight.
+
+Two ways out, and the choice belongs with whoever owns the design system:
+
+1. **Export four more PNG triples from Figma.** Smallest change; keeps the platform-native tab bar
+   and its OS-correct behaviour.
+2. **Move to expo-router's JS `Tabs`**, which takes a `tabBarIcon` render function. That would let
+   the bar use SVG icon components and the semantic tokens, matching the wireframe's green active
+   state — but it replaces a native bar with a JS one for the whole team, which is a real trade and
+   not one to make as a side effect of building a screen.
+
+**No icon library is installed, and that is the position, not an accident.** There is no
+`lucide-react-native`, no `@expo/vector-icons` — only `react-native-svg`. Two icon sets already
+exist: the ten Figma exports in `src/components/app/icons.tsx` (`SvgXml`, stroke colours baked in,
+so `text-*` will not recolour them), and ~45 vendored gluestack icons in `src/components/ui/icon/`
+(drawn with `react-native-svg` `Path` through `createIcon`, routed through `tva` + `withUniwind`, so
+these **do** recolour from `className`).
+
+`lucide-react-native` was considered for the buyer screens and rejected. Between the two existing
+sets, exactly one needed glyph was missing — a grid icon for the listings view toggle. Pulling in
+~1,500 icons for one glyph is poor value, the result would look identical to what is already
+vendored (gluestack's set *is* lucide artwork redrawn — `ChevronsUpDown`, `GripVertical` and
+`Repeat1` are lucide names), and lucide's components take a `color` prop rather than `className`,
+so every use would read a token into JS and pass a raw colour — which the "Building UI" rules in
+`CLAUDE.md` forbid outright.
+
+The grid affordance is therefore composed from four small `Box` squares in a 2×2 rather than
+imported. If a later screen needs several genuinely absent glyphs, reopen this — but reopen it
+here, with the `className` problem answered, rather than by running `npm install`.
+
 ---
 
 ## How to record a decision here
