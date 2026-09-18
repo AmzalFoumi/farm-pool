@@ -208,6 +208,46 @@ registered but not global (the 401 would be a 200), the role matrix not wired (t
 For the app: do the same from a physical device with `EXPO_PUBLIC_API_URL` set to the machine's
 LAN address, not `localhost`.
 
+**Buyer smoke check** — listings, an order, a crop request (FARM-22 / FARM-35 / FARM-36)
+
+```
+npm run seed:listings -w api      # one farmer + eight verified listings; safe to re-run
+```
+
+Then with `npm run start:dev -w api` and a buyer account from `/identity/register`:
+
+```
+TOKEN=<buyer token>
+curl -s "localhost:3000/catalog/listings?district=kurunegala" -H "authorization: Bearer $TOKEN"
+# → 200, only Kurunegala rows, every one "status":"verified"
+
+LISTING=<an id from above>
+curl -s -X POST localhost:3000/orders -H "authorization: Bearer $TOKEN" \
+  -H 'content-type: application/json' -d "{\"listingId\":\"$LISTING\",\"quantityKg\":1}"
+# → 400 quantity_out_of_range (below the listing's minimum)
+curl -s -X POST localhost:3000/orders -H "authorization: Bearer $TOKEN" \
+  -H 'content-type: application/json' -d "{\"listingId\":\"$LISTING\",\"quantityKg\":20}"
+# → 201 "status":"requested", total computed by the server
+
+ORDER=<id from above>
+curl -s -X POST localhost:3000/orders/$ORDER/cancel -H "authorization: Bearer $TOKEN"  # → 200 cancelled
+curl -s -X POST localhost:3000/orders/$ORDER/cancel -H "authorization: Bearer $TOKEN"  # → 409
+
+curl -s -X POST localhost:3000/catalog/wanted -H "authorization: Bearer $TOKEN" \
+  -H 'content-type: application/json' \
+  -d '{"cropId":"onion","quantityKg":200,"neededBy":"2026-10-01","district":"Dambulla"}'
+# → 201 "status":"open"
+```
+
+Repeat `POST /orders` with the seed farmer's token (`+94771000001`): must be 403 `forbidden`.
+Catches: a status filter missing (a draft would list), the quantity rule not enforced, the role
+matrix not applied to the new actions, the price taken from the client.
+
+In the app: log in as a buyer on a physical device, the Listings tab shows the seeded rows, a
+listing opens, Place order with a quantity below the minimum shows the inline error, a valid one
+lands on the order screen in Requested, Home → My orders lists it and Cancel turns it Cancelled;
+My requests → New request saves and Close closes it. Check both in dark mode.
+
 ## CI
 
 Open a PR: the checks must go green. Then push a deliberate type error and confirm they go red.

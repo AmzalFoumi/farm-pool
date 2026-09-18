@@ -410,6 +410,40 @@ It is eliminated:
 
 ---
 
+### Order lifecycle starts at `requested`
+
+Decided 18 September 2026 (FARM-35). The team's data model started an order at `open`; the
+product doc says a buyer *sends a purchase request* and a farmer *accepts or negotiates*. Three
+states now sit in front of the original enum — `requested`, `accepted`, `declined` — and a buyer
+may cancel only while `requested`. Placing an order does not reduce the listing's quantity;
+farmer acceptance (a later story) does. The full enum, including the delivery states nobody has
+written yet, is declared once in `packages/shared/src/orders/order.ts` so it does not change under
+the next developer. Reasoning and diagram: `api/src/orders/README.md`.
+
+### Crops are a shared constant, not a collection
+
+Decided 18 September 2026 (FARM-21). `CROPS` in `packages/shared/src/catalog/crops.ts` holds
+twelve crops with an id, a name and an emoji, and `cropIdSchema` validates against it on both
+sides. Nobody edits the crop list at runtime yet, so a table would be a second source of truth
+with an admin screen nobody asked for. When a coordinator needs to add a crop, it becomes a
+collection and the api serves it; the screens read `cropById` either way and do not change.
+
+### Produce photos: deferred, emoji stand in
+
+Decided 18 September 2026 (FARM-22). There is no image storage, so listings carry no photo field
+and every crop tile shows the crop's emoji from `CROPS`. Adding photos later is one optional field
+on the listing schema plus a storage decision (Atlas has none built in; an object store and signed
+URLs are the likely shape). Recorded so nobody wires photos into the Mongoose schema before that
+decision is made.
+
+### Buyer crop requests ("wanted" listings) live in `catalog`
+
+Decided 18 September 2026 (FARM-36). The team's data model had no table for the reverse listing
+the product doc describes (a buyer says what they want; farmers respond). It is a
+`wanted_listings` collection in the catalog domain, because it is the same kind of thing as a
+listing — an offer on the market, from the other side — and the farmer-response story will add a
+`responses` concept beside it rather than inside it. Lifecycle is `open` → `closed` for now.
+
 ## Open
 
 *Persistence* and *Authentication*, formerly questions 1 and 2, were settled on 18 September 2026
