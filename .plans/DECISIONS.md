@@ -262,15 +262,14 @@ fixed offset. Only the relationships are kept, in flex, with safe-area insets fr
 `useSafeAreaInsets()`. A screen built from the raw coordinates is broken on every device that is not
 a 393×852 iPhone.
 
-**Two deviations from the mock, both deliberate.** The frame shows "Delivery partner" already
+**One deviation from the mock, deliberate.** The frame shows "Delivery partner" already
 selected, because a static mock has to show the selected state somewhere; a real first visit has
 nothing selected, so the footer button starts disabled and its label ("Continue as delivery partner")
-is treated as a template. And the welcome screen's "Log in" button is inert — there is no log-in
-screen yet. It is left visible because removing it would make the screen read as sign-up-only, which
-is not the intent.
+is treated as a template. (The welcome screen's "Log in" button was inert when this was written; it
+now routes to `/log-in`, added in FARM-34.)
 
 **Icons are the Figma exports, not an icon package.** `src/components/app/icons.tsx` holds the exact
-SVG bytes for all eleven glyphs, rendered through `react-native-svg`'s `SvgXml`. That avoids adding
+SVG bytes for all ten glyphs, rendered through `react-native-svg`'s `SvgXml`. That avoids adding
 `react-native-svg-transformer` and the Metro config change it needs, which this file elsewhere says
 not to make. Figma exported the mail glyph as two separately-positioned vectors; both path strings
 are unaltered and the group translates reproduce Figma's exact offsets.
@@ -281,7 +280,7 @@ device.
 
 ### Mobile navigation: Expo Router
 
-File-based routing in `mobile/app/`, the default in the current `create-expo-app` template.
+File-based routing in `mobile/src/app/`, the default in the current `create-expo-app` template.
 
 **This is not the same thing as Expo Router API routes.** Router-as-navigation is a client concern
 and costs nothing extra. API routes (`+api.ts`) are a server, and were rejected as *the* backend —
@@ -484,7 +483,7 @@ docs are explicit that exceeding five breaks the Material tab component with no 
 **No icon library is installed, and that is the position, not an accident.** There is no
 `lucide-react-native`, no `@expo/vector-icons` — only `react-native-svg`. Two icon sets already
 exist: the ten Figma exports in `src/components/app/icons.tsx` (`SvgXml`, stroke colours baked in,
-so `text-*` will not recolour them), and ~45 vendored gluestack icons in `src/components/ui/icon/`
+so `text-*` will not recolour them), and ~60 vendored gluestack icons in `src/components/ui/icon/`
 (drawn with `react-native-svg` `Path` through `createIcon`, routed through `tva` + `withUniwind`, so
 these **do** recolour from `className`).
 
@@ -505,8 +504,10 @@ here, with the `className` problem answered, rather than by running `npm install
 Added 14 September 2026, building the listing detail screen (FARM-22). **The token exists; what is
 open is whether its light-mode value should stay.**
 
-The listing detail screen ends in two footer buttons: "Request call" (outlined, quiet) and "Book
-pickup" (filled orange, as the wireframe draws it). Orange had no semantic token. The only one
+The listing detail wireframe ends in two footer buttons: "Request call" (outlined, quiet) and "Book
+pickup" (filled orange). As shipped (FARM-35) the second button is "Place order" on `bg-primary`, so
+this screen no longer exercises `tertiary`; the token and the question remain. Orange had no
+semantic token. The only one
 holding that hue is `warning`, which means *order pending* on the lifecycle, and rule 5 in
 `CLAUDE.md` exists precisely to stop a status colour being borrowed as a brand colour — a farmer
 must not see "awaiting pickup" orange on a button that books one.

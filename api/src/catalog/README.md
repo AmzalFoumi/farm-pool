@@ -4,8 +4,9 @@
 price per kg, harvest date, pickup district, minimum order) and **wanted requests** a buyer posts
 (crop, quantity, needed-by date, district, optional ceiling price).
 
-Built in FARM-22 / FARM-36 from the buyer's side first. Farmer listing creation (FARM-21) and
-coordinator approval add use-cases here; they do not change the layout.
+Built in FARM-22 / FARM-36 from the buyer's side first. Farmer listing creation (the
+`listing:create` action is in the permission matrix; no endpoint yet — FARM-21) and coordinator
+approval add use-cases here; they do not change the layout. Recipe: `.plans/PLAYBOOK.md`.
 
 ## Layout (light DDD)
 

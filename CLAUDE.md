@@ -149,7 +149,7 @@ hand-rolled `View` with `StyleSheet` essentially never.
 | `mobile/src/styles/layout.css` | The radius scale, `min-h-tap`, `h-control`, `p-gutter`, `elevation-card` |
 | `mobile/src/global.css` | Entry point. Imports the three above. Edit the token files, not this one |
 | `mobile/src/components/design-system-preview.tsx` | Living reference — every token used once. Read it to see the system; it is not routed and does not ship |
-| `mobile/src/components/app/` | Shared on-system components: `app-button.tsx`, and `icons.tsx` (Figma-exported SVGs, rendered verbatim) |
+| `mobile/src/components/app/` | Shared on-system components: `app-button.tsx`, `app-bar.tsx`, `app-text-field.tsx`, `request-view.tsx` (loading / error / empty states every data screen uses), `placeholder-screen.tsx`, and `icons.tsx` (Figma-exported SVGs, rendered verbatim) |
 
 All of it is derived from the Figma file `YpAf6FAzdLDEf8g6ZPTZXU` — Typography (node `121:28499`),
 Color Palette (node `121:28500`), welcome (`196:5544`), role picker (`196:5575`),
@@ -250,16 +250,22 @@ import { VStack } from "@/components/ui/vstack";
 ### Routing shape
 
 ```
-src/app/_layout.tsx      root Stack — fonts, providers, headerShown: false
-src/app/index.tsx        "/"            Welcome        (Figma 196:5544)
+src/app/_layout.tsx      root Stack — fonts, providers, AuthProvider, two Stack.Protected groups
+src/app/index.tsx        "/"            Welcome        (Figma 196:5544)   signed-out group
 src/app/sign-up-as.tsx   "/sign-up-as"  Role picker    (Figma 196:5575)
-src/app/(tabs)/          "/home", "/explore"  the tab shell, entered after onboarding
+src/app/sign-up.tsx      "/sign-up"     Register
+src/app/log-in.tsx       "/log-in"      Log in
+src/app/(tabs)/          "/home" "/listings" "/map" "/calls" "/profile"  signed-in group
+src/app/listing/[id].tsx "/listing/:id" Listing detail + Place order sheet
+src/app/orders/          "/orders", "/orders/:id"   My orders
+src/app/wanted/          "/wanted", "/wanted/new"   My requests
 ```
 
 Onboarding is the root stack, so a cold start lands on the welcome screen. The tab shell sits one
-level in and is entered with `router.replace`, not `push` — otherwise Android's back button walks the
-user back into sign-up after they have finished it. `(tabs)/home.tsx` is the old `app/index.tsx`; it
-was renamed because a root `index` and a `(tabs)/index` both resolve to `/` and collide.
+level in. Both halves are wrapped in `Stack.Protected` in `_layout.tsx`, keyed on whether a session
+exists: when a user signs in, the onboarding screens leave the history, so Android's back button
+cannot walk them back into sign-up. `(tabs)/home.tsx` is the old `app/index.tsx`; it was renamed
+because a root `index` and a `(tabs)/index` both resolve to `/` and collide.
 
 ### Fonts
 

@@ -113,9 +113,17 @@ name should appear in an access rule:
 | `listing:create` | ✓ | | | |
 | `order:place` | | ✓ | | |
 | `order:accept` | ✓ | | | |
+| `order:read-own` | ✓ | ✓ | ✓ | ✓ |
+| `order:cancel` | | ✓ | | |
+| `wanted:read` | ✓ | ✓ | ✓ | ✓ |
+| `wanted:create` | | ✓ | | |
 | `delivery:accept` | | | | ✓ |
 | `users:list` | | | ✓ | |
 | `farmers:approve` | | | ✓ | |
+
+Which endpoint uses which action: `api/src/identity/README.md`, `api/src/catalog/README.md`,
+`api/src/orders/README.md`. Adding an action means a row here, a line in `permissions.ts`, and
+the `@Allow` on the handler — nothing else.
 
 **api:** `@Allow('listing:create')` on a handler restricts it to the roles in that row.
 `@Roles('farmer', 'coordinator')` exists for a rule that is not an action yet; prefer adding the

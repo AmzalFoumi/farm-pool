@@ -22,8 +22,9 @@ git check-ignore -v CLAUDE.local.md .plans.local/SETUP.md
 git status --short .plans/
 ```
 
-The first must report both paths as ignored. The second must show `.plans/` files as untracked and
-addable. Catches: private notes about to be published, or shared decisions invisible to teammates.
+The first must report both paths as ignored. The second must show `.plans/` files as tracked (clean,
+or as ordinary modifications) — never as ignored. Catches: private notes about to be published, or
+shared decisions invisible to teammates.
 
 **No secrets staged**
 
@@ -174,7 +175,7 @@ server that starts, accepts requests, and fails minutes later on the first datab
 **Api tests need nothing installed**
 
 ```
-npm test -w api          # unit: use-cases against the in-memory repository, hasher, signer, guard
+npm test -w api          # unit: identity, catalog and orders use-cases on in-memory repositories, hasher, signer, guard
 npm run test:e2e -w api  # boots a real MongoDB in memory (first run downloads ~100 MB, then cached)
 ```
 
@@ -250,5 +251,7 @@ My requests → New request saves and Close closes it. Check both in dark mode.
 
 ## CI
 
-Open a PR: the checks must go green. Then push a deliberate type error and confirm they go red.
-Catches: a workflow that runs but asserts nothing — passing on everything, including broken code.
+There is no CI workflow yet (`.github/` holds only the pull request template), so every check
+above is run by hand before opening a PR. When a workflow is added: open a PR, the checks must go
+green; then push a deliberate type error and confirm they go red. Catches: a workflow that runs but
+asserts nothing — passing on everything, including broken code.

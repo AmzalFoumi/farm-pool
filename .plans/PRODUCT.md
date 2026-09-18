@@ -176,9 +176,9 @@ participant's actual device usage, not something anyone asked for by name.)*
 
 ## Open questions / gaps
 
-- **Persistence and authentication design** were both still open in the engineering decisions
-  (`.plans/DECISIONS.md`) as of this document's writing — nothing here should be read as implying
-  either is settled.
+- **Persistence and authentication** were open when this was written; both were settled on
+  18 September 2026 — MongoDB via Mongoose, and phone + password with one JWT and a shared role
+  matrix (`.plans/DECISIONS.md`). What is in the database today: `.plans/DATA-MODEL.md`.
 - **Family/delegate access** (a nominated household member operating a farmer's account) appears in
   the UX research findings but was explicitly scoped *out* of the current development sprints per
   the project charter — worth knowing before assuming it's in scope for early implementation.
