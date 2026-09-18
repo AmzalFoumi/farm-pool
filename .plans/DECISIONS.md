@@ -106,8 +106,12 @@ contexts, and the rest had bypassed their own layers.
 boundary by discipline — Nest does not enforce it. Mitigation: one worked example (`catalog`) is
 scaffolded first for everyone to copy.
 
-**Kept DB-agnostic:** no ORM, no `schemas/` folder, no database package under any domain until
-question 1 is answered. Adding one silently closes that decision.
+**DB-agnostic by interface, not by abstinence** (amended 18 September 2026, when persistence was
+settled — see below): the database is now MongoDB via Mongoose, and each domain's
+`infrastructure/persistence/` holds its schema and repository implementation. `domain/` and
+`application/` still import nothing from `mongoose` or `@nestjs/*` — that is now an ESLint error
+(`api/eslint.config.mjs`), not a convention — so the layer boundary the light-DDD split was chosen
+for is enforced rather than hoped for.
 
 ### Mobile UI: gluestack-ui v5, styled by UniWind
 
@@ -224,6 +228,12 @@ Added when the screens needed them, each a recurring role rather than a one-off:
 (40/44), `type-title` (20/25, app-bar titles), `type-caption` (14/20), `--radius-chip`/`-tile`/
 `-sheet`, `--spacing-control` 58px, and the `lilac` ramp for the wholesale-buyer persona tile.
 
+Added 18 September 2026 (FARM-34), when the sign-up flow grew to all four roles:
+`persona-coordinator` (river-50 tint, with a derived `river-900` ink, since the palette gives river
+no dark step) for the coordinator's card — the one hue on that screen no other tile or status uses.
+Its glyph is the vendored gluestack `GlobeIcon`, recoloured through the token, because Figma has
+no coordinator export; a brand glyph should replace it when the design catches up (open question 1).
+
 **Accepted cost:** `gluestack-ui init` replaces `src/global.css` wholesale on the UniWind path, so
 re-running the CLI drops the three `@import` lines. The token files themselves survive, and the
 header comment in `global.css` says what to restore.
@@ -301,6 +311,92 @@ Then verify on a **physical device**, not the simulator — that is where the mi
 up. Business logic belongs in `api/` either way; if an API route starts holding domain logic, the
 two backends have begun to diverge and the shared zod schemas stop being the single definition.
 
+### Persistence: MongoDB Atlas via Mongoose
+
+Decided 18 September 2026 (FARM-33). Was open question 1.
+
+**Why MongoDB.** The team already had an Atlas cluster and a working connection string before the
+question was formally answered; the decision here mostly records that and makes it deliberate.
+The substantive reasons it holds up: Atlas is hosted, so nobody installs a database on a machine
+split across Windows and macOS, and the free tier covers a coursework project. The data shape is
+document-friendly — a listing with photos and a location, an order with a status history — and
+there are no cross-aggregate joins in the current product scope that would argue for SQL.
+
+**Why Mongoose rather than the bare driver or Prisma.** Mongoose gives a schema with enum
+validation at the database edge (the `role` and `status` columns read their allowed values from
+`packages/shared`, so the database cannot hold a value the app does not know), unique indexes
+declared next to the field, and `@nestjs/mongoose` for wiring. Prisma's MongoDB support is real but
+adds a generate step and a second schema language for no gain here.
+
+**What the light-DDD layering buys now.** `UserRepository` is an interface in `domain/`; the
+Mongoose implementation is one file in `infrastructure/persistence/`, and an in-memory
+implementation backs the unit tests. Use-cases are tested without a database, and the e2e suite
+boots a real MongoDB in memory (`mongodb-memory-server`) from a Jest `globalSetup`, so
+`npm run test:e2e -w api` needs nothing installed.
+
+**Version pins worth knowing.** `@nestjs/config` 4 and `@nestjs/mongoose` 11, not the 12 line,
+which is ESM-only while the api is CommonJS (see open question 3). `mongoose` is `~9.9`: 9.10 pulls
+MongoDB driver 7.6.0, whose connection handshake fails inside Jest
+(Automattic/mongoose#16499); lift the pin when that closes.
+
+**Accepted cost.** Atlas needs the internet; a demo on a venue network with no outbound access
+would need a local `mongod` and a different `DATABASE_URI`, which is an environment change, not a
+code change. The credential lives only in `api/.env` (gitignored); rotate it in Atlas if it is ever
+pasted anywhere.
+
+### Authentication: phone + password, one JWT, roles from a shared matrix
+
+Decided 18 September 2026 (FARM-34). Was open question 2. The mechanics are in `auth/README.md`;
+this entry is the why.
+
+**Credential: phone + password. Email later. No OTP.** The users are rural farmers and the traders
+who buy from them; a phone number is the identifier they already give each other, and many have no
+email. OTP by SMS was the obvious alternative and was deferred, not rejected: it needs a paid
+gateway and a Sri Lankan sender id, and neither is available inside the module. The schema keeps
+the door open — `users.email` exists with a sparse unique index, and login takes an `identifier`
+rather than a `phone` — so email can be switched on without a migration or a request-shape change.
+
+**All four roles self-register.** An earlier draft had coordinators seeded by script because they
+are a trust checkpoint. Overruled: the sign-up flow shows four paths, and each role's own
+onboarding is built by the developer owning that role. Vetting is the `status` field's job
+(`pending_review` exists in the enum, and no guard enforces it yet — a follow-up story).
+
+**Flagged for discussion, prioritised (18 Sep 2026, CodeRabbit on PR #12).** A coordinator is not
+like the other three roles: the role carries powers over other people's data (`users:list` today,
+`farmers:approve` later), and public sign-up lets anyone pick it from a menu. Kept as-is for now so
+the four onboarding paths can be built in parallel. Decide before any deployment beyond the team:
+(a) a self-registered coordinator starts as `pending_review` and the guard refuses coordinator-only
+actions until the status is flipped (recommended: keeps the four paths, uses the field that already
+exists); (b) an invite code; (c) coordinators provisioned by the seed script only.
+
+**One 30-day access token, no refresh token, no server-side session.** The simplest thing that
+gives "stay signed in across restarts". Cost, stated plainly: a token cannot be revoked before it
+expires, and a role or status change is invisible until re-login. Both upgrade paths (refresh
+tokens; a `tokenVersion` check) sit behind the `TokenSigner` port and are described in
+`auth/README.md`. Chosen because the audience is not an attack target worth a session store yet,
+and because the app calls `/identity/me` on every cold start, which catches a deleted account.
+
+**Permissions as data, in `packages/shared`.** `PERMISSIONS` maps actions to roles; the api's
+`RolesGuard` reads it via `@Allow(action)`, the app reads it via `can(role, action)`. One table,
+so "who gets a 403" and "who sees the button" cannot disagree — the same drift argument that
+justifies the shared package at all.
+
+**The core is framework-free, and ESLint enforces it.** The register/login/me/list use-cases are
+plain classes in `application/`, built by Nest with `useFactory` and buildable by anything else
+with `new`. `@nestjs/*`, `mongoose` and `express` imports under `domain/` and `application/` are
+lint errors. This is what makes "runs under NestJS today or Expo API routes later" a property of
+the code rather than an intention; `auth/README.md` shows the API-route version.
+
+**Libraries.** Hashing is `node:crypto` scrypt (no native build, unlike `bcrypt`, which matters
+on a mixed Windows/macOS team). Tokens are `jsonwebtoken` (HS256, algorithm pinned on verify).
+`jose` was the first choice and was dropped only because v6 is ESM-only and the api is CommonJS
+(open question 3); the `TokenSigner` port makes it a one-file swap. `@nestjs/jwt` was rejected
+because it would put a Nest import behind the port. Nest's `ValidationPipe` is not used; a small
+`ZodValidationPipe` runs the shared schemas, per the earlier decision.
+
+**Not done, deliberately.** Rate limiting on the two public routes (add `@nestjs/throttler`
+before any public deployment), password reset, OTP. Listed in `auth/README.md`.
+
 ### Backend: not Next.js
 
 Next.js was named as the stack early on and carried forward for a while without being argued for.
@@ -316,18 +412,10 @@ It is eliminated:
 
 ## Open
 
-### 1. Persistence
+*Persistence* and *Authentication*, formerly questions 1 and 2, were settled on 18 September 2026
+and moved above. The remaining questions are renumbered.
 
-No database chosen. This is now the blocking question: Nest is settled, so the framework no longer
-constrains the answer, and nothing can be built past a stub controller without it.
-
-### 2. Authentication
-
-Not designed. The app has at least three distinct roles (farmer, buyer, logistics provider) with
-genuinely different permissions, so this is not a detail to bolt on late. Flagged here so nobody
-assumes a decision exists.
-
-### 3. Iconography beyond the Figma exports
+### 1. Iconography beyond the Figma exports
 
 Surfaced 14 September 2026, building the temporary wholesale-buyer screens (FARM-22). Two related
 gaps, neither closed here.
@@ -378,7 +466,7 @@ The grid affordance is therefore composed from four small `Box` squares in a 2×
 imported. If a later screen needs several genuinely absent glyphs, reopen this — but reopen it
 here, with the `className` problem answered, rather than by running `npm install`.
 
-### 4. `tertiary` — a third action rank, and its contrast
+### 2. `tertiary` — a third action rank, and its contrast
 
 Added 14 September 2026, building the listing detail screen (FARM-22). **The token exists; what is
 open is whether its light-mode value should stay.**
@@ -412,6 +500,26 @@ Three ways out, for whoever owns the design system:
 
 Option 3 is why this is recorded rather than quietly fixed: the button is not the problem, the
 convention is, and that is a decision for the group.
+
+### 3. `api/` is CommonJS; the Nest ecosystem is moving to ESM
+
+Surfaced 18 September 2026, during FARM-33/34. The `nest new` scaffold compiles to CommonJS
+(`module: nodenext` with no `"type": "module"`), and Jest runs it through `ts-jest` as CommonJS.
+Three packages have already been chosen around that constraint:
+
+- `@nestjs/config` 4 and `@nestjs/mongoose` 11 rather than their 12 lines, which ship
+  `"type": "module"` and fail to load under CommonJS Jest (`SyntaxError: Unexpected token 'export'`)
+- `jsonwebtoken` rather than `jose` 6 (ESM-only), for the same reason
+
+Each pin is a small cost today and a growing one: the 11/4 lines will stop receiving features.
+The migration is a platform change — `"type": "module"` in `api/package.json`, ESM output from
+`tsc`, and either Jest's ESM mode (`--experimental-vm-modules`, still flagged) or a different
+runner such as Vitest — and it touches every developer's setup, so it is a group decision rather
+than something to slip into a feature branch. Node 22.12+ can `require()` an ES module, which
+means the *runtime* would already cope; it is the test runner that would not.
+
+When it is taken: swap `JsonwebtokenTokenSigner` for a `jose` adapter behind the same port, and
+lift the `@nestjs/config` / `@nestjs/mongoose` pins in the same change.
 
 ---
 

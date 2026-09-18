@@ -8,7 +8,8 @@ farm-pool/
 ├── .gitignore, README.md, CLAUDE.md, AGENTS.md
 ├── package.json                # npm workspaces root: mobile, api, packages/*
 ├── .claude/                    # shared agent config, committed
-├── .plans/                     # committed: this file, DECISIONS.md, VERIFY.md
+├── .plans/                     # committed: this file, DECISIONS.md, VERIFY.md, PRODUCT.md,
+│   └── auth/README.md          #   and one folder per cross-cutting design (auth first)
 ├── .plans.local/               # gitignored — individual working records
 ├── CLAUDE.local.md             # gitignored — individual agent instructions
 ├── .github/
@@ -29,21 +30,28 @@ farm-pool/
 │   └── .gitignore              # written by create-expo-app — merge, never replace
 ├── api/                        # NestJS + TypeScript
 │   ├── src/
-│   │   ├── main.ts             # bootstrap
-│   │   ├── app.module.ts       # root module; imports the five domain modules
-│   │   ├── shared/kernel/      # base classes reused across domains (no module)
+│   │   ├── main.ts             # bootstrap: HOST/PORT from config, CORS on
+│   │   ├── app.module.ts       # root module; config + database first, then the five domains
+│   │   ├── config/             # env.ts (zod schema of the environment) + the Nest ConfigModule
+│   │   ├── database/           # the one Mongoose connection, from DATABASE_URI
+│   │   ├── shared/
+│   │   │   ├── kernel/         # base classes reused across domains (no module)
+│   │   │   └── http/           # ZodValidationPipe — shared schemas as request validation
 │   │   └── <domain>/           # one per business capability, not per persona:
 │   │       │                   #   identity, catalog, orders, logistics, coordination
 │   │       ├── domain/         # entities, value-objects, repository INTERFACES — pure rules
-│   │       ├── application/    # services (use-cases) + dto
-│   │       ├── infrastructure/ # repository IMPLEMENTATIONS (no DB chosen yet)
+│   │       ├── application/    # services (use-cases), ports (interfaces they need), errors
+│   │       ├── infrastructure/ # persistence/ (Mongoose schema + repository), security/, …
+│   │       ├── auth/           # identity only: guards + decorators other domains import
 │   │       ├── <domain>.controller.ts
 │   │       └── <domain>.module.ts
-│   ├── test/                   # e2e specs (unit specs sit beside their source)
+│   ├── test/                   # e2e specs + the in-memory MongoDB globalSetup
+│   ├── .env.example            # every key the api reads; copy to .env (gitignored)
 │   └── nest-cli.json, package.json, tsconfig.json
 └── packages/shared/            # types + zod schemas used by both sides
-    ├── src/index.ts
-    └── package.json, tsconfig.json
+    ├── src/index.ts            # barrel; src/identity/ holds the auth schemas + permissions
+    ├── dist/                   # built output (gitignored) — what api/ imports
+    └── package.json, tsconfig.json, tsconfig.build.json
 ```
 
 Two things are absent from that tree on purpose.
@@ -85,27 +93,19 @@ in a monorepo than across repositories — the services keep importing one defin
 instead of each drifting from its own copy. The symlink is the only thing a split has to resolve,
 and the answer is either publishing `packages/shared` or bundling it at build time.
 
-#### Untested: `packages/shared` ships raw TypeScript
+#### `packages/shared` builds to `dist/`; the two consumers read it differently
 
-`packages/shared` declares `"main": "./src/index.ts"` — source, not build output. Metro compiles
-TypeScript from anywhere, so `mobile/` is fine. **`api/` may not be.** Nest builds with `tsc`, and
-TypeScript by default refuses to compile files outside its `rootDir`, so `nest build` can fail the
-first time a Nest module imports `@farm-pool/shared`.
+Settled 18 September 2026 at the first real shared import (FARM-33). The package's `main` and
+`types` point at `dist/`, built by `tsc -p tsconfig.build.json` (CommonJS + declarations); its
+`react-native` field points at `src/index.ts`, which Metro prefers, so the app keeps hot-reloading
+source. This was option (1) of the two considered — a build step rather than `tsconfig` `paths`
+in `api/` — because a built package still works if the repo is ever split, and a `paths` entry
+into a directory that no longer exists does not.
 
-**This has not been tested.** No shared import exists in `api/` yet, so nothing has exercised it.
-Treat the current setup as unproven on the backend side, not as known-good.
-
-If it fails, two fixes:
-
-1. **Give `packages/shared` a build step** emitting `dist/` with declarations, and point `main` and
-   `types` at it.
-2. **Add `paths` and project `references`** to `api/tsconfig.json`.
-
-Prefer (1). It is the more durable of the two, and it is the one that keeps working if the repo is
-ever split — a consumer in another repository can use a built package, but cannot follow a
-`tsconfig` path into a directory that is no longer there.
-
-`.plans/VERIFY.md` carries the check that settles this.
+The cost is the one to remember: **after editing `packages/shared/src`, rebuild before touching
+`api/`** (`npm run build -w @farm-pool/shared`; a root `npm install` also does it via `prepare`).
+A stale `dist/` is a type error in the api that points at the wrong place. `mobile/` never sees
+this because it reads source.
 
 ### `api/` is NestJS, one module per domain, light DDD inside
 
@@ -132,18 +132,25 @@ Inside each domain, **light DDD** — three layers:
 - **`domain/`** — `entities/`, `value-objects/`, `repositories/`. The last holds *interfaces only*
   ("something that can store an order"). No NestJS, no database code. This is the layer that must
   never know which database was chosen.
-- **`application/`** — `services/` (use-cases that orchestrate the domain) and `dto/` (request and
-  response shapes).
-- **`infrastructure/`** — `repositories/`: the real implementations of the `domain/` interfaces.
+- **`application/`** — `services/` (use-cases that orchestrate the domain), `ports/` (the
+  interfaces a use-case needs that are not repositories — a password hasher, a token signer) and
+  `errors.ts` (what the use-cases can refuse, as stable codes). Request and response shapes are
+  the zod schemas in `packages/shared`, not DTO classes — a second definition here is the drift
+  the shared package exists to prevent.
+- **`infrastructure/`** — `persistence/` (the Mongoose schema and repository, plus an in-memory
+  repository for tests) and whatever other adapters the ports need (`security/` in identity).
 
 The `<domain>.module.ts` binds each interface to its implementation and registers the controller.
-The controller is thin — it calls an application service and returns the result.
+Use-cases are built with `useFactory` so they stay plain classes; the controller is thin — it
+validates with `ZodValidationPipe(schema)`, calls a use-case and returns the result.
 
-**No database, on purpose.** Persistence is open (`DECISIONS.md`, question 1). There is no ORM, no
-`schemas/` folder, no database package anywhere under `api/src/<domain>/`. A first repository
-implementation can be in-memory; swapping in the real store later is one file in
-`infrastructure/repositories/`, because `domain/` only ever imports the interface. This is the
-main reason light DDD was chosen over flat Nest modules.
+**The database is MongoDB via Mongoose** (`DECISIONS.md`, settled 18 September 2026). The
+connection is opened once in `src/database/`; each domain registers its own collection with
+`MongooseModule.forFeature` in its module. `domain/` and `application/` never import `mongoose`
+or `@nestjs/*` — ESLint rejects it — so swapping a store is still one file in `infrastructure/`,
+and the unit tests run against the in-memory repository with no database at all. This is the
+main reason light DDD was chosen over flat Nest modules, and it is now enforced rather than
+hoped for. `identity` is the worked example; `catalog` is next.
 
 `shared/kernel/` holds base classes reused across domains (a base `Entity`, a `Result` type). It is
 not a module — just types and helpers. Put something there only once a second domain needs it.

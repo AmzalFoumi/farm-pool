@@ -15,8 +15,8 @@ A monorepo with npm workspaces:
 | Directory | What |
 | --------- | ---- |
 | `mobile/` | Expo (React Native), managed workflow — the app. UI is **gluestack-ui v5** components styled by **UniWind** (Tailwind v4 `className` on React Native), over the FarmPool design system in `mobile/src/styles/` |
-| `api/` | The backend. **Framework not yet chosen** — see `.plans/DECISIONS.md` |
-| `packages/shared/` | Types and zod schemas imported by both sides |
+| `api/` | The backend: **NestJS 11 + MongoDB (Mongoose)**, light-DDD domains. Auth is phone + password with a JWT and a shared role matrix — read `.plans/auth/README.md` before touching an endpoint or a guard |
+| `packages/shared/` | Types and zod schemas imported by both sides. Builds to `dist/` for the api; rebuild it after editing (`npm run build -w @farm-pool/shared`) |
 
 What the app is functionally meant to do, for whom, and why: **`.plans/PRODUCT.md`**. This is
 synthesized from research notes and prior lab submissions, not a signed-off spec — treat it as the
@@ -25,6 +25,7 @@ elsewhere (`.plans/DECISIONS.md`, Jira), the other source wins.
 Full layout and the reasoning behind it: **`.plans/STRUCTURE.md`**.
 Stack decisions and what is still open: **`.plans/DECISIONS.md`**.
 How to check things work: **`.plans/VERIFY.md`**.
+How sign-up, login, tokens and roles work, and how to protect a route: **`.plans/auth/README.md`**.
 How to build UI: **the "Building UI" section below** — read it before writing any screen or component.
 
 Read `.plans/DECISIONS.md` before choosing a library, a framework, or a pattern. Several questions

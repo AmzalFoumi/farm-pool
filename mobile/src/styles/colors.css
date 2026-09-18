@@ -51,6 +51,9 @@
   --color-river-50: #e6f1fb;
   --color-river-200: #bfe3f5;
   --color-river-500: #4fa9d6;
+  --color-river-900: #1b4a63; /* derived, not in the palette: the coordinator
+     persona tile (sign-up flow) needs an ink that reads on river-50 the way
+     lilac-900 reads on lilac-50. About 9:1 on #E6F1FB. */
 
   /* Neutrals. Only the three the Figma palette names, plus ink.
      Everything else neutral is expressed semantically below. */
@@ -128,9 +131,14 @@
       --tertiary-foreground: 255 255 255;
 
       /* Persona tints — the role picker (node 196:5575). Farmer reuses
-         `secondary`; these two complete the set. */
+         `secondary`, delivery uses `brand-deep`; these complete the set of
+         four. Coordinator is river because that is the ramp the palette
+         gives to "routes and notices" — the coordinator's territory — and it
+         is the one hue no other tile or status button on that screen uses. */
       --persona-buyer: 239 230 243; /* #EFE6F3 */
       --persona-buyer-foreground: 61 33 73; /* #3D2149 */
+      --persona-coordinator: 230 241 251; /* river-50 */
+      --persona-coordinator-foreground: 27 74 99; /* river-900 */
 
       /* Lines */
       --border: 226 224 220; /* #E2E0DC — warm hairline. Visible on both the
@@ -192,6 +200,8 @@
 
       --persona-buyer: 52 38 60;
       --persona-buyer-foreground: 225 205 235;
+      --persona-coordinator: 27 44 56;
+      --persona-coordinator-foreground: 191 227 245; /* river-200 */
 
       --border: 40 56 48;
       --input: 40 56 48;
@@ -241,6 +251,8 @@
   --color-brand-deep-muted: rgb(var(--brand-deep-muted));
   --color-persona-buyer: rgb(var(--persona-buyer));
   --color-persona-buyer-foreground: rgb(var(--persona-buyer-foreground));
+  --color-persona-coordinator: rgb(var(--persona-coordinator));
+  --color-persona-coordinator-foreground: rgb(var(--persona-coordinator-foreground));
 
   --color-border: rgb(var(--border));
   --color-input: rgb(var(--input));

@@ -11,6 +11,7 @@ import { Uniwind } from "uniwind";
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "@/global.css";
+import { AuthProvider, useAuth } from "@/providers/auth-provider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -38,27 +39,59 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <GluestackUIProvider mode={colorScheme === "dark" ? "dark" : "light"}>
           <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-            <AnimatedSplashOverlay />
-            {/* Onboarding is the root stack, so `index` (the welcome screen) is
-                what a cold start lands on. The tab shell lives one level in, at
-                `(tabs)`, and is reached by replacing the route once a role has
-                been picked — replace, not push, so the hardware back button
-                does not walk the user back into sign-up.
-
-                Headers are off throughout: both onboarding screens draw their
-                own app bar, which is the only way to match the design's
-                50px bordered back button and Poppins title. */}
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="sign-up-as" />
-              <Stack.Screen name="(tabs)" />
-              {/* Listing detail sits in the root stack, not in `(tabs)`: the
-                  design gives it no tab bar, and it is pushed over the shell. */}
-              <Stack.Screen name="listing/[id]" />
-            </Stack>
+            <AuthProvider>
+              <RootNavigator />
+            </AuthProvider>
           </ThemeProvider>
         </GluestackUIProvider>
       </GestureHandlerRootView>
     </SafeAreaListener>
+  );
+}
+
+/** Split out so it can read the auth state the provider above owns. */
+function RootNavigator() {
+  const auth = useAuth();
+
+  /* Same reasoning as the fonts: while the saved session is being checked
+     against the api, the native splash stays up rather than flashing the
+     welcome screen at someone who is about to land on /home. This never
+     hangs — see `auth-provider.tsx`. */
+  if (auth.status === "loading") return null;
+  const signedIn = auth.status === "signed-in";
+
+  return (
+    <>
+      <AnimatedSplashOverlay />
+      {/* Onboarding is the root stack, so `index` (the welcome screen) is
+          what a cold start lands on when nobody is signed in. The tab shell
+          lives one level in, at `(tabs)`.
+
+          `Stack.Protected` does the routing an auth check used to need
+          `router.replace` for: with `signedIn` false the app screens are not
+          reachable (a deep link falls back to `index`); when it flips to true
+          the onboarding screens are removed from history, so Android's back
+          button cannot walk a signed-in user back into sign-up. Signing out
+          flips it the other way and the shell unmounts.
+
+          Headers are off throughout: every screen draws its own app bar,
+          which is the only way to match the design's bordered back button
+          and Poppins title. */}
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Protected guard={!signedIn}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="sign-up-as" />
+          <Stack.Screen name="sign-up" />
+          <Stack.Screen name="log-in" />
+        </Stack.Protected>
+
+        <Stack.Protected guard={signedIn}>
+          <Stack.Screen name="(tabs)" />
+          {/* Listing detail sits in the root stack, not in `(tabs)`: the
+              design gives it no tab bar, and it is pushed over the shell. */}
+          <Stack.Screen name="listing/[id]" />
+        </Stack.Protected>
+      </Stack>
+    </>
   );
 }
