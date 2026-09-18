@@ -26,3 +26,4 @@ export * from "./catalog/listing";
 export * from "./catalog/wanted";
 export * from "./orders/order";
 export * from "./coordination/cooperative";
+export * from "./coordination/dashboard";
