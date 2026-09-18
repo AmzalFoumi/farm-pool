@@ -90,6 +90,12 @@ function RootNavigator() {
           {/* Listing detail sits in the root stack, not in `(tabs)`: the
               design gives it no tab bar, and it is pushed over the shell. */}
           <Stack.Screen name="listing/[id]" />
+          {/* Orders and crop requests are reached from Home cards, not tabs,
+              until the tab set is settled per role. */}
+          <Stack.Screen name="orders/index" />
+          <Stack.Screen name="orders/[id]" />
+          <Stack.Screen name="wanted/index" />
+          <Stack.Screen name="wanted/new" />
         </Stack.Protected>
       </Stack>
     </>

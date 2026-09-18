@@ -1,12 +1,12 @@
 /**
- * Buyer home — wireframe frame 1. Replaces the stock Expo template screen.
+ * Buyer home — wireframe frame 1.
  *
- * Every number on it is static: there are no orders, no saved farmers and no
- * "near you" until there is a backend. The greeting is fixed copy rather than
- * time-aware, exactly as the wireframe draws it.
+ * Greets the signed-in user and offers the three things a buyer does: browse listings, see
+ * their orders, see their crop requests. Counts and "near you" wait for a location and a
+ * dashboard endpoint; nothing here is invented.
  */
 
-import { useRouter } from "expo-router";
+import { useRouter, type Href } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -15,21 +15,23 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { useAuth } from "@/providers/auth-provider";
 
-const STATS = [
-  { label: "Active orders", value: "3" },
-  { label: "Saved farmers", value: "12" }
-] as const;
-
-/* Chips only. Category filtering needs a category on the listing, which the
-   fixtures do not carry and the wireframe does not show — so these select
-   nothing rather than inventing a field. Same reasoning as the date chips on
-   the listings screen. */
-const CATEGORIES = ["Vegetables", "Fruits", "Grains", "Spices"] as const;
+const CARDS: { title: string; note: string; href: Href }[] = [
+  {
+    title: "Browse today’s listings",
+    note: "Verified produce, priced per kilo",
+    href: "/listings"
+  },
+  { title: "My orders", note: "Requests you have sent to farmers", href: "/orders" },
+  { title: "My requests", note: "Crops you are looking for", href: "/wanted" }
+];
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth();
+  const name = user?.displayName.trim() ?? "";
 
   return (
     <View className="flex-1 bg-background">
@@ -39,54 +41,30 @@ export default function HomeScreen() {
       >
         <HStack className="items-center justify-between">
           <VStack className="gap-1">
-            <Text className="type-h3 text-brand-deep-foreground">Good morning</Text>
-            <Text className="type-caption text-brand-deep-muted">Dambulla Traders</Text>
+            <Text className="type-h3 text-brand-deep-foreground">
+              Hello{name ? `, ${name}` : ""}
+            </Text>
+            <Text className="type-caption text-brand-deep-muted">Buyer</Text>
           </VStack>
           <Box className="h-11 w-11 items-center justify-center rounded-pill bg-card">
-            <Text className="type-h4 text-brand-deep">D</Text>
+            <Text className="type-h4 text-brand-deep">{name.charAt(0).toUpperCase() || "?"}</Text>
           </Box>
         </HStack>
       </VStack>
 
-      <ScrollView contentContainerClassName="gap-4 p-gutter">
-        <HStack className="gap-3">
-          {STATS.map(({ label, value }) => (
-            <VStack
-              key={label}
-              className="elevation-card flex-1 gap-1 rounded-card border border-border bg-card p-4"
-            >
-              <Text className="type-caption text-muted-foreground">{label}</Text>
-              <Text className="type-h1 text-foreground">{value}</Text>
-            </VStack>
-          ))}
-        </HStack>
-
-        <Box className="rounded-card bg-secondary px-4 py-3">
-          <Text className="type-body text-secondary-foreground">3 new listings today near you</Text>
-        </Box>
-
-        <VStack className="gap-2">
-          <Text className="type-body-bold text-foreground">Browse by category</Text>
-          <HStack className="flex-wrap gap-2">
-            {CATEGORIES.map((category) => (
-              <Box key={category} className="rounded-chip border border-border bg-card px-4 py-2.5">
-                <Text className="type-body-sm-bold text-muted-foreground">{category}</Text>
-              </Box>
-            ))}
-          </HStack>
-        </VStack>
-
-        <Pressable
-          onPress={() => router.push("/listings")}
-          accessibilityRole="button"
-          accessibilityLabel="Browse today's listings"
-          className="elevation-card min-h-tap justify-center rounded-card border border-border bg-card p-4 active:opacity-80"
-        >
-          <Text className="type-h4 text-foreground">Browse today’s listings</Text>
-          <Text className="type-caption mt-1 text-muted-foreground">
-            Six farmers posting within 50 km
-          </Text>
-        </Pressable>
+      <ScrollView contentContainerClassName="gap-3 p-gutter">
+        {CARDS.map(({ title, note, href }) => (
+          <Pressable
+            key={title}
+            onPress={() => router.push(href)}
+            accessibilityRole="button"
+            accessibilityLabel={title}
+            className="elevation-card min-h-tap justify-center rounded-card border border-border bg-card p-4 active:opacity-80"
+          >
+            <Text className="type-h4 text-foreground">{title}</Text>
+            <Text className="type-caption mt-1 text-muted-foreground">{note}</Text>
+          </Pressable>
+        ))}
       </ScrollView>
     </View>
   );
