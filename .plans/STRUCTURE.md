@@ -183,7 +183,7 @@ Request validation uses the zod schemas in `packages/shared`, **not** Nest's `Va
 
 ### `mobile/src/app/` is expo-router
 
-File-based routing: a file at `src/app/listings/[id].tsx` becomes the route `/listings/:id`. Two
+File-based routing: a file at `src/app/listing/[id].tsx` becomes the route `/listing/:id`. Two
 conventions that look like typos but are not:
 
 - **`(tabs)/`** — parentheses make a *route group*. It organises files without contributing a URL
