@@ -228,6 +228,12 @@ Added when the screens needed them, each a recurring role rather than a one-off:
 (40/44), `type-title` (20/25, app-bar titles), `type-caption` (14/20), `--radius-chip`/`-tile`/
 `-sheet`, `--spacing-control` 58px, and the `lilac` ramp for the wholesale-buyer persona tile.
 
+Added 18 September 2026 (FARM-34), when the sign-up flow grew to all four roles:
+`persona-coordinator` (river-50 tint, with a derived `river-900` ink, since the palette gives river
+no dark step) for the coordinator's card — the one hue on that screen no other tile or status uses.
+Its glyph is the vendored gluestack `GlobeIcon`, recoloured through the token, because Figma has
+no coordinator export; a brand glyph should replace it when the design catches up (open question 1).
+
 **Accepted cost:** `gluestack-ui init` replaces `src/global.css` wholesale on the UniWind path, so
 re-running the CLI drops the three `@import` lines. The token files themselves survive, and the
 header comment in `global.css` says what to restore.

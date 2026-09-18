@@ -81,6 +81,8 @@ function RootNavigator() {
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="index" />
           <Stack.Screen name="sign-up-as" />
+          <Stack.Screen name="sign-up" />
+          <Stack.Screen name="log-in" />
         </Stack.Protected>
 
         <Stack.Protected guard={signedIn}>

@@ -7,16 +7,23 @@
  * selected, so that is the initial state here and the footer button is disabled
  * until a role is picked. Its label is templated — Figma's "Continue as
  * delivery partner" is that template filled in with the mock's selection.
+ *
+ * All four roles are offered (decided 18 September 2026 — `.plans/auth/README.md`).
+ * The Figma frame predates that and draws three; the coordinator card follows
+ * the same anatomy with its own persona tint. Each role's onboarding after the
+ * account exists belongs to the developer owning that role — this screen and
+ * `sign-up.tsx` only get the account created and the session started.
  */
 
+import type { Role } from "@farm-pool/shared";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AppBar } from "@/components/app/app-bar";
 import { AppButton } from "@/components/app/app-button";
 import {
-  BackIcon,
   BuyerIcon,
   CheckIcon,
   ChevronIcon,
@@ -24,20 +31,34 @@ import {
   FarmerIcon
 } from "@/components/app/icons";
 import { Box } from "@/components/ui/box";
-import { HStack } from "@/components/ui/hstack";
+import { GlobeIcon, Icon } from "@/components/ui/icon";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 
-/** The three personas from `.plans/DECISIONS.md`. Coordinator is absent on
- *  purpose: a coordinator is assigned, not self-selected at sign-up. */
-const ROLES = [
+type RoleOption = {
+  /** The shared `Role` this card creates. The label is what people call it. */
+  id: Role;
+  title: string;
+  description: string;
+  /** Tile colour per persona. See `src/styles/colors.css`. */
+  tile: string;
+  selectedLabel: string;
+  Icon: (props: { size?: number }) => React.JSX.Element;
+};
+
+/** Coordinator has no Figma export; the vendored gluestack glyph is recoloured
+ *  through the persona token rather than redrawn. Recorded in DECISIONS
+ *  (open question 1, iconography). */
+const CoordinatorIcon = () => (
+  <Icon as={GlobeIcon} className="h-7 w-7 text-persona-coordinator-foreground" />
+);
+
+const ROLES: readonly RoleOption[] = [
   {
     id: "farmer",
     title: "Farmer",
     description: "I grow produce and want to sell it",
-    /** Tile colour per persona. Farmer reuses `secondary`; the other two have
-     *  their own tokens. See `src/styles/colors.css`. */
     tile: "bg-secondary",
     selectedLabel: "farmer",
     Icon: FarmerIcon
@@ -51,41 +72,33 @@ const ROLES = [
     Icon: BuyerIcon
   },
   {
-    id: "delivery",
+    id: "coordinator",
+    title: "Area coordinator",
+    description: "I organise farmers in my area and check their produce",
+    tile: "bg-persona-coordinator",
+    selectedLabel: "coordinator",
+    Icon: CoordinatorIcon
+  },
+  {
+    id: "logistics",
     title: "Delivery partner",
     description: "I collect produce and drive it to buyers",
     tile: "bg-brand-deep",
     selectedLabel: "delivery partner",
     Icon: DeliveryIcon
   }
-] as const;
-
-type RoleId = (typeof ROLES)[number]["id"];
+];
 
 export default function SignUpAsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [selected, setSelected] = useState<RoleId | null>(null);
+  const [selected, setSelected] = useState<Role | null>(null);
 
   const selectedRole = ROLES.find((role) => role.id === selected);
 
   return (
     <View className="flex-1 bg-background">
-      {/* ── App bar ──────────────────────────────────────────────────── */}
-      <HStack
-        className="items-center gap-3 border-b border-border bg-card px-4 pb-4"
-        style={{ paddingTop: insets.top + 16 }}
-      >
-        <Pressable
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-          className="h-tap w-tap items-center justify-center rounded-pill border border-border"
-        >
-          <BackIcon />
-        </Pressable>
-        <Text className="type-title text-foreground">Sign up as</Text>
-      </HStack>
+      <AppBar title="Sign up as" />
 
       {/* ── Roles ────────────────────────────────────────────────────── */}
       <VStack className="flex-1 px-4">
@@ -94,7 +107,7 @@ export default function SignUpAsScreen() {
         </Text>
 
         <VStack className="mt-4 gap-3" accessibilityRole="radiogroup">
-          {ROLES.map(({ id, title, description, tile, Icon }) => {
+          {ROLES.map(({ id, title, description, tile, Icon: RoleIcon }) => {
             const isSelected = selected === id;
             return (
               <Pressable
@@ -114,7 +127,7 @@ export default function SignUpAsScreen() {
                 ].join(" ")}
               >
                 <Box className={`h-13 w-13 items-center justify-center rounded-card ${tile}`}>
-                  <Icon />
+                  <RoleIcon />
                 </Box>
 
                 <VStack className="flex-1 gap-1.5">
@@ -149,7 +162,11 @@ export default function SignUpAsScreen() {
         <AppButton
           label={selectedRole ? `Continue as ${selectedRole.selectedLabel}` : "Continue"}
           disabled={!selectedRole}
-          onPress={() => router.replace("/home")}
+          /* push, not replace: the back button on the form should return
+             here so a wrong tap on a role is one step to undo. */
+          onPress={() =>
+            selectedRole && router.push({ pathname: "/sign-up", params: { role: selectedRole.id } })
+          }
         />
       </View>
     </View>

@@ -92,10 +92,12 @@ export default function WelcomeScreen() {
 
         <AppButton label="Sign up" icon={<PlusIcon />} onPress={() => router.push("/sign-up-as")} />
 
-        {/* TODO(FARM-?): no log-in screen exists yet, so this is inert. It is
-            left visible because the design shows it and removing it would make
-            the screen read as sign-up-only, which is not the intent. */}
-        <AppButton label="Log in" variant="outline" icon={<LoginIcon />} />
+        <AppButton
+          label="Log in"
+          variant="outline"
+          icon={<LoginIcon />}
+          onPress={() => router.push("/log-in")}
+        />
 
         <HStack className="mt-0.5 items-center gap-2.5">
           <MailIcon />
