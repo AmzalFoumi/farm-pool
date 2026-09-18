@@ -11,12 +11,17 @@
  * After editing anything here, rebuild before touching `api/`: the api compiles against `dist/`,
  * and a stale `dist/` is a type error that points at the wrong place.
  *
- * The identity schemas are the first real occupants: the mobile forms validate against the same
+ * The identity schemas were the first occupants: the mobile forms validate against the same
  * `registerSchema` / `loginSchema` the api validates request bodies with, which is the whole
- * reason this package exists.
+ * reason this package exists. `catalog/` and `orders/` follow the same rule — a listing, a wanted
+ * request and an order are each one zod object read by the api's controllers and the app's screens.
  */
 export * from "./identity/role";
 export * from "./identity/phone";
 export * from "./identity/auth";
 export * from "./identity/jwt";
 export * from "./identity/permissions";
+export * from "./catalog/crops";
+export * from "./catalog/listing";
+export * from "./catalog/wanted";
+export * from "./orders/order";

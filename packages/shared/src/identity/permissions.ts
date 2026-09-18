@@ -18,7 +18,11 @@ export const actionSchema = z.enum([
   "listing:read",
   "listing:create",
   "order:place",
+  "order:read-own",
+  "order:cancel",
   "order:accept",
+  "wanted:read",
+  "wanted:create",
   "delivery:accept",
   "users:list",
   "farmers:approve"
@@ -31,7 +35,13 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   "listing:read": ROLES,
   "listing:create": ["farmer"],
   "order:place": ["buyer"],
+  // Any role may ask for an order; the use-case then checks the caller is its buyer or farmer.
+  "order:read-own": ROLES,
+  "order:cancel": ["buyer"],
   "order:accept": ["farmer"],
+  // Farmers read requests to answer them later; coordinators see their region's demand.
+  "wanted:read": ROLES,
+  "wanted:create": ["buyer"],
   "delivery:accept": ["logistics"],
   // The coordinator is the trust checkpoint (`.plans/PRODUCT.md`); only they see everyone.
   "users:list": ["coordinator"],

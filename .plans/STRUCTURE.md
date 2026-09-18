@@ -35,8 +35,8 @@ farm-pool/
 │   │   ├── config/             # env.ts (zod schema of the environment) + the Nest ConfigModule
 │   │   ├── database/           # the one Mongoose connection, from DATABASE_URI
 │   │   ├── shared/
-│   │   │   ├── kernel/         # base classes reused across domains (no module)
-│   │   │   └── http/           # ZodValidationPipe — shared schemas as request validation
+│   │   │   ├── kernel/         # DomainError — the one error shape a use-case throws (no module)
+│   │   │   └── http/           # ZodValidationPipe, DomainErrorFilter (kind → HTTP status)
 │   │   └── <domain>/           # one per business capability, not per persona:
 │   │       │                   #   identity, catalog, orders, logistics, coordination
 │   │       ├── domain/         # entities, value-objects, repository INTERFACES — pure rules
@@ -45,11 +45,13 @@ farm-pool/
 │   │       ├── auth/           # identity only: guards + decorators other domains import
 │   │       ├── <domain>.controller.ts
 │   │       └── <domain>.module.ts
+│   ├── src/cli/                # seed-listings.ts — temporary dev seed (npm run seed:listings)
 │   ├── test/                   # e2e specs + the in-memory MongoDB globalSetup
 │   ├── .env.example            # every key the api reads; copy to .env (gitignored)
 │   └── nest-cli.json, package.json, tsconfig.json
 └── packages/shared/            # types + zod schemas used by both sides
-    ├── src/index.ts            # barrel; src/identity/ holds the auth schemas + permissions
+    ├── src/index.ts            # barrel; identity/ (auth, permissions), catalog/ (crops, listing,
+    │                           #   wanted), orders/ (order) — one folder per api domain
     ├── dist/                   # built output (gitignored) — what api/ imports
     └── package.json, tsconfig.json, tsconfig.build.json
 ```
@@ -115,8 +117,8 @@ beside it as siblings and are listed in its `imports`:
 | Domain | Owns |
 | ------ | ---- |
 | `identity` | accounts, the four roles, permissions, verification |
-| `catalog` | produce listings: crop, quantity, price, location, photos |
-| `orders` | deals: quantity, agreed price, status from offer to accepted to fulfilled to paid |
+| `catalog` | produce listings (crop, quantity, price, district, minimum order) and buyer wanted requests |
+| `orders` | one buyer, one farmer, one listing: quantity, price snapshot, status from `requested` onward |
 | `logistics` | pickup, routing, maps, delivery tracking |
 | `coordination` | farmer groups / cooperatives, the aggregated supply a coordinator represents |
 
@@ -150,10 +152,11 @@ connection is opened once in `src/database/`; each domain registers its own coll
 or `@nestjs/*` — ESLint rejects it — so swapping a store is still one file in `infrastructure/`,
 and the unit tests run against the in-memory repository with no database at all. This is the
 main reason light DDD was chosen over flat Nest modules, and it is now enforced rather than
-hoped for. `identity` is the worked example; `catalog` is next.
+hoped for. `identity` is the worked example; `catalog` and `orders` follow it, each with a README.
 
-`shared/kernel/` holds base classes reused across domains (a base `Entity`, a `Result` type). It is
-not a module — just types and helpers. Put something there only once a second domain needs it.
+`shared/kernel/` holds what two or more domains need: today `DomainError`, the one error class a
+use-case throws (`kind` + stable `code`), mapped to HTTP once by `shared/http/domain-error.filter.ts`.
+It is not a module — just types and helpers. Put something there only once a second domain needs it.
 
 Request validation uses the zod schemas in `packages/shared`, **not** Nest's `ValidationPipe` with
 `class-validator`. A second definition alongside the shared one recreates exactly the drift
