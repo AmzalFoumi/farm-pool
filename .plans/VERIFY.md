@@ -147,23 +147,66 @@ configuration where an older guide added it. Catches: the failure mode where cac
 from before the workspace existed survive an otherwise correct setup — and the much worse one where
 someone "fixes" it with obsolete config that then breaks the next person's build.
 
-**Shared types compile in `api/` — run this at the first shared import, not later**
+**Shared types compile in `api/`** — proven 18 September 2026 (FARM-33)
 
-`packages/shared` ships raw TypeScript (`"main": "./src/index.ts"`). Metro handles that; `tsc` may
-not, because TypeScript refuses by default to compile files outside its `rootDir`. Import the
-schema in a Nest module and build for real:
+`packages/shared` now builds to `dist/` (`main`/`types` point there; Metro still reads `src/`
+through the `react-native` field). The api imports it in the identity module and builds:
 
 ```
+npm run build --workspace @farm-pool/shared
 npm run build --workspace api
 ```
 
-`nest start` alone is not enough — `ts-node` is more forgiving than a production `tsc` build, so
-watch mode can pass while the thing you actually deploy fails.
+Catches, now: a stale `dist/`. The api compiles against the built output, so after editing
+anything in `packages/shared/src` rebuild it first, or the api reports a type error that points at
+the wrong place. A root `npm install` also rebuilds it (`prepare` script).
 
-Catches: a shared package that works all through development and breaks the first time anyone
-builds the backend for deployment — which, on this calendar, would be the week of the demo. If it
-fails, see `STRUCTURE.md`: give `packages/shared` a build step emitting `dist/`, rather than
-patching `api/tsconfig.json`.
+**Api environment is validated**
+
+```
+cd api && cp .env.example .env    # then leave DATABASE_URI empty
+npm run start:dev -w api
+```
+
+Must refuse to start with `Invalid environment. Fix these in api/.env` naming the key. Catches: a
+server that starts, accepts requests, and fails minutes later on the first database call.
+
+**Api tests need nothing installed**
+
+```
+npm test -w api          # unit: use-cases against the in-memory repository, hasher, signer, guard
+npm run test:e2e -w api  # boots a real MongoDB in memory (first run downloads ~100 MB, then cached)
+```
+
+Both must pass on a clean clone with no database running. If the e2e suite hangs for 30 s and
+logs `Unable to connect to the database. Retrying`, check `npm ls mongodb`: driver 7.6.0 breaks the
+handshake under Jest and `mongoose` must stay on `~9.9` until Automattic/mongoose#16499 closes.
+On a blocked network set `E2E_DATABASE_URI` to an existing database instead of the download.
+
+**Auth smoke check** — against `npm run start:dev -w api` with a real `.env`
+
+```
+curl -s -X POST localhost:3000/identity/register -H 'content-type: application/json' \
+  -d '{"displayName":"Nimal","phone":"0771234567","password":"longenough","role":"farmer"}'
+# → 201 {"token":"...","user":{...}}   (409 phone_taken on a second run — expected)
+
+curl -s -X POST localhost:3000/identity/login -H 'content-type: application/json' \
+  -d '{"identifier":"077 123 4567","password":"longenough"}'
+# → 200, same user; the spelling with spaces must still match
+
+TOKEN=<token from above>
+curl -s localhost:3000/identity/me -H "authorization: Bearer $TOKEN"     # → 200 the user
+curl -s localhost:3000/identity/me                                        # → 401 unauthorized
+curl -s localhost:3000/identity/users -H "authorization: Bearer $TOKEN"  # → 403 forbidden (farmer)
+```
+
+Register a second account with `"role":"coordinator"` and repeat the last call with its token:
+must be 200 with both users, and no `passwordHash` anywhere in the output. Catches: a guard
+registered but not global (the 401 would be a 200), the role matrix not wired (the 403 would be a
+200), the hash leaking through a response mapper.
+
+For the app: do the same from a physical device with `EXPO_PUBLIC_API_URL` set to the machine's
+LAN address, not `localhost`.
 
 ## CI
 
