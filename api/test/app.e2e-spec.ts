@@ -4,6 +4,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 
+// DATABASE_URI and JWT_SECRET come from test/mongo-global-setup.ts (see jest-e2e.json).
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 

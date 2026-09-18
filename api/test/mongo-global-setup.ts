@@ -1,0 +1,37 @@
+import { MongoMemoryServer } from 'mongodb-memory-server';
+
+/**
+ * Jest `globalSetup` for the e2e suite: a real MongoDB without asking anyone to install one.
+ *
+ * Runs once, in the parent process, before any test file is loaded. That timing matters:
+ * `ConfigModule.forRoot` validates the environment the moment `app.module.ts` is imported, so
+ * the keys must already be set — `beforeAll` inside a test file is too late.
+ *
+ * `mongodb-memory-server` downloads a MongoDB binary on first run (~100 MB, cached under
+ * node_modules/.cache) and starts it on a free port. On a slow or blocked network set
+ * `E2E_DATABASE_URI` to an existing database instead and the download is skipped — a spare
+ * Atlas database works, but the tests write to it.
+ *
+ * VERSION NOTE: `mongoose` is pinned to `~9.9` in api/package.json because the MongoDB driver
+ * 7.6.0 (pulled in by mongoose 9.10) fails its connection handshake under Jest with
+ * "Missing required sub-document 'driver' in the client metadata document" and then retries
+ * forever. Driver 7.5 works. Lift the pin once
+ * https://github.com/Automattic/mongoose/issues/16499 is resolved.
+ */
+declare global {
+  var __FARM_POOL_MONGO__: MongoMemoryServer | undefined;
+}
+
+export default async function setup(): Promise<void> {
+  process.env.NODE_ENV = 'test';
+  process.env.JWT_SECRET ??= 'test-secret-that-is-at-least-32-characters-long';
+
+  if (process.env.E2E_DATABASE_URI) {
+    process.env.DATABASE_URI = process.env.E2E_DATABASE_URI;
+    return;
+  }
+
+  const server = await MongoMemoryServer.create();
+  globalThis.__FARM_POOL_MONGO__ = server;
+  process.env.DATABASE_URI = server.getUri('farm-pool-test');
+}

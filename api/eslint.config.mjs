@@ -32,4 +32,25 @@ export default tseslint.config(
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
+  {
+    // The framework boundary, enforced. `domain/` and `application/` are plain TypeScript so
+    // the same use-cases can run under NestJS today or an Expo API route later (see
+    // .plans/auth/README.md). A `@nestjs/*` or `mongoose` import inside them would quietly
+    // undo that, so it is an error here rather than a convention in a README.
+    files: ['src/**/domain/**/*.ts', 'src/**/application/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@nestjs/*', 'mongoose', 'express'],
+              message:
+                'domain/ and application/ are framework-free. Put the adapter in infrastructure/ or the module root.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 );

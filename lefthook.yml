@@ -18,4 +18,7 @@ pre-commit:
 commit-msg:
   commands:
     commitlint:
-      run: npx commitlint --edit {1} --color
+      # Not `npx commitlint --edit {1}`: from a git worktree the message path is absolute, and a
+      # space in the checkout path split it into two arguments however it was quoted. The script
+      # asks git for the path and passes it as an array, so nothing re-parses it.
+      run: node scripts/commit-msg-lint.cjs
