@@ -31,6 +31,7 @@ export class MongooseListingRepository implements ListingRepository {
     const query: QueryFilter<ListingDocument> = { status: 'verified' };
     if (filter.crop) query.cropId = filter.crop;
     if (filter.district) query.districtKey = filter.district.toLowerCase();
+    if (filter.farmerIds) query.farmerId = { $in: filter.farmerIds };
     const docs = await this.listings
       .find(query)
       .sort({ createdAt: -1 })

@@ -20,6 +20,7 @@ export class InMemoryListingRepository implements ListingRepository {
       .filter((l) => l.status === 'verified')
       .filter((l) => !filter.crop || l.cropId === filter.crop)
       .filter((l) => !district || l.district.toLowerCase() === district)
+      .filter((l) => !filter.farmerIds || filter.farmerIds.includes(l.farmerId))
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, limit)
       .map(snapshot);

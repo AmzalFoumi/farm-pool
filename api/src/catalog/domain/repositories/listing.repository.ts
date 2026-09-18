@@ -5,6 +5,8 @@ export interface ListingFilter {
   crop?: CropId;
   /** Case-insensitive exact match on the district name. */
   district?: string;
+  /** Only listings whose `farmerId` is in this set. Added for `coordination`'s dashboard. */
+  farmerIds?: string[];
 }
 
 /**
