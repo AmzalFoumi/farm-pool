@@ -4,20 +4,19 @@
  * Define something here the moment a second workspace needs it — not before. A shared package with
  * one consumer is indirection for its own sake. See `.plans/STRUCTURE.md`.
  *
- * Deliberately minimal: the domain model waits on the persistence decision
- * (`.plans/DECISIONS.md`, open question 1). Roles are the one part already settled, because the
- * three-role split is what makes authentication a design question rather than a detail.
+ * HOW IT IS CONSUMED
+ * - `api/` and TypeScript resolve `main` / `types` → `dist/`, built by `npm run build` in this
+ *   package (also run automatically by `prepare` on a root `npm install`).
+ * - Metro resolves the `react-native` field → `src/`, so the app hot-reloads source.
+ * After editing anything here, rebuild before touching `api/`: the api compiles against `dist/`,
+ * and a stale `dist/` is a type error that points at the wrong place.
  *
- * UNTESTED ON THE BACKEND: this package ships raw TypeScript, which Metro compiles but `tsc` may
- * refuse (files outside `rootDir`). If `npm run build --workspace api` fails at your first import
- * here, do not patch api/tsconfig.json — give this package a `dist/` build step instead.
- * See `.plans/STRUCTURE.md` and the matching check in `.plans/VERIFY.md`.
+ * The identity schemas are the first real occupants: the mobile forms validate against the same
+ * `registerSchema` / `loginSchema` the api validates request bodies with, which is the whole
+ * reason this package exists.
  */
-import { z } from "zod";
-
-// The four personas. They are roles here, not backend modules — the `identity` domain in
-// `api/` owns them, and the other domains (catalog, orders, logistics, coordination) act
-// on behalf of whichever role is calling. See `.plans/STRUCTURE.md`.
-export const roleSchema = z.enum(["farmer", "buyer", "coordinator", "logistics"]);
-
-export type Role = z.infer<typeof roleSchema>;
+export * from "./identity/role";
+export * from "./identity/phone";
+export * from "./identity/auth";
+export * from "./identity/jwt";
+export * from "./identity/permissions";

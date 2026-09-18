@@ -1,0 +1,19 @@
+{
+  // Build config — emits `dist/` for consumers that resolve `main`/`types` (the api, and
+  // TypeScript itself when type-checking mobile). Metro ignores this and reads `src/` through the
+  // `react-native` field in package.json, so the app keeps hot-reloading source.
+  //
+  // `node16` rather than `commonjs` + `node10`: it emits CommonJS all the same (this package has
+  // no `"type": "module"`), and it is the setting that is not deprecated in TypeScript 6, which
+  // the mobile workspace already pulls in.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "module": "node16",
+    "moduleResolution": "node16",
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*.ts"]
+}
