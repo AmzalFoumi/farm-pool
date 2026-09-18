@@ -14,12 +14,12 @@ export const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'test', 'production'])
     .default('development'),
-  DATABASE_URI: z
-    .string()
-    .regex(
-      /^mongodb(\+srv)?:\/\//,
-      'must start with mongodb:// or mongodb+srv://',
-    ),
+  DATABASE_URI: z.string().regex(
+    // A scheme and a non-empty host. The driver rejects a bare `mongodb://` too, but only
+    // after its own retry loop; failing here names the key in the first second instead.
+    /^mongodb(\+srv)?:\/\/[^/?#\s]+/,
+    'must start with mongodb:// or mongodb+srv:// followed by a host',
+  ),
   JWT_SECRET: z.string().min(32, 'must be at least 32 characters'),
   JWT_EXPIRES_IN: z.string().min(1).default('30d'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),

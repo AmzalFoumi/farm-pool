@@ -45,6 +45,17 @@ describe('InMemoryUserRepository', () => {
     expect(await repo.findByEmail('BUYER@example.com')).toEqual(withEmail);
   });
 
+  it('returns copies, so editing a result does not change the stored user', async () => {
+    const repo = new InMemoryUserRepository();
+    const created = await repo.create(farmer);
+    created.displayName = 'Changed';
+    created.createdAt.setFullYear(2000);
+
+    const stored = await repo.findById(created.id);
+    expect(stored?.displayName).toBe('Nimal');
+    expect(stored?.createdAt.getFullYear()).not.toBe(2000);
+  });
+
   it('toPublicUser never includes the password hash', async () => {
     const repo = new InMemoryUserRepository();
     const user = await repo.create(farmer);
