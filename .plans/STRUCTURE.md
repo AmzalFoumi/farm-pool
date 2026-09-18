@@ -5,27 +5,45 @@ The monorepo layout and what each directory is for. Rules an agent must *follow*
 
 ```
 farm-pool/
-├── .gitignore, README.md, CLAUDE.md, AGENTS.md
+├── .gitignore, README.md, CLAUDE.md, AGENTS.md, GEMINI.md   # the last two point at CLAUDE.md
 ├── package.json                # npm workspaces root: mobile, api, packages/*
 ├── .claude/                    # shared agent config, committed
 ├── .plans/                     # committed: this file, DECISIONS.md, VERIFY.md, PRODUCT.md,
-│   └── auth/README.md          #   and one folder per cross-cutting design (auth first)
+│   ├── PLAYBOOK.md, DATA-MODEL.md  # how to add a domain / screen; what is in the database
+│   └── auth/                   #   one folder per cross-cutting design: README, PLAN, OPEN
 ├── .plans.local/               # gitignored — individual working records
 ├── CLAUDE.local.md             # gitignored — individual agent instructions
 ├── .github/
-│   ├── pull_request_template.md
-│   └── workflows/ci.yml
+│   ├── pull_request_template.md   # no CI workflow yet
+│   └── copilot-instructions.md    # points at CLAUDE.md
 ├── mobile/                     # Expo SDK 57, managed workflow
 │   ├── src/
-│   │   ├── app/                # expo-router — file-based routes
-│   │   │   ├── _layout.tsx     # root layout (navigation container)
-│   │   │   ├── (tabs)/         # route group: groups files without adding a URL segment
-│   │   │   └── +not-found.tsx  # the "+" prefix marks special routes
+│   │   ├── app/                # expo-router — file-based routes (see CLAUDE.md "Routing shape")
+│   │   │   ├── _layout.tsx     # root Stack: fonts, providers, Stack.Protected signed-out/in
+│   │   │   ├── index.tsx, sign-up-as.tsx, sign-up.tsx, log-in.tsx   # onboarding
+│   │   │   ├── (tabs)/         # route group: home, listings, map, calls, profile
+│   │   │   ├── listing/[id].tsx
+│   │   │   ├── orders/         # index.tsx, [id].tsx
+│   │   │   └── wanted/         # index.tsx, new.tsx
+│   │   ├── features/           # one folder per api domain the app talks to:
+│   │   │   ├── listings/       #   api.ts (fetch + zod parse) + that feature's presentational
+│   │   │   ├── orders/         #   pieces (listing-card, crop-tile, status-pill)
+│   │   │   └── wanted/
+│   │   ├── lib/                # cross-feature plumbing: api.ts (fetch wrapper, ApiError),
+│   │   │                       #   auth-api.ts, use-request.ts, format.ts, session-storage.ts
+│   │   ├── providers/          # auth-provider.tsx — session, token, role
 │   │   ├── components/
-│   │   ├── constants/
-│   │   └── hooks/
+│   │   │   ├── ui/             # gluestack-ui v5 components, vendored (ours to edit)
+│   │   │   ├── app/            # on-system shared pieces: AppButton, AppBar, AppTextField,
+│   │   │   │                   #   RequestView, PlaceholderScreen, icons
+│   │   │   └── app-tabs.tsx    # the native tab bar
+│   │   ├── styles/             # colors.css, typography.css, layout.css — the design tokens
+│   │   ├── global.css          # imports the three token files
+│   │   ├── constants/, hooks/, types/
 │   ├── assets/images/
 │   ├── app.json                # Expo config
+│   ├── metro.config.js         # UniWind only (cssEntryFile, dtsFile) — no monorepo config
+│   ├── .env.example            # EXPO_PUBLIC_API_URL; copy to .env (gitignored)
 │   ├── package.json, tsconfig.json
 │   └── .gitignore              # written by create-expo-app — merge, never replace
 ├── api/                        # NestJS + TypeScript
@@ -56,12 +74,13 @@ farm-pool/
     └── package.json, tsconfig.json, tsconfig.build.json
 ```
 
-Two things are absent from that tree on purpose.
+Two things about that tree are deliberate.
 
-**No `metro.config.js`.** Since SDK 52 `expo/metro-config` resolves workspace packages on its own,
-and the Expo docs now say to *delete* the monorepo config older guides told you to add. If a
+**`metro.config.js` carries no monorepo config.** It exists only because UniWind needs to know
+where `global.css` is. Since SDK 52 `expo/metro-config` resolves workspace packages on its own, and
+the Expo docs now say to *delete* the monorepo config older guides told you to add. If a
 `packages/shared` import type-checks but fails to resolve at runtime, clear the Metro cache —
-`npx expo start --clear` — rather than adding config back. `CLAUDE.md` carries this as a rule.
+`npx expo start --clear` — rather than adding config. `CLAUDE.md` carries this as a rule.
 
 **Routes live in `src/app/`, not `app/`.** This is the current `create-expo-app` default, and
 Expo's own resolver prefers it — `getRouterDirectory()` checks `src/app` before falling back to
@@ -164,18 +183,26 @@ Request validation uses the zod schemas in `packages/shared`, **not** Nest's `Va
 
 ### `mobile/src/app/` is expo-router
 
-File-based routing: a file at `src/app/listings/[id].tsx` becomes the route `/listings/:id`. Two
+File-based routing: a file at `src/app/listing/[id].tsx` becomes the route `/listing/:id`. Two
 conventions that look like typos but are not:
 
 - **`(tabs)/`** — parentheses make a *route group*. It organises files without contributing a URL
   segment, so `app/(tabs)/home.tsx` is `/home`, not `/(tabs)/home`.
-- **`+not-found.tsx`** — a leading `+` marks a special route rather than a normal screen.
+- **`+not-found.tsx`** — a leading `+` would mark a special route rather than a normal screen.
+  There is none here yet; expo-router falls back to its default.
+
+Beside `app/`, the app follows one convention: **`features/<domain>/`** holds the `api.ts` that
+talks to one api domain (a `fetch` plus `schema.parse` from `packages/shared`) and the
+presentational pieces only that feature uses; **`lib/`** holds what every feature shares
+(`api.ts` fetch wrapper, `use-request.ts`, `format.ts`); **`providers/`** holds React context.
+A screen in `app/` composes those and holds no fetch code of its own. Worked example: `orders/`.
+Recipe: `.plans/PLAYBOOK.md`.
 
 ### Planning is split three ways
 
 | Home | Committed | Holds |
 | ---- | --------- | ----- |
-| `CLAUDE.md`, `AGENTS.md` | yes | Rules an agent must follow, including commit and branch format |
+| `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md` | yes | Rules an agent must follow, including commit and branch format |
 | `.plans/` | yes | Decisions, structure, verification — the reasoning under those rules |
 | `.plans.local/`, `CLAUDE.local.md` | **no** | Individual working records and personal agent instructions |
 

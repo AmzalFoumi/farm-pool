@@ -11,7 +11,7 @@ import { Colors } from "@/constants/theme";
    on iOS, `md` a Material Symbol on Android. Both ship with the OS, so no PNG
    triples are needed and nothing here touches the FarmPool design system. When
    branded icons are exported from Figma, each `sf`/`md` pair becomes one
-   `src={require(...)}`. See `.plans/DECISIONS.md`, open question 3. */
+   `src={require(...)}`. See `.plans/DECISIONS.md`, open question 1. */
 export default function AppTabs() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === "unspecified" ? "light" : scheme];

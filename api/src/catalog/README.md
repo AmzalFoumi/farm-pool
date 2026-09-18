@@ -4,8 +4,9 @@
 price per kg, harvest date, pickup district, minimum order) and **wanted requests** a buyer posts
 (crop, quantity, needed-by date, district, optional ceiling price).
 
-Built in FARM-22 / FARM-36 from the buyer's side first. Farmer listing creation (FARM-21) and
-coordinator approval add use-cases here; they do not change the layout.
+Built in FARM-22 / FARM-36 from the buyer's side first. Farmer listing creation (the
+`listing:create` action is in the permission matrix; no endpoint yet — FARM-21) and coordinator
+approval add use-cases here; they do not change the layout. Recipe: `.plans/PLAYBOOK.md`.
 
 ## Layout (light DDD)
 
@@ -43,6 +44,38 @@ Errors are `{ code, message }` via `DomainErrorFilter` (`src/shared/http`), regi
 - **Dates are calendar strings** (`YYYY-MM-DD`), not `Date`, so a harvest date does not shift a
   day between Sri Lanka and UTC.
 - **`district` is matched case-insensitively** through a lower-cased `districtKey` field.
+
+## Flow
+
+`GET /catalog/listings?crop=&district=`, the read path every list screen copies:
+
+| Step | File | What happens |
+| ---- | ---- | ------------ |
+| 1 | `mobile/src/app/(tabs)/listings.tsx` | `useRequest(() => listingsApi.list(token), token)`; `RequestView` draws loading, error, empty. |
+| 2 | `mobile/src/features/listings/api.ts` | `apiFetch("/catalog/listings?…", { token, schema: listingListSchema })`. |
+| 3 | `identity/auth/*` | Token verified; `@Allow('listing:read')` passes for every role. |
+| 4 | `catalog.controller.ts` | `ZodValidationPipe(listingQuerySchema)` on the query string; calls `ListListings`. |
+| 5 | `application/services/list-listings.ts` | Asks the repository for `verified` listings matching the filter, newest first, max 50. |
+| 6 | `infrastructure/persistence/mongoose-listing.repository.ts` | Builds the Mongo query (`districtKey` for the district); `toListing` maps each document. |
+| 7 | `domain/entities/listing.ts` | `toListingDto` per row; 200 `Listing[]`. |
+| 8 | back in the app | The array is validated against `listingListSchema`; `ListingGridCard` renders each row. |
+
+`POST /catalog/wanted` and `POST /catalog/wanted/:id/close` are the write path: the same steps
+with `createWantedSchema` on the body, `@CurrentUser()` for the buyer id, and `CloseWanted`
+refusing with `not_your_request` (`forbidden`) or `wanted_already_closed` (`conflict`). On the
+app side `wanted/new.tsx` parses with the shared schema first, then `router.back()` and the list
+reloads on focus (`useReloadOnRefocus`).
+
+## Reuse points
+
+- **`LISTING_REPOSITORY`** is exported from `catalog.module.ts`; `orders` injects it to read the
+  listing an order is placed against. Farmer listing creation adds `create` to the same interface.
+- `CROPS`, `cropById`, `cropIdSchema` in `packages/shared/src/catalog/crops.ts`; `districtSchema`,
+  `kgSchema`, `pricePerKgSchema` in `listing.ts` are the field rules to reuse for any crop, kg or
+  price input anywhere.
+- App pieces: `CropTile`, `ListingGridCard`, `ListingListRow` in `mobile/src/features/listings/`.
+- Tests: `application/services/listings.spec.ts` and `wanted.spec.ts` (in-memory repositories),
+  `api/test/catalog.e2e-spec.ts`.
 
 ## Dev seed (temporary)
 

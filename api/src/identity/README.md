@@ -41,6 +41,33 @@ create(@CurrentUser() user: AuthenticatedUser, ...) { /* user.sub, user.role */ 
 No decorator at all means "any signed-in user". `@Public()` means "no token needed" — use it
 only for health checks and the two auth endpoints.
 
+## Flow
+
+Register and login are walked step by step in `.plans/auth/README.md`, "The flow". In short,
+for `POST /identity/register`:
+
+| Step | File | What happens |
+| ---- | ---- | ------------ |
+| 1 | `mobile/src/app/sign-up.tsx` | Parses the form with `registerSchema` (phone normalised to `+94…`), calls `auth.signUp(input)` from `providers/auth-provider.tsx`, which calls `authApi.register`. |
+| 2 | `mobile/src/lib/auth-api.ts` | `apiFetch("/identity/register", { method: "POST", body, schema: authResponseSchema })`. |
+| 3 | `identity.controller.ts` | `@Public()` (no token yet); `ZodValidationPipe(registerSchema)`; calls `RegisterUser`. |
+| 4 | `application/services/register-user.ts` | Refuses a taken phone (`phone_taken`); hashes with the `PasswordHasher` port; saves; signs a token with the `TokenSigner` port. |
+| 5 | `infrastructure/persistence/mongoose-user.repository.ts` | Writes the `users` document; `toUser` maps it back. |
+| 6 | `identity-error.filter.ts` | An `IdentityError` becomes 409 / 401 / 404 (this domain predates `DomainError` and keeps its own filter). |
+| 7 | back in the app | `AuthProvider` stores the token in SecureStore and flips `Stack.Protected`, which moves the user into the tab shell. |
+
+Every other endpoint in the api then starts at `JwtAuthGuard` → `RolesGuard` before its own
+controller runs; see the Flow sections in `catalog` and `orders`.
+
+## Reuse points
+
+- `@Allow(action)`, `@CurrentUser()`, `@Public()` from `auth/` (example above).
+- `AuthenticatedUser` (`auth/authenticated-request.ts`): what `@CurrentUser()` gives you,
+  `sub` and `role`.
+- The permission matrix and `can(role, action)` live in `packages/shared`, so a screen can hide a
+  button with the same table the guard enforces.
+- `InMemoryUserRepository` for any unit test that needs a user without a database.
+
 ## Persistence
 
 MongoDB via Mongoose (`.plans/DECISIONS.md`). The connection is opened once in

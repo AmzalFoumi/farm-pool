@@ -31,7 +31,7 @@ Split that way because the first half is a platform decision every later feature
 | AUTH-1 | shared | `dist/` build so `api/` can import shared; role, phone, register/login/user/token schemas; the permission matrix | done |
 | AUTH-2 | api | env validation, MongoDB via Mongoose, `User` entity, Mongoose and in-memory repositories | done |
 | AUTH-3 | api | scrypt hasher, HS256 signer, register/login/me/list use-cases, `JwtAuthGuard` + `RolesGuard`, endpoints, unit + e2e tests | done |
-| AUTH-4 | api, docs | coordinator seed script; `auth/README.md`; decisions recorded | done |
+| AUTH-4 | api, docs | `auth/README.md`; decisions recorded (coordinator remains a public sign-up path; whether to seed one instead is a later conversation — `OPEN.md`) | done |
 | AUTH-5 | mobile | SecureStore session, `apiFetch` client, `AuthProvider`, `Stack.Protected` route guard | done |
 | AUTH-6 | mobile | Log in and Sign up screens on the design system; Profile shows the account and logs out | done |
 
@@ -50,6 +50,6 @@ Recorded so the next reader does not assume the plan was followed to the letter.
 
 ## Verification that was run at the end
 
-`npm test -w api` (25 unit tests), `npm run test:e2e -w api` (12 e2e against
-`mongodb-memory-server`), `npx tsc --noEmit -p mobile`, and the manual click-through in
+At the end of FARM-34: `npm test -w api` (25 unit tests), `npm run test:e2e -w api` (12 e2e against
+`mongodb-memory-server`; the counts have grown since with catalog and orders), `npx tsc --noEmit -p mobile`, and the manual click-through in
 `../VERIFY.md` under "Auth smoke check".

@@ -20,7 +20,8 @@ Ways to close it, cheapest first:
    refuses coordinator-only actions while the status is not `active`; someone flips the status.
    Keeps the four sign-up paths. Roughly an hour with tests. **Recommended.**
 2. **Invite code** from an env variable, checked at register. Simple; a shared code leaks.
-3. **Remove coordinator from public sign-up**; provision through `seed:coordinator`. What the
+3. **Remove coordinator from public sign-up**; provision through a seed script (none exists yet;
+   `api/src/cli/seed-listings.ts` is the pattern). What the
    reviewer asked for; undoes the four-paths decision.
 
 Note for option 1: the role is baked into the token, so a status flip is only seen at next login
