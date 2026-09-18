@@ -11,13 +11,12 @@ import { accountStatusSchema, roleSchema } from "./role";
  * see `.plans/DECISIONS.md`. Email is reserved as a *later* credential: `publicUserSchema` already
  * carries an optional `email`, and `loginSchema` takes an `identifier` rather than a `phone` so
  * the email branch can be switched on without changing the request shape.
+ *
+ * ROLES: all four roles self-register (decided 18 Sep 2026). The sign-up flow shows four paths
+ * and each role's own onboarding is built on top by the developer owning that role. Vetting a
+ * new account (a farmer's produce, a coordinator's area) is the `status` field's job, not the
+ * register endpoint's — see `accountStatusSchema`.
  */
-
-/** A coordinator is assigned, not self-selected — the role picker never offers it, and the api
- *  refuses it on the public register endpoint. Coordinators are created by the seed script. */
-export const selfRegisterRoleSchema = roleSchema.exclude(["coordinator"]);
-
-export type SelfRegisterRole = z.infer<typeof selfRegisterRoleSchema>;
 
 export const displayNameSchema = z
   .string()
@@ -36,7 +35,7 @@ export const registerSchema = z.object({
   displayName: displayNameSchema,
   phone: phoneSchema,
   password: passwordSchema,
-  role: selfRegisterRoleSchema
+  role: roleSchema
 });
 
 /** What a form holds (phone as typed). */
@@ -71,3 +70,17 @@ export const authResponseSchema = z.object({
 });
 
 export type AuthResponse = z.infer<typeof authResponseSchema>;
+
+/**
+ * The error body every api endpoint returns when something is refused. `code` is stable and is
+ * what the app switches on; `message` is for logs and fallbacks, not for showing verbatim.
+ * `issues` is present only for `validation_error` and maps field paths to messages the form can
+ * show inline.
+ */
+export const apiErrorSchema = z.object({
+  code: z.string(),
+  message: z.string(),
+  issues: z.array(z.object({ path: z.string(), message: z.string() })).optional()
+});
+
+export type ApiErrorBody = z.infer<typeof apiErrorSchema>;
