@@ -361,6 +361,14 @@ are a trust checkpoint. Overruled: the sign-up flow shows four paths, and each r
 onboarding is built by the developer owning that role. Vetting is the `status` field's job
 (`pending_review` exists in the enum, and no guard enforces it yet — a follow-up story).
 
+**Flagged for discussion, prioritised (18 Sep 2026, CodeRabbit on PR #12).** A coordinator is not
+like the other three roles: the role carries powers over other people's data (`users:list` today,
+`farmers:approve` later), and public sign-up lets anyone pick it from a menu. Kept as-is for now so
+the four onboarding paths can be built in parallel. Decide before any deployment beyond the team:
+(a) a self-registered coordinator starts as `pending_review` and the guard refuses coordinator-only
+actions until the status is flipped (recommended: keeps the four paths, uses the field that already
+exists); (b) an invite code; (c) coordinators provisioned by the seed script only.
+
 **One 30-day access token, no refresh token, no server-side session.** The simplest thing that
 gives "stay signed in across restarts". Cost, stated plainly: a token cannot be revoked before it
 expires, and a role or status change is invisible until re-login. Both upgrade paths (refresh
