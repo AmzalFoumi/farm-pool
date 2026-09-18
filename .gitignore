@@ -67,3 +67,7 @@ CLAUDE.local.md
 # dist/ and node_modules/ are already covered above; these are what Nest adds on top.
 coverage/
 .nest/
+
+# Agent worktrees: each is a second checkout of this repo, with its own .git file, so a broad
+# `git add` from the main checkout would record a broken nested-repo pointer. Never committed.
+.claude/worktrees/
