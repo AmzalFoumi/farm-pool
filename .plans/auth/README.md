@@ -7,6 +7,9 @@ the four roles' onboarding.
 Decided 18 September 2026. The reasoning for the choices is in `DECISIONS.md`; this file is the
 *how it works*.
 
+Also in this folder: `PLAN.md` (the gated plan that built this, and where the result differs from
+it) and `OPEN.md` (what is still to be decided, most urgent first).
+
 ## The short version
 
 - **Credential:** phone number + password. No OTP, no SMS, no email verification yet. Email is
