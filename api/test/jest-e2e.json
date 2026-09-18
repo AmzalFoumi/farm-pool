@@ -5,5 +5,8 @@
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
-  }
+  },
+  "globalSetup": "./mongo-global-setup.ts",
+  "globalTeardown": "./mongo-global-teardown.ts",
+  "testTimeout": 30000
 }

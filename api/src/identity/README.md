@@ -6,18 +6,22 @@
 
 | Folder | Holds | Depends on |
 | ------ | ----- | ---------- |
-| `domain/` | `entities/`, `value-objects/`, and `repositories/` (**interfaces only** — "something that can store an identity record"). Pure business rules, no NestJS, no database code. | nothing |
-| `application/` | `services/` (use-cases that orchestrate the domain) and `dto/` (request/response shapes). | `domain/` |
-| `infrastructure/` | `repositories/` — the real implementations of the interfaces in `domain/repositories/`. | `domain/` |
+| `domain/` | `entities/` (`User`, `toPublicUser`), `value-objects/`, and `repositories/` (**interfaces only** — `UserRepository`, "something that can store an account"). Pure business rules, no NestJS, no database code. ESLint rejects a `@nestjs/*` or `mongoose` import here. | `packages/shared` |
+| `application/` | `services/` (use-cases that orchestrate the domain) and `dto/` (request/response shapes). Same framework-free rule as `domain/`. | `domain/` |
+| `infrastructure/` | `persistence/` — the Mongoose schema for the `users` collection, `MongooseUserRepository` (the real store) and `InMemoryUserRepository` (tests). | `domain/` |
 | `identity.controller.ts` | HTTP handlers. Thin: call an application service, return the result. | `application/` |
-| `identity.module.ts` | Binds the interface to its implementation and registers the controller. | all of the above |
+| `identity.module.ts` | Registers the `users` model, binds `USER_REPOSITORY` to the Mongoose implementation, registers the controller. | all of the above |
 
-## No database yet
+## Persistence
 
-Persistence is undecided — see `.plans/DECISIONS.md`, open question 1. Do **not** add an
-ORM, a `schemas/` folder, or a database package here. A first repository implementation can
-be in-memory; swapping in the real store later is one file in `infrastructure/repositories/`
-because `domain/` only ever sees the interface.
+MongoDB via Mongoose (`.plans/DECISIONS.md`). The connection is opened once in
+`src/database/database.module.ts` from `DATABASE_URI`; this domain only registers its own
+collection with `MongooseModule.forFeature`. Two rules the schema depends on:
+
+- **`phone` is the login identifier** and is stored normalised (`+94XXXXXXXXX`, from
+  `phoneSchema` in `packages/shared`). Unique.
+- **`email` is reserved** for the later email credential. Its unique index is *sparse*, which
+  only works while unset emails are left out of the document entirely — never write `null`.
 
 ## Personas are not domains
 
