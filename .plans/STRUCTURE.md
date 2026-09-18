@@ -5,7 +5,7 @@ The monorepo layout and what each directory is for. Rules an agent must *follow*
 
 ```
 farm-pool/
-├── .gitignore, README.md, CLAUDE.md, AGENTS.md
+├── .gitignore, README.md, CLAUDE.md, AGENTS.md, GEMINI.md   # the last two point at CLAUDE.md
 ├── package.json                # npm workspaces root: mobile, api, packages/*
 ├── .claude/                    # shared agent config, committed
 ├── .plans/                     # committed: this file, DECISIONS.md, VERIFY.md, PRODUCT.md,
@@ -14,7 +14,8 @@ farm-pool/
 ├── .plans.local/               # gitignored — individual working records
 ├── CLAUDE.local.md             # gitignored — individual agent instructions
 ├── .github/
-│   └── pull_request_template.md   # no CI workflow yet
+│   ├── pull_request_template.md   # no CI workflow yet
+│   └── copilot-instructions.md    # points at CLAUDE.md
 ├── mobile/                     # Expo SDK 57, managed workflow
 │   ├── src/
 │   │   ├── app/                # expo-router — file-based routes (see CLAUDE.md "Routing shape")
@@ -201,7 +202,7 @@ Recipe: `.plans/PLAYBOOK.md`.
 
 | Home | Committed | Holds |
 | ---- | --------- | ----- |
-| `CLAUDE.md`, `AGENTS.md` | yes | Rules an agent must follow, including commit and branch format |
+| `CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md` | yes | Rules an agent must follow, including commit and branch format |
 | `.plans/` | yes | Decisions, structure, verification — the reasoning under those rules |
 | `.plans.local/`, `CLAUDE.local.md` | **no** | Individual working records and personal agent instructions |
 

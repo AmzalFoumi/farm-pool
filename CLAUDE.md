@@ -1,7 +1,8 @@
 # CLAUDE.md
 
-Guidance for AI coding agents working in this repository. `AGENTS.md` points here, so this file is
-the single set of rules regardless of which agent you are.
+Guidance for AI coding agents working in this repository. `AGENTS.md` (Codex, Cursor, Windsurf and
+others), `GEMINI.md` (Gemini CLI) and `.github/copilot-instructions.md` (GitHub Copilot) all point
+here, so this file is the single set of rules regardless of which agent you are.
 
 ## What this is
 
@@ -26,11 +27,37 @@ Full layout and the reasoning behind it: **`.plans/STRUCTURE.md`**.
 Stack decisions and what is still open: **`.plans/DECISIONS.md`**.
 How to check things work: **`.plans/VERIFY.md`**.
 How sign-up, login, tokens and roles work, and how to protect a route: **`.plans/auth/README.md`**.
+How to add an endpoint, a screen, a shared type, or a module README: **`.plans/PLAYBOOK.md`**.
+What is in the database already, field by field: **`.plans/DATA-MODEL.md`**.
 How to build UI: **the "Building UI" section below** — read it before writing any screen or component.
 
 Read `.plans/DECISIONS.md` before choosing a library, a framework, or a pattern. Several questions
 there are deliberately open, and picking an answer without saying so silently closes a decision the
 team has not made.
+
+## Before building
+
+Three domains (`identity`, `catalog`, `orders`) and one mobile feature (`orders`) are already built
+end to end and documented. They are the template. **If a flow for what you are about to do exists,
+extend it; do not write a parallel one.** Every api domain README has a "Flow" section walking one
+request through the files, and a "Reuse points" section listing what other stories should import.
+
+Read these first, by task, before writing code — not after:
+
+| Task | Read first |
+| ---- | ---------- |
+| Any api endpoint or domain | `.plans/PLAYBOOK.md` recipe 1; the domain's `api/src/<domain>/README.md`; `.plans/auth/README.md` for the action to `@Allow` |
+| Any change to a collection or field | `.plans/DATA-MODEL.md`, then the shared zod file it points to |
+| Any screen or component | "Building UI" below; `.plans/PLAYBOOK.md` recipe 2; `mobile/src/app/orders/` as the worked example |
+| A type both sides need | `.plans/PLAYBOOK.md` recipe 3; it goes in `packages/shared`, then rebuild |
+| A new library, framework or pattern | `.plans/DECISIONS.md`; record the choice there (recipe 5) |
+| A README for a new module | `.plans/PLAYBOOK.md` recipe 4; copy `api/src/orders/README.md` |
+
+Concretely, that means: throw a `DomainError` subclass, do not write an HTTP exception; validate
+with a shared zod schema through `ZodValidationPipe`, do not write a DTO class; fetch through
+`features/<domain>/api.ts` and `useRequest`, do not call `fetch` in a screen; render loading, error
+and empty through `RequestView`, do not draw your own spinner. The playbook names the file to copy
+for each.
 
 ## Rules
 
