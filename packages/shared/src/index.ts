@@ -24,4 +24,5 @@ export * from "./identity/permissions";
 export * from "./catalog/crops";
 export * from "./catalog/listing";
 export * from "./catalog/wanted";
+export * from "./catalog/benchmark";
 export * from "./orders/order";
