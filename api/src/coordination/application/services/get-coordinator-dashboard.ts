@@ -1,17 +1,17 @@
 import type { CoordinatorDashboard } from '@farm-pool/shared';
-import { toListingDto } from '../../../catalog/domain/entities/listing';
 import type { ListingRepository } from '../../../catalog/domain/repositories/listing.repository';
 import { toCooperativeDto } from '../../domain/entities/cooperative';
 import type { CooperativeRepository } from '../../domain/repositories/cooperative.repository';
 import { CoordinationError } from '../errors';
 
 /**
- * What a coordinator sees for their cooperative: the group, its farmer count, and its farmers'
- * verified listings. A coordinator with more than one cooperative sees the newest for now — see
- * `.plans/coordination/OPEN.md` #1, this is not assumed to stay a 1:1 relationship.
+ * What a coordinator sees for their cooperative: the group, its farmer count, and how many
+ * verified listings it has. A coordinator with more than one cooperative sees the newest for
+ * now — see `.plans/coordination/OPEN.md` #1, this is not assumed to stay a 1:1 relationship.
  *
- * Only `verified` listings — pending/rejected ones are the approval flow in
- * `.plans/coordination/OPEN.md` #5, not built yet.
+ * A count, not the listings themselves — the per-listing detail belongs on a farmer's own
+ * detail screen, not duplicated on the dashboard. Only `verified` listings count; pending ones
+ * show up in `GetCoordinatorTasks` instead.
  */
 export const DASHBOARD_LISTING_LIMIT = 200;
 
@@ -40,7 +40,7 @@ export class GetCoordinatorDashboard {
     return {
       cooperative: toCooperativeDto(cooperative),
       farmerCount: cooperative.memberFarmerIds.length,
-      listings: listings.map(toListingDto),
+      listingCount: listings.length,
     };
   }
 }

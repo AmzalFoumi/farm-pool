@@ -5,7 +5,14 @@ import {
   LISTING_REPOSITORY,
   type ListingRepository,
 } from '../catalog/domain/repositories/listing.repository';
+import { IdentityModule } from '../identity/identity.module';
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '../identity/domain/repositories/user.repository';
 import { GetCoordinatorDashboard } from './application/services/get-coordinator-dashboard';
+import { GetCoordinatorTasks } from './application/services/get-coordinator-tasks';
+import { ListCooperativeFarmers } from './application/services/list-cooperative-farmers';
 import { CoordinationController } from './coordination.controller';
 import {
   COOPERATIVE_REPOSITORY,
@@ -18,8 +25,9 @@ import {
 import { MongooseCooperativeRepository } from './infrastructure/persistence/mongoose-cooperative.repository';
 
 /**
- * The coordination domain. Imports `CatalogModule` for the listing repository: the dashboard
- * reads the cooperative's member farmers' listings. One-way dependency, same as `orders`.
+ * The coordination domain. Imports `CatalogModule` for the listing repository and `IdentityModule`
+ * for the user repository: the dashboard and the farmers list both read across domains. One-way
+ * dependency in both cases, same as `orders` → `catalog`.
  */
 @Module({
   imports: [
@@ -27,6 +35,7 @@ import { MongooseCooperativeRepository } from './infrastructure/persistence/mong
       { name: COOPERATIVE_MODEL, schema: CooperativeSchema },
     ]),
     CatalogModule,
+    IdentityModule,
   ],
   controllers: [CoordinationController],
   providers: [
@@ -41,6 +50,24 @@ import { MongooseCooperativeRepository } from './infrastructure/persistence/mong
         cooperatives: CooperativeRepository,
         listings: ListingRepository,
       ) => new GetCoordinatorDashboard(cooperatives, listings),
+    },
+    {
+      provide: ListCooperativeFarmers,
+      inject: [COOPERATIVE_REPOSITORY, USER_REPOSITORY, LISTING_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        users: UserRepository,
+        listings: ListingRepository,
+      ) => new ListCooperativeFarmers(cooperatives, users, listings),
+    },
+    {
+      provide: GetCoordinatorTasks,
+      inject: [COOPERATIVE_REPOSITORY, USER_REPOSITORY, LISTING_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        users: UserRepository,
+        listings: ListingRepository,
+      ) => new GetCoordinatorTasks(cooperatives, users, listings),
     },
   ],
   exports: [],
