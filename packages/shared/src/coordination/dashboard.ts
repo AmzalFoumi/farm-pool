@@ -1,17 +1,17 @@
 import { z } from "zod";
 
-import { listingSchema } from "../catalog/listing";
 import { cooperativeSchema } from "./cooperative";
 
 /**
  * What a coordinator sees for their cooperative (FARM-25): the group itself, how many farmers
- * are in it, and their verified listings. Counts (to-approve, disputes) are not here yet — those
- * depend on features not built (`.plans/coordination/OPEN.md`).
+ * are in it, and how much they have listed. The per-listing detail lives on a farmer's own
+ * detail screen (not built yet), not duplicated here — a dashboard is counts and what needs
+ * attention, not a data dump. See `coordinatorTaskSchema` for the latter.
  */
 export const coordinatorDashboardSchema = z.object({
   cooperative: cooperativeSchema,
   farmerCount: z.number().int().min(0),
-  listings: z.array(listingSchema)
+  listingCount: z.number().int().min(0)
 });
 
 export type CoordinatorDashboard = z.infer<typeof coordinatorDashboardSchema>;
