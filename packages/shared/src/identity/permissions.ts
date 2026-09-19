@@ -26,7 +26,9 @@ export const actionSchema = z.enum([
   "delivery:accept",
   "users:list",
   "farmers:approve",
-  "cooperative:read-dashboard"
+  "cooperative:read-dashboard",
+  "cooperative:read-farmers",
+  "cooperative:read-tasks"
 ]);
 
 export type Action = z.infer<typeof actionSchema>;
@@ -47,7 +49,9 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   // The coordinator is the trust checkpoint (`.plans/PRODUCT.md`); only they see everyone.
   "users:list": ["coordinator"],
   "farmers:approve": ["coordinator"],
-  "cooperative:read-dashboard": ["coordinator"]
+  "cooperative:read-dashboard": ["coordinator"],
+  "cooperative:read-farmers": ["coordinator"],
+  "cooperative:read-tasks": ["coordinator"]
 };
 
 export function can(role: Role, action: Action): boolean {
