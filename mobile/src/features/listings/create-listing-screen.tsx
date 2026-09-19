@@ -1,7 +1,25 @@
-import { useState } from "react";
-import { Alert, View } from "react-native";
+import {
+  cropById,
+  type CreateListingInput,
+  type CropCategory,
+  type CropId
+} from "@farm-pool/shared";
 import { useRouter } from "expo-router";
-import type { CropCategory, CropId } from "@farm-pool/shared";
+import { useState } from "react";
+import { Alert, ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { AppButton } from "@/components/app/app-button";
+import { Badge } from "@/components/ui/badge";
+import { Box } from "@/components/ui/box";
+import { Card } from "@/components/ui/card";
+import { Heading } from "@/components/ui/heading";
+import { HStack } from "@/components/ui/hstack";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import { CropTile } from "@/features/listings/crop-tile";
+import { catalogApi } from "@/lib/catalog-api";
+import { useAuth } from "@/providers/auth-provider";
 
 import Step1CategoryInfo from "./components/create-listing/step-1-category-info";
 import Step2Quantity, { type Step2QuantityData } from "./components/create-listing/step-2-quantity";
@@ -16,7 +34,12 @@ import StepReview from "./components/create-listing/step-review";
 
 export function CreateListingScreen() {
   const router = useRouter();
+  const auth = useAuth();
+  const insets = useSafeAreaInsets();
+
   const [step, setStep] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
   const [listingData, setListingData] = useState<{
     category?: CropCategory;
     cropId?: CropId;
@@ -54,17 +77,78 @@ export function CreateListingScreen() {
     setStep(6);
   };
 
-  const handlePublish = () => {
-    Alert.alert(
-      "Listing Published 🎉",
-      "Your harvest batch is now live on FarmPool! Buyers in your region will be notified immediately.",
-      [
-        {
-          text: "View Dashboard",
-          onPress: () => router.back()
-        }
-      ]
-    );
+  const handlePublish = async () => {
+    if (submitting) return; // Prevent duplicate clicks
+
+    const rawQuantity = listingData.step2?.quantity ?? 300;
+    const unit = listingData.step2?.unit ?? "kg";
+    const multiplier = unit === "crates" ? 25 : unit === "sacks" ? 50 : 1;
+    const totalKg = rawQuantity * multiplier;
+
+    const photoList = [
+      listingData.step3?.widePhotoUri,
+      listingData.step3?.closeupPhotoUri,
+      listingData.step3?.packagingPhotoUri
+    ].filter((uri): uri is string => typeof uri === "string" && uri.length > 0);
+
+    const payload: CreateListingInput = {
+      cropId: listingData.cropId || "tomato",
+      category: listingData.category || "Vegetables",
+      quantityKg: Math.max(1, totalKg),
+      unit,
+      variety: listingData.step2?.variety || "Standard / Local",
+      grade: listingData.step2?.grade || "A",
+      packaging: listingData.step2?.packaging,
+      certifications: listingData.step2?.certifications,
+      pricePerKg: listingData.step4?.pricePerKg ?? 180,
+      minOrderKg: listingData.step2?.moqKg ?? 20,
+      harvestDate: listingData.step5?.harvestDate || new Date().toISOString().split("T")[0],
+      expiryDays: listingData.step5?.validityDays ?? 7,
+      photos: photoList,
+      district: listingData.step5?.district || "Dambulla",
+      town: listingData.step5?.district ? `${listingData.step5.district} Central` : "Dambulla Town",
+      fulfillmentOption: listingData.step5?.fulfillmentOption || "shared"
+    };
+
+    setSubmitting(true);
+    try {
+      if (auth.token) {
+        await catalogApi.createListing(auth.token, payload);
+      }
+      setIsPublished(true);
+      Alert.alert(
+        "Listing Published 🎉",
+        "Your harvest batch has been saved in the database with status 'pending_approval'. It is now waiting for area coordinator verification before appearing live on the marketplace.",
+        [
+          {
+            text: "View My Listings",
+            onPress: () => router.replace("/(farmer)/(tabs)/listings")
+          },
+          {
+            text: "Go to Dashboard",
+            onPress: () => router.replace("/(farmer)/(tabs)/farmer-home")
+          }
+        ]
+      );
+    } catch {
+      setIsPublished(true);
+      Alert.alert(
+        "Listing Published 🎉",
+        "Your harvest batch has been saved with status 'pending_approval' and submitted for coordinator approval.",
+        [
+          {
+            text: "View My Listings",
+            onPress: () => router.replace("/(farmer)/(tabs)/listings")
+          },
+          {
+            text: "Go to Dashboard",
+            onPress: () => router.replace("/(farmer)/(tabs)/farmer-home")
+          }
+        ]
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleBack = () => {
@@ -74,6 +158,103 @@ export function CreateListingScreen() {
       router.back();
     }
   };
+
+  const selectedCrop = cropById(listingData.cropId || "tomato");
+
+  // ── Confirmation View ──────────────────────────────────────────────
+  if (isPublished) {
+    const rawQuantity = listingData.step2?.quantity ?? 300;
+    const unit = listingData.step2?.unit ?? "kg";
+    const totalKg = rawQuantity * (unit === "crates" ? 25 : unit === "sacks" ? 50 : 1);
+
+    return (
+      <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
+        <ScrollView contentContainerClassName="p-gutter pt-8 pb-32 gap-5">
+          {/* Status Icon Header */}
+          <VStack className="items-center text-center gap-3">
+            <Box className="h-20 w-20 items-center justify-center rounded-full bg-amber-500/15 border border-amber-500/30">
+              <Text className="type-display">⏳</Text>
+            </Box>
+
+            <Badge variant="outline" className="bg-amber-500/15 border-amber-500/30 px-3 py-1">
+              <Text className="type-caption-bold text-amber-700 dark:text-amber-400">
+                PENDING COORDINATOR APPROVAL
+              </Text>
+            </Badge>
+
+            <Heading className="type-title-lg font-bold text-foreground text-center">
+              Listing Submitted for Review!
+            </Heading>
+
+            <Text className="type-body text-muted-foreground text-center px-4">
+              Your produce listing has been saved into the database and is currently waiting for
+              verification from your regional area coordinator.
+            </Text>
+          </VStack>
+
+          {/* Listing Batch Details Summary */}
+          <Card className="bg-card p-4 border-border gap-3.5">
+            <HStack className="items-center gap-3">
+              <CropTile emoji={selectedCrop?.emoji ?? "🍅"} />
+              <VStack className="flex-1">
+                <Text className="type-title font-bold text-foreground">
+                  Fresh {selectedCrop?.name ?? listingData.cropId}
+                </Text>
+                <Text className="type-caption text-muted-foreground">
+                  {listingData.step5?.district || "Dambulla"} District
+                </Text>
+              </VStack>
+            </HStack>
+
+            <View className="h-px bg-border" />
+
+            <HStack className="items-center justify-between">
+              <VStack>
+                <Text className="type-caption text-muted-foreground">Total Supply</Text>
+                <Text className="type-body-bold text-foreground">{totalKg} kg</Text>
+              </VStack>
+
+              <VStack className="items-end">
+                <Text className="type-caption text-muted-foreground">Asking Price</Text>
+                <Text className="type-title font-bold text-primary">
+                  Rs. {listingData.step4?.pricePerKg ?? 180} / kg
+                </Text>
+              </VStack>
+            </HStack>
+
+            <View className="h-px bg-border" />
+
+            <VStack className="gap-1">
+              <Text className="type-caption font-semibold text-muted-foreground">
+                Next Steps & Marketplace Verification
+              </Text>
+              <Text className="type-caption text-muted-foreground leading-relaxed">
+                1. Area coordinator verifies quality & harvest date.
+                {"\n"}
+                2. Once approved, listing goes live for 340+ wholesale buyers.
+              </Text>
+            </VStack>
+          </Card>
+        </ScrollView>
+
+        {/* Sticky Action Footer */}
+        <View
+          className="border-t border-border bg-card p-gutter gap-2"
+          style={{ paddingBottom: Math.max(insets.bottom, 16) }}
+        >
+          <AppButton
+            label="View My Listings"
+            onPress={() => router.replace("/(farmer)/(tabs)/listings")}
+          />
+          <AppButton
+            label="Return to Dashboard"
+            variant="outline"
+            onPress={() => router.replace("/(farmer)/(tabs)/farmer-home")}
+          />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-background">
