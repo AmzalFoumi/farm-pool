@@ -59,13 +59,14 @@ function RootNavigator() {
      hangs — see `auth-provider.tsx`. */
   if (auth.status === "loading") return null;
   const signedIn = auth.status === "signed-in";
+  const isFarmer = signedIn && auth.user?.role === "farmer";
 
   return (
     <>
       <AnimatedSplashOverlay />
       {/* Onboarding is the root stack, so `index` (the welcome screen) is
           what a cold start lands on when nobody is signed in. The tab shell
-          lives one level in, at `(tabs)`.
+          lives one level in, at `(tabs)` or `(farmer)`.
 
           `Stack.Protected` does the routing an auth check used to need
           `router.replace` for: with `signedIn` false the app screens are not
@@ -77,7 +78,10 @@ function RootNavigator() {
           Headers are off throughout: every screen draws its own app bar,
           which is the only way to match the design's bordered back button
           and Poppins title. */}
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack
+        screenOptions={{ headerShown: false }}
+        initialRouteName={signedIn ? (isFarmer ? "(farmer)" : "(tabs)") : "index"}
+      >
         <Stack.Protected guard={!signedIn}>
           <Stack.Screen name="index" />
           <Stack.Screen name="sign-up-as" />
@@ -86,6 +90,7 @@ function RootNavigator() {
         </Stack.Protected>
 
         <Stack.Protected guard={signedIn}>
+          <Stack.Screen name="(farmer)" />
           <Stack.Screen name="(tabs)" />
           {/* Listing detail sits in the root stack, not in `(tabs)`: the
               design gives it no tab bar, and it is pushed over the shell. */}
