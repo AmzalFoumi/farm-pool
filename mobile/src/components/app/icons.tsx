@@ -83,6 +83,19 @@ const CHECK = `<svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns
 <path d="M14.1667 4.25L6.375 12.0417L2.83333 8.5" stroke="white" stroke-width="2.26667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
+/* Search icon, 20×20 */
+const SEARCH = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9.16667 15.8333C12.8486 15.8333 15.8333 12.8486 15.8333 9.16667C15.8333 5.48477 12.8486 2.5 9.16667 2.5C5.48477 2.5 2.5 5.48477 2.5 9.16667C2.5 12.8486 5.48477 15.8333 9.16667 15.8333Z" stroke="#5A625C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M17.5 17.5L13.875 13.875" stroke="#5A625C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+/* Help / Info icon, 20×20 */
+const HELP = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="10" cy="10" r="7.5" stroke="#1E6B48" stroke-width="1.8"/>
+<path d="M10 13.3333V10" stroke="#1E6B48" stroke-width="1.8" stroke-linecap="round"/>
+<circle cx="10" cy="6.66667" r="0.833333" fill="#1E6B48"/>
+</svg>`;
+
 /* Each icon keeps the exact box Figma drew it at. `size` exists only for the
    role icons, which share one 28×28 rule; do not use it to rescale an icon
    into a box the design never gave it. */
@@ -93,6 +106,8 @@ export const MailIcon = () => <SvgXml xml={MAIL} width={18} height={18} />;
 export const BackIcon = () => <SvgXml xml={BACK} width={24} height={24} />;
 export const ChevronIcon = () => <SvgXml xml={CHEVRON} width={22} height={22} />;
 export const CheckIcon = () => <SvgXml xml={CHECK} width={17} height={17} />;
+export const SearchIcon = () => <SvgXml xml={SEARCH} width={20} height={20} />;
+export const HelpIcon = () => <SvgXml xml={HELP} width={20} height={20} />;
 
 export const FarmerIcon = ({ size = 28 }: IconProps) => (
   <SvgXml xml={FARMER} width={size} height={size} />
