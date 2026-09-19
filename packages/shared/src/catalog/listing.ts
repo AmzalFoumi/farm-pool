@@ -36,11 +36,24 @@ export const listingSchema = z.object({
   farmerId: z.string(),
   farmerName: z.string(),
   cropId: cropIdSchema,
+  category: z.string().optional(),
   quantityKg: kgSchema,
+  unit: z.string().optional(),
+  variety: z.string().optional(),
+  grade: z.string().optional(),
+  packaging: z.string().optional(),
+  certifications: z.array(z.string()).optional(),
   pricePerKg: pricePerKgSchema,
   /** Calendar date, `YYYY-MM-DD`. */
-  harvestDate: z.iso.date(),
+  harvestDate: z.string(),
+  expiryDays: z.number().optional(),
+  photos: z.array(z.string()).optional(),
+  acceptNegotiation: z.boolean().optional(),
   district: districtSchema,
+  town: z.string().optional(),
+  address: z.string().optional(),
+  fulfillmentOption: z.string().optional(),
+  farmgateNotes: z.string().optional(),
   /** The smallest quantity a buyer may order. Set by the farmer or the seed, never by the buyer. */
   minOrderKg: kgSchema,
   status: listingStatusSchema,
@@ -51,10 +64,36 @@ export type Listing = z.infer<typeof listingSchema>;
 
 export const listingListSchema = z.array(listingSchema);
 
-/** Query string for `GET /catalog/listings`. Both optional; omitted means "all". */
+/** Query string for `GET /catalog/listings`. All optional; omitted means "all". */
 export const listingQuerySchema = z.object({
   crop: cropIdSchema.optional(),
-  district: districtSchema.optional()
+  district: districtSchema.optional(),
+  farmerId: z.string().optional()
 });
 
 export type ListingQuery = z.infer<typeof listingQuerySchema>;
+
+export const createListingSchema = z.object({
+  cropId: cropIdSchema,
+  category: z.string().optional(),
+  quantityKg: kgSchema,
+  unit: z.string().optional(),
+  variety: z.string().optional(),
+  grade: z.string().optional(),
+  packaging: z.string().optional(),
+  certifications: z.array(z.string()).optional(),
+  pricePerKg: pricePerKgSchema,
+  harvestDate: z.string().min(1, "Harvest date is required"),
+  expiryDays: z.number().optional(),
+  photos: z.array(z.string()).optional(),
+  acceptNegotiation: z.boolean().optional(),
+  district: districtSchema,
+  town: z.string().optional(),
+  address: z.string().optional(),
+  fulfillmentOption: z.string().optional(),
+  farmgateNotes: z.string().optional(),
+  minOrderKg: kgSchema.optional()
+});
+
+export type CreateListingInput = z.input<typeof createListingSchema>;
+export type CreateListingData = z.output<typeof createListingSchema>;
