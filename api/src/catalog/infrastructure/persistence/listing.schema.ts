@@ -21,8 +21,26 @@ export class ListingDocument {
   @Prop({ type: String, required: true, enum: CROP_IDS, index: true })
   cropId: CropId;
 
+  @Prop({ required: false })
+  category?: string;
+
   @Prop({ required: true, min: 1 })
   quantityKg: number;
+
+  @Prop({ required: false })
+  unit?: string;
+
+  @Prop({ required: false })
+  variety?: string;
+
+  @Prop({ required: false })
+  grade?: string;
+
+  @Prop({ required: false })
+  packaging?: string;
+
+  @Prop({ type: [String], required: false })
+  certifications?: string[];
 
   @Prop({ required: true, min: 0 })
   pricePerKg: number;
@@ -31,8 +49,29 @@ export class ListingDocument {
   @Prop({ required: true })
   harvestDate: string;
 
+  @Prop({ required: false })
+  expiryDays?: number;
+
+  @Prop({ type: [String], required: false })
+  photos?: string[];
+
+  @Prop({ required: false })
+  acceptNegotiation?: boolean;
+
   @Prop({ required: true, trim: true })
   district: string;
+
+  @Prop({ required: false })
+  town?: string;
+
+  @Prop({ required: false })
+  address?: string;
+
+  @Prop({ required: false })
+  fulfillmentOption?: string;
+
+  @Prop({ required: false })
+  farmgateNotes?: string;
 
   /** Lower-cased copy of `district` for a case-insensitive filter without a collation. */
   @Prop({ required: true, index: true })

@@ -31,12 +31,29 @@ export class MongooseListingRepository implements ListingRepository {
     const query: QueryFilter<ListingDocument> = { status: 'verified' };
     if (filter.crop) query.cropId = filter.crop;
     if (filter.district) query.districtKey = filter.district.toLowerCase();
+    if (filter.farmerId) query.farmerId = filter.farmerId;
     const docs = await this.listings
       .find(query)
       .sort({ createdAt: -1 })
       .limit(limit)
       .exec();
     return docs.map(toListing);
+  }
+
+  async findByFarmerId(farmerId: string): Promise<Listing[]> {
+    const docs = await this.listings
+      .find({ farmerId })
+      .sort({ createdAt: -1 })
+      .exec();
+    return docs.map(toListing);
+  }
+
+  async create(listing: NewListing): Promise<Listing> {
+    const created = await this.listings.create({
+      ...listing,
+      districtKey: listing.district.toLowerCase(),
+    });
+    return toListing(created as ListingHydrated);
   }
 
   async upsertBySeedKey(
@@ -60,10 +77,23 @@ function toListing(doc: ListingHydrated): Listing {
     farmerId: doc.farmerId,
     farmerName: doc.farmerName,
     cropId: doc.cropId,
+    category: doc.category,
     quantityKg: doc.quantityKg,
+    unit: doc.unit,
+    variety: doc.variety,
+    grade: doc.grade,
+    packaging: doc.packaging,
+    certifications: doc.certifications,
     pricePerKg: doc.pricePerKg,
     harvestDate: doc.harvestDate,
+    expiryDays: doc.expiryDays,
+    photos: doc.photos,
+    acceptNegotiation: doc.acceptNegotiation,
     district: doc.district,
+    town: doc.town,
+    address: doc.address,
+    fulfillmentOption: doc.fulfillmentOption,
+    farmgateNotes: doc.farmgateNotes,
     minOrderKg: doc.minOrderKg,
     status: doc.status,
     createdAt: doc.createdAt,

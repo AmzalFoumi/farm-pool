@@ -17,10 +17,23 @@ export interface Listing {
   farmerId: string;
   farmerName: string;
   cropId: CropId;
+  category?: string;
   quantityKg: number;
+  unit?: string;
+  variety?: string;
+  grade?: string;
+  packaging?: string;
+  certifications?: string[];
   pricePerKg: number;
   harvestDate: string;
+  expiryDays?: number;
+  photos?: string[];
+  acceptNegotiation?: boolean;
   district: string;
+  town?: string;
+  address?: string;
+  fulfillmentOption?: string;
+  farmgateNotes?: string;
   minOrderKg: number;
   status: ListingStatus;
   createdAt: Date;
@@ -36,10 +49,23 @@ export function toListingDto(listing: Listing): ListingDto {
     farmerId: listing.farmerId,
     farmerName: listing.farmerName,
     cropId: listing.cropId,
+    category: listing.category,
     quantityKg: listing.quantityKg,
+    unit: listing.unit,
+    variety: listing.variety,
+    grade: listing.grade,
+    packaging: listing.packaging,
+    certifications: listing.certifications,
     pricePerKg: listing.pricePerKg,
     harvestDate: listing.harvestDate,
+    expiryDays: listing.expiryDays,
+    photos: listing.photos,
+    acceptNegotiation: listing.acceptNegotiation,
     district: listing.district,
+    town: listing.town,
+    address: listing.address,
+    fulfillmentOption: listing.fulfillmentOption,
+    farmgateNotes: listing.farmgateNotes,
     minOrderKg: listing.minOrderKg,
     status: listing.status,
     createdAt: listing.createdAt.toISOString(),

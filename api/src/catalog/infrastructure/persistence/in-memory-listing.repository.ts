@@ -20,10 +20,31 @@ export class InMemoryListingRepository implements ListingRepository {
       .filter((l) => l.status === 'verified')
       .filter((l) => !filter.crop || l.cropId === filter.crop)
       .filter((l) => !district || l.district.toLowerCase() === district)
+      .filter((l) => !filter.farmerId || l.farmerId === filter.farmerId)
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, limit)
       .map(snapshot);
     return Promise.resolve(found);
+  }
+
+  findByFarmerId(farmerId: string): Promise<Listing[]> {
+    const found = [...this.rows.values()]
+      .filter((l) => l.farmerId === farmerId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .map(snapshot);
+    return Promise.resolve(found);
+  }
+
+  create(listing: NewListing): Promise<Listing> {
+    const now = new Date();
+    const row = {
+      ...listing,
+      id: randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.rows.set(row.id, row);
+    return Promise.resolve(snapshot(row));
   }
 
   upsertBySeedKey(seedKey: string, listing: NewListing): Promise<Listing> {

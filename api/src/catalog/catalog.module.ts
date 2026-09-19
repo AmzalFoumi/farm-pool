@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CloseWanted } from './application/services/close-wanted';
+import { CreateListing } from './application/services/create-listing';
 import { CreateWanted } from './application/services/create-wanted';
 import { GetListing } from './application/services/get-listing';
 import { ListListings } from './application/services/list-listings';
@@ -52,6 +53,11 @@ import {
       provide: GetListing,
       inject: [LISTING_REPOSITORY],
       useFactory: (listings: ListingRepository) => new GetListing(listings),
+    },
+    {
+      provide: CreateListing,
+      inject: [LISTING_REPOSITORY],
+      useFactory: (listings: ListingRepository) => new CreateListing(listings),
     },
     {
       provide: CreateWanted,
