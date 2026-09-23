@@ -27,10 +27,26 @@ export class MongooseListingRepository implements ListingRepository {
     return doc ? toListing(doc) : null;
   }
 
-  async findVerified(filter: ListingFilter, limit: number): Promise<Listing[]> {
-    const query: QueryFilter<ListingDocument> = { status: 'verified' };
+  findVerified(filter: ListingFilter, limit: number): Promise<Listing[]> {
+    return this.findByStatus('verified', filter, limit);
+  }
+
+  findPendingApproval(
+    filter: ListingFilter,
+    limit: number,
+  ): Promise<Listing[]> {
+    return this.findByStatus('pending_approval', filter, limit);
+  }
+
+  private async findByStatus(
+    status: ListingDocument['status'],
+    filter: ListingFilter,
+    limit: number,
+  ): Promise<Listing[]> {
+    const query: QueryFilter<ListingDocument> = { status };
     if (filter.crop) query.cropId = filter.crop;
     if (filter.district) query.districtKey = filter.district.toLowerCase();
+    if (filter.farmerIds) query.farmerId = { $in: filter.farmerIds };
     const docs = await this.listings
       .find(query)
       .sort({ createdAt: -1 })

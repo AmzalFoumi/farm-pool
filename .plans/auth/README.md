@@ -120,6 +120,9 @@ name should appear in an access rule:
 | `delivery:accept` | | | | ✓ |
 | `users:list` | | | ✓ | |
 | `farmers:approve` | | | ✓ | |
+| `cooperative:read-dashboard` | | | ✓ | |
+| `cooperative:read-farmers` | | | ✓ | |
+| `cooperative:read-tasks` | | | ✓ | |
 
 Which endpoint uses which action: `api/src/identity/README.md`, `api/src/catalog/README.md`,
 `api/src/orders/README.md`. Adding an action means a row here, a line in `permissions.ts`, and
