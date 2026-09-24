@@ -23,12 +23,11 @@ import { Text } from "@/components/ui/text";
 type AppButtonProps = {
   label: string;
   onPress?: () => void;
-  /** `solid` is the single primary action; `outline` is its alternative; `destructive` is dangerous actions. */
-  variant?: "solid" | "outline" | "destructive";
+  /** `solid` is the single primary action on a screen; `outline` is its alternative. */
+  variant?: "solid" | "outline";
   /** Rendered to the left of the label at its exported size. */
   icon?: ReactNode;
   disabled?: boolean;
-  className?: string;
 };
 
 export function AppButton({
@@ -36,11 +35,9 @@ export function AppButton({
   onPress,
   variant = "solid",
   icon,
-  disabled = false,
-  className = ""
+  disabled = false
 }: AppButtonProps) {
   const solid = variant === "solid";
-  const destructive = variant === "destructive";
 
   return (
     <Pressable
@@ -50,21 +47,22 @@ export function AppButton({
       accessibilityState={{ disabled }}
       className={[
         "h-control w-full flex-row items-center justify-center rounded-field",
-        solid ? "bg-primary" : destructive ? "bg-destructive" : "border border-brand-deep bg-card",
+        solid ? "bg-primary" : "border border-brand-deep bg-card",
+        // Pressed feedback has to be opacity rather than a colour shift: these
+        // buttons sit on three different surfaces across the two screens, and a
+        // pressed-colour token would be wrong on at least one of them.
         "active:opacity-80",
-        disabled && "opacity-40",
-        className
+        disabled && "opacity-40"
       ]
         .filter(Boolean)
         .join(" ")}
     >
       <HStack className="items-center gap-2.5">
         {icon}
-        <Text
-          className={`type-h4 ${
-            solid || destructive ? "text-primary-foreground" : "text-brand-deep"
-          }`}
-        >
+        {/* type-h4 is Poppins Bold 18/24 — the metrics Figma gives the button
+            label. Named as a heading step rather than a button-specific token
+            because there is no case where the two should diverge. */}
+        <Text className={`type-h4 ${solid ? "text-primary-foreground" : "text-brand-deep"}`}>
           {label}
         </Text>
       </HStack>

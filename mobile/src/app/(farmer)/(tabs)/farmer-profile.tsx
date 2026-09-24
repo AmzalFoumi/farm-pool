@@ -105,8 +105,8 @@ export default function FarmerProfileScreen() {
         {/* ── Sign Out Button ────────────────────────────────────── */}
         <VStack className="pt-4">
           <AppButton
-            label={signingOut ? "Signing out…" : "Sign out"}
-            variant="destructive"
+            label={signingOut ? "Logging out…" : "Log out"}
+            variant="outline"
             disabled={signingOut}
             onPress={handleSignOut}
           />

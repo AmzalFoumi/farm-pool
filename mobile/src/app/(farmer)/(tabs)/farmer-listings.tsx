@@ -47,11 +47,14 @@ export default function FarmerListingsScreen() {
             <Heading className="type-title font-bold text-foreground">My Produce Listings</Heading>
           </VStack>
 
-          <AppButton
-            label="+"
+          <Pressable
             onPress={() => router.push("/(farmer)/create-listing/create")}
-            className="h-10 w-12"
-          />
+            accessibilityRole="button"
+            accessibilityLabel="Create listing"
+            className="h-tap w-tap items-center justify-center rounded-field bg-primary active:opacity-80"
+          >
+            <PlusIcon />
+          </Pressable>
         </HStack>
       </View>
 
@@ -91,7 +94,7 @@ export default function FarmerListingsScreen() {
                     You have not posted any produce batches under this tab yet.
                   </Text>
                   <AppButton
-                    label="Create Listing (+)"
+                    label="Create listing"
                     icon={<PlusIcon />}
                     onPress={() => router.push("/(farmer)/create-listing/create")}
                   />

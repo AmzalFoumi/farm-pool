@@ -9,10 +9,11 @@ import {
 } from "@farm-pool/shared";
 
 import { AppButton } from "@/components/app/app-button";
-import { BackIcon, HelpIcon } from "@/components/app/icons";
+import { BackIcon } from "@/components/app/icons";
 import { NumericKeypadModal } from "@/components/app/numeric-keypad-modal";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
+import { HelpCircleIcon, Icon } from "@/components/ui/icon";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -134,7 +135,7 @@ export default function Step4Price({
               accessibilityLabel="Help"
               className="h-tap w-tap items-center justify-center rounded-field bg-secondary"
             >
-              <HelpIcon />
+              <Icon as={HelpCircleIcon} className="text-brand-deep" />
             </Pressable>
           </HStack>
 

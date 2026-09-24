@@ -13,9 +13,10 @@ import {
 } from "@farm-pool/shared";
 
 import { AppButton } from "@/components/app/app-button";
-import { BackIcon, CheckIcon, HelpIcon, SearchIcon } from "@/components/app/icons";
+import { BackIcon, CheckIcon } from "@/components/app/icons";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
+import { HelpCircleIcon, Icon, SearchIcon } from "@/components/ui/icon";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
@@ -92,7 +93,7 @@ export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoP
               accessibilityLabel="Help"
               className="h-tap w-tap items-center justify-center rounded-field bg-secondary"
             >
-              <HelpIcon />
+              <Icon as={HelpCircleIcon} className="text-brand-deep" />
             </Pressable>
           </HStack>
 

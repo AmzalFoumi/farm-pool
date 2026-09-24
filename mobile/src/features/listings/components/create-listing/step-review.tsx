@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cropById, type CropId } from "@farm-pool/shared";
 
 import { AppButton } from "@/components/app/app-button";
-import { BackIcon, CheckIcon, HelpIcon } from "@/components/app/icons";
+import { BackIcon, CheckIcon } from "@/components/app/icons";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";

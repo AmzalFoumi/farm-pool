@@ -5,10 +5,11 @@ import { cropById, type CropId } from "@farm-pool/shared";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppTextField } from "@/components/app/app-text-field";
-import { BackIcon, CheckIcon, HelpIcon } from "@/components/app/icons";
+import { BackIcon, CheckIcon } from "@/components/app/icons";
 import { NumericKeypadModal } from "@/components/app/numeric-keypad-modal";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
+import { HelpCircleIcon, Icon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import {
   Modal,
@@ -206,7 +207,7 @@ export default function Step2Quantity({
               accessibilityLabel="Help"
               className="h-tap w-tap items-center justify-center rounded-field bg-secondary"
             >
-              <HelpIcon />
+              <Icon as={HelpCircleIcon} className="text-brand-deep" />
             </Pressable>
           </HStack>
 

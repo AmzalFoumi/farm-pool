@@ -74,10 +74,9 @@ export default function FarmerHomeScreen() {
             </VStack>
 
             <AppButton
-              label="Create Listing (+)"
+              label="Create listing"
               icon={<PlusIcon />}
               onPress={() => router.push("/(farmer)/create-listing/create")}
-              className="mt-1 bg-card border border-border"
             />
           </VStack>
         </Card>

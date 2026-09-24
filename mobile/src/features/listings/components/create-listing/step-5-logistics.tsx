@@ -5,9 +5,10 @@ import { cropById, districtSchema, type CropId } from "@farm-pool/shared";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppTextField } from "@/components/app/app-text-field";
-import { BackIcon, CheckIcon, HelpIcon } from "@/components/app/icons";
+import { BackIcon, CheckIcon } from "@/components/app/icons";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
+import { HelpCircleIcon, Icon } from "@/components/ui/icon";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -145,7 +146,7 @@ export default function Step5Logistics({
               accessibilityLabel="Help"
               className="h-tap w-tap items-center justify-center rounded-field bg-info-subtle border border-info/20"
             >
-              <HelpIcon />
+              <Icon as={HelpCircleIcon} className="text-brand-deep" />
             </Pressable>
           </HStack>
 
