@@ -120,7 +120,7 @@ export default function Step3HarvestPhotos({
       step={3}
       title="Add Harvest Photos"
       onBack={onBack}
-      help="Attach clear photos of your harvest. Wholesale buyers check clarity & natural lighting before placing bids."
+      help="Attach clear photos of your harvest. Buyers look for clear photos taken in natural light."
       footer={
         <>
           {" "}
@@ -190,21 +190,17 @@ export default function Step3HarvestPhotos({
             </Text>
           </VStack>
         </HStack>
-
-        <Box className="rounded-chip bg-secondary border border-border px-2 py-1">
-          <Text className="type-body-sm-bold text-secondary-foreground">Verified</Text>
-        </Box>
       </HStack>
 
       {/* UX Guidance Note Banner */}
       <HStack className="rounded-card bg-brand-deep p-4 items-start gap-3">
         <VStack className="flex-1 gap-0.5">
           <Text className="type-body-bold text-brand-deep-foreground">
-            Clear Photos = Faster Sales
+            Photo upload is not built yet
           </Text>
           <Text className="type-caption text-brand-deep-muted">
-            Wholesale buyers in Dambulla & Colombo check clarity & natural lighting before making
-            bids.
+            The buttons below attach a sample photo so you can try the flow. Sample photos are not
+            saved with your listing.
           </Text>
         </VStack>
       </HStack>
@@ -281,14 +277,7 @@ export default function Step3HarvestPhotos({
               accessibilityRole="button"
               className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
             >
-              <Text className="type-body-bold text-foreground">Take Photo</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => handleAttachSamplePhoto("wide")}
-              accessibilityRole="button"
-              className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
-            >
-              <Text className="type-body-bold text-foreground">Gallery</Text>
+              <Text className="type-body-bold text-foreground">Use sample photo</Text>
             </Pressable>
           </HStack>
         )}
@@ -351,14 +340,7 @@ export default function Step3HarvestPhotos({
               accessibilityRole="button"
               className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
             >
-              <Text className="type-body-bold text-foreground">Take Photo</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => handleAttachSamplePhoto("closeup")}
-              accessibilityRole="button"
-              className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
-            >
-              <Text className="type-body-bold text-foreground">Gallery</Text>
+              <Text className="type-body-bold text-foreground">Use sample photo</Text>
             </Pressable>
           </HStack>
         )}
@@ -421,14 +403,7 @@ export default function Step3HarvestPhotos({
               accessibilityRole="button"
               className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
             >
-              <Text className="type-body-bold text-foreground">Camera</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => handleAttachSamplePhoto("packaging")}
-              accessibilityRole="button"
-              className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
-            >
-              <Text className="type-body-bold text-foreground">Gallery</Text>
+              <Text className="type-body-bold text-foreground">Use sample photo</Text>
             </Pressable>
           </HStack>
         )}

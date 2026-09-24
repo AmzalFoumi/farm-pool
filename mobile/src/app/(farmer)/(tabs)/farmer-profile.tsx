@@ -79,13 +79,6 @@ export default function FarmerProfileScreen() {
               <Text className="type-body text-muted-foreground">Registered Role</Text>
               <Text className="type-body-bold text-foreground">Producer / Farmer</Text>
             </HStack>
-
-            <View className="h-px bg-border" />
-
-            <HStack className="items-center justify-between">
-              <Text className="type-body text-muted-foreground">Primary District</Text>
-              <Text className="type-body-bold text-foreground">Dambulla / Matale</Text>
-            </HStack>
           </Card>
         </VStack>
 

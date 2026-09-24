@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, View } from "react-native";
+import { Alert } from "react-native";
 import { cropById, districtSchema, type CropId } from "@farm-pool/shared";
 
 import { AppTextField } from "@/components/app/app-text-field";
@@ -270,15 +270,6 @@ export default function Step5Logistics({
             transportType === "shared" ? "border-primary bg-secondary" : "border-border bg-card"
           }`}
         >
-          {/* Top Savings Badge */}
-          <View className="self-end mb-2">
-            <Box className="rounded-chip bg-secondary border border-border px-2.5 py-0.5">
-              <Text className="type-caption-bold text-secondary-foreground uppercase">
-                Saves up to 40%
-              </Text>
-            </Box>
-          </View>
-
           <HStack className="items-start gap-3">
             <VStack className="flex-1 min-w-0 gap-1">
               <HStack className="items-center justify-between">
@@ -303,14 +294,8 @@ export default function Step5Logistics({
               </HStack>
 
               <Text className="type-caption text-muted-foreground">
-                Share truck space with neighbor farms. Eco-friendly & cost effective.
+                Share truck space with nearby farms going the same way.
               </Text>
-
-              <HStack className="mt-2 pt-2 border-t border-border items-center gap-1.5">
-                <Text className="type-caption-bold text-primary">
-                  Escrow locked per volume slot
-                </Text>
-              </HStack>
             </VStack>
           </HStack>
         </Pressable>
@@ -348,22 +333,12 @@ export default function Step5Logistics({
               </HStack>
 
               <Text className="type-caption text-muted-foreground">
-                Dedicated vehicle direct to your farm gate. Faster but costs more.
+                Arrange your own vehicle from your farm gate.
               </Text>
             </VStack>
           </HStack>
         </Pressable>
       </VStack>
-
-      {/* Community Micro-Delight Callout (Blue Info Card) */}
-      <HStack className="items-center gap-3 rounded-card border border-border bg-secondary p-3.5">
-        <VStack className="flex-1 min-w-0 gap-0.5">
-          <Text className="type-body-sm-bold text-foreground">FarmPool Community Hub</Text>
-          <Text className="type-caption text-muted-foreground">
-            4 neighbor farms share daily routes to Dambulla.
-          </Text>
-        </VStack>
-      </HStack>
     </WizardShell>
   );
 }

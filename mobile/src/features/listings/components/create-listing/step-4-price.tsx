@@ -14,6 +14,7 @@ import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "@/features/listings/crop-tile";
+import { formatPrice } from "@/lib/format";
 import { toKg, type BatchUnit } from "@/features/listings/units";
 
 import { WizardActions, WizardShell } from "./wizard-shell";
@@ -64,16 +65,16 @@ export default function Step4Price({
   const getMarketFeedbackBadge = () => {
     if (pricePerKg < minBench) {
       return {
-        label: "Fast Selling Price"
+        label: "Below the reference range"
       };
     }
     if (pricePerKg >= minBench && pricePerKg <= maxBench) {
       return {
-        label: "Highly Competitive"
+        label: "Within the reference range"
       };
     }
     return {
-      label: "Above Avg Premium"
+      label: "Above the reference range"
     };
   };
 
@@ -92,7 +93,7 @@ export default function Step4Price({
       step={4}
       title="Set Asking Price"
       onBack={onBack}
-      help={`Wholesale market benchmarks are sourced dynamically from regional hubs (e.g. ${benchmark.hubName}). Payouts are held safely in Fair Escrow.`}
+      help={`Reference prices from ${benchmark.hubName}. Use them as a guide; you choose your own price.`}
       footer={
         <>
           <WizardActions
@@ -112,7 +113,7 @@ export default function Step4Price({
             onClose={() => setIsKeypadVisible(false)}
             title="Enter Asking Price"
             initialValue={pricePerKg}
-            unitLabel="Rs. / kg"
+            unitLabel="Rs / kg"
             presets={[minBench, Math.round((minBench + maxBench) / 2), maxBench, maxBench + 20]}
             onConfirm={(val) => setPricePerKg(Math.max(1, val))}
           />
@@ -152,7 +153,7 @@ export default function Step4Price({
 
         <HStack className="items-baseline gap-1.5 pt-1">
           <Text className="type-h1 text-foreground">
-            Rs. {minBench} - {maxBench}
+            {formatPrice(minBench)} – {formatPrice(maxBench)}
           </Text>
           <Text className="type-caption text-muted-foreground">/ kg</Text>
         </HStack>
@@ -185,7 +186,7 @@ export default function Step4Price({
             className="min-h-tap flex-1 items-center px-2 py-1 active:opacity-80"
           >
             <HStack className="items-baseline justify-center gap-1">
-              <Text className="type-body-bold text-primary">Rs.</Text>
+              <Text className="type-body-bold text-primary">Rs</Text>
               <Text className="type-display text-primary">{pricePerKg}</Text>
             </HStack>
             <Box className="my-1.5 h-0.5 w-16 bg-border" />
@@ -217,27 +218,13 @@ export default function Step4Price({
               Total Est. Earnings
             </Text>
             <Text className="type-body-sm text-brand-deep-foreground">
-              {totalQuantityKg} kg × Rs. {pricePerKg}
+              {totalQuantityKg} kg × {formatPrice(pricePerKg)}
             </Text>
           </VStack>
         </HStack>
 
         <VStack className="items-end">
-          <Text className="type-caption text-brand-deep-muted">LKR</Text>
-          <Text className="type-h2 text-brand-deep-foreground">
-            {grossEarnings.toLocaleString()}
-          </Text>
-        </VStack>
-      </HStack>
-
-      {/* Fair Escrow Protected Banner */}
-      <HStack className="rounded-card border border-border bg-secondary p-4 items-start gap-3">
-        <VStack className="flex-1 gap-0.5">
-          <Text className="type-body-bold text-foreground">Fair Escrow Protected</Text>
-          <Text className="type-caption text-muted-foreground">
-            Payout is securely held and guaranteed once the buyer weighbridge confirms your quantity
-            at dropoff.
-          </Text>
+          <Text className="type-h2 text-brand-deep-foreground">{formatPrice(grossEarnings)}</Text>
         </VStack>
       </HStack>
     </WizardShell>

@@ -11,7 +11,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/app/app-button";
 import { Badge } from "@/components/ui/badge";
-import { Box } from "@/components/ui/box";
 import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
@@ -20,6 +19,7 @@ import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "@/features/listings/crop-tile";
 import { listingsApi } from "@/features/listings/api";
 import { toKg } from "@/features/listings/units";
+import { formatPrice } from "@/lib/format";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -87,12 +87,6 @@ export function CreateListingScreen() {
     const unit = listingData.step2?.unit ?? "kg";
     const totalKg = toKg(rawQuantity, unit);
 
-    const photoList = [
-      listingData.step3?.widePhotoUri,
-      listingData.step3?.closeupPhotoUri,
-      listingData.step3?.packagingPhotoUri
-    ].filter((uri): uri is string => typeof uri === "string" && uri.length > 0);
-
     const payload: CreateListingInput = {
       cropId: listingData.cropId || "tomato",
       category: listingData.category || "Vegetables",
@@ -106,7 +100,9 @@ export function CreateListingScreen() {
       minOrderKg: listingData.step2?.moqKg ?? 20,
       harvestDate: listingData.step5?.harvestDate || new Date().toISOString().split("T")[0],
       expiryDays: listingData.step5?.validityDays,
-      photos: photoList,
+      /* Step 3 only attaches stock sample photos (upload is not built), so none are sent:
+         a buyer must never see a stock photo presented as this farmer's harvest. */
+      photos: [],
       // Step 5 will not continue without a district, so this is always the farmer's answer.
       district: listingData.step5?.district ?? "",
       fulfillmentOption: listingData.step5?.fulfillmentOption || "shared"
@@ -194,7 +190,7 @@ export function CreateListingScreen() {
               <VStack className="items-end">
                 <Text className="type-caption text-muted-foreground">Asking Price</Text>
                 <Text className="type-title text-primary">
-                  Rs. {listingData.step4?.pricePerKg ?? 180} / kg
+                  {formatPrice(listingData.step4?.pricePerKg ?? 0)} / kg
                 </Text>
               </VStack>
             </HStack>
@@ -208,7 +204,7 @@ export function CreateListingScreen() {
               <Text className="type-caption text-muted-foreground">
                 1. Area coordinator verifies quality & harvest date.
                 {"\n"}
-                2. Once approved, listing goes live for 340+ wholesale buyers.
+                2. Once approved, buyers can find and order it.
               </Text>
             </VStack>
           </Card>

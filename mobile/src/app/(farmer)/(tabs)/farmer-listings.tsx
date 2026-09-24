@@ -15,6 +15,8 @@ import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { listingsApi } from "@/features/listings/api";
+import { ListingStatusPill } from "@/features/orders/status-pill";
+import { formatDate, formatPrice } from "@/lib/format";
 import { useReloadOnRefocus, useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -117,28 +119,11 @@ export default function FarmerListingsScreen() {
                             </Badge>
                           </HStack>
                           <Text className="type-caption text-muted-foreground mt-0.5">
-                            Harvest: {item.harvestDate}
+                            Harvest: {formatDate(item.harvestDate)}
                           </Text>
                         </VStack>
 
-                        <Badge
-                          variant="outline"
-                          className={
-                            item.status === "verified"
-                              ? "bg-success-subtle border-transparent"
-                              : "bg-warning-subtle border-transparent"
-                          }
-                        >
-                          <Text
-                            className={
-                              item.status === "verified"
-                                ? "type-caption-bold text-success"
-                                : "type-caption-bold text-warning"
-                            }
-                          >
-                            {item.status.toUpperCase()}
-                          </Text>
-                        </Badge>
+                        <ListingStatusPill status={item.status} />
                       </HStack>
 
                       <View className="h-px bg-border" />
@@ -155,7 +140,9 @@ export default function FarmerListingsScreen() {
 
                         <VStack className="items-end">
                           <Text className="type-caption text-muted-foreground">Price per kg</Text>
-                          <Text className="type-title text-primary">Rs. {item.pricePerKg}</Text>
+                          <Text className="type-title text-primary">
+                            {formatPrice(item.pricePerKg)}
+                          </Text>
                         </VStack>
                       </HStack>
                     </Card>

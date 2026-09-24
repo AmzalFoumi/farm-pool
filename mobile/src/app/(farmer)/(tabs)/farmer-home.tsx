@@ -1,12 +1,10 @@
 import { CROPS, formatBenchmarkPriceRange, getBenchmarkForCrop } from "@farm-pool/shared";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { RefreshControl, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/app/app-button";
 import { LeafIcon, PlusIcon } from "@/components/app/icons";
-import { Badge } from "@/components/ui/badge";
 import { Box } from "@/components/ui/box";
 import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
@@ -20,14 +18,7 @@ export default function FarmerHomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const auth = useAuth();
-  const [refreshing, setRefreshing] = useState(false);
-
   const displayName = auth.user?.displayName ?? "Farmer";
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 600);
-  };
 
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
@@ -39,9 +30,6 @@ export default function FarmerHomeScreen() {
               <Text className="type-caption-bold text-muted-foreground uppercase">
                 Farmer Dashboard
               </Text>
-              <Badge variant="outline" className="bg-secondary border-border">
-                <Text className="type-caption-bold text-primary">Active</Text>
-              </Badge>
             </HStack>
             <Heading className="type-title text-foreground">Ayubowan, {displayName}!</Heading>
           </VStack>
@@ -51,11 +39,7 @@ export default function FarmerHomeScreen() {
         </HStack>
       </View>
 
-      <ScrollView
-        className="flex-1"
-        contentContainerClassName="px-gutter pt-4 pb-12 gap-5"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-      >
+      <ScrollView className="flex-1" contentContainerClassName="px-gutter pt-4 pb-12 gap-5">
         {/* ── Primary Call to Action Card ────────────────────────── */}
         <Card className="overflow-hidden border-border bg-brand-deep p-4.5">
           <VStack className="gap-3">
@@ -65,7 +49,7 @@ export default function FarmerHomeScreen() {
               </Text>
               <Text className="type-h3 text-brand-deep-foreground">Post New Produce Batch</Text>
               <Text className="type-body text-brand-deep-muted">
-                Connect directly with verified wholesale buyers across Sri Lanka.
+                Sell directly to buyers, without a middleman.
               </Text>
             </VStack>
 
@@ -77,29 +61,11 @@ export default function FarmerHomeScreen() {
           </VStack>
         </Card>
 
-        {/* ── Metric Grid ────────────────────────────────────────── */}
-        <VStack className="gap-2.5">
-          <Text className="type-body-bold text-foreground">Harvest & Escrow Overview</Text>
-          <HStack className="gap-3">
-            <Card className="flex-1 bg-card p-3.5 border-border">
-              <Text className="type-caption text-muted-foreground">Active Produce</Text>
-              <Text className="type-h3 text-foreground mt-1">2 Batches</Text>
-              <Text className="type-caption text-primary mt-1">Ready for pickup</Text>
-            </Card>
-
-            <Card className="flex-1 bg-card p-3.5 border-border">
-              <Text className="type-caption text-muted-foreground">Escrow Balance</Text>
-              <Text className="type-h3 text-foreground mt-1">Rs. 85,000</Text>
-              <Text className="type-caption text-muted-foreground mt-1">2 Pending orders</Text>
-            </Card>
-          </HStack>
-        </VStack>
-
         {/* ── Wholesale Market Price Ticker ──────────────────────── */}
         <VStack className="gap-2.5">
           <HStack className="items-center justify-between">
             <Text className="type-body-bold text-foreground">Today's Wholesale Benchmark</Text>
-            <Text className="type-caption-bold text-primary">Dambulla Market</Text>
+            <Text className="type-caption-bold text-muted-foreground">Reference prices</Text>
           </HStack>
 
           <VStack className="gap-2">

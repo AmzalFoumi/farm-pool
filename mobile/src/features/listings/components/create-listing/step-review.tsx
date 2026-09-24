@@ -8,6 +8,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "@/features/listings/crop-tile";
+import { formatPrice } from "@/lib/format";
 import { toKg, type BatchUnit } from "@/features/listings/units";
 
 import type { Step2QuantityData } from "./step-2-quantity";
@@ -151,13 +152,13 @@ export default function StepReview({
 
             <HStack className="items-baseline justify-between pt-1">
               <HStack className="items-baseline gap-1">
-                <Text className="type-h2 text-primary">Rs. {askingPrice}</Text>
+                <Text className="type-h2 text-primary">{formatPrice(askingPrice)}</Text>
                 <Text className="type-caption text-muted-foreground">/kg</Text>
               </HStack>
 
               <Box className="rounded-chip bg-secondary px-2 py-1">
                 <Text className="type-caption-bold text-primary">
-                  Est. Rs. {grossEarnings.toLocaleString()}
+                  Est. {formatPrice(grossEarnings)}
                 </Text>
               </Box>
             </HStack>
@@ -268,30 +269,6 @@ export default function StepReview({
           </HStack>
         </VStack>
       </VStack>
-
-      {/* Trust Banner 1: Verified Network */}
-      <HStack className="rounded-card bg-secondary p-4 items-start gap-3.5 border border-border">
-        <VStack className="flex-1 gap-0.5">
-          <Text className="type-body-bold text-foreground">Verified Network Visibility</Text>
-          <Text className="type-caption text-muted-foreground">
-            Your listing will instantly alert{" "}
-            <Text className="type-caption-bold text-primary">340+ verified wholesale buyers</Text>{" "}
-            across Sri Lanka.
-          </Text>
-        </VStack>
-      </HStack>
-
-      {/* Trust Banner 2: Escrow Guarantee */}
-      <HStack className="rounded-card bg-secondary p-4 items-start gap-3.5 border border-border">
-        <VStack className="flex-1 gap-0.5">
-          <Text className="type-body-bold text-foreground">100% Guaranteed Payout</Text>
-          <Text className="type-caption text-muted-foreground">
-            Funds are secured in{" "}
-            <Text className="type-caption-bold text-secondary-foreground">FarmPool Escrow</Text> the
-            moment a buyer bids on your batch.
-          </Text>
-        </VStack>
-      </HStack>
     </WizardShell>
   );
 }
