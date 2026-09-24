@@ -23,7 +23,10 @@ type StepReviewProps = {
   step3?: Step3HarvestPhotosData;
   step4?: Step4PriceData;
   step5?: Step5LogisticsData;
-  onPublish?: () => void;
+  /** Resolves when the api has answered, success or failure; the parent reports the outcome. */
+  onPublish?: () => Promise<void>;
+  /** Why the last publish failed, shown above the buttons; null when there is nothing to say. */
+  error?: string | null;
   onBack?: () => void;
   onEditStep?: (step: number) => void;
 };
@@ -48,6 +51,7 @@ export default function StepReview({
     district: "Dambulla"
   },
   onPublish,
+  error,
   onBack,
   onEditStep
 }: StepReviewProps) {
@@ -72,12 +76,13 @@ export default function StepReview({
     );
   };
 
-  const handleConfirmPublish = () => {
+  const handleConfirmPublish = async () => {
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      await onPublish?.();
+    } finally {
       setIsSubmitting(false);
-      onPublish?.();
-    }, 1200);
+    }
   };
 
   const getFulfillmentLabel = () => {
@@ -329,6 +334,11 @@ export default function StepReview({
         className="border-t border-border bg-card p-gutter gap-2"
         style={{ paddingBottom: Math.max(insets.bottom, 16) }}
       >
+        {error ? (
+          <Text className="type-caption text-destructive" accessibilityRole="alert">
+            Could not publish: {error}
+          </Text>
+        ) : null}
         <HStack className="gap-3">
           <View className="w-1/3">
             <AppButton label="✏ Edit" variant="outline" onPress={onBack} />

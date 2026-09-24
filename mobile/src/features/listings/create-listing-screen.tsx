@@ -6,7 +6,7 @@ import {
 } from "@farm-pool/shared";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { Alert, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/app/app-button";
@@ -19,6 +19,7 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "@/features/listings/crop-tile";
 import { listingsApi } from "@/features/listings/api";
+import { ApiError } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
 
 import Step1CategoryInfo from "./components/create-listing/step-1-category-info";
@@ -40,6 +41,7 @@ export function CreateListingScreen() {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const [listingData, setListingData] = useState<{
     category?: CropCategory;
     cropId?: CropId;
@@ -110,42 +112,23 @@ export function CreateListingScreen() {
       fulfillmentOption: listingData.step5?.fulfillmentOption || "shared"
     };
 
+    /* Stay on the review step on any failure, and say why: a farmer told "published" when
+       nothing was saved would wait for buyers who can never see the listing. */
+    if (!auth.token) {
+      setPublishError("You are signed out. Log in again, then publish.");
+      return;
+    }
+    setPublishError(null);
     setSubmitting(true);
     try {
-      if (auth.token) {
-        await listingsApi.create(auth.token, payload);
-      }
+      await listingsApi.create(auth.token, payload);
       setIsPublished(true);
-      Alert.alert(
-        "Listing Published 🎉",
-        "Your harvest batch has been saved in the database with status 'pending_approval'. It is now waiting for area coordinator verification before appearing live on the marketplace.",
-        [
-          {
-            text: "View My Listings",
-            onPress: () => router.replace("/(farmer)/(tabs)/farmer-listings")
-          },
-          {
-            text: "Go to Dashboard",
-            onPress: () => router.replace("/(farmer)/(tabs)/farmer-home")
-          }
-        ]
-      );
-    } catch {
-      setIsPublished(true);
-      Alert.alert(
-        "Listing Published 🎉",
-        "Your harvest batch has been saved with status 'pending_approval' and submitted for coordinator approval.",
-        [
-          {
-            text: "View My Listings",
-            onPress: () => router.replace("/(farmer)/(tabs)/farmer-listings")
-          },
-          {
-            text: "Go to Dashboard",
-            onPress: () => router.replace("/(farmer)/(tabs)/farmer-home")
-          }
-        ]
-      );
+    } catch (e) {
+      const detail =
+        e instanceof ApiError
+          ? (e.issues[0]?.message ?? e.message)
+          : "Something went wrong. Check your connection and try again.";
+      setPublishError(detail);
     } finally {
       setSubmitting(false);
     }
@@ -319,6 +302,7 @@ export function CreateListingScreen() {
           step4={listingData.step4}
           step5={listingData.step5}
           onPublish={handlePublish}
+          error={publishError}
           onBack={handleBack}
           onEditStep={(targetStep) => setStep(targetStep)}
         />
