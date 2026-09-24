@@ -45,7 +45,7 @@ export const listingSchema = z.object({
   certifications: z.array(z.string()).optional(),
   pricePerKg: pricePerKgSchema,
   /** Calendar date, `YYYY-MM-DD`. */
-  harvestDate: z.string(),
+  harvestDate: z.iso.date(),
   expiryDays: z.number().optional(),
   photos: z.array(z.string()).optional(),
   acceptNegotiation: z.boolean().optional(),
@@ -83,7 +83,8 @@ export const createListingSchema = z.object({
   packaging: z.string().optional(),
   certifications: z.array(z.string()).optional(),
   pricePerKg: pricePerKgSchema,
-  harvestDate: z.string().min(1, "Harvest date is required"),
+  /** Calendar date, `YYYY-MM-DD`. The app turns "Today" / "In a week" into a date before sending. */
+  harvestDate: z.iso.date("Enter the harvest date as YYYY-MM-DD"),
   expiryDays: z.number().optional(),
   photos: z.array(z.string()).optional(),
   acceptNegotiation: z.boolean().optional(),

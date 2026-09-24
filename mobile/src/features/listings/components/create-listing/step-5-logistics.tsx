@@ -35,7 +35,23 @@ type Step5LogisticsProps = {
   onBack?: () => void;
 };
 
-const QUICK_HARVEST_OPTIONS = ["Today", "In a Week", "In a Month"];
+/** The quick choices and how many days from today each one means. */
+const QUICK_HARVEST_OPTIONS = [
+  { label: "Today", days: 0 },
+  { label: "In a Week", days: 7 },
+  { label: "In a Month", days: 30 }
+];
+
+/** Today plus `days`, as the `YYYY-MM-DD` the api expects, in the phone's own calendar. */
+function isoDateFromToday(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export default function Step5Logistics({
   cropId = "tomato",
@@ -47,9 +63,13 @@ export default function Step5Logistics({
   const insets = useSafeAreaInsets();
   const crop = cropById(cropId) || cropById("tomato");
 
-  const [dateMode, setDateMode] = useState<"quick" | "calendar">("quick");
-  const [harvestDate, setHarvestDate] = useState<string>(initialData?.harvestDate ?? "Today");
-  const [customDate, setCustomDate] = useState<string>("");
+  /* Coming back to this step, the date already chosen is a real date, so reopen it in the
+     calendar field rather than resetting to a quick option. */
+  const [dateMode, setDateMode] = useState<"quick" | "calendar">(
+    initialData?.harvestDate ? "calendar" : "quick"
+  );
+  const [harvestDate, setHarvestDate] = useState<string>("Today");
+  const [customDate, setCustomDate] = useState<string>(initialData?.harvestDate ?? "");
   const [transportType, setTransportType] = useState<"shared" | "solo">(
     initialData?.fulfillmentOption === "solo" ? "solo" : "shared"
   );
@@ -62,8 +82,17 @@ export default function Step5Logistics({
   };
 
   const handleContinue = () => {
-    const finalDate =
-      dateMode === "calendar" && customDate.trim() ? customDate.trim() : harvestDate;
+    let finalDate: string;
+    if (dateMode === "calendar") {
+      finalDate = customDate.trim();
+      if (!ISO_DATE.test(finalDate) || Number.isNaN(Date.parse(finalDate))) {
+        Alert.alert("Check the date", "Enter the ready date as YYYY-MM-DD, e.g. 2026-09-25.");
+        return;
+      }
+    } else {
+      const option = QUICK_HARVEST_OPTIONS.find((o) => o.label === harvestDate);
+      finalDate = isoDateFromToday(option?.days ?? 0);
+    }
     onNext?.({
       fulfillmentOption: transportType,
       harvestDate: finalDate,
@@ -187,7 +216,7 @@ export default function Step5Logistics({
           {/* Quick Options Chips */}
           {dateMode === "quick" && (
             <HStack className="gap-2">
-              {QUICK_HARVEST_OPTIONS.map((opt) => {
+              {QUICK_HARVEST_OPTIONS.map(({ label: opt }) => {
                 const isSelected = harvestDate === opt;
                 return (
                   <Pressable
