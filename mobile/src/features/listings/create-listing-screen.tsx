@@ -122,7 +122,7 @@ export function CreateListingScreen() {
         [
           {
             text: "View My Listings",
-            onPress: () => router.replace("/(farmer)/(tabs)/listings")
+            onPress: () => router.replace("/(farmer)/(tabs)/farmer-listings")
           },
           {
             text: "Go to Dashboard",
@@ -138,7 +138,7 @@ export function CreateListingScreen() {
         [
           {
             text: "View My Listings",
-            onPress: () => router.replace("/(farmer)/(tabs)/listings")
+            onPress: () => router.replace("/(farmer)/(tabs)/farmer-listings")
           },
           {
             text: "Go to Dashboard",
@@ -155,7 +155,7 @@ export function CreateListingScreen() {
     if (step > 1) {
       setStep((s) => s - 1);
     } else {
-      router.replace("/(farmer)/(tabs)/listings");
+      router.replace("/(farmer)/(tabs)/farmer-listings");
     }
   };
 
@@ -244,7 +244,7 @@ export function CreateListingScreen() {
         >
           <AppButton
             label="View My Listings"
-            onPress={() => router.replace("/(farmer)/(tabs)/listings")}
+            onPress={() => router.replace("/(farmer)/(tabs)/farmer-listings")}
           />
           <AppButton
             label="Return to Dashboard"

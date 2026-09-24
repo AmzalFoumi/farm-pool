@@ -43,7 +43,7 @@ export default function FarmerTabsLayout() {
       />
 
       <Tabs.Screen
-        name="listings"
+        name="farmer-listings"
         options={{
           title: "Listings",
           tabBarIcon: ({ color, focused }) => (

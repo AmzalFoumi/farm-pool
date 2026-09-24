@@ -141,7 +141,7 @@ export default function FarmerHomeScreen() {
           <Text className="type-body-bold text-foreground">Quick Actions</Text>
           <HStack className="gap-3">
             <Pressable
-              onPress={() => router.push("/(farmer)/(tabs)/listings")}
+              onPress={() => router.push("/(farmer)/(tabs)/farmer-listings")}
               className="flex-1 rounded-card border border-border bg-card p-3.5 items-center justify-center"
             >
               <Text className="type-body-bold text-foreground">View My Listings</Text>
