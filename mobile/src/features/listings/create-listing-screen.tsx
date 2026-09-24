@@ -155,7 +155,7 @@ export function CreateListingScreen() {
     if (step > 1) {
       setStep((s) => s - 1);
     } else {
-      router.back();
+      router.replace("/(farmer)/(tabs)/listings");
     }
   };
 

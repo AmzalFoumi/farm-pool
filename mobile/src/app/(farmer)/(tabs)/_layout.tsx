@@ -1,48 +1,94 @@
-import { NativeTabs } from "expo-router/unstable-native-tabs";
-import { useColorScheme } from "react-native";
+import { Tabs } from "expo-router";
+import { View } from "react-native";
 
-import { Colors } from "@/constants/theme";
+import { Text } from "@/components/ui/text";
 
 export default function FarmerTabsLayout() {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === "unspecified" ? "light" : scheme];
-
   return (
-    <NativeTabs
-      backgroundColor={colors.background}
-      indicatorColor={colors.backgroundElement}
-      labelStyle={{ selected: { color: colors.text } }}
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarPosition: "bottom",
+        tabBarStyle: {
+          height: 64,
+          paddingBottom: 8,
+          paddingTop: 6,
+          backgroundColor: "#ffffff",
+          borderTopWidth: 1,
+          borderTopColor: "#e5e7eb",
+          elevation: 12,
+          shadowColor: "#000000",
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.1,
+          shadowRadius: 6
+        },
+        tabBarActiveTintColor: "#166534",
+        tabBarInactiveTintColor: "#6b7280",
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: "600"
+        }
+      }}
     >
-      <NativeTabs.Trigger name="farmer-home">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: "house", selected: "house.fill" }} md="home" />
-      </NativeTabs.Trigger>
+      <Tabs.Screen
+        name="farmer-home"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color, focused }) => (
+            <Text className="text-xl" style={{ color }}>
+              {focused ? "🏠" : "🏚️"}
+            </Text>
+          )
+        }}
+      />
 
-      <NativeTabs.Trigger name="listings">
-        <NativeTabs.Trigger.Label>Listings</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: "leaf", selected: "leaf.fill" }} md="list" />
-      </NativeTabs.Trigger>
+      <Tabs.Screen
+        name="listings"
+        options={{
+          title: "Listings",
+          tabBarIcon: ({ color, focused }) => (
+            <Text className="text-xl" style={{ color }}>
+              {focused ? "🌿" : "🌱"}
+            </Text>
+          )
+        }}
+      />
 
-      <NativeTabs.Trigger name="add">
-        <NativeTabs.Trigger.Label>Add</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf={{ default: "plus.circle", selected: "plus.circle.fill" }}
-          md="add_circle"
-        />
-      </NativeTabs.Trigger>
+      <Tabs.Screen
+        name="add"
+        options={{
+          title: "",
+          tabBarIcon: () => (
+            <View className="h-12 w-12 items-center justify-center rounded-full bg-primary -mt-4 shadow-md border-2 border-card">
+              <Text className="text-2xl text-white font-bold">+</Text>
+            </View>
+          )
+        }}
+      />
 
-      <NativeTabs.Trigger name="farmer-orders">
-        <NativeTabs.Trigger.Label>Orders</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          sf={{ default: "shippingbox", selected: "shippingbox.fill" }}
-          md="shopping_bag"
-        />
-      </NativeTabs.Trigger>
+      <Tabs.Screen
+        name="farmer-orders"
+        options={{
+          title: "Orders",
+          tabBarIcon: ({ color, focused }) => (
+            <Text className="text-xl" style={{ color }}>
+              {focused ? "📦" : "📄"}
+            </Text>
+          )
+        }}
+      />
 
-      <NativeTabs.Trigger name="farmer-profile">
-        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: "person", selected: "person.fill" }} md="person" />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+      <Tabs.Screen
+        name="farmer-profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, focused }) => (
+            <Text className="text-xl" style={{ color }}>
+              {focused ? "👤" : "👤"}
+            </Text>
+          )
+        }}
+      />
+    </Tabs>
   );
 }
