@@ -1,3 +1,4 @@
+import type { ListingStatus } from '@farm-pool/shared';
 import { randomUUID } from 'node:crypto';
 import type { Listing, NewListing } from '../../domain/entities/listing';
 import type {
@@ -15,12 +16,27 @@ export class InMemoryListingRepository implements ListingRepository {
   }
 
   findVerified(filter: ListingFilter, limit: number): Promise<Listing[]> {
+    return this.findByStatus('verified', filter, limit);
+  }
+
+  findPendingApproval(
+    filter: ListingFilter,
+    limit: number,
+  ): Promise<Listing[]> {
+    return this.findByStatus('pending_approval', filter, limit);
+  }
+
+  private findByStatus(
+    status: ListingStatus,
+    filter: ListingFilter,
+    limit: number,
+  ): Promise<Listing[]> {
     const district = filter.district?.toLowerCase();
     const found = [...this.rows.values()]
-      .filter((l) => l.status === 'verified')
+      .filter((l) => l.status === status)
       .filter((l) => !filter.crop || l.cropId === filter.crop)
       .filter((l) => !district || l.district.toLowerCase() === district)
-      .filter((l) => !filter.farmerId || l.farmerId === filter.farmerId)
+      .filter((l) => !filter.farmerIds || filter.farmerIds.includes(l.farmerId))
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, limit)
       .map(snapshot);
