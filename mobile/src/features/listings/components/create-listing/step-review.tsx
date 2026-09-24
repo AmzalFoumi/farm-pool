@@ -11,6 +11,7 @@ import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "@/features/listings/crop-tile";
+import { toKg, type BatchUnit } from "@/features/listings/units";
 
 import type { Step2QuantityData } from "./step-2-quantity";
 import type { Step3HarvestPhotosData } from "./step-3-harvest-photos";
@@ -61,7 +62,7 @@ export default function StepReview({
 
   const totalQuantity = step2.quantity > 0 ? step2.quantity : 300;
   const askingPrice = step4.pricePerKg > 0 ? step4.pricePerKg : 195;
-  const grossEarnings = askingPrice * totalQuantity;
+  const grossEarnings = askingPrice * toKg(totalQuantity, step2.unit);
 
   const photoUris = [step3?.widePhotoUri, step3?.closeupPhotoUri, step3?.packagingPhotoUri].filter(
     (uri): uri is string => typeof uri === "string" && uri.length > 0

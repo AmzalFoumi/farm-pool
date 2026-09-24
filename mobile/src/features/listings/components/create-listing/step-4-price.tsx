@@ -17,6 +17,7 @@ import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "@/features/listings/crop-tile";
+import { toKg, type BatchUnit } from "@/features/listings/units";
 
 export type Step4PriceData = {
   pricePerKg: number;
@@ -27,7 +28,7 @@ type Step4PriceProps = {
   cropId?: CropId;
   batchInfo?: {
     quantity: number;
-    unit: string;
+    unit: BatchUnit;
     grade: string;
     variety: string;
   };
@@ -54,7 +55,8 @@ export default function Step4Price({
   const [pricePerKg, setPricePerKg] = useState<number>(initialPrice);
   const [isKeypadVisible, setIsKeypadVisible] = useState<boolean>(false);
 
-  const totalQuantityKg = batchInfo.quantity > 0 ? batchInfo.quantity : 300;
+  const quantity = batchInfo.quantity > 0 ? batchInfo.quantity : 300;
+  const totalQuantityKg = toKg(quantity, batchInfo.unit);
   const grossEarnings = pricePerKg * totalQuantityKg;
 
   const handleAdjustPrice = (delta: number) => {
@@ -151,8 +153,7 @@ export default function Step4Price({
                 Fresh {crop.name}
               </Text>
               <Text className="type-caption text-muted-foreground" numberOfLines={1}>
-                Batch: {totalQuantityKg} {batchInfo.unit} • Grade {batchInfo.grade} •{" "}
-                {batchInfo.variety}
+                Batch: {quantity} {batchInfo.unit} • Grade {batchInfo.grade} • {batchInfo.variety}
               </Text>
             </VStack>
           </HStack>

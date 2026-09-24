@@ -19,6 +19,7 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "@/features/listings/crop-tile";
 import { listingsApi } from "@/features/listings/api";
+import { toKg } from "@/features/listings/units";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
 
@@ -84,8 +85,7 @@ export function CreateListingScreen() {
 
     const rawQuantity = listingData.step2?.quantity ?? 300;
     const unit = listingData.step2?.unit ?? "kg";
-    const multiplier = unit === "crates" ? 25 : unit === "sacks" ? 50 : 1;
-    const totalKg = rawQuantity * multiplier;
+    const totalKg = toKg(rawQuantity, unit);
 
     const photoList = [
       listingData.step3?.widePhotoUri,
@@ -148,7 +148,7 @@ export function CreateListingScreen() {
   if (isPublished) {
     const rawQuantity = listingData.step2?.quantity ?? 300;
     const unit = listingData.step2?.unit ?? "kg";
-    const totalKg = rawQuantity * (unit === "crates" ? 25 : unit === "sacks" ? 50 : 1);
+    const totalKg = toKg(rawQuantity, unit);
 
     return (
       <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>

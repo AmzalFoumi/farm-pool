@@ -22,10 +22,11 @@ import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "@/features/listings/crop-tile";
+import { toKg, type BatchUnit } from "@/features/listings/units";
 
 export type Step2QuantityData = {
   quantity: number;
-  unit: "kg" | "crates" | "sacks";
+  unit: BatchUnit;
   moqKg: number;
   variety: string;
   grade: "A" | "B" | "C";
@@ -102,8 +103,7 @@ export default function Step2Quantity({
   );
 
   // Conversion calculations
-  const unitMultiplier = unit === "crates" ? 25 : unit === "sacks" ? 50 : 1;
-  const totalKg = quantity * unitMultiplier;
+  const totalKg = toKg(quantity, unit);
   const isBelowMoq = totalKg < moqKg || quantity <= 0;
 
   const handleQuantityTextChange = (text: string) => {
