@@ -68,7 +68,7 @@ export class MongooseListingRepository implements ListingRepository {
       ...listing,
       districtKey: listing.district.toLowerCase(),
     });
-    return toListing(created as ListingHydrated);
+    return toListing(created);
   }
 
   async upsertBySeedKey(
