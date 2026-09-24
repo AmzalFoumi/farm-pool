@@ -1,5 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { IdentityModule } from '../identity/identity.module';
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '../identity/domain/repositories/user.repository';
 import { CloseWanted } from './application/services/close-wanted';
 import { CreateListing } from './application/services/create-listing';
 import { CreateWanted } from './application/services/create-wanted';
@@ -31,10 +36,12 @@ import {
  * use-cases built with `useFactory` so they stay plain classes.
  *
  * `LISTING_REPOSITORY` is exported because placing an order reads the listing it is placed
- * against (`orders.module.ts`).
+ * against (`orders.module.ts`). `IdentityModule` is imported for `USER_REPOSITORY`: creating a
+ * listing copies the farmer's name from their account.
  */
 @Module({
   imports: [
+    IdentityModule,
     MongooseModule.forFeature([
       { name: LISTING_MODEL, schema: ListingSchema },
       { name: WANTED_MODEL, schema: WantedSchema },
@@ -56,8 +63,9 @@ import {
     },
     {
       provide: CreateListing,
-      inject: [LISTING_REPOSITORY],
-      useFactory: (listings: ListingRepository) => new CreateListing(listings),
+      inject: [LISTING_REPOSITORY, USER_REPOSITORY],
+      useFactory: (listings: ListingRepository, users: UserRepository) =>
+        new CreateListing(listings, users),
     },
     {
       provide: CreateWanted,

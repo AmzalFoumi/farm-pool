@@ -66,7 +66,7 @@ export class CatalogController {
     @CurrentUser() user: AuthenticatedUser,
     @Body(new ZodValidationPipe(createListingSchema)) body: CreateListingData,
   ): Promise<Listing> {
-    return this.createListing.execute({ id: user.sub, name: 'Farmer' }, body);
+    return this.createListing.execute(user.sub, body);
   }
 
   @Allow('listing:read')
