@@ -86,7 +86,7 @@ export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoP
               accessibilityRole="button"
               accessibilityState={{ selected: isSelected }}
               className={[
-                "flex-1 items-center justify-between rounded-card p-3",
+                "min-h-tap flex-1 items-center justify-between rounded-card p-3",
                 isSelected ? "border-2 border-primary bg-secondary" : "border border-border bg-card"
               ].join(" ")}
             >

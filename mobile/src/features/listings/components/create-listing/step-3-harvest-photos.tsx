@@ -198,9 +198,6 @@ export default function Step3HarvestPhotos({
 
       {/* UX Guidance Note Banner */}
       <HStack className="rounded-card bg-brand-deep p-4 items-start gap-3">
-        <Box className="h-9 w-9 items-center justify-center rounded-field bg-secondary">
-          <Text className="type-h4">📸</Text>
-        </Box>
         <VStack className="flex-1 gap-0.5">
           <Text className="type-body-bold text-brand-deep-foreground">
             Clear Photos = Faster Sales
@@ -222,7 +219,7 @@ export default function Step3HarvestPhotos({
           <Text
             className={`type-body-sm-bold ${isReady ? "text-primary" : "text-muted-foreground"}`}
           >
-            {isReady ? "✓ 2 of 2 Ready" : `${completedCount} of 2 Uploaded`}
+            {isReady ? "2 of 2 ready" : `${completedCount} of 2 Uploaded`}
           </Text>
         </Box>
       </HStack>
@@ -252,7 +249,7 @@ export default function Step3HarvestPhotos({
             accessibilityRole="button"
             className="min-h-tap flex-row items-center gap-1 rounded-chip border border-border bg-secondary px-2.5 py-1"
           >
-            <Text className="type-body-sm-bold text-secondary-foreground">👁 Sample</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">Sample</Text>
           </Pressable>
         </HStack>
 
@@ -284,14 +281,14 @@ export default function Step3HarvestPhotos({
               accessibilityRole="button"
               className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
             >
-              <Text className="type-body-bold text-foreground">📷 Take Photo</Text>
+              <Text className="type-body-bold text-foreground">Take Photo</Text>
             </Pressable>
             <Pressable
               onPress={() => handleAttachSamplePhoto("wide")}
               accessibilityRole="button"
               className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
             >
-              <Text className="type-body-bold text-foreground">🖼 Gallery</Text>
+              <Text className="type-body-bold text-foreground">Gallery</Text>
             </Pressable>
           </HStack>
         )}
@@ -322,7 +319,7 @@ export default function Step3HarvestPhotos({
             accessibilityRole="button"
             className="min-h-tap flex-row items-center gap-1 rounded-chip border border-border bg-secondary px-2.5 py-1"
           >
-            <Text className="type-body-sm-bold text-secondary-foreground">👁 Sample</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">Sample</Text>
           </Pressable>
         </HStack>
 
@@ -354,14 +351,14 @@ export default function Step3HarvestPhotos({
               accessibilityRole="button"
               className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
             >
-              <Text className="type-body-bold text-foreground">📷 Take Photo</Text>
+              <Text className="type-body-bold text-foreground">Take Photo</Text>
             </Pressable>
             <Pressable
               onPress={() => handleAttachSamplePhoto("closeup")}
               accessibilityRole="button"
               className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
             >
-              <Text className="type-body-bold text-foreground">🖼 Gallery</Text>
+              <Text className="type-body-bold text-foreground">Gallery</Text>
             </Pressable>
           </HStack>
         )}
@@ -392,7 +389,7 @@ export default function Step3HarvestPhotos({
             accessibilityRole="button"
             className="min-h-tap flex-row items-center gap-1 rounded-chip border border-border bg-secondary px-2.5 py-1"
           >
-            <Text className="type-body-sm-bold text-secondary-foreground">👁 Sample</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">Sample</Text>
           </Pressable>
         </HStack>
 
@@ -424,14 +421,14 @@ export default function Step3HarvestPhotos({
               accessibilityRole="button"
               className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
             >
-              <Text className="type-body-bold text-foreground">📷 Camera</Text>
+              <Text className="type-body-bold text-foreground">Camera</Text>
             </Pressable>
             <Pressable
               onPress={() => handleAttachSamplePhoto("packaging")}
               accessibilityRole="button"
               className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
             >
-              <Text className="type-body-bold text-foreground">🖼 Gallery</Text>
+              <Text className="type-body-bold text-foreground">Gallery</Text>
             </Pressable>
           </HStack>
         )}
@@ -439,22 +436,22 @@ export default function Step3HarvestPhotos({
 
       {/* Farmer Photo Tips Card */}
       <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
-        <Text className="type-h4 text-foreground">💡 Tips for Sri Lankan Farmers</Text>
+        <Text className="type-h4 text-foreground">Tips for Sri Lankan Farmers</Text>
         <VStack className="gap-2">
           <HStack className="items-start gap-2">
-            <Text className="type-body-bold text-secondary-foreground">☀️ Use Sunlight:</Text>
+            <Text className="type-body-bold text-secondary-foreground">Use Sunlight:</Text>
             <Text className="type-caption flex-1 text-muted-foreground">
               Shoot outdoors under daylight instead of dim indoor rooms.
             </Text>
           </HStack>
           <HStack className="items-start gap-2">
-            <Text className="type-body-bold text-secondary-foreground">📏 Show Real Scale:</Text>
+            <Text className="type-body-bold text-secondary-foreground">Show Real Scale:</Text>
             <Text className="type-caption flex-1 text-muted-foreground">
               Place a 25kg crate next to produce for buyer scale context.
             </Text>
           </HStack>
           <HStack className="items-start gap-2">
-            <Text className="type-body-bold text-secondary-foreground">🚫 No Filters:</Text>
+            <Text className="type-body-bold text-secondary-foreground">No Filters:</Text>
             <Text className="type-caption flex-1 text-muted-foreground">
               Buyers need authentic photos without artificial color editing.
             </Text>

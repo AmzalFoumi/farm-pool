@@ -64,19 +64,16 @@ export default function Step4Price({
   const getMarketFeedbackBadge = () => {
     if (pricePerKg < minBench) {
       return {
-        label: "Fast Selling Price",
-        icon: "⚡"
+        label: "Fast Selling Price"
       };
     }
     if (pricePerKg >= minBench && pricePerKg <= maxBench) {
       return {
-        label: "Highly Competitive",
-        icon: "🔥"
+        label: "Highly Competitive"
       };
     }
     return {
-      label: "Above Avg Premium",
-      icon: "📈"
+      label: "Above Avg Premium"
     };
   };
 
@@ -149,7 +146,7 @@ export default function Step4Price({
           </HStack>
 
           <Box className="rounded-pill bg-card border border-border px-2.5 py-1">
-            <Text className="type-caption-bold text-muted-foreground">📍 {benchmark.hubName}</Text>
+            <Text className="type-caption-bold text-muted-foreground">{benchmark.hubName}</Text>
           </Box>
         </HStack>
 
@@ -175,7 +172,7 @@ export default function Step4Price({
             onPress={() => handleAdjustPrice(-5)}
             accessibilityRole="button"
             accessibilityLabel="Decrease price"
-            className="h-13 w-13 items-center justify-center rounded-field border border-border bg-background active:opacity-80"
+            className="h-tap w-tap items-center justify-center rounded-field border border-border bg-background active:opacity-80"
           >
             <Text className="type-h2 text-foreground">-</Text>
           </Pressable>
@@ -185,7 +182,7 @@ export default function Step4Price({
             onPress={() => setIsKeypadVisible(true)}
             accessibilityRole="button"
             accessibilityLabel="Open keypad to edit asking price"
-            className="flex-1 items-center px-2 py-1 active:opacity-80"
+            className="min-h-tap flex-1 items-center px-2 py-1 active:opacity-80"
           >
             <HStack className="items-baseline justify-center gap-1">
               <Text className="type-body-bold text-primary">Rs.</Text>
@@ -193,14 +190,14 @@ export default function Step4Price({
             </HStack>
             <Box className="my-1.5 h-0.5 w-16 bg-border" />
             <Text className="type-caption text-muted-foreground">per Kilogram</Text>
-            <Text className="type-caption text-secondary-foreground pt-0.5">⌨ Tap to type</Text>
+            <Text className="type-caption text-secondary-foreground pt-0.5">Tap to type</Text>
           </Pressable>
 
           <Pressable
             onPress={() => handleAdjustPrice(5)}
             accessibilityRole="button"
             accessibilityLabel="Increase price"
-            className="h-13 w-13 items-center justify-center rounded-field border border-border bg-background active:opacity-80"
+            className="h-tap w-tap items-center justify-center rounded-field border border-border bg-background active:opacity-80"
           >
             <Text className="type-h2 text-foreground">+</Text>
           </Pressable>
@@ -208,19 +205,13 @@ export default function Step4Price({
 
         {/* Dynamic Feedback Badge */}
         <Box className="rounded-pill bg-secondary px-4 py-1.5">
-          <Text className="type-body-sm-bold text-secondary-foreground">
-            {badge.icon} {badge.label}
-          </Text>
+          <Text className="type-body-sm-bold text-secondary-foreground">{badge.label}</Text>
         </Box>
       </VStack>
 
       {/* Dark Gross Batch Value Card (Calculation + Final Earnings) */}
       <HStack className="elevation-card items-center justify-between rounded-card bg-brand-deep p-4 text-brand-deep-foreground">
         <HStack className="items-center gap-3">
-          <Box className="h-11 w-11 items-center justify-center rounded-field bg-secondary border border-border">
-            <Text className="type-h3">💰</Text>
-          </Box>
-
           <VStack className="gap-0.5">
             <Text className="type-caption-bold uppercase text-brand-deep-muted">
               Total Est. Earnings
@@ -241,9 +232,6 @@ export default function Step4Price({
 
       {/* Fair Escrow Protected Banner */}
       <HStack className="rounded-card border border-border bg-secondary p-4 items-start gap-3">
-        <Box className="h-9 w-9 items-center justify-center rounded-pill bg-card border border-border text-secondary-foreground">
-          <Text className="type-h4">🛡️</Text>
-        </Box>
         <VStack className="flex-1 gap-0.5">
           <Text className="type-body-bold text-foreground">Fair Escrow Protected</Text>
           <Text className="type-caption text-muted-foreground">

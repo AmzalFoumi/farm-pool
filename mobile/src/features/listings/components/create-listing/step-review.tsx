@@ -105,8 +105,8 @@ export default function StepReview({
           ) : null}
           <WizardActions
             onBack={onBack}
-            backLabel="✏ Edit"
-            continueLabel={isSubmitting ? "Publishing..." : "Publish Listing 🚀"}
+            backLabel="Edit"
+            continueLabel={isSubmitting ? "Publishing..." : "Publish Listing"}
             onContinue={handleConfirmPublish}
             continueDisabled={isSubmitting}
           />
@@ -172,7 +172,7 @@ export default function StepReview({
           {/* Quality Grade */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">⭐ Quality Grade</Text>
+              <Text className="type-caption text-muted-foreground">Quality Grade</Text>
             </HStack>
             <HStack className="items-center gap-2">
               <Text className="type-body-sm-bold text-foreground">Grade {step2.grade || "A"}</Text>
@@ -189,7 +189,7 @@ export default function StepReview({
           {/* Variety */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">🏷️ {crop.name} Variety</Text>
+              <Text className="type-caption text-muted-foreground">{crop.name} Variety</Text>
             </HStack>
             <Text className="type-body-sm-bold text-foreground">
               {step2.variety || "Roma / Plum"}
@@ -201,13 +201,12 @@ export default function StepReview({
           {/* Scheduled Date */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">📅 Scheduled Date</Text>
+              <Text className="type-caption text-muted-foreground">Scheduled Date</Text>
             </HStack>
             <HStack className="items-center gap-1.5">
               <Text className="type-body-sm-bold text-foreground">
                 {step5.harvestDate || "05 Nov 2026"}
               </Text>
-              <Text className="type-caption text-primary">✓</Text>
             </HStack>
           </HStack>
 
@@ -216,7 +215,7 @@ export default function StepReview({
           {/* Packaging */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">📦 Packaging</Text>
+              <Text className="type-caption text-muted-foreground">Packaging</Text>
             </HStack>
             <Text className="type-body-sm-bold text-foreground">
               {step2.packaging || "Plastic Crates (25kg)"}
@@ -228,10 +227,10 @@ export default function StepReview({
           {/* Transportation */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">🚚 Transportation</Text>
+              <Text className="type-caption text-muted-foreground">Transportation</Text>
             </HStack>
             <Box className="rounded-chip bg-secondary px-2.5 py-1">
-              <Text className="type-caption-bold text-primary">👥 {getFulfillmentLabel()}</Text>
+              <Text className="type-caption-bold text-primary">{getFulfillmentLabel()}</Text>
             </Box>
           </HStack>
 
@@ -240,7 +239,7 @@ export default function StepReview({
           {/* Dropoff Hub */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">📍 District</Text>
+              <Text className="type-caption text-muted-foreground">District</Text>
             </HStack>
             <Text className="type-body-sm-bold text-foreground">{step5.district}</Text>
           </HStack>
@@ -250,7 +249,7 @@ export default function StepReview({
           {/* Harvest Photos Mini-Gallery */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">🖼️ Harvest Photos</Text>
+              <Text className="type-caption text-muted-foreground">Harvest Photos</Text>
             </HStack>
             <HStack className="items-center gap-1.5">
               {photoUris.length > 0 ? (
@@ -272,9 +271,6 @@ export default function StepReview({
 
       {/* Trust Banner 1: Verified Network */}
       <HStack className="rounded-card bg-secondary p-4 items-start gap-3.5 border border-border">
-        <Box className="h-10 w-10 items-center justify-center rounded-pill bg-card border border-border text-primary">
-          <Text className="type-h3">🛡️</Text>
-        </Box>
         <VStack className="flex-1 gap-0.5">
           <Text className="type-body-bold text-foreground">Verified Network Visibility</Text>
           <Text className="type-caption text-muted-foreground">
@@ -287,9 +283,6 @@ export default function StepReview({
 
       {/* Trust Banner 2: Escrow Guarantee */}
       <HStack className="rounded-card bg-secondary p-4 items-start gap-3.5 border border-border">
-        <Box className="h-10 w-10 items-center justify-center rounded-pill bg-card border border-border text-secondary-foreground">
-          <Text className="type-h3">🔒</Text>
-        </Box>
         <VStack className="flex-1 gap-0.5">
           <Text className="type-body-bold text-foreground">100% Guaranteed Payout</Text>
           <Text className="type-caption text-muted-foreground">

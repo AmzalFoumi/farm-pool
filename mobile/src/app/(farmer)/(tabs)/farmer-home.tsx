@@ -137,14 +137,14 @@ export default function FarmerHomeScreen() {
           <HStack className="gap-3">
             <Pressable
               onPress={() => router.push("/(farmer)/(tabs)/farmer-listings")}
-              className="flex-1 rounded-card border border-border bg-card p-3.5 items-center justify-center"
+              className="min-h-tap flex-1 rounded-card border border-border bg-card p-3.5 items-center justify-center"
             >
               <Text className="type-body-bold text-foreground">View My Listings</Text>
             </Pressable>
 
             <Pressable
               onPress={() => router.push("/(farmer)/(tabs)/farmer-orders")}
-              className="flex-1 rounded-card border border-border bg-card p-3.5 items-center justify-center"
+              className="min-h-tap flex-1 rounded-card border border-border bg-card p-3.5 items-center justify-center"
             >
               <Text className="type-body-bold text-foreground">View Orders</Text>
             </Pressable>

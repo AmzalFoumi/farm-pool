@@ -144,7 +144,7 @@ export default function Step5Logistics({
       <VStack className="elevation-card gap-4 rounded-card border border-border bg-card p-4">
         <VStack className="gap-0.5">
           <HStack className="items-center gap-2">
-            <Text className="type-h4 text-foreground">📅 Harvest / Ready Date</Text>
+            <Text className="type-h4 text-foreground">Harvest / Ready Date</Text>
           </HStack>
           <Text className="type-caption text-muted-foreground">
             Select when crop will be ready for pickup
@@ -157,7 +157,7 @@ export default function Step5Logistics({
             onPress={() => setDateMode("quick")}
             accessibilityRole="tab"
             accessibilityState={{ selected: dateMode === "quick" }}
-            className={`flex-1 items-center justify-center py-2 rounded-field ${
+            className={`min-h-tap flex-1 items-center justify-center py-2 rounded-field ${
               dateMode === "quick" ? "bg-card border border-border" : ""
             }`}
           >
@@ -174,7 +174,7 @@ export default function Step5Logistics({
             onPress={() => setDateMode("calendar")}
             accessibilityRole="tab"
             accessibilityState={{ selected: dateMode === "calendar" }}
-            className={`flex-1 items-center justify-center py-2 rounded-field ${
+            className={`min-h-tap flex-1 items-center justify-center py-2 rounded-field ${
               dateMode === "calendar" ? "bg-card border border-border" : ""
             }`}
           >
@@ -183,7 +183,7 @@ export default function Step5Logistics({
                 dateMode === "calendar" ? "text-primary" : "text-muted-foreground"
               }`}
             >
-              📆 Custom Calendar
+              Custom Calendar
             </Text>
           </Pressable>
         </HStack>
@@ -232,7 +232,7 @@ export default function Step5Logistics({
         {/* Selected Schedule Display Banner */}
         <HStack className="items-center justify-between rounded-field border border-border bg-secondary p-3">
           <HStack className="items-center gap-2">
-            <Text className="type-body-sm-bold text-secondary-foreground">⏰ Ready Timeframe:</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">Ready Timeframe:</Text>
           </HStack>
           <Text className="type-body-bold text-foreground">{currentDisplayDate}</Text>
         </HStack>
@@ -254,7 +254,7 @@ export default function Step5Logistics({
       <VStack className="gap-3">
         <VStack className="gap-0.5 px-1">
           <HStack className="items-center gap-2">
-            <Text className="type-h4 text-foreground">🚚 Transport Method</Text>
+            <Text className="type-h4 text-foreground">Transport Method</Text>
           </HStack>
           <Text className="type-caption text-muted-foreground">
             How would you like to move your crop?
@@ -274,20 +274,12 @@ export default function Step5Logistics({
           <View className="self-end mb-2">
             <Box className="rounded-chip bg-secondary border border-border px-2.5 py-0.5">
               <Text className="type-caption-bold text-secondary-foreground uppercase">
-                🌿 Saves up to 40%
+                Saves up to 40%
               </Text>
             </Box>
           </View>
 
           <HStack className="items-start gap-3">
-            <Box
-              className={`h-12 w-12 items-center justify-center rounded-field ${
-                transportType === "shared" ? "bg-primary" : "bg-secondary"
-              }`}
-            >
-              <Text className="type-h2">👥</Text>
-            </Box>
-
             <VStack className="flex-1 min-w-0 gap-1">
               <HStack className="items-center justify-between">
                 <Text
@@ -316,7 +308,7 @@ export default function Step5Logistics({
 
               <HStack className="mt-2 pt-2 border-t border-border items-center gap-1.5">
                 <Text className="type-caption-bold text-primary">
-                  🛡️ Escrow locked per volume slot
+                  Escrow locked per volume slot
                 </Text>
               </HStack>
             </VStack>
@@ -333,14 +325,6 @@ export default function Step5Logistics({
           }`}
         >
           <HStack className="items-start gap-3">
-            <Box
-              className={`h-12 w-12 items-center justify-center rounded-field ${
-                transportType === "solo" ? "bg-primary" : "bg-secondary"
-              }`}
-            >
-              <Text className="type-h2">🚚</Text>
-            </Box>
-
             <VStack className="flex-1 min-w-0 gap-1">
               <HStack className="items-center justify-between">
                 <Text
@@ -373,9 +357,6 @@ export default function Step5Logistics({
 
       {/* Community Micro-Delight Callout (Blue Info Card) */}
       <HStack className="items-center gap-3 rounded-card border border-border bg-secondary p-3.5">
-        <Box className="h-9 w-9 items-center justify-center rounded-pill bg-card border border-border">
-          <Text className="type-h3">🤝</Text>
-        </Box>
         <VStack className="flex-1 min-w-0 gap-0.5">
           <Text className="type-body-sm-bold text-foreground">FarmPool Community Hub</Text>
           <Text className="type-caption text-muted-foreground">

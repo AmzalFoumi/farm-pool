@@ -155,10 +155,6 @@ export function CreateListingScreen() {
         <ScrollView contentContainerClassName="p-gutter pt-8 pb-32 gap-5">
           {/* Status Icon Header */}
           <VStack className="items-center text-center gap-3">
-            <Box className="h-20 w-20 items-center justify-center rounded-pill bg-warning-subtle border border-transparent">
-              <Text className="type-display">⏳</Text>
-            </Box>
-
             <Badge variant="outline" className="bg-warning-subtle border-transparent px-3 py-1">
               <Text className="type-caption-bold text-warning">PENDING COORDINATOR APPROVAL</Text>
             </Badge>

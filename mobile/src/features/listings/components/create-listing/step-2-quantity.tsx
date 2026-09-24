@@ -245,7 +245,7 @@ export default function Step2Quantity({
             accessibilityRole="button"
             className="min-h-tap flex-row items-center gap-1 rounded-chip border border-border bg-secondary px-3 py-1"
           >
-            <Text className="type-body-sm-bold text-secondary-foreground">⌨ Keypad</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">Keypad</Text>
           </Pressable>
         </HStack>
 
@@ -255,7 +255,7 @@ export default function Step2Quantity({
             onPress={() => handleAdjustQuantity(-10)}
             accessibilityRole="button"
             accessibilityLabel="Decrease quantity"
-            className="h-12 w-12 items-center justify-center rounded-field border border-primary bg-card active:opacity-80"
+            className="h-tap w-tap items-center justify-center rounded-field border border-primary bg-card active:opacity-80"
           >
             <Text className="type-h2 text-primary">-</Text>
           </Pressable>
@@ -265,14 +265,14 @@ export default function Step2Quantity({
             onPress={openKeypad}
             accessibilityRole="button"
             accessibilityLabel="Open keypad to edit quantity"
-            className="flex-1 items-center px-2 py-1 active:opacity-80"
+            className="min-h-tap flex-1 items-center px-2 py-1 active:opacity-80"
           >
             <HStack className="items-baseline justify-center gap-1.5">
               <Text className="type-display text-secondary-foreground">{quantity}</Text>
               <Text className="type-h3 text-secondary-foreground">{unit}</Text>
             </HStack>
             <Text className="type-caption text-secondary-foreground text-center">
-              ⌨ Tap to open keypad
+              Tap to open keypad
             </Text>
           </Pressable>
 
@@ -280,7 +280,7 @@ export default function Step2Quantity({
             onPress={() => handleAdjustQuantity(10)}
             accessibilityRole="button"
             accessibilityLabel="Increase quantity"
-            className="h-12 w-12 items-center justify-center rounded-field border border-primary bg-card active:opacity-80"
+            className="h-tap w-tap items-center justify-center rounded-field border border-primary bg-card active:opacity-80"
           >
             <Text className="type-h2 text-primary">+</Text>
           </Pressable>
@@ -400,7 +400,7 @@ export default function Step2Quantity({
                   isCustomMoq ? "text-primary-foreground" : "text-foreground"
                 }`}
               >
-                Custom ✏
+                Custom
               </Text>
             </Pressable>
           </HStack>
@@ -584,7 +584,6 @@ export default function Step2Quantity({
                       isSelected ? "text-secondary-foreground" : "text-muted-foreground"
                     }`}
                   >
-                    {isSelected ? "✓ " : "+ "}
                     {cert}
                   </Text>
                 </Pressable>
