@@ -106,25 +106,26 @@ export default function FarmerListingsScreen() {
                   const crop = cropById(item.cropId);
                   return (
                     <Card key={item.id} className="bg-card p-4 border-border gap-3">
-                      <HStack className="items-start justify-between">
-                        <VStack>
-                          <HStack className="items-center gap-2">
-                            <Text className="type-title text-foreground">
-                              {crop?.name ?? item.cropId}
+                      <VStack className="gap-1">
+                        <HStack className="items-center justify-between gap-3">
+                          <Text className="type-title min-w-0 flex-1 text-foreground">
+                            {crop?.name ?? item.cropId}
+                          </Text>
+                          <View className="shrink-0">
+                            <ListingStatusPill status={item.status} />
+                          </View>
+                        </HStack>
+                        <HStack className="flex-wrap items-center gap-2">
+                          <Badge variant="outline" className="bg-secondary border-border">
+                            <Text className="type-caption-bold text-secondary-foreground">
+                              {item.district}
                             </Text>
-                            <Badge variant="outline" className="bg-secondary border-border">
-                              <Text className="type-caption-bold text-secondary-foreground">
-                                {item.district}
-                              </Text>
-                            </Badge>
-                          </HStack>
-                          <Text className="type-caption text-muted-foreground mt-0.5">
+                          </Badge>
+                          <Text className="type-caption text-muted-foreground">
                             Harvest: {formatDate(item.harvestDate)}
                           </Text>
-                        </VStack>
-
-                        <ListingStatusPill status={item.status} />
-                      </HStack>
+                        </HStack>
+                      </VStack>
 
                       <View className="h-px bg-border" />
 
