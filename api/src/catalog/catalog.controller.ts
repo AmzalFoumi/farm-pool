@@ -26,6 +26,7 @@ import { CreateListing } from './application/services/create-listing';
 import { CreateWanted } from './application/services/create-wanted';
 import { GetListing } from './application/services/get-listing';
 import { ListListings } from './application/services/list-listings';
+import { ListMyListings } from './application/services/list-my-listings';
 import { ListWanted } from './application/services/list-wanted';
 
 /**
@@ -36,6 +37,7 @@ import { ListWanted } from './application/services/list-wanted';
  * | ------ | --------------------------- | ---------------- | -------------------------- |
  * | GET    | /catalog/listings?crop=&district= | `listing:read` | 200 `Listing[]` (verified) |
  * | POST   | /catalog/listings           | `listing:create` | 201 `Listing`              |
+ * | GET    | /catalog/listings/mine      | `listing:create` | 200 `Listing[]` (own, all) |
  * | GET    | /catalog/listings/:id       | `listing:read`   | 200 `Listing` · 404        |
  * | GET    | /catalog/wanted?mine=true   | `wanted:read`    | 200 `WantedListing[]`      |
  * | POST   | /catalog/wanted             | `wanted:create`  | 201 `WantedListing`        |
@@ -47,6 +49,7 @@ export class CatalogController {
     private readonly listListings: ListListings,
     private readonly getListing: GetListing,
     private readonly createListing: CreateListing,
+    private readonly listMyListings: ListMyListings,
     private readonly createWanted: CreateWanted,
     private readonly listWanted: ListWanted,
     private readonly closeWanted: CloseWanted,
@@ -67,6 +70,14 @@ export class CatalogController {
     @Body(new ZodValidationPipe(createListingSchema)) body: CreateListingData,
   ): Promise<Listing> {
     return this.createListing.execute(user.sub, body);
+  }
+
+  /* Declared before `listings/:id`, or Nest would read "mine" as an id. `listing:create` is the
+     farmer's action: only someone who can post listings has any of their own. */
+  @Allow('listing:create')
+  @Get('listings/mine')
+  myListings(@CurrentUser() user: AuthenticatedUser): Promise<Listing[]> {
+    return this.listMyListings.execute(user.sub);
   }
 
   @Allow('listing:read')

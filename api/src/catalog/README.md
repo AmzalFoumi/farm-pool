@@ -24,6 +24,7 @@ approval add use-cases here; they do not change the layout. Recipe: `.plans/PLAY
 | ------ | ---- | ----- | ------ |
 | GET | `/catalog/listings?crop=&district=` | `listing:read` (everyone) | 200 `Listing[]` — `verified` only, newest first, max 50 |
 | GET | `/catalog/listings/:id` | `listing:read` | 200 `Listing`; 404 `listing_not_found` (also for a non-verified listing) |
+| GET | `/catalog/listings/mine` | `listing:create` (farmer) | 200 `Listing[]` — the caller's own, every status, newest first |
 | POST | `/catalog/listings` | `listing:create` (farmer) | 201 `Listing`, `pending_approval`, `farmerName` copied from the account; 404 `farmer_not_found` |
 | GET | `/catalog/wanted?mine=true` | `wanted:read` (everyone) | 200 `WantedListing[]` — the caller's own; without `mine`, every open request |
 | POST | `/catalog/wanted` | `wanted:create` (buyer) | 201 `WantedListing`; 400 `validation_error` |

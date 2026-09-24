@@ -10,6 +10,7 @@ import { CreateListing } from './application/services/create-listing';
 import { CreateWanted } from './application/services/create-wanted';
 import { GetListing } from './application/services/get-listing';
 import { ListListings } from './application/services/list-listings';
+import { ListMyListings } from './application/services/list-my-listings';
 import { ListWanted } from './application/services/list-wanted';
 import {
   LISTING_REPOSITORY,
@@ -66,6 +67,11 @@ import {
       inject: [LISTING_REPOSITORY, USER_REPOSITORY],
       useFactory: (listings: ListingRepository, users: UserRepository) =>
         new CreateListing(listings, users),
+    },
+    {
+      provide: ListMyListings,
+      inject: [LISTING_REPOSITORY],
+      useFactory: (listings: ListingRepository) => new ListMyListings(listings),
     },
     {
       provide: CreateWanted,
