@@ -9,7 +9,7 @@ import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
-import { ordersApi } from "@/lib/orders-api";
+import { ordersApi } from "@/features/orders/api";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function FarmerOrdersScreen() {
@@ -26,7 +26,7 @@ export default function FarmerOrdersScreen() {
       return;
     }
     try {
-      const data = await ordersApi.myOrders(auth.token);
+      const data = await ordersApi.mine(auth.token);
       setOrders(data);
     } catch {
       setOrders([]);

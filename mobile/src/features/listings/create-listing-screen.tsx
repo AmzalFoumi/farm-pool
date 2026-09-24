@@ -18,7 +18,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "@/features/listings/crop-tile";
-import { catalogApi } from "@/lib/catalog-api";
+import { listingsApi } from "@/features/listings/api";
 import { useAuth } from "@/providers/auth-provider";
 
 import Step1CategoryInfo from "./components/create-listing/step-1-category-info";
@@ -113,7 +113,7 @@ export function CreateListingScreen() {
     setSubmitting(true);
     try {
       if (auth.token) {
-        await catalogApi.createListing(auth.token, payload);
+        await listingsApi.create(auth.token, payload);
       }
       setIsPublished(true);
       Alert.alert(

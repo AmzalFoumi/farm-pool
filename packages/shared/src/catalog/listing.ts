@@ -64,11 +64,10 @@ export type Listing = z.infer<typeof listingSchema>;
 
 export const listingListSchema = z.array(listingSchema);
 
-/** Query string for `GET /catalog/listings`. All optional; omitted means "all". */
+/** Query string for `GET /catalog/listings`. Both optional; omitted means "all". */
 export const listingQuerySchema = z.object({
   crop: cropIdSchema.optional(),
-  district: districtSchema.optional(),
-  farmerId: z.string().optional()
+  district: districtSchema.optional()
 });
 
 export type ListingQuery = z.infer<typeof listingQuerySchema>;

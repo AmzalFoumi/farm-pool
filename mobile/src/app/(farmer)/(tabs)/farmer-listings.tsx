@@ -13,7 +13,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
-import { catalogApi } from "@/lib/catalog-api";
+import { listingsApi } from "@/features/listings/api";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function FarmerListingsScreen() {
@@ -27,8 +27,9 @@ export default function FarmerListingsScreen() {
   const [filter, setFilter] = useState<"all" | "active" | "sold">("all");
 
   const loadListings = useCallback(async () => {
+    if (!auth.token) return;
     try {
-      const data = await catalogApi.listListings({ farmerId: auth.user?.id });
+      const data = await listingsApi.mine(auth.token);
       setListings(data);
     } catch {
       // Fallback state if server is offline or empty
@@ -37,7 +38,7 @@ export default function FarmerListingsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [auth.user?.id]);
+  }, [auth.token]);
 
   useEffect(() => {
     loadListings();
