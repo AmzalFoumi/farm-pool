@@ -86,10 +86,8 @@ export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoP
               accessibilityRole="button"
               accessibilityState={{ selected: isSelected }}
               className={[
-                "flex-1 items-center justify-between rounded-card p-3 shadow-sm",
-                isSelected
-                  ? "border-2 border-primary bg-secondary/30"
-                  : "border border-border bg-card"
+                "flex-1 items-center justify-between rounded-card p-3",
+                isSelected ? "border-2 border-primary bg-secondary" : "border border-border bg-card"
               ].join(" ")}
             >
               {isSelected && (
@@ -148,7 +146,7 @@ export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoP
                   accessibilityState={{ selected: isSelected }}
                   className={[
                     "min-h-tap flex-row items-center gap-2 rounded-chip border px-3 py-2",
-                    isSelected ? "border-primary bg-secondary/40" : "border-border bg-card"
+                    isSelected ? "border-primary bg-secondary" : "border-border bg-card"
                   ].join(" ")}
                 >
                   <Text className="type-body-sm">{crop.emoji}</Text>
@@ -194,7 +192,7 @@ export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoP
                   className={[
                     "elevation-card min-h-tap flex-row items-center justify-between rounded-card p-3",
                     isSelected
-                      ? "border-2 border-primary bg-secondary/20"
+                      ? "border-2 border-primary bg-secondary"
                       : "border border-border bg-card"
                   ].join(" ")}
                 >
@@ -204,8 +202,10 @@ export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoP
                       <HStack className="items-center gap-2">
                         <Text className="type-body-bold text-foreground">{crop.name}</Text>
                         {crop.highDemand && (
-                          <Box className="rounded-chip bg-warning-subtle px-2 py-0.5">
-                            <Text className="type-body-sm-bold text-warning">High Demand</Text>
+                          <Box className="rounded-chip bg-secondary px-2 py-0.5">
+                            <Text className="type-body-sm-bold text-secondary-foreground">
+                              High Demand
+                            </Text>
                           </Box>
                         )}
                       </HStack>

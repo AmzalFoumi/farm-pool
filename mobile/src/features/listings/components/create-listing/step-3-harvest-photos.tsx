@@ -126,7 +126,9 @@ export default function Step3HarvestPhotos({
           {" "}
           <HStack className="items-center justify-between px-1">
             <Text className="type-caption text-muted-foreground">Required Photos:</Text>
-            <Text className={`type-body-bold ${isReady ? "text-success" : "text-warning"}`}>
+            <Text
+              className={`type-body-bold ${isReady ? "text-primary" : "text-muted-foreground"}`}
+            >
               {isReady ? "2/2 Ready" : `${completedCount}/2 Completed`}
             </Text>
           </HStack>
@@ -160,7 +162,7 @@ export default function Step3HarvestPhotos({
                         className="h-full w-full object-cover"
                       />
                     </Box>
-                    <Box className="rounded-card border border-info/30 bg-info-subtle p-3">
+                    <Box className="rounded-card border border-border bg-secondary p-3">
                       <Text className="type-caption text-foreground">
                         {SAMPLE_GUIDES[sampleGuideKey].desc}
                       </Text>
@@ -189,14 +191,14 @@ export default function Step3HarvestPhotos({
           </VStack>
         </HStack>
 
-        <Box className="rounded-chip bg-info-subtle border border-info/20 px-2 py-1">
-          <Text className="type-body-sm-bold text-info">Verified</Text>
+        <Box className="rounded-chip bg-secondary border border-border px-2 py-1">
+          <Text className="type-body-sm-bold text-secondary-foreground">Verified</Text>
         </Box>
       </HStack>
 
       {/* UX Guidance Note Banner */}
-      <HStack className="rounded-card bg-brand-deep p-4 items-start gap-3 shadow-sm">
-        <Box className="h-9 w-9 items-center justify-center rounded-field bg-white/10">
+      <HStack className="rounded-card bg-brand-deep p-4 items-start gap-3">
+        <Box className="h-9 w-9 items-center justify-center rounded-field bg-secondary">
           <Text className="type-h4">📸</Text>
         </Box>
         <VStack className="flex-1 gap-0.5">
@@ -216,13 +218,10 @@ export default function Step3HarvestPhotos({
           <Text className="type-h4 text-foreground">Required Photos</Text>
         </HStack>
 
-        <Box
-          className={[
-            "rounded-chip px-3 py-1 border",
-            isReady ? "bg-success-subtle border-success/30" : "bg-warning-subtle border-warning/30"
-          ].join(" ")}
-        >
-          <Text className={`type-body-sm-bold ${isReady ? "text-success" : "text-warning"}`}>
+        <Box className="rounded-chip border border-border bg-secondary px-3 py-1">
+          <Text
+            className={`type-body-sm-bold ${isReady ? "text-primary" : "text-muted-foreground"}`}
+          >
             {isReady ? "✓ 2 of 2 Ready" : `${completedCount} of 2 Uploaded`}
           </Text>
         </Box>
@@ -232,14 +231,14 @@ export default function Step3HarvestPhotos({
       <VStack
         className={[
           "elevation-card gap-3 rounded-card border-2 p-4",
-          widePhoto ? "border-primary bg-secondary/20" : "border-dashed border-border bg-card"
+          widePhoto ? "border-primary bg-secondary" : "border-dashed border-border bg-card"
         ].join(" ")}
       >
         <HStack className="items-start justify-between">
           <VStack className="flex-1 pr-2">
             <HStack className="items-center gap-2 flex-wrap">
               <Text className="type-body-bold text-foreground">1. Field / Wide Harvest Shot</Text>
-              <Box className="rounded-chip bg-destructive-subtle px-2 py-0.5 border border-destructive/20">
+              <Box className="rounded-chip bg-destructive-subtle px-2 py-0.5 border border-destructive">
                 <Text className="type-body-sm-bold text-destructive">Required</Text>
               </Box>
             </HStack>
@@ -251,9 +250,9 @@ export default function Step3HarvestPhotos({
           <Pressable
             onPress={() => setSampleGuideKey("wide")}
             accessibilityRole="button"
-            className="min-h-tap flex-row items-center gap-1 rounded-chip border border-info/30 bg-info-subtle px-2.5 py-1"
+            className="min-h-tap flex-row items-center gap-1 rounded-chip border border-border bg-secondary px-2.5 py-1"
           >
-            <Text className="type-body-sm-bold text-info">👁 Sample</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">👁 Sample</Text>
           </Pressable>
         </HStack>
 
@@ -302,14 +301,14 @@ export default function Step3HarvestPhotos({
       <VStack
         className={[
           "elevation-card gap-3 rounded-card border-2 p-4",
-          closeupPhoto ? "border-primary bg-secondary/20" : "border-dashed border-border bg-card"
+          closeupPhoto ? "border-primary bg-secondary" : "border-dashed border-border bg-card"
         ].join(" ")}
       >
         <HStack className="items-start justify-between">
           <VStack className="flex-1 pr-2">
             <HStack className="items-center gap-2 flex-wrap">
               <Text className="type-body-bold text-foreground">2. Close-up Produce Quality</Text>
-              <Box className="rounded-chip bg-destructive-subtle px-2 py-0.5 border border-destructive/20">
+              <Box className="rounded-chip bg-destructive-subtle px-2 py-0.5 border border-destructive">
                 <Text className="type-body-sm-bold text-destructive">Required</Text>
               </Box>
             </HStack>
@@ -321,9 +320,9 @@ export default function Step3HarvestPhotos({
           <Pressable
             onPress={() => setSampleGuideKey("closeup")}
             accessibilityRole="button"
-            className="min-h-tap flex-row items-center gap-1 rounded-chip border border-info/30 bg-info-subtle px-2.5 py-1"
+            className="min-h-tap flex-row items-center gap-1 rounded-chip border border-border bg-secondary px-2.5 py-1"
           >
-            <Text className="type-body-sm-bold text-info">👁 Sample</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">👁 Sample</Text>
           </Pressable>
         </HStack>
 
@@ -372,7 +371,7 @@ export default function Step3HarvestPhotos({
       <VStack
         className={[
           "elevation-card gap-3 rounded-card border-2 p-4",
-          packagingPhoto ? "border-primary bg-secondary/20" : "border-dashed border-border bg-card"
+          packagingPhoto ? "border-primary bg-secondary" : "border-dashed border-border bg-card"
         ].join(" ")}
       >
         <HStack className="items-start justify-between">
@@ -391,9 +390,9 @@ export default function Step3HarvestPhotos({
           <Pressable
             onPress={() => setSampleGuideKey("packaging")}
             accessibilityRole="button"
-            className="min-h-tap flex-row items-center gap-1 rounded-chip border border-info/30 bg-info-subtle px-2.5 py-1"
+            className="min-h-tap flex-row items-center gap-1 rounded-chip border border-border bg-secondary px-2.5 py-1"
           >
-            <Text className="type-body-sm-bold text-info">👁 Sample</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">👁 Sample</Text>
           </Pressable>
         </HStack>
 
@@ -443,19 +442,19 @@ export default function Step3HarvestPhotos({
         <Text className="type-h4 text-foreground">💡 Tips for Sri Lankan Farmers</Text>
         <VStack className="gap-2">
           <HStack className="items-start gap-2">
-            <Text className="type-body-bold text-info">☀️ Use Sunlight:</Text>
+            <Text className="type-body-bold text-secondary-foreground">☀️ Use Sunlight:</Text>
             <Text className="type-caption flex-1 text-muted-foreground">
               Shoot outdoors under daylight instead of dim indoor rooms.
             </Text>
           </HStack>
           <HStack className="items-start gap-2">
-            <Text className="type-body-bold text-info">📏 Show Real Scale:</Text>
+            <Text className="type-body-bold text-secondary-foreground">📏 Show Real Scale:</Text>
             <Text className="type-caption flex-1 text-muted-foreground">
               Place a 25kg crate next to produce for buyer scale context.
             </Text>
           </HStack>
           <HStack className="items-start gap-2">
-            <Text className="type-body-bold text-info">🚫 No Filters:</Text>
+            <Text className="type-body-bold text-secondary-foreground">🚫 No Filters:</Text>
             <Text className="type-caption flex-1 text-muted-foreground">
               Buyers need authentic photos without artificial color editing.
             </Text>

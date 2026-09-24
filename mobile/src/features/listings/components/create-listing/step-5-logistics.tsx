@@ -135,8 +135,8 @@ export default function Step5Logistics({
           </VStack>
         </HStack>
 
-        <Box className="rounded-chip bg-warning-subtle border border-warning/20 px-2.5 py-0.5">
-          <Text className="type-body-sm-bold text-warning">{crop.category}</Text>
+        <Box className="rounded-chip bg-secondary border border-border px-2.5 py-0.5">
+          <Text className="type-body-sm-bold text-secondary-foreground">{crop.category}</Text>
         </Box>
       </HStack>
 
@@ -144,7 +144,7 @@ export default function Step5Logistics({
       <VStack className="elevation-card gap-4 rounded-card border border-border bg-card p-4">
         <VStack className="gap-0.5">
           <HStack className="items-center gap-2">
-            <Text className="type-h4 text-foreground font-bold">📅 Harvest / Ready Date</Text>
+            <Text className="type-h4 text-foreground">📅 Harvest / Ready Date</Text>
           </HStack>
           <Text className="type-caption text-muted-foreground">
             Select when crop will be ready for pickup
@@ -152,13 +152,13 @@ export default function Step5Logistics({
         </VStack>
 
         {/* Mode Switcher Tabs */}
-        <HStack className="rounded-field bg-secondary/30 p-1 border border-border">
+        <HStack className="rounded-field bg-secondary p-1 border border-border">
           <Pressable
             onPress={() => setDateMode("quick")}
             accessibilityRole="tab"
             accessibilityState={{ selected: dateMode === "quick" }}
             className={`flex-1 items-center justify-center py-2 rounded-field ${
-              dateMode === "quick" ? "bg-card shadow-xs border border-border" : ""
+              dateMode === "quick" ? "bg-card border border-border" : ""
             }`}
           >
             <Text
@@ -175,7 +175,7 @@ export default function Step5Logistics({
             accessibilityRole="tab"
             accessibilityState={{ selected: dateMode === "calendar" }}
             className={`flex-1 items-center justify-center py-2 rounded-field ${
-              dateMode === "calendar" ? "bg-card shadow-xs border border-border" : ""
+              dateMode === "calendar" ? "bg-card border border-border" : ""
             }`}
           >
             <Text
@@ -200,11 +200,11 @@ export default function Step5Logistics({
                   accessibilityRole="button"
                   accessibilityState={{ selected: isSelected }}
                   className={`h-tap flex-1 items-center justify-center rounded-field border ${
-                    isSelected ? "border-info bg-info-subtle" : "border-border bg-card"
+                    isSelected ? "border-primary bg-secondary" : "border-border bg-card"
                   }`}
                 >
                   <Text
-                    className={`type-body-sm-bold ${isSelected ? "text-info" : "text-foreground"}`}
+                    className={`type-body-sm-bold ${isSelected ? "text-secondary-foreground" : "text-foreground"}`}
                   >
                     {opt}
                   </Text>
@@ -216,8 +216,10 @@ export default function Step5Logistics({
 
         {/* Custom Calendar Input */}
         {dateMode === "calendar" && (
-          <VStack className="gap-2 rounded-field bg-info-subtle/50 p-3 border border-info/20">
-            <Text className="type-caption-bold text-info">Enter Ready Date (YYYY-MM-DD):</Text>
+          <VStack className="gap-2 rounded-field bg-muted p-3 border border-border">
+            <Text className="type-caption-bold text-secondary-foreground">
+              Enter Ready Date (YYYY-MM-DD):
+            </Text>
             <AppTextField
               label="Ready Date (YYYY-MM-DD)"
               placeholder="e.g. 2026-09-25"
@@ -228,9 +230,9 @@ export default function Step5Logistics({
         )}
 
         {/* Selected Schedule Display Banner */}
-        <HStack className="items-center justify-between rounded-field border border-warning/20 bg-warning-subtle p-3">
+        <HStack className="items-center justify-between rounded-field border border-border bg-secondary p-3">
           <HStack className="items-center gap-2">
-            <Text className="type-body-sm-bold text-warning">⏰ Ready Timeframe:</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">⏰ Ready Timeframe:</Text>
           </HStack>
           <Text className="type-body-bold text-foreground">{currentDisplayDate}</Text>
         </HStack>
@@ -252,7 +254,7 @@ export default function Step5Logistics({
       <VStack className="gap-3">
         <VStack className="gap-0.5 px-1">
           <HStack className="items-center gap-2">
-            <Text className="type-h4 text-foreground font-bold">🚚 Transport Method</Text>
+            <Text className="type-h4 text-foreground">🚚 Transport Method</Text>
           </HStack>
           <Text className="type-caption text-muted-foreground">
             How would you like to move your crop?
@@ -265,13 +267,13 @@ export default function Step5Logistics({
           accessibilityRole="radio"
           accessibilityState={{ checked: transportType === "shared" }}
           className={`elevation-card relative flex-col rounded-card border-2 p-4 transition-all ${
-            transportType === "shared" ? "border-primary bg-primary/5" : "border-border bg-card"
+            transportType === "shared" ? "border-primary bg-secondary" : "border-border bg-card"
           }`}
         >
           {/* Top Savings Badge */}
           <View className="self-end mb-2">
-            <Box className="rounded-chip bg-warning-subtle border border-warning/30 px-2.5 py-0.5">
-              <Text className="type-caption-bold text-warning uppercase tracking-wider">
+            <Box className="rounded-chip bg-secondary border border-border px-2.5 py-0.5">
+              <Text className="type-caption-bold text-secondary-foreground uppercase">
                 🌿 Saves up to 40%
               </Text>
             </Box>
@@ -299,7 +301,7 @@ export default function Step5Logistics({
                   className={`h-5 w-5 items-center justify-center rounded-pill border ${
                     transportType === "shared"
                       ? "border-primary bg-primary"
-                      : "border-muted-foreground/40 bg-transparent"
+                      : "border-border bg-transparent"
                   }`}
                 >
                   {transportType === "shared" && (
@@ -308,7 +310,7 @@ export default function Step5Logistics({
                 </Box>
               </HStack>
 
-              <Text className="type-caption text-muted-foreground leading-snug">
+              <Text className="type-caption text-muted-foreground">
                 Share truck space with neighbor farms. Eco-friendly & cost effective.
               </Text>
 
@@ -327,7 +329,7 @@ export default function Step5Logistics({
           accessibilityRole="radio"
           accessibilityState={{ checked: transportType === "solo" }}
           className={`elevation-card relative flex-col rounded-card border-2 p-4 transition-all ${
-            transportType === "solo" ? "border-primary bg-primary/5" : "border-border bg-card"
+            transportType === "solo" ? "border-primary bg-secondary" : "border-border bg-card"
           }`}
         >
           <HStack className="items-start gap-3">
@@ -352,7 +354,7 @@ export default function Step5Logistics({
                   className={`h-5 w-5 items-center justify-center rounded-pill border ${
                     transportType === "solo"
                       ? "border-primary bg-primary"
-                      : "border-muted-foreground/40 bg-transparent"
+                      : "border-border bg-transparent"
                   }`}
                 >
                   {transportType === "solo" && (
@@ -361,7 +363,7 @@ export default function Step5Logistics({
                 </Box>
               </HStack>
 
-              <Text className="type-caption text-muted-foreground leading-snug">
+              <Text className="type-caption text-muted-foreground">
                 Dedicated vehicle direct to your farm gate. Faster but costs more.
               </Text>
             </VStack>
@@ -370,8 +372,8 @@ export default function Step5Logistics({
       </VStack>
 
       {/* Community Micro-Delight Callout (Blue Info Card) */}
-      <HStack className="items-center gap-3 rounded-card border border-info/30 bg-info-subtle p-3.5">
-        <Box className="h-9 w-9 items-center justify-center rounded-pill bg-card border border-info/30">
+      <HStack className="items-center gap-3 rounded-card border border-border bg-secondary p-3.5">
+        <Box className="h-9 w-9 items-center justify-center rounded-pill bg-card border border-border">
           <Text className="type-h3">🤝</Text>
         </Box>
         <VStack className="flex-1 min-w-0 gap-0.5">

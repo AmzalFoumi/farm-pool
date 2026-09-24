@@ -65,21 +65,18 @@ export default function Step4Price({
     if (pricePerKg < minBench) {
       return {
         label: "Fast Selling Price",
-        icon: "⚡",
-        className: "bg-info-subtle border-info/30 text-info"
+        icon: "⚡"
       };
     }
     if (pricePerKg >= minBench && pricePerKg <= maxBench) {
       return {
         label: "Highly Competitive",
-        icon: "🔥",
-        className: "bg-success-subtle border-success/30 text-success"
+        icon: "🔥"
       };
     }
     return {
       label: "Above Avg Premium",
-      icon: "📈",
-      className: "bg-warning-subtle border-warning/30 text-warning"
+      icon: "📈"
     };
   };
 
@@ -139,13 +136,13 @@ export default function Step4Price({
           </VStack>
         </HStack>
 
-        <Box className="rounded-chip bg-warning-subtle border border-warning/20 px-2 py-0.5">
-          <Text className="type-body-sm-bold text-warning">{crop.category}</Text>
+        <Box className="rounded-chip bg-secondary border border-border px-2 py-0.5">
+          <Text className="type-body-sm-bold text-secondary-foreground">{crop.category}</Text>
         </Box>
       </HStack>
 
       {/* Today's Market Price Wholesale Benchmark Banner */}
-      <VStack className="elevation-card gap-2 rounded-card border border-border bg-secondary/30 p-4">
+      <VStack className="elevation-card gap-2 rounded-card border border-border bg-secondary p-4">
         <HStack className="items-center justify-between">
           <HStack className="items-center gap-1.5">
             <Text className="type-body-bold text-primary">ℹ Today's Wholesale Benchmark</Text>
@@ -170,9 +167,7 @@ export default function Step4Price({
 
       {/* Asking Price Input Card */}
       <VStack className="elevation-card gap-5 rounded-card border border-border bg-card p-6 items-center">
-        <Text className="type-caption-bold uppercase tracking-wider text-muted-foreground">
-          Your Asking Price
-        </Text>
+        <Text className="type-caption-bold uppercase text-muted-foreground">Your Asking Price</Text>
 
         {/* Stepper Controls & Large Display */}
         <HStack className="w-full items-center justify-between gap-3">
@@ -180,7 +175,7 @@ export default function Step4Price({
             onPress={() => handleAdjustPrice(-5)}
             accessibilityRole="button"
             accessibilityLabel="Decrease price"
-            className="h-13 w-13 items-center justify-center rounded-field border border-border bg-background active:opacity-80 shadow-xs"
+            className="h-13 w-13 items-center justify-center rounded-field border border-border bg-background active:opacity-80"
           >
             <Text className="type-h2 text-foreground">-</Text>
           </Pressable>
@@ -194,35 +189,35 @@ export default function Step4Price({
           >
             <HStack className="items-baseline justify-center gap-1">
               <Text className="type-body-bold text-primary">Rs.</Text>
-              <Text className="type-display text-primary font-bold">{pricePerKg}</Text>
+              <Text className="type-display text-primary">{pricePerKg}</Text>
             </HStack>
             <Box className="my-1.5 h-0.5 w-16 bg-border" />
             <Text className="type-caption text-muted-foreground">per Kilogram</Text>
-            <Text className="type-caption text-info pt-0.5">⌨ Tap to type</Text>
+            <Text className="type-caption text-secondary-foreground pt-0.5">⌨ Tap to type</Text>
           </Pressable>
 
           <Pressable
             onPress={() => handleAdjustPrice(5)}
             accessibilityRole="button"
             accessibilityLabel="Increase price"
-            className="h-13 w-13 items-center justify-center rounded-field border border-border bg-background active:opacity-80 shadow-xs"
+            className="h-13 w-13 items-center justify-center rounded-field border border-border bg-background active:opacity-80"
           >
             <Text className="type-h2 text-foreground">+</Text>
           </Pressable>
         </HStack>
 
         {/* Dynamic Feedback Badge */}
-        <Box className={`rounded-pill border px-4 py-1.5 ${badge.className}`}>
-          <Text className="type-body-sm-bold">
+        <Box className="rounded-pill bg-secondary px-4 py-1.5">
+          <Text className="type-body-sm-bold text-secondary-foreground">
             {badge.icon} {badge.label}
           </Text>
         </Box>
       </VStack>
 
       {/* Dark Gross Batch Value Card (Calculation + Final Earnings) */}
-      <HStack className="elevation-card items-center justify-between rounded-card bg-brand-deep p-4 text-brand-deep-foreground shadow-md">
+      <HStack className="elevation-card items-center justify-between rounded-card bg-brand-deep p-4 text-brand-deep-foreground">
         <HStack className="items-center gap-3">
-          <Box className="h-11 w-11 items-center justify-center rounded-field bg-white/10 border border-white/20">
+          <Box className="h-11 w-11 items-center justify-center rounded-field bg-secondary border border-border">
             <Text className="type-h3">💰</Text>
           </Box>
 
@@ -238,15 +233,15 @@ export default function Step4Price({
 
         <VStack className="items-end">
           <Text className="type-caption text-brand-deep-muted">LKR</Text>
-          <Text className="type-h2 text-brand-deep-foreground font-bold">
+          <Text className="type-h2 text-brand-deep-foreground">
             {grossEarnings.toLocaleString()}
           </Text>
         </VStack>
       </HStack>
 
       {/* Fair Escrow Protected Banner */}
-      <HStack className="rounded-card border border-info/30 bg-info-subtle p-4 items-start gap-3">
-        <Box className="h-9 w-9 items-center justify-center rounded-pill bg-card border border-info/30 text-info">
+      <HStack className="rounded-card border border-border bg-secondary p-4 items-start gap-3">
+        <Box className="h-9 w-9 items-center justify-center rounded-pill bg-card border border-border text-secondary-foreground">
           <Text className="type-h4">🛡️</Text>
         </Box>
         <VStack className="flex-1 gap-0.5">

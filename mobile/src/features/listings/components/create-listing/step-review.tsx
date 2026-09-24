@@ -124,8 +124,8 @@ export default function StepReview({
             ) : (
               <CropTile emoji={crop.emoji} />
             )}
-            <Box className="absolute bottom-1 right-1 rounded-chip bg-brand-deep/85 px-1.5 py-0.5">
-              <Text className="type-caption-bold text-white text-[10px]">
+            <Box className="absolute bottom-1 right-1 rounded-chip bg-brand-deep px-1.5 py-0.5">
+              <Text className="type-caption-bold text-primary-foreground text-[10px]">
                 {totalQuantity} {step2.unit || "KG"}
               </Text>
             </Box>
@@ -134,10 +134,10 @@ export default function StepReview({
           {/* Produce Details */}
           <VStack className="flex-1 min-w-0 gap-1">
             <HStack className="items-center justify-between">
-              <Text className="type-h3 text-foreground font-bold flex-1" numberOfLines={1}>
+              <Text className="type-h3 text-foreground flex-1" numberOfLines={1}>
                 Fresh {crop.name}
               </Text>
-              <Box className="rounded-chip bg-secondary border border-primary/20 px-2 py-0.5">
+              <Box className="rounded-chip bg-secondary border border-border px-2 py-0.5">
                 <Text className="type-caption-bold text-primary">Ready</Text>
               </Box>
             </HStack>
@@ -151,7 +151,7 @@ export default function StepReview({
 
             <HStack className="items-baseline justify-between pt-1">
               <HStack className="items-baseline gap-1">
-                <Text className="type-h2 text-primary font-bold">Rs. {askingPrice}</Text>
+                <Text className="type-h2 text-primary">Rs. {askingPrice}</Text>
                 <Text className="type-caption text-muted-foreground">/kg</Text>
               </HStack>
 
@@ -165,7 +165,7 @@ export default function StepReview({
         </HStack>
 
         {/* Middle Separator */}
-        <Box className="h-1.5 w-full bg-background border-y border-border/40" />
+        <Box className="h-1.5 w-full bg-background border-y border-border" />
 
         {/* Specification Details Zone */}
         <VStack className="p-4 gap-3">
@@ -184,7 +184,7 @@ export default function StepReview({
             </HStack>
           </HStack>
 
-          <Box className="h-px w-full bg-border/40" />
+          <Box className="h-px w-full bg-muted" />
 
           {/* Variety */}
           <HStack className="items-center justify-between">
@@ -196,7 +196,7 @@ export default function StepReview({
             </Text>
           </HStack>
 
-          <Box className="h-px w-full bg-border/40" />
+          <Box className="h-px w-full bg-muted" />
 
           {/* Scheduled Date */}
           <HStack className="items-center justify-between">
@@ -211,7 +211,7 @@ export default function StepReview({
             </HStack>
           </HStack>
 
-          <Box className="h-px w-full bg-border/40" />
+          <Box className="h-px w-full bg-muted" />
 
           {/* Packaging */}
           <HStack className="items-center justify-between">
@@ -223,7 +223,7 @@ export default function StepReview({
             </Text>
           </HStack>
 
-          <Box className="h-px w-full bg-border/40" />
+          <Box className="h-px w-full bg-muted" />
 
           {/* Transportation */}
           <HStack className="items-center justify-between">
@@ -235,7 +235,7 @@ export default function StepReview({
             </Box>
           </HStack>
 
-          <Box className="h-px w-full bg-border/40" />
+          <Box className="h-px w-full bg-muted" />
 
           {/* Dropoff Hub */}
           <HStack className="items-center justify-between">
@@ -245,7 +245,7 @@ export default function StepReview({
             <Text className="type-body-sm-bold text-foreground">{step5.district}</Text>
           </HStack>
 
-          <Box className="h-px w-full bg-border/40" />
+          <Box className="h-px w-full bg-muted" />
 
           {/* Harvest Photos Mini-Gallery */}
           <HStack className="items-center justify-between">
@@ -271,13 +271,13 @@ export default function StepReview({
       </VStack>
 
       {/* Trust Banner 1: Verified Network */}
-      <HStack className="rounded-card bg-secondary/40 p-4 items-start gap-3.5 border border-border">
-        <Box className="h-10 w-10 items-center justify-center rounded-pill bg-card border border-border text-primary shadow-xs">
+      <HStack className="rounded-card bg-secondary p-4 items-start gap-3.5 border border-border">
+        <Box className="h-10 w-10 items-center justify-center rounded-pill bg-card border border-border text-primary">
           <Text className="type-h3">🛡️</Text>
         </Box>
         <VStack className="flex-1 gap-0.5">
           <Text className="type-body-bold text-foreground">Verified Network Visibility</Text>
-          <Text className="type-caption text-muted-foreground leading-relaxed">
+          <Text className="type-caption text-muted-foreground">
             Your listing will instantly alert{" "}
             <Text className="type-caption-bold text-primary">340+ verified wholesale buyers</Text>{" "}
             across Sri Lanka.
@@ -286,16 +286,16 @@ export default function StepReview({
       </HStack>
 
       {/* Trust Banner 2: Escrow Guarantee */}
-      <HStack className="rounded-card bg-warning-subtle p-4 items-start gap-3.5 border border-warning/20">
-        <Box className="h-10 w-10 items-center justify-center rounded-pill bg-card border border-warning/20 text-warning shadow-xs">
+      <HStack className="rounded-card bg-secondary p-4 items-start gap-3.5 border border-border">
+        <Box className="h-10 w-10 items-center justify-center rounded-pill bg-card border border-border text-secondary-foreground">
           <Text className="type-h3">🔒</Text>
         </Box>
         <VStack className="flex-1 gap-0.5">
           <Text className="type-body-bold text-foreground">100% Guaranteed Payout</Text>
-          <Text className="type-caption text-muted-foreground leading-relaxed">
+          <Text className="type-caption text-muted-foreground">
             Funds are secured in{" "}
-            <Text className="type-caption-bold text-warning">FarmPool Escrow</Text> the moment a
-            buyer bids on your batch.
+            <Text className="type-caption-bold text-secondary-foreground">FarmPool Escrow</Text> the
+            moment a buyer bids on your batch.
           </Text>
         </VStack>
       </HStack>

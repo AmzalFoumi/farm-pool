@@ -34,10 +34,8 @@ export default function FarmerProfileScreen() {
       {/* ── App Header ────────────────────────────────────────────── */}
       <View className="border-b border-border bg-card px-gutter py-3.5">
         <VStack>
-          <Text className="type-caption font-semibold text-muted-foreground uppercase">
-            Account & Farm
-          </Text>
-          <Heading className="type-title font-bold text-foreground">Farmer Profile</Heading>
+          <Text className="type-caption-bold text-muted-foreground uppercase">Account & Farm</Text>
+          <Heading className="type-title text-foreground">Farmer Profile</Heading>
         </VStack>
       </View>
 
@@ -45,15 +43,15 @@ export default function FarmerProfileScreen() {
         {/* ── Profile Header Card ────────────────────────────────── */}
         <Card className="bg-card p-4.5 border-border gap-3">
           <HStack className="items-center gap-3.5">
-            <Box className="h-14 w-14 items-center justify-center rounded-full bg-brand-deep">
+            <Box className="h-14 w-14 items-center justify-center rounded-pill bg-brand-deep">
               <LeafIcon />
             </Box>
             <VStack className="flex-1 gap-0.5">
               <HStack className="items-center gap-2">
-                <Text className="type-title-lg font-bold text-foreground">
+                <Text className="type-h3 text-foreground">
                   {user?.displayName ?? "Farmer User"}
                 </Text>
-                <Badge variant="outline" className="bg-primary/10 border-primary/20">
+                <Badge variant="outline" className="bg-secondary border-border">
                   <Text className="type-caption-bold text-primary">Farmer</Text>
                 </Badge>
               </HStack>
@@ -68,8 +66,8 @@ export default function FarmerProfileScreen() {
           <Card className="bg-card p-4 border-border gap-3">
             <HStack className="items-center justify-between">
               <Text className="type-body text-muted-foreground">Account Status</Text>
-              <Badge variant="outline" className="bg-emerald-500/15 border-emerald-500/30">
-                <Text className="type-caption-bold text-emerald-700 dark:text-emerald-400">
+              <Badge variant="outline" className="bg-success-subtle border-transparent">
+                <Text className="type-caption-bold text-success">
                   {user?.status ? user.status.toUpperCase() : "ACTIVE"}
                 </Text>
               </Badge>

@@ -36,18 +36,16 @@ export default function FarmerHomeScreen() {
         <HStack className="items-center justify-between">
           <VStack className="gap-0.5">
             <HStack className="items-center gap-2">
-              <Text className="type-caption font-semibold text-muted-foreground uppercase tracking-wider">
+              <Text className="type-caption-bold text-muted-foreground uppercase">
                 Farmer Dashboard
               </Text>
-              <Badge variant="outline" className="bg-primary/10 border-primary/20">
+              <Badge variant="outline" className="bg-secondary border-border">
                 <Text className="type-caption-bold text-primary">Active</Text>
               </Badge>
             </HStack>
-            <Heading className="type-title font-bold text-foreground">
-              Ayubowan, {displayName}!
-            </Heading>
+            <Heading className="type-title text-foreground">Ayubowan, {displayName}!</Heading>
           </VStack>
-          <Box className="h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+          <Box className="h-10 w-10 items-center justify-center rounded-pill bg-secondary">
             <LeafIcon />
           </Box>
         </HStack>
@@ -59,15 +57,13 @@ export default function FarmerHomeScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       >
         {/* ── Primary Call to Action Card ────────────────────────── */}
-        <Card className="overflow-hidden border-brand-deep/20 bg-brand-deep p-4.5 shadow-sm">
+        <Card className="overflow-hidden border-border bg-brand-deep p-4.5">
           <VStack className="gap-3">
             <VStack className="gap-1">
-              <Text className="type-caption font-semibold text-brand-deep-muted uppercase">
+              <Text className="type-caption-bold text-brand-deep-muted uppercase">
                 Sell Your Farm Harvest
               </Text>
-              <Text className="type-title-lg font-bold text-brand-deep-foreground">
-                Post New Produce Batch
-              </Text>
+              <Text className="type-h3 text-brand-deep-foreground">Post New Produce Batch</Text>
               <Text className="type-body text-brand-deep-muted">
                 Connect directly with verified wholesale buyers across Sri Lanka.
               </Text>
@@ -87,13 +83,13 @@ export default function FarmerHomeScreen() {
           <HStack className="gap-3">
             <Card className="flex-1 bg-card p-3.5 border-border">
               <Text className="type-caption text-muted-foreground">Active Produce</Text>
-              <Text className="type-title-lg font-bold text-foreground mt-1">2 Batches</Text>
+              <Text className="type-h3 text-foreground mt-1">2 Batches</Text>
               <Text className="type-caption text-primary mt-1">Ready for pickup</Text>
             </Card>
 
             <Card className="flex-1 bg-card p-3.5 border-border">
               <Text className="type-caption text-muted-foreground">Escrow Balance</Text>
-              <Text className="type-title-lg font-bold text-foreground mt-1">Rs. 85,000</Text>
+              <Text className="type-h3 text-foreground mt-1">Rs. 85,000</Text>
               <Text className="type-caption text-muted-foreground mt-1">2 Pending orders</Text>
             </Card>
           </HStack>
@@ -103,7 +99,7 @@ export default function FarmerHomeScreen() {
         <VStack className="gap-2.5">
           <HStack className="items-center justify-between">
             <Text className="type-body-bold text-foreground">Today's Wholesale Benchmark</Text>
-            <Text className="type-caption text-primary font-semibold">Dambulla Market</Text>
+            <Text className="type-caption-bold text-primary">Dambulla Market</Text>
           </HStack>
 
           <VStack className="gap-2">
@@ -113,7 +109,7 @@ export default function FarmerHomeScreen() {
                 <Card key={crop.id} className="bg-card p-3 border-border">
                   <HStack className="items-center justify-between">
                     <HStack className="items-center gap-3">
-                      <Box className="h-9 w-9 items-center justify-center rounded-full bg-secondary">
+                      <Box className="h-9 w-9 items-center justify-center rounded-pill bg-secondary">
                         <Text className="type-body-bold text-secondary-foreground">
                           {crop.emoji}
                         </Text>

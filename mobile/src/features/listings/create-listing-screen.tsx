@@ -155,17 +155,15 @@ export function CreateListingScreen() {
         <ScrollView contentContainerClassName="p-gutter pt-8 pb-32 gap-5">
           {/* Status Icon Header */}
           <VStack className="items-center text-center gap-3">
-            <Box className="h-20 w-20 items-center justify-center rounded-full bg-amber-500/15 border border-amber-500/30">
+            <Box className="h-20 w-20 items-center justify-center rounded-pill bg-warning-subtle border border-transparent">
               <Text className="type-display">⏳</Text>
             </Box>
 
-            <Badge variant="outline" className="bg-amber-500/15 border-amber-500/30 px-3 py-1">
-              <Text className="type-caption-bold text-amber-700 dark:text-amber-400">
-                PENDING COORDINATOR APPROVAL
-              </Text>
+            <Badge variant="outline" className="bg-warning-subtle border-transparent px-3 py-1">
+              <Text className="type-caption-bold text-warning">PENDING COORDINATOR APPROVAL</Text>
             </Badge>
 
-            <Heading className="type-title-lg font-bold text-foreground text-center">
+            <Heading className="type-h3 text-foreground text-center">
               Listing Submitted for Review!
             </Heading>
 
@@ -180,7 +178,7 @@ export function CreateListingScreen() {
             <HStack className="items-center gap-3">
               <CropTile emoji={selectedCrop?.emoji ?? "🍅"} />
               <VStack className="flex-1">
-                <Text className="type-title font-bold text-foreground">
+                <Text className="type-title text-foreground">
                   Fresh {selectedCrop?.name ?? listingData.cropId}
                 </Text>
                 <Text className="type-caption text-muted-foreground">
@@ -199,7 +197,7 @@ export function CreateListingScreen() {
 
               <VStack className="items-end">
                 <Text className="type-caption text-muted-foreground">Asking Price</Text>
-                <Text className="type-title font-bold text-primary">
+                <Text className="type-title text-primary">
                   Rs. {listingData.step4?.pricePerKg ?? 180} / kg
                 </Text>
               </VStack>
@@ -208,10 +206,10 @@ export function CreateListingScreen() {
             <View className="h-px bg-border" />
 
             <VStack className="gap-1">
-              <Text className="type-caption font-semibold text-muted-foreground">
+              <Text className="type-caption-bold text-muted-foreground">
                 Next Steps & Marketplace Verification
               </Text>
-              <Text className="type-caption text-muted-foreground leading-relaxed">
+              <Text className="type-caption text-muted-foreground">
                 1. Area coordinator verifies quality & harvest date.
                 {"\n"}
                 2. Once approved, listing goes live for 340+ wholesale buyers.

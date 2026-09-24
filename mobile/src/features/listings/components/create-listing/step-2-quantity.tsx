@@ -217,8 +217,8 @@ export default function Step2Quantity({
               <Text className="type-body-bold text-foreground" numberOfLines={1}>
                 Fresh {crop.name}
               </Text>
-              <Box className="rounded-chip bg-warning-subtle px-2 py-0.5">
-                <Text className="type-body-sm-bold text-warning">{crop.category}</Text>
+              <Box className="rounded-chip bg-secondary px-2 py-0.5">
+                <Text className="type-body-sm-bold text-secondary-foreground">{crop.category}</Text>
               </Box>
             </HStack>
             <Text className="type-caption text-muted-foreground" numberOfLines={1}>
@@ -232,7 +232,7 @@ export default function Step2Quantity({
           accessibilityRole="button"
           className="min-h-tap px-2 justify-center"
         >
-          <Text className="type-body-bold text-info">Change</Text>
+          <Text className="type-body-bold text-primary">Change</Text>
         </Pressable>
       </HStack>
 
@@ -243,19 +243,19 @@ export default function Step2Quantity({
           <Pressable
             onPress={openKeypad}
             accessibilityRole="button"
-            className="min-h-tap flex-row items-center gap-1 rounded-chip border border-info/30 bg-info-subtle px-3 py-1"
+            className="min-h-tap flex-row items-center gap-1 rounded-chip border border-border bg-secondary px-3 py-1"
           >
-            <Text className="type-body-sm-bold text-info">⌨ Keypad</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">⌨ Keypad</Text>
           </Pressable>
         </HStack>
 
         {/* Stepper Display — Big Green Box with - and + Buttons */}
-        <HStack className="items-center justify-between rounded-card border border-primary bg-secondary/40 p-3">
+        <HStack className="items-center justify-between rounded-card border border-primary bg-secondary p-3">
           <Pressable
             onPress={() => handleAdjustQuantity(-10)}
             accessibilityRole="button"
             accessibilityLabel="Decrease quantity"
-            className="h-12 w-12 items-center justify-center rounded-field border border-primary bg-card active:opacity-80 shadow-sm"
+            className="h-12 w-12 items-center justify-center rounded-field border border-primary bg-card active:opacity-80"
           >
             <Text className="type-h2 text-primary">-</Text>
           </Pressable>
@@ -269,9 +269,9 @@ export default function Step2Quantity({
           >
             <HStack className="items-baseline justify-center gap-1.5">
               <Text className="type-display text-secondary-foreground">{quantity}</Text>
-              <Text className="type-h3 text-secondary-foreground/80">{unit}</Text>
+              <Text className="type-h3 text-secondary-foreground">{unit}</Text>
             </HStack>
-            <Text className="type-caption text-secondary-foreground/80 text-center">
+            <Text className="type-caption text-secondary-foreground text-center">
               ⌨ Tap to open keypad
             </Text>
           </Pressable>
@@ -280,7 +280,7 @@ export default function Step2Quantity({
             onPress={() => handleAdjustQuantity(10)}
             accessibilityRole="button"
             accessibilityLabel="Increase quantity"
-            className="h-12 w-12 items-center justify-center rounded-field border border-primary bg-card active:opacity-80 shadow-sm"
+            className="h-12 w-12 items-center justify-center rounded-field border border-primary bg-card active:opacity-80"
           >
             <Text className="type-h2 text-primary">+</Text>
           </Pressable>
@@ -315,7 +315,7 @@ export default function Step2Quantity({
                   </Text>
                   <Text
                     className={`type-caption ${
-                      isSelected ? "text-primary-foreground/80" : "text-muted-foreground"
+                      isSelected ? "text-primary-foreground" : "text-muted-foreground"
                     }`}
                   >
                     {sub}
@@ -328,7 +328,7 @@ export default function Step2Quantity({
 
         {/* Weight Conversion Banner */}
         {unit !== "kg" && quantity > 0 && (
-          <HStack className="items-center justify-between rounded-card border border-info/30 bg-info-subtle p-3">
+          <HStack className="items-center justify-between rounded-card border border-border bg-secondary p-3">
             <Text className="type-caption text-foreground">Total Calculated Weight:</Text>
             <Text className="type-body-bold text-primary">
               {totalKg.toLocaleString()} kg ({quantity} {unit})
@@ -347,8 +347,8 @@ export default function Step2Quantity({
             </Text>
           </VStack>
 
-          <Box className="rounded-pill bg-warning-subtle px-3 py-1 border border-warning/20">
-            <Text className="type-body-sm-bold text-warning">
+          <Box className="rounded-pill bg-secondary px-3 py-1 border border-border">
+            <Text className="type-body-sm-bold text-secondary-foreground">
               Min: {moqKg} {unit}
             </Text>
           </Box>
@@ -371,7 +371,7 @@ export default function Step2Quantity({
                   accessibilityState={{ selected: isSelected }}
                   className={[
                     "min-h-tap flex-1 min-w-[20%] items-center justify-center rounded-chip border p-2",
-                    isSelected ? "border-primary bg-secondary/30" : "border-border bg-card"
+                    isSelected ? "border-primary bg-secondary" : "border-border bg-card"
                   ].join(" ")}
                 >
                   <Text
@@ -419,14 +419,14 @@ export default function Step2Quantity({
 
         {/* MOQ / Quantity Warnings */}
         {quantity <= 0 ? (
-          <VStack className="rounded-card border border-warning/30 bg-warning-subtle p-3 gap-1">
-            <Text className="type-body-bold text-warning">Enter Supply Quantity</Text>
+          <VStack className="rounded-card border border-border bg-secondary p-3 gap-1">
+            <Text className="type-body-bold text-secondary-foreground">Enter Supply Quantity</Text>
             <Text className="type-caption text-foreground">
               Please enter a supply quantity greater than 0.
             </Text>
           </VStack>
         ) : isBelowMoq ? (
-          <VStack className="rounded-card border border-destructive/30 bg-destructive-subtle p-3 gap-1">
+          <VStack className="rounded-card border border-destructive bg-destructive-subtle p-3 gap-1">
             <Text className="type-body-bold text-destructive">Supply Below Minimum Order</Text>
             <Text className="type-caption text-destructive">
               Total supply ({totalKg} kg) is less than Minimum Order limit ({moqKg} kg).
@@ -451,7 +451,7 @@ export default function Step2Quantity({
                 accessibilityState={{ selected: isSelected }}
                 className={[
                   "min-h-tap flex-1 min-w-[45%] flex-row items-center justify-between rounded-field border px-3 py-2",
-                  isSelected ? "border-primary bg-secondary/30" : "border-border bg-card"
+                  isSelected ? "border-primary bg-secondary" : "border-border bg-card"
                 ].join(" ")}
               >
                 <Text
@@ -515,7 +515,7 @@ export default function Step2Quantity({
           })}
         </HStack>
 
-        <VStack className="rounded-card border border-info/30 bg-info-subtle p-3 gap-1">
+        <VStack className="rounded-card border border-border bg-secondary p-3 gap-1">
           <Text className="type-body-bold text-primary">{GRADE_DESCRIPTIONS[grade].title}</Text>
           <Text className="type-caption text-muted-foreground">
             {GRADE_DESCRIPTIONS[grade].text}
@@ -539,7 +539,7 @@ export default function Step2Quantity({
                   accessibilityState={{ selected: isSelected }}
                   className={[
                     "min-h-tap flex-row items-center justify-between rounded-field border px-3",
-                    isSelected ? "border-primary bg-secondary/30" : "border-border bg-card"
+                    isSelected ? "border-primary bg-secondary" : "border-border bg-card"
                   ].join(" ")}
                 >
                   <Text
@@ -576,12 +576,12 @@ export default function Step2Quantity({
                   accessibilityState={{ selected: isSelected }}
                   className={[
                     "min-h-tap flex-row items-center gap-1.5 rounded-chip border px-3",
-                    isSelected ? "border-warning bg-warning-subtle" : "border-border bg-card"
+                    isSelected ? "border-primary bg-secondary" : "border-border bg-card"
                   ].join(" ")}
                 >
                   <Text
                     className={`type-body-sm-bold ${
-                      isSelected ? "text-warning" : "text-muted-foreground"
+                      isSelected ? "text-secondary-foreground" : "text-muted-foreground"
                     }`}
                   >
                     {isSelected ? "✓ " : "+ "}

@@ -41,10 +41,10 @@ export default function FarmerListingsScreen() {
       <View className="border-b border-border bg-card px-gutter py-3.5">
         <HStack className="items-center justify-between">
           <VStack>
-            <Text className="type-caption font-semibold text-muted-foreground uppercase">
+            <Text className="type-caption-bold text-muted-foreground uppercase">
               Harvest Management
             </Text>
-            <Heading className="type-title font-bold text-foreground">My Produce Listings</Heading>
+            <Heading className="type-title text-foreground">My Produce Listings</Heading>
           </VStack>
 
           <Pressable
@@ -69,7 +69,7 @@ export default function FarmerListingsScreen() {
               onPress={() => setFilter(tabKey)}
               className={[
                 "min-h-tap flex-1 items-center justify-center rounded-chip border",
-                selected ? "border-primary bg-primary/10" : "border-border bg-card"
+                selected ? "border-primary bg-secondary" : "border-border bg-card"
               ].join(" ")}
             >
               <Text
@@ -107,7 +107,7 @@ export default function FarmerListingsScreen() {
                       <HStack className="items-start justify-between">
                         <VStack>
                           <HStack className="items-center gap-2">
-                            <Text className="type-title font-bold text-foreground">
+                            <Text className="type-title text-foreground">
                               {crop?.name ?? item.cropId}
                             </Text>
                             <Badge variant="outline" className="bg-secondary border-border">
@@ -125,15 +125,15 @@ export default function FarmerListingsScreen() {
                           variant="outline"
                           className={
                             item.status === "verified"
-                              ? "bg-emerald-500/15 border-emerald-500/30"
-                              : "bg-amber-500/15 border-amber-500/30"
+                              ? "bg-success-subtle border-transparent"
+                              : "bg-warning-subtle border-transparent"
                           }
                         >
                           <Text
                             className={
                               item.status === "verified"
-                                ? "type-caption-bold text-emerald-700 dark:text-emerald-400"
-                                : "type-caption-bold text-amber-700 dark:text-amber-400"
+                                ? "type-caption-bold text-success"
+                                : "type-caption-bold text-warning"
                             }
                           >
                             {item.status.toUpperCase()}
@@ -155,9 +155,7 @@ export default function FarmerListingsScreen() {
 
                         <VStack className="items-end">
                           <Text className="type-caption text-muted-foreground">Price per kg</Text>
-                          <Text className="type-title font-bold text-primary">
-                            Rs. {item.pricePerKg}
-                          </Text>
+                          <Text className="type-title text-primary">Rs. {item.pricePerKg}</Text>
                         </VStack>
                       </HStack>
                     </Card>
