@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { cropById, type CropId } from "@farm-pool/shared";
+import { cropById, districtSchema, type CropId } from "@farm-pool/shared";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppTextField } from "@/components/app/app-text-field";
@@ -70,6 +70,8 @@ export default function Step5Logistics({
   );
   const [harvestDate, setHarvestDate] = useState<string>("Today");
   const [customDate, setCustomDate] = useState<string>(initialData?.harvestDate ?? "");
+  const [district, setDistrict] = useState<string>(initialData?.district ?? "");
+  const [districtError, setDistrictError] = useState<string | undefined>();
   const [transportType, setTransportType] = useState<"shared" | "solo">(
     initialData?.fulfillmentOption === "solo" ? "solo" : "shared"
   );
@@ -82,6 +84,14 @@ export default function Step5Logistics({
   };
 
   const handleContinue = () => {
+    /* The district is where buyers search and where the coordinator's region is matched, so it
+       has to be the farmer's own answer, not a default. */
+    const parsedDistrict = districtSchema.safeParse(district);
+    if (!parsedDistrict.success) {
+      setDistrictError(parsedDistrict.error.issues[0]?.message ?? "Enter a district");
+      return;
+    }
+    setDistrictError(undefined);
     let finalDate: string;
     if (dateMode === "calendar") {
       finalDate = customDate.trim();
@@ -96,8 +106,7 @@ export default function Step5Logistics({
     onNext?.({
       fulfillmentOption: transportType,
       harvestDate: finalDate,
-      validityDays: 5,
-      district: "Dambulla"
+      district: parsedDistrict.data
     });
   };
 
@@ -261,6 +270,18 @@ export default function Step5Logistics({
             </HStack>
             <Text className="type-body-bold text-foreground">{currentDisplayDate}</Text>
           </HStack>
+        </VStack>
+
+        {/* Farm district */}
+        <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
+          <AppTextField
+            label="Farm district"
+            value={district}
+            onChangeText={setDistrict}
+            placeholder="e.g. Kurunegala"
+            autoCapitalize="words"
+            error={districtError}
+          />
         </VStack>
 
         {/* Transport Method Section */}

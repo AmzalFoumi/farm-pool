@@ -105,10 +105,10 @@ export function CreateListingScreen() {
       pricePerKg: listingData.step4?.pricePerKg ?? 180,
       minOrderKg: listingData.step2?.moqKg ?? 20,
       harvestDate: listingData.step5?.harvestDate || new Date().toISOString().split("T")[0],
-      expiryDays: listingData.step5?.validityDays ?? 7,
+      expiryDays: listingData.step5?.validityDays,
       photos: photoList,
-      district: listingData.step5?.district || "Dambulla",
-      town: listingData.step5?.district ? `${listingData.step5.district} Central` : "Dambulla Town",
+      // Step 5 will not continue without a district, so this is always the farmer's answer.
+      district: listingData.step5?.district ?? "",
       fulfillmentOption: listingData.step5?.fulfillmentOption || "shared"
     };
 
@@ -184,7 +184,7 @@ export function CreateListingScreen() {
                   Fresh {selectedCrop?.name ?? listingData.cropId}
                 </Text>
                 <Text className="type-caption text-muted-foreground">
-                  {listingData.step5?.district || "Dambulla"} District
+                  {listingData.step5?.district} District
                 </Text>
               </VStack>
             </HStack>

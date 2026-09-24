@@ -267,11 +267,9 @@ export default function StepReview({
             {/* Dropoff Hub */}
             <HStack className="items-center justify-between">
               <HStack className="items-center gap-2">
-                <Text className="type-caption text-muted-foreground">📍 Dropoff Hub</Text>
+                <Text className="type-caption text-muted-foreground">📍 District</Text>
               </HStack>
-              <Text className="type-body-sm-bold text-foreground">
-                {step5.district ? `${step5.district} Collective` : "Dambulla Collective"}
-              </Text>
+              <Text className="type-body-sm-bold text-foreground">{step5.district}</Text>
             </HStack>
 
             <Box className="h-px w-full bg-border/40" />
