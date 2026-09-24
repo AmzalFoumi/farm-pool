@@ -73,28 +73,43 @@ export const listingQuerySchema = z.object({
 
 export type ListingQuery = z.infer<typeof listingQuerySchema>;
 
-export const createListingSchema = z.object({
-  cropId: cropIdSchema,
-  category: z.string().optional(),
-  quantityKg: kgSchema,
-  unit: z.string().optional(),
-  variety: z.string().optional(),
-  grade: z.string().optional(),
-  packaging: z.string().optional(),
-  certifications: z.array(z.string()).optional(),
-  pricePerKg: pricePerKgSchema,
-  /** Calendar date, `YYYY-MM-DD`. The app turns "Today" / "In a week" into a date before sending. */
-  harvestDate: z.iso.date("Enter the harvest date as YYYY-MM-DD"),
-  expiryDays: z.number().optional(),
-  photos: z.array(z.string()).optional(),
-  acceptNegotiation: z.boolean().optional(),
-  district: districtSchema,
-  town: z.string().optional(),
-  address: z.string().optional(),
-  fulfillmentOption: z.string().optional(),
-  farmgateNotes: z.string().optional(),
-  minOrderKg: kgSchema.optional()
-});
+/** Free text a farmer types. Capped so one field cannot carry a page of text into every order. */
+const shortText = (max: number) => z.string().trim().max(max, `Keep this under ${max} characters`);
+
+export const createListingSchema = z
+  .object({
+    cropId: cropIdSchema,
+    category: z.string().optional(),
+    quantityKg: kgSchema,
+    unit: z.string().optional(),
+    variety: shortText(60).optional(),
+    grade: z.string().optional(),
+    packaging: z.string().optional(),
+    certifications: z.array(shortText(60)).max(10).optional(),
+    pricePerKg: pricePerKgSchema,
+    /** Calendar date, `YYYY-MM-DD`. The app turns "Today" / "In a week" into a date before sending. */
+    harvestDate: z.iso.date("Enter the harvest date as YYYY-MM-DD"),
+    /** How many days the listing stays open. */
+    expiryDays: z
+      .number()
+      .int("Whole days only")
+      .positive("Must be at least 1 day")
+      .max(90)
+      .optional(),
+    photos: z.array(z.string()).optional(),
+    acceptNegotiation: z.boolean().optional(),
+    district: districtSchema,
+    town: shortText(60).optional(),
+    address: shortText(200).optional(),
+    fulfillmentOption: z.string().optional(),
+    farmgateNotes: shortText(500).optional(),
+    minOrderKg: kgSchema.optional()
+  })
+  /* A minimum order above the whole quantity makes the listing impossible to order. */
+  .refine((l) => l.minOrderKg === undefined || l.minOrderKg <= l.quantityKg, {
+    path: ["minOrderKg"],
+    message: "The minimum order cannot be more than the quantity on offer"
+  });
 
 export type CreateListingInput = z.input<typeof createListingSchema>;
 export type CreateListingData = z.output<typeof createListingSchema>;
