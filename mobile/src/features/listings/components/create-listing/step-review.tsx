@@ -2,14 +2,13 @@ import { useState } from "react";
 import { Image, View } from "react-native";
 import { cropById, type CropId } from "@farm-pool/shared";
 
-import { CheckIcon } from "@/components/app/icons";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "@/features/listings/crop-tile";
 import { formatPrice } from "@/lib/format";
-import { toKg, type BatchUnit } from "@/features/listings/units";
+import { toKg } from "@/features/listings/units";
 
 import type { Step2QuantityData } from "./step-2-quantity";
 import type { Step3HarvestPhotosData } from "./step-3-harvest-photos";
@@ -29,7 +28,6 @@ type StepReviewProps = {
   /** Why the last publish failed, shown above the buttons; null when there is nothing to say. */
   error?: string | null;
   onBack?: () => void;
-  onEditStep?: (step: number) => void;
 };
 
 export default function StepReview({
@@ -53,8 +51,7 @@ export default function StepReview({
   },
   onPublish,
   error,
-  onBack,
-  onEditStep
+  onBack
 }: StepReviewProps) {
   const crop = cropById(cropId) || cropById("tomato");
   const [isSubmitting, setIsSubmitting] = useState(false);

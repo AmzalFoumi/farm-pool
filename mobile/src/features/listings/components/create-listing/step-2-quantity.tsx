@@ -7,15 +7,6 @@ import { CheckIcon } from "@/components/app/icons";
 import { NumericKeypadModal } from "@/components/app/numeric-keypad-modal";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
-import { Input, InputField } from "@/components/ui/input";
-import {
-  Modal,
-  ModalBackdrop,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader
-} from "@/components/ui/modal";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -78,9 +69,6 @@ export default function Step2Quantity({
 
   // Initial quantity defaults to 0 as requested so farmer types their supply
   const [quantity, setQuantity] = useState<number>(initialData?.quantity ?? 0);
-  const [quantityText, setQuantityText] = useState<string>(
-    initialData?.quantity ? String(initialData.quantity) : "0"
-  );
   const [unit, setUnit] = useState<"kg" | "crates" | "sacks">(initialData?.unit ?? "kg");
 
   // MOQ state
@@ -90,7 +78,6 @@ export default function Step2Quantity({
 
   // Keypad modal state
   const [isKeypadVisible, setIsKeypadVisible] = useState<boolean>(false);
-  const [keypadInput, setKeypadInput] = useState<string>("");
 
   const [variety, setVariety] = useState<string>(initialData?.variety ?? defaultVariety);
   const [grade, setGrade] = useState<"A" | "B" | "C">(initialData?.grade ?? "A");
@@ -105,17 +92,10 @@ export default function Step2Quantity({
   const totalKg = toKg(quantity, unit);
   const isBelowMoq = totalKg < moqKg || quantity <= 0;
 
-  const handleQuantityTextChange = (text: string) => {
-    setQuantityText(text);
-    const parsed = parseInt(text.replace(/[^0-9]/g, ""), 10);
-    setQuantity(isNaN(parsed) ? 0 : parsed);
-  };
-
   const handleAdjustQuantity = (delta: number) => {
     const step = unit === "kg" ? delta : delta > 0 ? 1 : -1;
     const newQty = Math.max(0, quantity + step);
     setQuantity(newQty);
-    setQuantityText(String(newQty));
   };
 
   const handleSelectUnit = (newUnit: "kg" | "crates" | "sacks") => {
@@ -135,16 +115,7 @@ export default function Step2Quantity({
   };
 
   const openKeypad = () => {
-    setKeypadInput(String(quantity));
     setIsKeypadVisible(true);
-  };
-
-  const confirmKeypad = () => {
-    const parsed = parseInt(keypadInput.replace(/[^0-9]/g, ""), 10);
-    const finalVal = isNaN(parsed) ? 0 : parsed;
-    setQuantity(finalVal);
-    setQuantityText(String(finalVal));
-    setIsKeypadVisible(false);
   };
 
   const toggleCertification = (cert: string) => {
@@ -200,10 +171,7 @@ export default function Step2Quantity({
             initialValue={quantity}
             unitLabel={unit}
             presets={[50, 100, 250, 500]}
-            onConfirm={(val) => {
-              setQuantity(val);
-              setQuantityText(String(val));
-            }}
+            onConfirm={setQuantity}
           />
         </>
       }

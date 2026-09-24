@@ -1,4 +1,4 @@
-import CreateListingScreen from "@/features/listings/create-listing-screen";
+import { CreateListingScreen } from "@/features/listings/create-listing-screen";
 
 export default function CreateListingRoute() {
   return <CreateListingScreen />;

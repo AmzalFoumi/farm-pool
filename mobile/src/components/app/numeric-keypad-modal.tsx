@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AppButton } from "@/components/app/app-button";
 import { AppTextField } from "@/components/app/app-text-field";
 import { HStack } from "@/components/ui/hstack";
@@ -34,11 +34,13 @@ export function NumericKeypadModal({
 }: NumericKeypadModalProps) {
   const [inputValue, setInputValue] = useState<string>(String(initialValue ?? "0"));
 
-  useEffect(() => {
-    if (isOpen) {
-      setInputValue(String(initialValue ?? "0"));
-    }
-  }, [isOpen, initialValue]);
+  /* Reset the field each time the modal opens. Done while rendering, not in an effect: React
+     re-renders straight away instead of painting the stale value first. */
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setInputValue(String(initialValue ?? "0"));
+  }
 
   const handleConfirm = () => {
     const parsed = parseInt(inputValue.replace(/[^0-9]/g, ""), 10);

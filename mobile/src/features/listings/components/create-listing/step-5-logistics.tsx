@@ -3,7 +3,6 @@ import { Alert } from "react-native";
 import { cropById, districtSchema, type CropId } from "@farm-pool/shared";
 
 import { AppTextField } from "@/components/app/app-text-field";
-import { CheckIcon } from "@/components/app/icons";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";

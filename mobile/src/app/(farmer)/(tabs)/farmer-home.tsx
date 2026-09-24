@@ -64,7 +64,7 @@ export default function FarmerHomeScreen() {
         {/* ── Wholesale Market Price Ticker ──────────────────────── */}
         <VStack className="gap-2.5">
           <HStack className="items-center justify-between">
-            <Text className="type-body-bold text-foreground">Today's Wholesale Benchmark</Text>
+            <Text className="type-body-bold text-foreground">Today’s Wholesale Benchmark</Text>
             <Text className="type-caption-bold text-muted-foreground">Reference prices</Text>
           </HStack>
 

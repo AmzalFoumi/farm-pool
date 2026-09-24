@@ -143,7 +143,7 @@ export default function Step4Price({
       <VStack className="elevation-card gap-2 rounded-card border border-border bg-secondary p-4">
         <HStack className="items-center justify-between">
           <HStack className="items-center gap-1.5">
-            <Text className="type-body-bold text-primary">ℹ Today's Wholesale Benchmark</Text>
+            <Text className="type-body-bold text-primary">ℹ Today’s Wholesale Benchmark</Text>
           </HStack>
 
           <Box className="rounded-pill bg-card border border-border px-2.5 py-1">

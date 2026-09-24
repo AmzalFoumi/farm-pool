@@ -2,11 +2,9 @@ import { useState } from "react";
 import { ScrollView } from "react-native";
 import {
   CROPS,
-  CROP_CATEGORIES,
   cropById,
   formatBenchmarkPriceRange,
   getBenchmarkForCrop,
-  type Crop,
   type CropCategory,
   type CropId
 } from "@farm-pool/shared";

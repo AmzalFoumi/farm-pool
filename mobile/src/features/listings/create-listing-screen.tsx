@@ -294,11 +294,8 @@ export function CreateListingScreen() {
           onPublish={handlePublish}
           error={publishError}
           onBack={handleBack}
-          onEditStep={(targetStep) => setStep(targetStep)}
         />
       )}
     </View>
   );
 }
-
-export default CreateListingScreen;
