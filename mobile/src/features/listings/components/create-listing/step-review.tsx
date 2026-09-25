@@ -15,6 +15,7 @@ import type { Step3HarvestPhotosData } from "./step-3-harvest-photos";
 import type { Step4PriceData } from "./step-4-price";
 import type { Step5LogisticsData } from "./step-5-logistics";
 
+import { SampleBadge } from "./sample-badge";
 import { WizardActions, WizardShell } from "./wizard-shell";
 
 type StepReviewProps = {
@@ -117,7 +118,14 @@ export default function StepReview({
           {/* Main Thumbnail */}
           <View className="relative h-20 w-20 overflow-hidden rounded-field border border-border bg-secondary justify-center items-center">
             {mainPhotoUri ? (
-              <Image source={{ uri: mainPhotoUri }} className="h-full w-full" resizeMode="cover" />
+              <>
+                <Image
+                  source={{ uri: mainPhotoUri }}
+                  className="h-full w-full"
+                  resizeMode="cover"
+                />
+                <SampleBadge />
+              </>
             ) : (
               <CropTile emoji={crop.emoji} />
             )}
@@ -256,7 +264,9 @@ export default function StepReview({
           {/* Harvest Photos Mini-Gallery */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">Harvest Photos</Text>
+              <Text className="type-caption text-muted-foreground">
+                {photoUris.length > 0 ? "Harvest Photos (samples)" : "Harvest Photos"}
+              </Text>
             </HStack>
             <HStack className="items-center gap-1.5">
               {photoUris.length > 0 ? (

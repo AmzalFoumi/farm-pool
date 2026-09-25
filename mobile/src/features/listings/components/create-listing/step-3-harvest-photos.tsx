@@ -19,6 +19,7 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "@/features/listings/crop-tile";
 
+import { SampleBadge } from "./sample-badge";
 import { WizardActions, WizardShell } from "./wizard-shell";
 
 export type Step3HarvestPhotosData = {
@@ -253,6 +254,7 @@ export default function Step3HarvestPhotos({
           <VStack className="gap-2">
             <Box className="h-44 w-full overflow-hidden rounded-field border border-border bg-muted">
               <Image source={{ uri: widePhoto }} className="h-full w-full object-cover" />
+              <SampleBadge />
             </Box>
             <HStack className="items-center justify-between">
               <HStack className="items-center gap-1">
@@ -316,6 +318,7 @@ export default function Step3HarvestPhotos({
           <VStack className="gap-2">
             <Box className="h-44 w-full overflow-hidden rounded-field border border-border bg-muted">
               <Image source={{ uri: closeupPhoto }} className="h-full w-full object-cover" />
+              <SampleBadge />
             </Box>
             <HStack className="items-center justify-between">
               <HStack className="items-center gap-1">
@@ -379,6 +382,7 @@ export default function Step3HarvestPhotos({
           <VStack className="gap-2">
             <Box className="h-44 w-full overflow-hidden rounded-field border border-border bg-muted">
               <Image source={{ uri: packagingPhoto }} className="h-full w-full object-cover" />
+              <SampleBadge />
             </Box>
             <HStack className="items-center justify-between">
               <HStack className="items-center gap-1">
