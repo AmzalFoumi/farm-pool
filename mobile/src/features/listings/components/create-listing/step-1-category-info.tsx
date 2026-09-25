@@ -29,8 +29,11 @@ type Step1CategoryInfoProps = {
 
 const RECENT_CROP_IDS: CropId[] = ["beans", "carrot", "leeks"];
 
+/* "All" is a filter choice on this screen, not a category a crop can have. */
+type CategoryFilter = CropCategory | "All";
+
 export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoProps) {
-  const [selectedCategory, setSelectedCategory] = useState<CropCategory>("Vegetables");
+  const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("Vegetables");
   const [selectedCropId, setSelectedCropId] = useState<CropId | null>("onion");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -49,7 +52,7 @@ export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoP
 
   const handleContinue = () => {
     if (!selectedCropId) return;
-    onNext?.({ category: selectedCategory, cropId: selectedCropId });
+    onNext?.({ category: cropById(selectedCropId).category, cropId: selectedCropId });
   };
 
   return (
@@ -80,7 +83,7 @@ export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoP
           return (
             <Pressable
               key={catName}
-              onPress={() => setSelectedCategory(catName as CropCategory)}
+              onPress={() => setSelectedCategory(catName as CategoryFilter)}
               accessibilityRole="button"
               accessibilityState={{ selected: isSelected }}
               className={[
@@ -139,7 +142,7 @@ export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoP
               return (
                 <Pressable
                   key={crop.id}
-                  onPress={() => handleSelectCrop(crop.id as CropId, crop.category)}
+                  onPress={() => handleSelectCrop(crop.id, crop.category)}
                   accessibilityRole="button"
                   accessibilityState={{ selected: isSelected }}
                   className={[
@@ -199,18 +202,11 @@ export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoP
                     <VStack className="flex-1 gap-0.5">
                       <HStack className="items-center gap-2">
                         <Text className="type-body-bold text-foreground">{crop.name}</Text>
-                        {crop.highDemand && (
-                          <Box className="rounded-chip bg-secondary px-2 py-0.5">
-                            <Text className="type-body-sm-bold text-secondary-foreground">
-                              High Demand
-                            </Text>
-                          </Box>
-                        )}
                       </HStack>
                       <Text className="type-caption text-muted-foreground">
                         Avg. Market:{" "}
                         {(() => {
-                          const bm = getBenchmarkForCrop(crop.id as CropId);
+                          const bm = getBenchmarkForCrop(crop.id);
                           return formatBenchmarkPriceRange(bm.lowPrice, bm.highPrice);
                         })()}
                       </Text>

@@ -10,7 +10,7 @@ import { z } from "zod";
  * image storage. `CropTile` in the app renders the emoji.
  *
  **/
-export const CROP_CATEGORIES = ["All", "Vegetables", "Fruits", "Grains", "Herbs", "Other"] as const;
+export const CROP_CATEGORIES = ["Vegetables", "Fruits", "Grains", "Herbs", "Other"] as const;
 
 export type CropCategory = (typeof CROP_CATEGORIES)[number];
 
@@ -20,8 +20,6 @@ export const CROPS = [
     name: "Big onion",
     emoji: "🧅",
     category: "Vegetables",
-    highDemand: true,
-    isPopular: true,
     varieties: ["Red Local", "Yellow Bulb", "Shallot", "Imported Big"]
   },
   {
@@ -29,8 +27,6 @@ export const CROPS = [
     name: "Carrot",
     emoji: "🥕",
     category: "Vegetables",
-    highDemand: false,
-    isPopular: true,
     varieties: ["Nantes", "Chantenay", "Imperator", "Local Organic"]
   },
   {
@@ -38,8 +34,6 @@ export const CROPS = [
     name: "Tomatoes",
     emoji: "🍅",
     category: "Vegetables",
-    highDemand: true,
-    isPopular: true,
     varieties: ["Roma / Plum", "Cherry / Grape", "Beefsteak", "Local / Heirloom"]
   },
   {
@@ -47,8 +41,6 @@ export const CROPS = [
     name: "Green chillies",
     emoji: "🌶️",
     category: "Vegetables",
-    highDemand: true,
-    isPopular: true,
     varieties: ["MHM Chilli", "Jaffna Hot", "Bird's Eye", "Green Bullet"]
   },
   {
@@ -56,8 +48,6 @@ export const CROPS = [
     name: "Leeks",
     emoji: "🥬",
     category: "Vegetables",
-    highDemand: false,
-    isPopular: false,
     varieties: ["Giant Musselburgh", "Bandit", "Local Green"]
   },
   {
@@ -65,8 +55,6 @@ export const CROPS = [
     name: "Green Beans",
     emoji: "🫘",
     category: "Vegetables",
-    highDemand: false,
-    isPopular: false,
     varieties: ["Bush Beans", "Pole Beans", "French Green"]
   },
   {
@@ -74,8 +62,6 @@ export const CROPS = [
     name: "Brinjal",
     emoji: "🍆",
     category: "Vegetables",
-    highDemand: false,
-    isPopular: false,
     varieties: ["Purple Long", "Green Oval", "Black Beauty", "Local Striped"]
   },
   {
@@ -83,8 +69,6 @@ export const CROPS = [
     name: "Pumpkin",
     emoji: "🎃",
     category: "Vegetables",
-    highDemand: false,
-    isPopular: false,
     varieties: ["Arjun Hybrid", "Local Sweet", "Butternut", "Giant Orange"]
   },
   {
@@ -92,8 +76,6 @@ export const CROPS = [
     name: "Potato",
     emoji: "🥔",
     category: "Vegetables",
-    highDemand: false,
-    isPopular: true,
     varieties: ["Granola", "Desiree", "Nuwara Eliya Special"]
   },
   {
@@ -101,8 +83,6 @@ export const CROPS = [
     name: "Mango",
     emoji: "🥭",
     category: "Fruits",
-    highDemand: true,
-    isPopular: true,
     varieties: ["Karthakolomban", "Tom EJC", "Willard", "Kohu"]
   },
   {
@@ -110,8 +90,6 @@ export const CROPS = [
     name: "Banana",
     emoji: "🍌",
     category: "Fruits",
-    highDemand: false,
-    isPopular: true,
     varieties: ["Embul", "Kolikuttu", "Seeni", "Ambul"]
   },
   {
@@ -119,8 +97,6 @@ export const CROPS = [
     name: "Papaya",
     emoji: "🍈",
     category: "Fruits",
-    highDemand: false,
-    isPopular: false,
     varieties: ["Red Lady", "Rathna", "Solo"]
   },
   {
@@ -128,8 +104,6 @@ export const CROPS = [
     name: "Rice (paddy)",
     emoji: "🌾",
     category: "Grains",
-    highDemand: true,
-    isPopular: true,
     varieties: ["Samba", "Nadu", "Kalu Heenati", "Suwandel"]
   },
   {
@@ -137,19 +111,15 @@ export const CROPS = [
     name: "Coconut",
     emoji: "🥥",
     category: "Other",
-    highDemand: true,
-    isPopular: true,
     varieties: ["King Coconut (Thambili)", "Commercial Hybrid", "Tall Green"]
   }
 ] as const;
 
 export interface Crop {
-  readonly id: string;
+  readonly id: CropId;
   readonly name: string;
   readonly emoji: string;
   readonly category: CropCategory;
-  readonly highDemand?: boolean;
-  readonly isPopular?: boolean;
   readonly varieties: readonly string[];
 }
 
