@@ -36,7 +36,6 @@ export const listingSchema = z.object({
   farmerId: z.string(),
   farmerName: z.string(),
   cropId: cropIdSchema,
-  category: z.string().optional(),
   quantityKg: kgSchema,
   unit: z.string().optional(),
   variety: z.string().optional(),
@@ -78,7 +77,6 @@ const shortText = (max: number) => z.string().trim().max(max, `Keep this under $
 export const createListingSchema = z
   .object({
     cropId: cropIdSchema,
-    category: z.string().optional(),
     quantityKg: kgSchema,
     unit: z.string().optional(),
     variety: shortText(60).optional(),

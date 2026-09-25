@@ -89,7 +89,6 @@ export function CreateListingScreen() {
 
     const payload: CreateListingInput = {
       cropId: listingData.cropId || "tomato",
-      category: listingData.category || "Vegetables",
       quantityKg: Math.max(1, totalKg),
       unit,
       variety: listingData.step2?.variety || "Standard / Local",

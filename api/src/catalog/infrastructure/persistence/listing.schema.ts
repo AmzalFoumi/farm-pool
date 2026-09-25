@@ -21,9 +21,6 @@ export class ListingDocument {
   @Prop({ type: String, required: true, enum: CROP_IDS, index: true })
   cropId: CropId;
 
-  @Prop({ required: false })
-  category?: string;
-
   @Prop({ required: true, min: 1 })
   quantityKg: number;
 

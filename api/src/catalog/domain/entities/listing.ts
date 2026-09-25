@@ -17,7 +17,6 @@ export interface Listing {
   farmerId: string;
   farmerName: string;
   cropId: CropId;
-  category?: string;
   quantityKg: number;
   unit?: string;
   variety?: string;
@@ -49,7 +48,6 @@ export function toListingDto(listing: Listing): ListingDto {
     farmerId: listing.farmerId,
     farmerName: listing.farmerName,
     cropId: listing.cropId,
-    category: listing.category,
     quantityKg: listing.quantityKg,
     unit: listing.unit,
     variety: listing.variety,

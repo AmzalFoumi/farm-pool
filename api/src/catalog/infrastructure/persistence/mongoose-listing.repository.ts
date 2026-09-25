@@ -92,7 +92,6 @@ function toListing(doc: ListingHydrated): Listing {
     farmerId: doc.farmerId,
     farmerName: doc.farmerName,
     cropId: doc.cropId,
-    category: doc.category,
     quantityKg: doc.quantityKg,
     unit: doc.unit,
     variety: doc.variety,
