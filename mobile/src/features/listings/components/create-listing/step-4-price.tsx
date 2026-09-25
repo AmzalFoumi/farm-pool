@@ -1,11 +1,6 @@
 import { useState } from "react";
 import { Alert } from "react-native";
-import {
-  cropById,
-  formatBenchmarkUpdatedText,
-  getBenchmarkForCrop,
-  type CropId
-} from "@farm-pool/shared";
+import { cropById, getBenchmarkForCrop, type CropId } from "@farm-pool/shared";
 
 import { NumericKeypadModal } from "@/components/app/numeric-keypad-modal";
 import { Box } from "@/components/ui/box";
@@ -93,7 +88,7 @@ export default function Step4Price({
       step={4}
       title="Set Asking Price"
       onBack={onBack}
-      help={`Reference prices from ${benchmark.hubName}. Use them as a guide; you choose your own price.`}
+      help="The price range shown is a sample, not live market data. You choose your own price."
       footer={
         <>
           <WizardActions
@@ -143,7 +138,7 @@ export default function Step4Price({
       <VStack className="elevation-card gap-2 rounded-card border border-border bg-secondary p-4">
         <HStack className="items-center justify-between">
           <HStack className="items-center gap-1.5">
-            <Text className="type-body-bold text-primary">ℹ Today’s Wholesale Benchmark</Text>
+            <Text className="type-body-bold text-primary">Sample price range</Text>
           </HStack>
 
           <Box className="rounded-pill bg-card border border-border px-2.5 py-1">
@@ -159,7 +154,7 @@ export default function Step4Price({
         </HStack>
 
         <Text className="type-caption text-muted-foreground">
-          {formatBenchmarkUpdatedText(benchmark.effectiveDate, benchmark.source)}
+          Example figures until real market prices are available. Not live data.
         </Text>
       </VStack>
 

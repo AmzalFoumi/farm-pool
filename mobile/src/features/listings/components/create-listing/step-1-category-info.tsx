@@ -204,7 +204,7 @@ export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoP
                         <Text className="type-body-bold text-foreground">{crop.name}</Text>
                       </HStack>
                       <Text className="type-caption text-muted-foreground">
-                        Avg. Market:{" "}
+                        Sample price:{" "}
                         {(() => {
                           const bm = getBenchmarkForCrop(crop.id);
                           return formatBenchmarkPriceRange(bm.lowPrice, bm.highPrice);
