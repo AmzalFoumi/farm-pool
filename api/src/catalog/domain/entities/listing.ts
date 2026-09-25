@@ -1,7 +1,11 @@
 import type {
   CropId,
+  FulfillmentOption,
   Listing as ListingDto,
+  ListingGrade,
+  ListingPackaging,
   ListingStatus,
+  ListingUnit,
 } from '@farm-pool/shared';
 
 /**
@@ -18,10 +22,10 @@ export interface Listing {
   farmerName: string;
   cropId: CropId;
   quantityKg: number;
-  unit?: string;
+  unit?: ListingUnit;
   variety?: string;
-  grade?: string;
-  packaging?: string;
+  grade?: ListingGrade;
+  packaging?: ListingPackaging;
   certifications?: string[];
   pricePerKg: number;
   harvestDate: string;
@@ -31,7 +35,7 @@ export interface Listing {
   district: string;
   town?: string;
   address?: string;
-  fulfillmentOption?: string;
+  fulfillmentOption?: FulfillmentOption;
   farmgateNotes?: string;
   minOrderKg: number;
   status: ListingStatus;

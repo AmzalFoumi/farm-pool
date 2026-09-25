@@ -38,7 +38,7 @@ export default function StepReview({
     unit: "kg",
     grade: "A",
     variety: "Roma / Plum",
-    packaging: "Plastic Crates (25kg)",
+    packaging: "plastic-crate",
     certifications: ["GAP Verified"]
   },
   step3 = { widePhotoUri: null, closeupPhotoUri: null, packagingPhotoUri: null },
@@ -80,9 +80,6 @@ export default function StepReview({
       case "solo":
         return "Solo Transport";
       case "shared":
-      case "hub_delivery":
-      case "farmpool_transport":
-      case "pickup":
       default:
         return "Shared Transport";
     }

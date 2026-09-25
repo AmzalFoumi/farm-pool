@@ -3,7 +3,9 @@
  * stores kilograms only, so every total, price and earnings figure goes through `toKg` —
  * 10 crates is 250 kg, not 10.
  */
-export type BatchUnit = "kg" | "crates" | "sacks";
+import type { ListingUnit } from "@farm-pool/shared";
+
+export type BatchUnit = ListingUnit;
 
 export const KG_PER_UNIT: Record<BatchUnit, number> = { kg: 1, crates: 25, sacks: 50 };
 

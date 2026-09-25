@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { View } from "react-native";
-import { cropById, type CropId } from "@farm-pool/shared";
+import { cropById, type CropId, type ListingGrade, type ListingPackaging } from "@farm-pool/shared";
 
 import { AppTextField } from "@/components/app/app-text-field";
 import { CheckIcon } from "@/components/app/icons";
@@ -20,8 +20,8 @@ export type Step2QuantityData = {
   unit: BatchUnit;
   moqKg?: number;
   variety: string;
-  grade: "A" | "B" | "C";
-  packaging: string;
+  grade: ListingGrade;
+  packaging: ListingPackaging;
   certifications: string[];
 };
 
@@ -48,7 +48,7 @@ const GRADE_DESCRIPTIONS = {
   }
 } as const;
 
-const PACKAGING_OPTIONS = [
+const PACKAGING_OPTIONS: { id: ListingPackaging; label: string }[] = [
   { id: "plastic-crate", label: "Reusable Plastic Crates (Standard 25kg)" },
   { id: "wooden-box", label: "Ventilated Wooden Boxes" },
   { id: "cardboard", label: "Heavy-Duty Corrugated Cartons" },
@@ -80,8 +80,8 @@ export default function Step2Quantity({
   const [isKeypadVisible, setIsKeypadVisible] = useState<boolean>(false);
 
   const [variety, setVariety] = useState<string>(initialData?.variety ?? defaultVariety);
-  const [grade, setGrade] = useState<"A" | "B" | "C">(initialData?.grade ?? "A");
-  const [packaging, setPackaging] = useState<string>(
+  const [grade, setGrade] = useState<ListingGrade>(initialData?.grade ?? "A");
+  const [packaging, setPackaging] = useState<ListingPackaging>(
     initialData?.packaging ?? PACKAGING_OPTIONS[0].id
   );
   const [certifications, setCertifications] = useState<string[]>(

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Alert } from "react-native";
-import { cropById, districtSchema, type CropId } from "@farm-pool/shared";
+import { cropById, districtSchema, type CropId, type FulfillmentOption } from "@farm-pool/shared";
 
 import { AppTextField } from "@/components/app/app-text-field";
 import { Box } from "@/components/ui/box";
@@ -13,7 +13,7 @@ import { CropTile } from "@/features/listings/crop-tile";
 import { WizardActions, WizardShell } from "./wizard-shell";
 
 export type Step5LogisticsData = {
-  fulfillmentOption: "shared" | "solo" | "pickup" | "hub_delivery" | "farmpool_transport";
+  fulfillmentOption: FulfillmentOption;
   harvestDate: string;
   validityDays?: number;
   district?: string;
