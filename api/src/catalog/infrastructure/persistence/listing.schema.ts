@@ -1,5 +1,19 @@
-import { CROP_IDS, listingStatusSchema } from '@farm-pool/shared';
-import type { CropId, ListingStatus } from '@farm-pool/shared';
+import {
+  CROP_IDS,
+  FULFILLMENT_OPTIONS,
+  LISTING_GRADES,
+  LISTING_PACKAGING,
+  LISTING_UNITS,
+  listingStatusSchema,
+} from '@farm-pool/shared';
+import type {
+  CropId,
+  FulfillmentOption,
+  ListingGrade,
+  ListingPackaging,
+  ListingStatus,
+  ListingUnit,
+} from '@farm-pool/shared';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { HydratedDocument } from 'mongoose';
 
@@ -24,6 +38,21 @@ export class ListingDocument {
   @Prop({ required: true, min: 1 })
   quantityKg: number;
 
+  @Prop({ type: String, required: false, enum: LISTING_UNITS })
+  unit?: ListingUnit;
+
+  @Prop({ required: false })
+  variety?: string;
+
+  @Prop({ type: String, required: false, enum: LISTING_GRADES })
+  grade?: ListingGrade;
+
+  @Prop({ type: String, required: false, enum: LISTING_PACKAGING })
+  packaging?: ListingPackaging;
+
+  @Prop({ type: [String], required: false })
+  certifications?: string[];
+
   @Prop({ required: true, min: 0 })
   pricePerKg: number;
 
@@ -31,8 +60,29 @@ export class ListingDocument {
   @Prop({ required: true })
   harvestDate: string;
 
+  @Prop({ required: false })
+  expiryDays?: number;
+
+  @Prop({ type: [String], required: false })
+  photos?: string[];
+
+  @Prop({ required: false })
+  acceptNegotiation?: boolean;
+
   @Prop({ required: true, trim: true })
   district: string;
+
+  @Prop({ required: false })
+  town?: string;
+
+  @Prop({ required: false })
+  address?: string;
+
+  @Prop({ type: String, required: false, enum: FULFILLMENT_OPTIONS })
+  fulfillmentOption?: FulfillmentOption;
+
+  @Prop({ required: false })
+  farmgateNotes?: string;
 
   /** Lower-cased copy of `district` for a case-insensitive filter without a collation. */
   @Prop({ required: true, index: true })

@@ -1,0 +1,122 @@
+import { CROPS, formatBenchmarkPriceRange, getBenchmarkForCrop } from "@farm-pool/shared";
+import { useRouter } from "expo-router";
+import { ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { AppButton } from "@/components/app/app-button";
+import { LeafIcon, PlusIcon } from "@/components/app/icons";
+import { Box } from "@/components/ui/box";
+import { Card } from "@/components/ui/card";
+import { Heading } from "@/components/ui/heading";
+import { HStack } from "@/components/ui/hstack";
+import { Pressable } from "@/components/ui/pressable";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import { useAuth } from "@/providers/auth-provider";
+
+export default function FarmerHomeScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const auth = useAuth();
+  const displayName = auth.user?.displayName ?? "Farmer";
+
+  return (
+    <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
+      {/* ── App Header ────────────────────────────────────────────── */}
+      <View className="border-b border-border bg-card px-gutter py-3.5">
+        <HStack className="items-center justify-between">
+          <VStack className="gap-0.5">
+            <HStack className="items-center gap-2">
+              <Text className="type-caption-bold text-muted-foreground uppercase">
+                Farmer Dashboard
+              </Text>
+            </HStack>
+            <Heading className="type-title text-foreground">Ayubowan, {displayName}!</Heading>
+          </VStack>
+          <Box className="h-10 w-10 items-center justify-center rounded-pill bg-secondary">
+            <LeafIcon />
+          </Box>
+        </HStack>
+      </View>
+
+      <ScrollView className="flex-1" contentContainerClassName="px-gutter pt-4 pb-12 gap-5">
+        {/* ── Primary Call to Action Card ────────────────────────── */}
+        <Card className="overflow-hidden border-border bg-brand-deep p-4.5">
+          <VStack className="gap-3">
+            <VStack className="gap-1">
+              <Text className="type-caption-bold text-brand-deep-muted uppercase">
+                Sell Your Farm Harvest
+              </Text>
+              <Text className="type-h3 text-brand-deep-foreground">Post New Produce Batch</Text>
+              <Text className="type-body text-brand-deep-muted">
+                Sell directly to buyers, without a middleman.
+              </Text>
+            </VStack>
+
+            <AppButton
+              label="Create listing"
+              icon={<PlusIcon />}
+              onPress={() => router.push("/(farmer)/create-listing/create")}
+            />
+          </VStack>
+        </Card>
+
+        {/* ── Wholesale Market Price Ticker ──────────────────────── */}
+        <VStack className="gap-2.5">
+          <HStack className="items-center justify-between">
+            <Text className="type-body-bold text-foreground">Today’s Wholesale Benchmark</Text>
+            <Text className="type-caption-bold text-muted-foreground">Reference prices</Text>
+          </HStack>
+
+          <VStack className="gap-2">
+            {CROPS.slice(0, 4).map((crop) => {
+              const bm = getBenchmarkForCrop(crop.id);
+              return (
+                <Card key={crop.id} className="bg-card p-3 border-border">
+                  <HStack className="items-center justify-between">
+                    <HStack className="items-center gap-3">
+                      <Box className="h-9 w-9 items-center justify-center rounded-pill bg-secondary">
+                        <Text className="type-body-bold text-secondary-foreground">
+                          {crop.emoji}
+                        </Text>
+                      </Box>
+                      <VStack>
+                        <Text className="type-body-bold text-foreground">{crop.name}</Text>
+                        <Text className="type-caption text-muted-foreground">{crop.category}</Text>
+                      </VStack>
+                    </HStack>
+                    <VStack className="items-end">
+                      <Text className="type-body-bold text-primary">
+                        {formatBenchmarkPriceRange(bm.lowPrice, bm.highPrice)}
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </Card>
+              );
+            })}
+          </VStack>
+        </VStack>
+
+        {/* ── Quick Navigation shortcuts ────────────────────────── */}
+        <VStack className="gap-2 pt-2">
+          <Text className="type-body-bold text-foreground">Quick Actions</Text>
+          <HStack className="gap-3">
+            <Pressable
+              onPress={() => router.push("/(farmer)/(tabs)/farmer-listings")}
+              className="min-h-tap flex-1 rounded-card border border-border bg-card p-3.5 items-center justify-center"
+            >
+              <Text className="type-body-bold text-foreground">View My Listings</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => router.push("/(farmer)/(tabs)/farmer-orders")}
+              className="min-h-tap flex-1 rounded-card border border-border bg-card p-3.5 items-center justify-center"
+            >
+              <Text className="type-body-bold text-foreground">View Orders</Text>
+            </Pressable>
+          </HStack>
+        </VStack>
+      </ScrollView>
+    </View>
+  );
+}

@@ -12,9 +12,6 @@ export interface ListingFilter {
 /**
  * "Something that can store listings." Use-cases see only this; the Mongoose implementation is
  * in `infrastructure/persistence/` and an in-memory one backs the unit tests.
- *
- * `upsertBySeedKey` exists for the dev seed only: a re-run updates rather than duplicates. Farmer
- * listing creation (FARM-21) will add a plain `create`.
  */
 export interface ListingRepository {
   findById(id: string): Promise<Listing | null>;
@@ -23,6 +20,10 @@ export interface ListingRepository {
   /** Only `pending_approval` listings, newest first, at most `limit`. Added for coordination's
    *  "Needs you today" — a coordinator's approval queue. */
   findPendingApproval(filter: ListingFilter, limit: number): Promise<Listing[]>;
+  /** One farmer's listings in every status, newest first. Added for FARM-21's "My listings". */
+  findByFarmerId(farmerId: string): Promise<Listing[]>;
+  /** Farmer listing creation (FARM-21). */
+  create(listing: NewListing): Promise<Listing>;
   upsertBySeedKey(seedKey: string, listing: NewListing): Promise<Listing>;
 }
 

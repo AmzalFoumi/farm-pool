@@ -55,6 +55,22 @@ export class MongooseListingRepository implements ListingRepository {
     return docs.map(toListing);
   }
 
+  async findByFarmerId(farmerId: string): Promise<Listing[]> {
+    const docs = await this.listings
+      .find({ farmerId })
+      .sort({ createdAt: -1 })
+      .exec();
+    return docs.map(toListing);
+  }
+
+  async create(listing: NewListing): Promise<Listing> {
+    const created = await this.listings.create({
+      ...listing,
+      districtKey: listing.district.toLowerCase(),
+    });
+    return toListing(created);
+  }
+
   async upsertBySeedKey(
     seedKey: string,
     listing: NewListing,
@@ -77,9 +93,21 @@ function toListing(doc: ListingHydrated): Listing {
     farmerName: doc.farmerName,
     cropId: doc.cropId,
     quantityKg: doc.quantityKg,
+    unit: doc.unit,
+    variety: doc.variety,
+    grade: doc.grade,
+    packaging: doc.packaging,
+    certifications: doc.certifications,
     pricePerKg: doc.pricePerKg,
     harvestDate: doc.harvestDate,
+    expiryDays: doc.expiryDays,
+    photos: doc.photos,
+    acceptNegotiation: doc.acceptNegotiation,
     district: doc.district,
+    town: doc.town,
+    address: doc.address,
+    fulfillmentOption: doc.fulfillmentOption,
+    farmgateNotes: doc.farmgateNotes,
     minOrderKg: doc.minOrderKg,
     status: doc.status,
     createdAt: doc.createdAt,

@@ -8,7 +8,8 @@ export type CatalogErrorCode =
   | 'listing_not_found'
   | 'wanted_not_found'
   | 'not_your_request'
-  | 'wanted_already_closed';
+  | 'wanted_already_closed'
+  | 'farmer_not_found';
 
 export class CatalogError extends DomainError<CatalogErrorCode> {
   constructor(kind: DomainErrorKind, code: CatalogErrorCode, message: string) {

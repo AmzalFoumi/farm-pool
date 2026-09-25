@@ -61,15 +61,17 @@ function RootNavigator() {
   if (auth.status === "loading") return null;
   const signedIn = auth.status === "signed-in";
   const isCoordinator = signedIn && can(auth.user.role, "cooperative:read-dashboard");
+  const isFarmer = signedIn && can(auth.user.role, "listing:create");
 
   return (
     <>
       <AnimatedSplashOverlay />
       {/* Onboarding is the root stack, so `index` (the welcome screen) is
           what a cold start lands on when nobody is signed in. The tab shell
-          lives one level in — `(tabs)` for everyone else, `(coordinator-tabs)`
-          for a coordinator (FARM-25); which one a signed-in user gets is
-          decided here, once, rather than duplicated per screen.
+          lives one level in — `(farmer)` for a farmer (FARM-21),
+          `(coordinator-tabs)` for a coordinator (FARM-25), `(tabs)` for
+          everyone else; which one a signed-in user gets is decided here, once,
+          by which group's guard is open, rather than duplicated per screen.
 
           `Stack.Protected` does the routing an auth check used to need
           `router.replace` for: with `signedIn` false the app screens are not
@@ -93,14 +95,12 @@ function RootNavigator() {
             first, and `listing/[id]` has no `id` without a real navigation into
             it — declaring it first makes the app try to open it blank on cold
             start (FARM-25 regression, caught 2026-09-19). */}
-        <Stack.Protected guard={signedIn && !isCoordinator}>
+        <Stack.Protected guard={signedIn && !isCoordinator && !isFarmer}>
           <Stack.Screen name="(tabs)" />
-          {/* Orders and crop requests are reached from Home cards, not tabs,
-              until the tab set is settled per role. */}
-          <Stack.Screen name="orders/index" />
-          <Stack.Screen name="orders/[id]" />
-          <Stack.Screen name="wanted/index" />
-          <Stack.Screen name="wanted/new" />
+        </Stack.Protected>
+
+        <Stack.Protected guard={isFarmer}>
+          <Stack.Screen name="(farmer)" />
         </Stack.Protected>
 
         <Stack.Protected guard={isCoordinator}>
@@ -110,9 +110,20 @@ function RootNavigator() {
           <Stack.Screen name="coordinator-profile" />
         </Stack.Protected>
 
-        {/* Common ground between the two shells: a listing detail is reached
+        {/* Orders and crop requests are reached from Home cards, not tabs,
+            until the tab set is settled per role. A farmer needs them too
+            (`order:read-own` and `wanted:read` are open to every role), so they
+            sit outside the buyer shell's group. */}
+        <Stack.Protected guard={signedIn && !isCoordinator}>
+          <Stack.Screen name="orders/index" />
+          <Stack.Screen name="orders/[id]" />
+          <Stack.Screen name="wanted/index" />
+          <Stack.Screen name="wanted/new" />
+        </Stack.Protected>
+
+        {/* Common ground between the shells: a listing detail is reached
             from a buyer's browse screen and from a coordinator's Region
-            screen alike, so it sits outside either role's protected group
+            screen alike, so it sits outside every role's protected group
             rather than being registered twice. */}
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="listing/[id]" />

@@ -43,6 +43,26 @@ export class InMemoryListingRepository implements ListingRepository {
     return Promise.resolve(found);
   }
 
+  findByFarmerId(farmerId: string): Promise<Listing[]> {
+    const found = [...this.rows.values()]
+      .filter((l) => l.farmerId === farmerId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .map(snapshot);
+    return Promise.resolve(found);
+  }
+
+  create(listing: NewListing): Promise<Listing> {
+    const now = new Date();
+    const row = {
+      ...listing,
+      id: randomUUID(),
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.rows.set(row.id, row);
+    return Promise.resolve(snapshot(row));
+  }
+
   upsertBySeedKey(seedKey: string, listing: NewListing): Promise<Listing> {
     const existing = [...this.rows.values()].find((l) => l.seedKey === seedKey);
     const now = new Date();
@@ -70,19 +90,16 @@ export class InMemoryListingRepository implements ListingRepository {
   }
 }
 
+/** A copy of the stored row without `seedKey`, as the Mongo `toListing` returns it. Every field
+ *  is carried over, so a test sees the same shape the api would. */
 function snapshot(row: Listing & { seedKey?: string }): Listing {
-  return {
-    id: row.id,
-    farmerId: row.farmerId,
-    farmerName: row.farmerName,
-    cropId: row.cropId,
-    quantityKg: row.quantityKg,
-    pricePerKg: row.pricePerKg,
-    harvestDate: row.harvestDate,
-    district: row.district,
-    minOrderKg: row.minOrderKg,
-    status: row.status,
+  const copy: Listing & { seedKey?: string } = {
+    ...row,
+    certifications: row.certifications && [...row.certifications],
+    photos: row.photos && [...row.photos],
     createdAt: new Date(row.createdAt),
     updatedAt: new Date(row.updatedAt),
   };
+  delete copy.seedKey;
+  return copy;
 }

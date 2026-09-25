@@ -1,4 +1,4 @@
-import type { OrderStatus, WantedStatus } from "@farm-pool/shared";
+import type { ListingStatus, OrderStatus, WantedStatus } from "@farm-pool/shared";
 
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
@@ -22,6 +22,16 @@ const ORDER: Record<OrderStatus, { label: string; tone: string }> = {
 const WANTED: Record<WantedStatus, { label: string; tone: string }> = {
   open: { label: "Open", tone: "warning" },
   closed: { label: "Closed", tone: "muted" }
+};
+
+/* A farmer's own listing. Pending approval waits on the coordinator, so it is `warning`;
+   approved and live is `success`; a rejection is `destructive`. */
+const LISTING: Record<ListingStatus, { label: string; tone: string }> = {
+  draft: { label: "Draft", tone: "muted" },
+  pending_approval: { label: "Awaiting approval", tone: "warning" },
+  verified: { label: "Live", tone: "success" },
+  rejected: { label: "Rejected", tone: "destructive" },
+  sold: { label: "Sold", tone: "muted" }
 };
 
 /* Written out in full so UniWind can see every class name at build time. */
@@ -48,6 +58,10 @@ export function OrderStatusPill({ status }: { status: OrderStatus }) {
 
 export function WantedStatusPill({ status }: { status: WantedStatus }) {
   return <Pill {...WANTED[status]} />;
+}
+
+export function ListingStatusPill({ status }: { status: ListingStatus }) {
+  return <Pill {...LISTING[status]} />;
 }
 
 export function orderStatusLabel(status: OrderStatus) {
