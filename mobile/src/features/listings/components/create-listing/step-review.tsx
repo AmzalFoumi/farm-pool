@@ -37,7 +37,6 @@ export default function StepReview({
     unit: "kg",
     grade: "A",
     variety: "Roma / Plum",
-    moqKg: 50,
     packaging: "Plastic Crates (25kg)",
     certifications: ["GAP Verified"]
   },
@@ -191,6 +190,16 @@ export default function StepReview({
             </HStack>
             <Text className="type-body-sm-bold text-foreground">
               {step2.variety || "Roma / Plum"}
+            </Text>
+          </HStack>
+
+          <Box className="h-px w-full bg-muted" />
+
+          {/* Minimum order */}
+          <HStack className="items-center justify-between">
+            <Text className="type-caption text-muted-foreground">Minimum Order</Text>
+            <Text className="type-body-sm-bold text-foreground">
+              {step2.moqKg === undefined ? "No minimum" : `${step2.moqKg} kg`}
             </Text>
           </HStack>
 

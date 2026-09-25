@@ -57,11 +57,8 @@ describe('CreateListing', () => {
     });
   });
 
-  it('defaults the minimum order to 100 kg, or the whole quantity if smaller', async () => {
-    expect((await create.execute(farmerId, data)).minOrderKg).toBe(100);
-    expect(
-      (await create.execute(farmerId, { ...data, quantityKg: 40 })).minOrderKg,
-    ).toBe(40);
+  it('sets no minimum order (1 kg) when the farmer gives none', async () => {
+    expect((await create.execute(farmerId, data)).minOrderKg).toBe(1);
   });
 
   it('refuses with farmer_not_found for an account that no longer exists', async () => {

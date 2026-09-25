@@ -27,7 +27,8 @@ export class CreateListing {
         'This account no longer exists',
       );
     }
-    const minOrderKg = data.minOrderKg ?? Math.min(data.quantityKg, 100);
+    // No minimum unless the farmer sets one (team decision, 25/9/2026); 1 kg is "no floor".
+    const minOrderKg = data.minOrderKg ?? 1;
     const created = await this.listings.create({
       farmerId: farmer.id,
       farmerName: farmer.displayName,

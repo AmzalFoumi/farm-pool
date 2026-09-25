@@ -18,7 +18,7 @@ import { WizardActions, WizardShell } from "./wizard-shell";
 export type Step2QuantityData = {
   quantity: number;
   unit: BatchUnit;
-  moqKg: number;
+  moqKg?: number;
   variety: string;
   grade: "A" | "B" | "C";
   packaging: string;
@@ -71,8 +71,8 @@ export default function Step2Quantity({
   const [quantity, setQuantity] = useState<number>(initialData?.quantity ?? 0);
   const [unit, setUnit] = useState<"kg" | "crates" | "sacks">(initialData?.unit ?? "kg");
 
-  // MOQ state
-  const [moqKg, setMoqKg] = useState<number>(initialData?.moqKg ?? 20);
+  // MOQ state; undefined means no minimum, which is the default
+  const [moqKg, setMoqKg] = useState<number | undefined>(initialData?.moqKg);
   const [isCustomMoq, setIsCustomMoq] = useState<boolean>(false);
   const [customMoqText, setCustomMoqText] = useState<string>("20");
 
@@ -90,7 +90,7 @@ export default function Step2Quantity({
 
   // Conversion calculations
   const totalKg = toKg(quantity, unit);
-  const isBelowMoq = totalKg < moqKg || quantity <= 0;
+  const isBelowMoq = quantity <= 0 || (moqKg !== undefined && totalKg < moqKg);
 
   const handleAdjustQuantity = (delta: number) => {
     const step = unit === "kg" ? delta : delta > 0 ? 1 : -1;
@@ -102,7 +102,7 @@ export default function Step2Quantity({
     setUnit(newUnit);
   };
 
-  const handleSelectMoq = (val: number) => {
+  const handleSelectMoq = (val: number | undefined) => {
     setIsCustomMoq(false);
     setMoqKg(val);
   };
@@ -317,7 +317,7 @@ export default function Step2Quantity({
 
           <Box className="rounded-pill bg-secondary px-3 py-1 border border-border">
             <Text className="type-body-sm-bold text-secondary-foreground">
-              Min: {moqKg} {unit}
+              {moqKg === undefined ? "No minimum" : `Min: ${moqKg} kg`}
             </Text>
           </Box>
         </HStack>
@@ -328,12 +328,12 @@ export default function Step2Quantity({
             Quick Volume Presets
           </Text>
           <HStack className="flex-row flex-wrap gap-2">
-            {[20, 50, 100].map((preset) => {
+            {[undefined, 20, 50, 100].map((preset) => {
               const isSelected = !isCustomMoq && moqKg === preset;
 
               return (
                 <Pressable
-                  key={preset}
+                  key={preset ?? "none"}
                   onPress={() => handleSelectMoq(preset)}
                   accessibilityRole="button"
                   accessibilityState={{ selected: isSelected }}
@@ -347,7 +347,7 @@ export default function Step2Quantity({
                       isSelected ? "text-primary" : "text-foreground"
                     }`}
                   >
-                    {preset} kg
+                    {preset === undefined ? "None" : `${preset} kg`}
                   </Text>
                 </Pressable>
               );

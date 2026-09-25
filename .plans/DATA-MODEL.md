@@ -49,7 +49,7 @@ Owner: `catalog`. Storage: `catalog/infrastructure/persistence/listing.schema.ts
 | `harvestDate` | string `YYYY-MM-DD` | yes | | A calendar date stored as text so it does not shift a day between Sri Lanka and UTC. | yes |
 | `district` | string, trimmed, 2–40 | yes | | As typed, for display. | yes |
 | `districtKey` | string | yes | yes | Lower-cased copy of `district`, written by the repository, for a case-insensitive filter. | **no** |
-| `minOrderKg` | integer ≥ 1 | yes | | Smallest quantity a buyer may order. | yes |
+| `minOrderKg` | integer ≥ 1 | yes | | Smallest quantity a buyer may order. Optional on create; 1 (no minimum) when the farmer sets none. | yes |
 | `status` | enum `ListingStatus` | yes | yes | `draft`, `pending_approval`, `verified`, `rejected`, `sold`. Buyers are served `verified` only. | yes |
 | `seedKey` | string | no | unique, sparse | Set only by `npm run seed:listings -w api` so a re-run updates the same rows. Real listings never have one. | **no** |
 

@@ -97,7 +97,7 @@ export function CreateListingScreen() {
       packaging: listingData.step2?.packaging,
       certifications: listingData.step2?.certifications,
       pricePerKg: listingData.step4?.pricePerKg ?? 180,
-      minOrderKg: listingData.step2?.moqKg ?? 20,
+      minOrderKg: listingData.step2?.moqKg,
       harvestDate: listingData.step5?.harvestDate || new Date().toISOString().split("T")[0],
       expiryDays: listingData.step5?.validityDays,
       /* Step 3 only attaches stock sample photos (upload is not built), so none are sent:
