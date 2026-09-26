@@ -108,6 +108,9 @@ function RootNavigator() {
           {/* Pushed from Region's header avatar, not a tab — Figma draws it with a back
               arrow, unlike the four tab-root screens. */}
           <Stack.Screen name="coordinator-profile" />
+          {/* Pushed from a Daily Benchmark row or a "Needs you today" benchmark task
+              (FARM-37) — same reasoning as `coordinator-profile` above. */}
+          <Stack.Screen name="benchmark/[cropId]" />
         </Stack.Protected>
 
         {/* Orders and crop requests are reached from Home cards, not tabs,

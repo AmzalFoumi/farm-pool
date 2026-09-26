@@ -10,18 +10,30 @@ import {
   USER_REPOSITORY,
   type UserRepository,
 } from '../identity/domain/repositories/user.repository';
+import { GetBenchmarkPriceHistory } from './application/services/get-benchmark-price-history';
+import { GetBenchmarkPrices } from './application/services/get-benchmark-prices';
 import { GetCoordinatorDashboard } from './application/services/get-coordinator-dashboard';
 import { GetCoordinatorTasks } from './application/services/get-coordinator-tasks';
 import { ListCooperativeFarmers } from './application/services/list-cooperative-farmers';
+import { SetBenchmarkPrice } from './application/services/set-benchmark-price';
 import { CoordinationController } from './coordination.controller';
+import {
+  BENCHMARK_PRICE_REPOSITORY,
+  type BenchmarkPriceRepository,
+} from './domain/repositories/benchmark-price.repository';
 import {
   COOPERATIVE_REPOSITORY,
   type CooperativeRepository,
 } from './domain/repositories/cooperative.repository';
 import {
+  BENCHMARK_PRICE_MODEL,
+  BenchmarkPriceSchema,
+} from './infrastructure/persistence/benchmark-price.schema';
+import {
   COOPERATIVE_MODEL,
   CooperativeSchema,
 } from './infrastructure/persistence/cooperative.schema';
+import { MongooseBenchmarkPriceRepository } from './infrastructure/persistence/mongoose-benchmark-price.repository';
 import { MongooseCooperativeRepository } from './infrastructure/persistence/mongoose-cooperative.repository';
 
 /**
@@ -33,6 +45,7 @@ import { MongooseCooperativeRepository } from './infrastructure/persistence/mong
   imports: [
     MongooseModule.forFeature([
       { name: COOPERATIVE_MODEL, schema: CooperativeSchema },
+      { name: BENCHMARK_PRICE_MODEL, schema: BenchmarkPriceSchema },
     ]),
     CatalogModule,
     IdentityModule,
@@ -42,6 +55,10 @@ import { MongooseCooperativeRepository } from './infrastructure/persistence/mong
     {
       provide: COOPERATIVE_REPOSITORY,
       useClass: MongooseCooperativeRepository,
+    },
+    {
+      provide: BENCHMARK_PRICE_REPOSITORY,
+      useClass: MongooseBenchmarkPriceRepository,
     },
     {
       provide: GetCoordinatorDashboard,
@@ -62,12 +79,48 @@ import { MongooseCooperativeRepository } from './infrastructure/persistence/mong
     },
     {
       provide: GetCoordinatorTasks,
-      inject: [COOPERATIVE_REPOSITORY, USER_REPOSITORY, LISTING_REPOSITORY],
+      inject: [
+        COOPERATIVE_REPOSITORY,
+        USER_REPOSITORY,
+        LISTING_REPOSITORY,
+        BENCHMARK_PRICE_REPOSITORY,
+      ],
       useFactory: (
         cooperatives: CooperativeRepository,
         users: UserRepository,
         listings: ListingRepository,
-      ) => new GetCoordinatorTasks(cooperatives, users, listings),
+        benchmarkPrices: BenchmarkPriceRepository,
+      ) =>
+        new GetCoordinatorTasks(cooperatives, users, listings, benchmarkPrices),
+    },
+    {
+      provide: GetBenchmarkPrices,
+      inject: [
+        COOPERATIVE_REPOSITORY,
+        BENCHMARK_PRICE_REPOSITORY,
+        LISTING_REPOSITORY,
+      ],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        benchmarkPrices: BenchmarkPriceRepository,
+        listings: ListingRepository,
+      ) => new GetBenchmarkPrices(cooperatives, benchmarkPrices, listings),
+    },
+    {
+      provide: SetBenchmarkPrice,
+      inject: [COOPERATIVE_REPOSITORY, BENCHMARK_PRICE_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        benchmarkPrices: BenchmarkPriceRepository,
+      ) => new SetBenchmarkPrice(cooperatives, benchmarkPrices),
+    },
+    {
+      provide: GetBenchmarkPriceHistory,
+      inject: [COOPERATIVE_REPOSITORY, BENCHMARK_PRICE_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        benchmarkPrices: BenchmarkPriceRepository,
+      ) => new GetBenchmarkPriceHistory(cooperatives, benchmarkPrices),
     },
   ],
   exports: [],

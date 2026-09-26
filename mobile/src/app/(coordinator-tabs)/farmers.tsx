@@ -3,10 +3,13 @@
  * much they have listed. Figma (node 217:2) also shows a search field and a tappable "verify"
  * action on a pending row — no search endpoint and no approval endpoint exist yet
  * (`.plans/coordination/OPEN.md` #5), so neither is wired up; status is shown, not actioned.
+ *
+ * Region's "farmers to verify" stat links here with `?filter=pending_review` so it lands already
+ * filtered, rather than making the coordinator reselect the pill they just tapped for.
  */
 
 import type { CooperativeFarmer } from "@farm-pool/shared";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { FlatList, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -31,11 +34,16 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "pending_review", label: "Pending" }
 ];
 
+function isFilter(value: string | undefined): value is Filter {
+  return value === "all" || value === "active" || value === "pending_review";
+}
+
 export default function FarmersScreen() {
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
+  const { filter: requestedFilter } = useLocalSearchParams<{ filter?: string }>();
   const farmers = useRequest(() => coordinationApi.farmers(token ?? ""), token ?? "");
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>(isFilter(requestedFilter) ? requestedFilter : "all");
 
   useFocusEffect(useReloadOnRefocus(farmers.reload));
 

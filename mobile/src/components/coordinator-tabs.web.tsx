@@ -13,7 +13,7 @@ import { ThemedView } from "./themed-view";
 
 import { MaxContentWidth, Spacing } from "@/constants/theme";
 
-/** Web fallback for the four coordinator tabs — same structure as `app-tabs.web.tsx`. */
+/** Web fallback for the coordinator tabs — same structure as `app-tabs.web.tsx`. */
 export default function CoordinatorTabs() {
   return (
     <Tabs>
@@ -31,6 +31,9 @@ export default function CoordinatorTabs() {
           </TabTrigger>
           <TabTrigger name="disputes" href="/disputes" asChild>
             <TabButton>Disputes</TabButton>
+          </TabTrigger>
+          <TabTrigger name="benchmark" href="/benchmark" asChild>
+            <TabButton>Prices</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
