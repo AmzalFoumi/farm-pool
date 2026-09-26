@@ -28,7 +28,9 @@ export const actionSchema = z.enum([
   "farmers:approve",
   "cooperative:read-dashboard",
   "cooperative:read-farmers",
-  "cooperative:read-tasks"
+  "cooperative:read-tasks",
+  "benchmark:read",
+  "benchmark:set"
 ]);
 
 export type Action = z.infer<typeof actionSchema>;
@@ -51,7 +53,9 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   "farmers:approve": ["coordinator"],
   "cooperative:read-dashboard": ["coordinator"],
   "cooperative:read-farmers": ["coordinator"],
-  "cooperative:read-tasks": ["coordinator"]
+  "cooperative:read-tasks": ["coordinator"],
+  "benchmark:read": ["coordinator"],
+  "benchmark:set": ["coordinator"]
 };
 
 export function can(role: Role, action: Action): boolean {

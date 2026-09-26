@@ -29,3 +29,4 @@ export * from "./coordination/cooperative";
 export * from "./coordination/dashboard";
 export * from "./coordination/farmer";
 export * from "./coordination/task";
+export * from "./coordination/benchmark-price";
