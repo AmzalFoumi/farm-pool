@@ -22,8 +22,20 @@ Rather than bare React Native. The decisive factor is demo mechanics: `npx expo 
 code puts the app on any phone in seconds, including a panel member's during a sprint review. Bare
 React Native means native build tooling on every machine that wants to run it.
 
-The cost, accepted: no custom native modules without ejecting or a development build. Nothing in
-the current scope needs one.
+The cost, accepted: no custom native modules without ejecting or a development build.
+
+**Updated 29 September 2026 (FARM-40): video calls need a development build, so the app has one.**
+Agora's SDK ships native code that Expo Go does not contain. The app now includes
+`expo-dev-client`, and `npx expo start` opens the development build by default. It is still the
+managed workflow: `android/` and `ios/` are generated from `app.json` and never committed.
+
+- Built locally (`npx expo run:android`), not on EAS: the free tier is 15 builds a month with a
+  slow queue. Rebuild only when a native library or a native `app.json` setting changes; share the
+  debug `.apk` with anyone who does not build. Setup: `.plans/development-build/README.md`.
+- **Expo Go still runs every screen except the call itself** (`npx expo start --go`). This keeps
+  the QR-code demo above working. It holds only because Agora is imported in one file behind
+  `isRunningInExpoGo()`; see the rule in `CLAUDE.md`.
+- The cost: a demo of the call itself needs the development build on the device, not a QR code.
 
 ### Jira project key is `FARM`
 
@@ -442,6 +454,23 @@ the product doc describes (a buyer says what they want; farmers respond). It is 
 `wanted_listings` collection in the catalog domain, because it is the same kind of thing as a
 listing — an offer on the market, from the other side — and the farmer-response story will add a
 `responses` concept beside it rather than inside it. Lifecycle is `open` → `closed` for now.
+
+### Video calls: Agora, request-then-accept, linked to a listing
+
+Decided 29 September 2026 (FARM-40, FARM-24). A buyer asks the farmer behind a listing for a
+video call; the farmer accepts or declines on their call list; both then join.
+
+- **Agora** over LiveKit, Stream and Jitsi: a maintained React Native SDK (`react-native-agora`),
+  a one-function token library for the api (`agora-token`), 10,000 free minutes a month, and a
+  NestJS + Mongo design the team had already built once. The media runs on Agora's network; the api
+  only records calls and signs one-hour passes, with the App Certificate kept in `api/.env`.
+- **Request-then-accept**, not an instant ring: there are no push notifications, so a farmer finds
+  requests by opening the list. Scheduling a time is deferred, as are notifications.
+- **Linked to a listing**, so the farmer knows which produce the buyer means.
+- **Messaging is not part of this.** Agora Chat was considered and not adopted; if text messages
+  are wanted, that is its own story and its own decision here.
+
+Details: `api/src/calls/README.md`.
 
 ## Open
 

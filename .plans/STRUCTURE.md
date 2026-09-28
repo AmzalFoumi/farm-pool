@@ -25,10 +25,13 @@ farm-pool/
 │   │   │   ├── (tabs)/         # route group: home, listings, map, calls, profile
 │   │   │   ├── listing/[id].tsx
 │   │   │   ├── orders/         # index.tsx, [id].tsx
+│   │   │   ├── call/[id].tsx   # the live video call (development build only)
+│   │   │   ├── call-requests.tsx  # the farmer's call list
 │   │   │   └── wanted/         # index.tsx, new.tsx
 │   │   ├── features/           # one folder per api domain the app talks to:
 │   │   │   ├── listings/       #   api.ts (fetch + zod parse) + that feature's presentational
 │   │   │   ├── orders/         #   pieces (listing-card, crop-tile, status-pill)
+│   │   │   ├── calls/          #   api.ts, calls-list.tsx, agora-call.tsx (the ONLY Agora import)
 │   │   │   └── wanted/
 │   │   ├── lib/                # cross-feature plumbing: api.ts (fetch wrapper, ApiError),
 │   │   │                       #   auth-api.ts, use-request.ts, format.ts, session-storage.ts
@@ -57,7 +60,7 @@ farm-pool/
 │   │   │   ├── kernel/         # DomainError — the one error shape a use-case throws (no module)
 │   │   │   └── http/           # ZodValidationPipe, DomainErrorFilter (kind → HTTP status)
 │   │   └── <domain>/           # one per business capability, not per persona:
-│   │       │                   #   identity, catalog, orders, logistics, coordination
+│   │       │                   #   identity, catalog, orders, logistics, coordination, calls
 │   │       ├── domain/         # entities, value-objects, repository INTERFACES — pure rules
 │   │       ├── application/    # services (use-cases), ports (interfaces they need), errors
 │   │       ├── infrastructure/ # persistence/ (Mongoose schema + repository), security/, …
@@ -70,7 +73,7 @@ farm-pool/
 │   └── nest-cli.json, package.json, tsconfig.json
 └── packages/shared/            # types + zod schemas used by both sides
     ├── src/index.ts            # barrel; identity/ (auth, permissions), catalog/ (crops, listing,
-    │                           #   wanted), orders/ (order) — one folder per api domain
+    │                           #   wanted), orders/ (order), calls/ (call) — one folder per api domain
     ├── dist/                   # built output (gitignored) — what api/ imports
     └── package.json, tsconfig.json, tsconfig.build.json
 ```
