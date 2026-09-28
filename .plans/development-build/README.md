@@ -65,10 +65,21 @@ npx expo run:android               # first build 10–20 min; installs and opens
 - Android Studio's **Build** menu is not used. The repo root is not an Android project.
 
 **Day to day:**
-- `npx expo start` opens the development build.
-- `npx expo start --go` opens Expo Go instead.
-- Press `s` in the terminal to switch between them.
-- Rebuild only when a native library is added or upgraded. Share the new `.apk` from `mobile/android/app/build/outputs/apk/debug/app-debug.apk` with anyone who does not build locally.
+- `npx expo start` (or `npm run mobile` from the root) only starts the dev server. It does not
+  build. It opens the development build already installed on the device, which loads your
+  JavaScript from this computer and reloads on save, as Expo Go does.
+- The installed app needs the dev server running. Without it, the app shows a server picker. It is
+  not a standalone app.
+- `npx expo start --go` opens Expo Go instead. Press `s` in the terminal to switch between them.
+
+| You changed… | Do |
+| --- | --- |
+| Screens, styles, api calls (JavaScript) | Nothing. It reloads on save; press `r` if stuck |
+| Added or upgraded a library with native code | `npx expo run:android` (a few minutes after the first build) |
+| `app.json` native settings (ID, icon, permissions, plugins) | `npx expo prebuild --clean`, then `npx expo run:android`. `android/` does not pick up `app.json` changes by itself |
+
+After a rebuild, share the new `.apk` from `mobile/android/app/build/outputs/apk/debug/app-debug.apk`
+with anyone who does not build locally.
 
 ## Issues hit on Amzal's machine
 
@@ -76,14 +87,19 @@ npx expo run:android               # first build 10–20 min; installs and opens
    - The Path was already long, so nothing was saved and the old Path was untouched.
    - Solved by keeping only `ANDROID_HOME` and adding `adb` in `~/.bashrc`. Expo does not need `adb` on the Path.
    - Do not hand-trim the Path to make room. Deleting the wrong entry breaks other tools.
-   - Side effect: `adb` works only in Git Bash. In PowerShell or cmd, run `"%ANDROID_HOME%\platform-tools\adb"`.
+   - Side effect: `adb` works only in Git Bash. Elsewhere, call it by its full path:
+     - cmd: `"%ANDROID_HOME%\platform-tools\adb.exe" devices`
+     - PowerShell: `& "$env:ANDROID_HOME\platform-tools\adb.exe" devices`
 2. **"WARNING: Found ~/.bashrc but no ~/.bash_profile"** on the first Git Bash after creating `~/.bashrc`.
    - Harmless. Git for Windows creates a `~/.bash_profile` that loads `~/.bashrc`.
    - It appears once only.
 3. **Android Studio "Build Project" does nothing useful.** See step 3: build with `npx expo run:android`.
 4. **Java version.** Expo's guide asks for JDK 17, and this machine has JDK 21 as `JAVA_HOME`.
-   - This has not been tested yet.
-   - If Gradle fails with a Java version error, set `JAVA_HOME` to Android Studio's bundled Java (`C:\Program Files\Android\Android Studio\jbr`) and reopen the terminals.
+   - The build succeeded with JDK 21 anyway (2026-09-28).
+   - If Gradle fails on your machine with a Java version error, set `JAVA_HOME` to Android Studio's bundled Java (`C:\Program Files\Android\Android Studio\jbr`) and reopen the terminals.
+5. **First build took 13m 43s.** Gradle downloaded the NDK and CMake by itself. The many `w:` /
+   `deprecated` lines and `Hard link … failed. Doing a slower copy instead.` (repo on D:, Gradle
+   cache on C:) are harmless.
 
 ## Your machine: what differs
 

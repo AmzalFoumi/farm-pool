@@ -20,7 +20,7 @@ npm run mobile                           # = expo start; press a for Android, i 
 code Expo Go does not have), so `expo start` opens the **development build** by default. For Expo
 Go, run `npm run start -w mobile -- --go`, or press `s` in the running terminal to switch. Every
 screen except calls works in Expo Go. Machine setup for the development build:
-`.plans/development-build/README.md`.
+[.plans/development-build/README.md](../.plans/development-build/README.md).
 
 `localhost` on a phone is the phone, so `EXPO_PUBLIC_API_URL` must be the development machine's
 address on the same Wi-Fi (`ipconfig` / `ifconfig`). Restart `expo start` after changing it: the

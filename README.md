@@ -47,7 +47,8 @@ root install resolves `mobile/`, `api/` and `packages/*` together into one `pack
 Running `npm install` inside `mobile/` or `api/` creates a second, competing lockfile and a nested
 `node_modules` that shadows the shared one.
 
-Scan the QR code with Expo Go. If the app fails to load, confirm the phone is on the same network —
+The QR code from `npm run mobile` opens the **development build** (see below). If you use Expo Go,
+start with `npm run start -w mobile -- --go` or press `s` first, then scan it with Expo Go. If the app fails to load, confirm the phone is on the same network —
 the development server is reachable at the machine's LAN IP, not `localhost`.
 
 **Expo Go or the development build.** The app now includes `expo-dev-client` (video calling needs
