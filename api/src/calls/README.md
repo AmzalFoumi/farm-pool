@@ -7,7 +7,7 @@ passes through this api or is stored. This domain only records the call and sign
 Agora token (a pass into one channel) that lets a participant in. The App Certificate that signs
 passes lives in `api/.env` and never reaches the app.
 
-Built in FARM-40 (join and end). FARM-24 adds requesting, listing, accepting and declining.
+Built in FARM-40 (join and end) and FARM-24 (request, list, accept, decline).
 
 ## Lifecycle
 
@@ -23,7 +23,7 @@ Request-then-accept. Scheduling a time is deliberately not built yet.
 | Folder | Holds | Depends on |
 | ------ | ----- | ---------- |
 | `domain/` | `entities/call.ts` (`Call`, `channelFor`, `isParticipant`, `toCallDto`), `repositories/call.repository.ts`, `services/call-token-signer.ts` (the signing port). | `packages/shared` |
-| `application/` | `services/` — `IssueCallToken`, `EndCall`, `loadOwnCall`; `errors.ts` — `CallError`. | `domain/` |
+| `application/` | `services/` — `RequestCall`, `ListMyCalls`, `AnswerCall`, `IssueCallToken`, `EndCall`, `loadOwnCall`; `errors.ts` — `CallError`. `RequestCall` takes the catalog's `ListingRepository` and identity's `UserRepository` ports. | `domain/`, `catalog/domain`, `identity/domain` |
 | `infrastructure/persistence/` | Mongoose schema for `calls`, the Mongoose repository, an in-memory one for tests. | `domain/` |
 | `infrastructure/agora/` | `AgoraTokenSigner`, the only file that imports `agora-token`. | `config/env.ts` |
 
@@ -31,11 +31,16 @@ Request-then-accept. Scheduling a time is deliberately not built yet.
 
 | Method | Path | Allow | Result |
 | ------ | ---- | ----- | ------ |
+| POST | `/calls` | `call:request` (buyer) | 201 `Call` in `requested`; 404 `listing_not_found`; 409 `listing_unavailable` or `call_already_open`; 400 `own_listing` |
+| GET | `/calls/mine` | `call:join` | 200 `Call[]` the caller made or received, newest first (at most 100) |
+| POST | `/calls/:id/accept` | `call:answer` (farmer) | 200 `Call` in `active`; 403 `not_the_callee`; 409 `call_not_requested` |
+| POST | `/calls/:id/decline` | `call:answer` (farmer) | 200 `Call` in `declined`; same refusals as accept |
 | POST | `/calls/:id/token` | `call:join` | 200 `CallToken`; 403 `not_your_call`; 404 `call_not_found`; 409 `call_not_active` or `calls_not_configured` |
 | POST | `/calls/:id/end` | `call:join` | 200 `Call` in `ended` (repeat is a no-op); 403; 404; 409 `call_not_active` |
 
 `call:join` is open to every role; the use-case then checks the caller is one of the two people,
-as `order:read-own` does. The channel (`call_<id>`) and the Agora account (the user id) are set by
+as `order:read-own` does. The client sends only `{ listingId }` to request; the farmer and both names are read on the
+server. One open call per buyer per listing, so a double tap is not two calls. The channel (`call_<id>`) and the Agora account (the user id) are set by
 the server, so a client cannot join a room that is not theirs. Passes last one hour; the first
 one issued stamps `startedAt`.
 
@@ -53,6 +58,7 @@ one issued stamps `startedAt`.
 
 ## Reuse points
 
-- **`CALL_REPOSITORY`** — FARM-24 adds its list, request and answer methods here.
+- **`CALL_REPOSITORY`** — scheduling a call for later would add a `scheduledFor` field and a query here.
 - **`CALL_TOKEN_SIGNER`** — swap the provider by writing a new signer; use-cases do not change.
-- Unit tests: `application/services/calls.spec.ts` over `InMemoryCallRepository` and a fake signer.
+- Unit tests: `calls.spec.ts` (passes, ending) over `InMemoryCallRepository` and a fake signer;
+  `call-requests.spec.ts` (request, answer, list) with the catalog and identity in-memory repositories.

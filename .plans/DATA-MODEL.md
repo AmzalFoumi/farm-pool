@@ -141,7 +141,7 @@ The Agora channel is not stored: it is always `call_<_id>`, derived on the serve
 | ---- | -------------- | ------ |
 | `Role` | `shared/src/identity/role.ts` | `farmer`, `buyer`, `coordinator`, `logistics` |
 | `AccountStatus` | `shared/src/identity/role.ts` | `active`, `pending_review`, `suspended` |
-| `Action` (permissions) | `shared/src/identity/permissions.ts` | twelve `<resource>:<verb>` strings; matrix in `.plans/auth/README.md` |
+| `Action` (permissions) | `shared/src/identity/permissions.ts` | `<resource>:<verb>` strings; matrix in `.plans/auth/README.md` |
 | `CropId` | `shared/src/catalog/crops.ts` | `tomato`, `green-chilli`, `brinjal`, `mango`, `pumpkin`, `carrot`, `banana`, `papaya`, `onion`, `potato`, `rice`, `coconut` |
 | `ListingStatus` | `shared/src/catalog/listing.ts` | `draft`, `pending_approval`, `verified`, `rejected`, `sold` |
 | `WantedStatus` | `shared/src/catalog/wanted.ts` | `open`, `closed` |

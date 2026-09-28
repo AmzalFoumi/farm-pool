@@ -31,6 +31,26 @@ export class MongooseCallRepository implements CallRepository {
     if (!doc) throw new Error(`Call ${id} vanished during update`);
     return toCall(doc);
   }
+
+  async findOpen(callerId: string, listingId: string): Promise<Call | null> {
+    const doc = await this.calls
+      .findOne({
+        callerId,
+        listingId,
+        status: { $in: ['requested', 'active'] },
+      })
+      .exec();
+    return doc ? toCall(doc) : null;
+  }
+
+  async findByParticipant(userId: string): Promise<Call[]> {
+    const docs = await this.calls
+      .find({ $or: [{ callerId: userId }, { calleeId: userId }] })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .exec();
+    return docs.map(toCall);
+  }
 }
 
 function toCall(doc: CallHydrated): Call {

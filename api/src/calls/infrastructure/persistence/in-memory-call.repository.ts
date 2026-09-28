@@ -31,4 +31,23 @@ export class InMemoryCallRepository implements CallRepository {
     this.rows.set(id, updated);
     return Promise.resolve({ ...updated });
   }
+
+  findOpen(callerId: string, listingId: string): Promise<Call | null> {
+    const row = [...this.rows.values()].find(
+      (c) =>
+        c.callerId === callerId &&
+        c.listingId === listingId &&
+        (c.status === 'requested' || c.status === 'active'),
+    );
+    return Promise.resolve(row ? { ...row } : null);
+  }
+
+  findByParticipant(userId: string): Promise<Call[]> {
+    return Promise.resolve(
+      [...this.rows.values()]
+        .filter((c) => c.callerId === userId || c.calleeId === userId)
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .map((c) => ({ ...c })),
+    );
+  }
 }

@@ -53,3 +53,14 @@ export const callTokenSchema = z.object({
 });
 
 export type CallToken = z.infer<typeof callTokenSchema>;
+
+/** What a buyer sends to ask for a call. The farmer is read from the listing on the server. */
+export const requestCallSchema = z.object({
+  listingId: z.string().min(1)
+});
+
+export type RequestCallInput = z.input<typeof requestCallSchema>;
+export type RequestCallData = z.output<typeof requestCallSchema>;
+
+/** Statuses that still need something to happen: shown first on the Calls tab. */
+export const OPEN_CALL_STATUSES: readonly CallStatus[] = ["requested", "active"];
