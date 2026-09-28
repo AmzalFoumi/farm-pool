@@ -1,15 +1,15 @@
 /**
  * Listings — the wholesale buyer's browse screen. Wireframe frames 2 and 3.
  *
- * Reads verified listings from the api (`GET /catalog/listings`). The search box filters the
- * loaded page on the device by crop name, farmer or district; server-side crop and district
- * filters exist and are wired the day the screen grows filter controls.
+ * Reads verified listings from the api (`GET /catalog/listings`). The crop and district chips
+ * (FARM-60) are sent to the server as `?crop=&district=`; the search box then filters the loaded
+ * page on the device by crop name, farmer or district.
  */
 
-import { cropById, type Listing } from "@farm-pool/shared";
+import { CROPS, cropById, type CropId, type Listing } from "@farm-pool/shared";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { FlatList, View } from "react-native";
+import { FlatList, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EmptyNote, RequestView } from "@/components/app/request-view";
@@ -21,6 +21,7 @@ import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { listingsApi } from "@/features/listings/api";
+import { FilterChip } from "@/features/listings/filter-chip";
 import { ListingGridCard, ListingListRow } from "@/features/listings/listing-card";
 import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
@@ -55,9 +56,29 @@ export default function ListingsScreen() {
   const { token } = useAuth();
   const [view, setView] = useState<ViewMode>("grid");
   const [query, setQuery] = useState("");
+  const [crop, setCrop] = useState<CropId | undefined>();
+  const [district, setDistrict] = useState<string | undefined>();
 
-  const listings = useRequest(() => listingsApi.list(token ?? ""), token ?? "");
+  const listings = useRequest(
+    () => listingsApi.list(token ?? "", { crop, district }),
+    `${token ?? ""}|${crop ?? ""}|${district ?? ""}`
+  );
   const needle = query.trim().toLowerCase();
+  const filtered = crop !== undefined || district !== undefined;
+
+  /* Districts are free text, so the chip options come from the listings themselves. They are
+     taken only from an unfiltered load, so picking a district does not shrink its own row.
+     Setting state during render (not in an effect) is React's pattern for derived state. */
+  const [districts, setDistricts] = useState<string[]>([]);
+  if (!filtered && listings.status === "ready") {
+    const next = [...new Set(listings.data.map((l) => l.district))].sort();
+    if (next.join("|") !== districts.join("|")) setDistricts(next);
+  }
+
+  const clearFilters = () => {
+    setCrop(undefined);
+    setDistrict(undefined);
+  };
 
   return (
     <View className="flex-1 bg-background">
@@ -118,6 +139,47 @@ export default function ListingsScreen() {
         </Input>
       </VStack>
 
+      {/* ── Filters ──────────────────────────────────────────────────── */}
+      <VStack className="gap-2 pt-3">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName="gap-2 px-gutter"
+        >
+          <FilterChip label="All crops" selected={!crop} onPress={() => setCrop(undefined)} />
+          {CROPS.map((c) => (
+            <FilterChip
+              key={c.id}
+              label={`${c.emoji} ${c.name}`}
+              selected={crop === c.id}
+              onPress={() => setCrop(crop === c.id ? undefined : c.id)}
+            />
+          ))}
+        </ScrollView>
+
+        {districts.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerClassName="gap-2 px-gutter"
+          >
+            <FilterChip
+              label="All districts"
+              selected={!district}
+              onPress={() => setDistrict(undefined)}
+            />
+            {districts.map((d) => (
+              <FilterChip
+                key={d}
+                label={d}
+                selected={district === d}
+                onPress={() => setDistrict(district === d ? undefined : d)}
+              />
+            ))}
+          </ScrollView>
+        ) : null}
+      </VStack>
+
       <RequestView request={listings}>
         {(all) => {
           const results = needle ? all.filter((l) => matches(l, needle)) : all;
@@ -146,6 +208,20 @@ export default function ListingsScreen() {
               ListEmptyComponent={
                 needle ? (
                   <EmptyNote title="No matches" note={`Nothing matches “${query.trim()}”.`} />
+                ) : filtered ? (
+                  <VStack className="items-center">
+                    <EmptyNote
+                      title="No listings match these filters"
+                      note="Try another crop or district."
+                    />
+                    <Pressable
+                      onPress={clearFilters}
+                      accessibilityRole="button"
+                      className="min-h-tap items-center justify-center rounded-pill border border-primary px-6 active:opacity-80"
+                    >
+                      <Text className="type-body-bold text-primary">Clear filters</Text>
+                    </Pressable>
+                  </VStack>
                 ) : (
                   <EmptyNote
                     title="No listings yet"
