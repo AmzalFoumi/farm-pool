@@ -101,6 +101,7 @@ function RootNavigator() {
 
         <Stack.Protected guard={isFarmer}>
           <Stack.Screen name="(farmer)" />
+          <Stack.Screen name="call-requests" />
         </Stack.Protected>
 
         <Stack.Protected guard={isCoordinator}>
