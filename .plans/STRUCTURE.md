@@ -10,7 +10,8 @@ farm-pool/
 ├── .claude/                    # shared agent config, committed
 ├── .plans/                     # committed: this file, DECISIONS.md, VERIFY.md, PRODUCT.md,
 │   ├── PLAYBOOK.md, DATA-MODEL.md  # how to add a domain / screen; what is in the database
-│   └── auth/                   #   one folder per cross-cutting design: README, PLAN, OPEN
+│   ├── auth/                   #   one folder per cross-cutting design: README, PLAN, OPEN
+│   └── development-build/      #   machine setup for Expo development builds (Android)
 ├── .plans.local/               # gitignored — individual working records
 ├── CLAUDE.local.md             # gitignored — individual agent instructions
 ├── .github/
