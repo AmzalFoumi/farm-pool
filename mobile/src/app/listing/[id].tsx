@@ -4,11 +4,22 @@
  * In the root stack, not in `(tabs)`: the wireframe draws no tab bar here, and it is a screen
  * you enter and leave rather than a destination you switch to.
  *
+ * The optional produce details a farmer enters in the listing wizard (variety, grade, packaging,
+ * photos, fulfilment…) each show only when set (FARM-60); seeded listings have none of them.
+ * `address` is deliberately not shown — it is the farm's pickup address, not browse information.
+ *
  * "Place order" opens a sheet with one quantity field and sends `POST /orders`. "Request call"
  * stays disabled: contacting the farmer is FARM-24, another developer's story.
  */
 
-import { can, cropById, placeOrderSchema, type Listing } from "@farm-pool/shared";
+import {
+  can,
+  cropById,
+  placeOrderSchema,
+  type FulfillmentOption,
+  type Listing,
+  type ListingPackaging
+} from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -25,8 +36,10 @@ import {
   ActionsheetDragIndicator,
   ActionsheetDragIndicatorWrapper
 } from "@/components/ui/actionsheet";
+import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Icon, PhoneIcon } from "@/components/ui/icon";
+import { Image } from "@/components/ui/image";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -37,6 +50,21 @@ import { ApiError } from "@/lib/api";
 import { formatDate, formatPrice } from "@/lib/format";
 import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
+
+/* Short buyer-facing names. The wizard's own labels are longer ("Reusable Plastic Crates
+   (Standard 25kg)") and live inside its step components, so they are not importable. */
+const PACKAGING_LABELS: Record<ListingPackaging, string> = {
+  "plastic-crate": "Plastic crates",
+  "wooden-box": "Wooden boxes",
+  cardboard: "Cardboard cartons",
+  "mesh-bag": "Mesh bags"
+};
+
+/* Same wording as the wizard's review step. */
+const FULFILLMENT_LABELS: Record<FulfillmentOption, string> = {
+  shared: "Shared transport",
+  solo: "Solo transport"
+};
 
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -95,6 +123,18 @@ function ListingBody({
     { label: "Harvest date", value: formatDate(listing.harvestDate) }
   ];
 
+  const details = [
+    listing.variety ? { label: "Variety", value: listing.variety } : null,
+    listing.grade ? { label: "Grade", value: `Grade ${listing.grade}` } : null,
+    listing.packaging ? { label: "Packaging", value: PACKAGING_LABELS[listing.packaging] } : null,
+    listing.certifications?.length
+      ? { label: "Certifications", value: listing.certifications.join(", ") }
+      : null
+  ].filter((row) => row !== null);
+
+  const photos = listing.photos ?? [];
+  const place = listing.town ? `${listing.town}, ${listing.district}` : listing.district;
+
   return (
     <>
       <HStack
@@ -114,33 +154,55 @@ function ListingBody({
             {crop.name}
           </Text>
           <Text className="type-caption text-muted-foreground" numberOfLines={1}>
-            {listing.farmerName} · {listing.district}
+            {listing.farmerName} · {place}
           </Text>
         </VStack>
       </HStack>
 
       <ScrollView contentContainerClassName="gap-4 p-gutter">
-        {/* No photos yet — the crop emoji stands in, as on the browse cards. */}
-        <CropTile emoji={crop.emoji} size="lg" />
+        {/* The farmer's photos when there are any; otherwise the crop emoji stands in, as on
+            the browse cards. */}
+        {photos.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerClassName="gap-3"
+          >
+            {photos.map((uri, i) => (
+              <Image
+                key={uri}
+                source={{ uri }}
+                size="2xl"
+                className="rounded-card bg-muted"
+                alt={`${crop.name} photo ${i + 1}`}
+              />
+            ))}
+          </ScrollView>
+        ) : (
+          <CropTile emoji={crop.emoji} size="lg" />
+        )}
 
-        <VStack className="gap-3 rounded-card border border-border bg-card p-4">
-          <Text className="type-h4 text-foreground">Quantity & price</Text>
-          {rows.map(({ label, value }, i) => (
-            <HStack
-              key={label}
-              className={`items-center justify-between ${i > 0 ? "border-t border-border pt-3" : ""}`}
-            >
-              <Text className="type-body text-muted-foreground">{label}</Text>
-              <Text className="type-body-bold text-foreground">{value}</Text>
-            </HStack>
-          ))}
-        </VStack>
+        {listing.acceptNegotiation ? (
+          <Box className="self-start rounded-pill bg-info-subtle px-3 py-1">
+            <Text className="type-body-sm-bold text-info">Price negotiable</Text>
+          </Box>
+        ) : null}
+
+        <DetailCard title="Quantity & price" rows={rows} />
+
+        {details.length > 0 ? <DetailCard title="Produce details" rows={details} /> : null}
 
         <VStack className="gap-1 rounded-card border border-border bg-card p-4">
           <Text className="type-h4 text-foreground">{listing.farmerName}</Text>
-          <Text className="type-caption text-muted-foreground">
-            Pickup in {listing.district} district
-          </Text>
+          <Text className="type-caption text-muted-foreground">Pickup in {place} district</Text>
+          {listing.fulfillmentOption ? (
+            <Text className="type-caption text-muted-foreground">
+              {FULFILLMENT_LABELS[listing.fulfillmentOption]}
+            </Text>
+          ) : null}
+          {listing.farmgateNotes ? (
+            <Text className="type-body pt-2 text-foreground">{listing.farmgateNotes}</Text>
+          ) : null}
         </VStack>
       </ScrollView>
 
@@ -183,6 +245,24 @@ function ListingBody({
         bottomInset={bottomInset}
       />
     </>
+  );
+}
+
+/** A titled card of label / value rows, divided by hairlines. */
+function DetailCard({ title, rows }: { title: string; rows: { label: string; value: string }[] }) {
+  return (
+    <VStack className="gap-3 rounded-card border border-border bg-card p-4">
+      <Text className="type-h4 text-foreground">{title}</Text>
+      {rows.map(({ label, value }, i) => (
+        <HStack
+          key={label}
+          className={`items-center justify-between gap-3 ${i > 0 ? "border-t border-border pt-3" : ""}`}
+        >
+          <Text className="type-body text-muted-foreground">{label}</Text>
+          <Text className="type-body-bold shrink text-right text-foreground">{value}</Text>
+        </HStack>
+      ))}
+    </VStack>
   );
 }
 
