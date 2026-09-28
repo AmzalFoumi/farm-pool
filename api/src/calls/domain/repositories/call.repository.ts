@@ -1,0 +1,10 @@
+import type { Call, CallChanges, NewCall } from '../entities/call';
+
+export interface CallRepository {
+  /** Stores a new call as `requested`. */
+  create(call: NewCall): Promise<Call>;
+  findById(id: string): Promise<Call | null>;
+  update(id: string, changes: CallChanges): Promise<Call>;
+}
+
+export const CALL_REPOSITORY = Symbol('CallRepository');

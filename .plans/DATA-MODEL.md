@@ -9,7 +9,7 @@ object in `packages/shared/src/<domain>/*.ts`. The storage shape is the Mongoose
 says so. This document is a reading aid: if it disagrees with those files, the files win — fix the
 document.
 
-Four collections exist: `users`, `listings`, `wanted_listings`, `orders`. All four use Mongoose
+Five collections exist: `users`, `listings`, `wanted_listings`, `orders`, `calls`. All five use Mongoose
 `timestamps: true`, so every document also has `createdAt` and `updatedAt` (`Date`) written by the
 database, and `_id` (ObjectId) which the api exposes as the string `id`.
 
@@ -114,6 +114,27 @@ enum so it does not change under whoever builds farmer acceptance, logistics and
 `ACTIVE_ORDER_STATUSES` (`requested`, `accepted`, `open`, `assigned`, `in_transit`) is what the Home
 screen counts as "active".
 
+## `calls`
+
+Owner: `calls`. Storage: `calls/infrastructure/persistence/call.schema.ts`. Wire: `callSchema` /
+`callTokenSchema` in `packages/shared/src/calls/call.ts`.
+
+One document per video call between two users about one listing. **No audio or video is stored**:
+the media runs on Agora, and this collection only records who may join and when.
+
+| Field | Type | Required | Index | Meaning | On the wire? |
+| ----- | ---- | -------- | ----- | ------- | ------------ |
+| `listingId` | string → `listings._id` | yes | yes | What the call is about. | yes |
+| `callerId` | string → `users._id` | yes | yes | Who asked for the call (a buyer). From the token. | yes |
+| `callerName` | string | yes | | **Snapshot** of the caller's `displayName`. | yes |
+| `calleeId` | string → `users._id` | yes | yes | Who is called: the listing's farmer, copied from the listing. | yes |
+| `calleeName` | string | yes | | **Snapshot** of the listing's `farmerName`. | yes |
+| `status` | enum `CallStatus` | yes, default `requested` | yes | `requested` → `active` → `ended`, or `requested` → `declined`. | yes |
+| `startedAt` | Date | no | | When the first join pass was issued. | yes (optional) |
+| `endedAt` | Date | no | | When either person hung up. | yes (optional) |
+
+The Agora channel is not stored: it is always `call_<_id>`, derived on the server.
+
 ## Enums, in one place
 
 | Enum | Where declared | Values |
@@ -125,6 +146,7 @@ screen counts as "active".
 | `ListingStatus` | `shared/src/catalog/listing.ts` | `draft`, `pending_approval`, `verified`, `rejected`, `sold` |
 | `WantedStatus` | `shared/src/catalog/wanted.ts` | `open`, `closed` |
 | `OrderStatus` | `shared/src/orders/order.ts` | `requested`, `accepted`, `declined`, `cancelled`, `open`, `assigned`, `in_transit`, `delivered` |
+| `CallStatus` | `shared/src/calls/call.ts` | `requested`, `declined`, `active`, `ended` |
 
 Every Mongoose `enum:` option is read from the zod enum (`roleSchema.options`, `CROP_IDS`, and so
 on), so the database can never accept a value the app does not know. Add a value in the zod file
@@ -141,6 +163,8 @@ users ──< listings          listings.farmerId
 users ──< wanted_listings   wanted_listings.buyerId
 users ──< orders            orders.buyerId, orders.farmerId
 listings ──< orders         orders.listingId
+users ──< calls             calls.callerId, calls.calleeId
+listings ──< calls          calls.listingId
 ```
 
 **Snapshot fields are copies, not joins, on purpose.** `farmerName` on listings and orders, and
