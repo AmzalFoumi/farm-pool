@@ -16,6 +16,12 @@ npm run api                              # the backend, in another terminal
 npm run mobile                           # = expo start; press a for Android, i for iOS
 ```
 
+**Expo Go or the development build.** `expo-dev-client` is installed (video calling needs native
+code Expo Go does not have), so `expo start` opens the **development build** by default. For Expo
+Go, run `npm run start -w mobile -- --go`, or press `s` in the running terminal to switch. Every
+screen except calls works in Expo Go. Machine setup for the development build:
+`.plans/development-build/README.md`.
+
 `localhost` on a phone is the phone, so `EXPO_PUBLIC_API_URL` must be the development machine's
 address on the same Wi-Fi (`ipconfig` / `ifconfig`). Restart `expo start` after changing it: the
 value is inlined at build time.
@@ -31,8 +37,9 @@ and would move this project's `src/app` aside.
 
 | Command | What |
 | ------- | ---- |
-| `npm run mobile` (root) or `npm start -w mobile` | Expo dev server |
-| `npm run android -w mobile`, `npm run ios -w mobile` | Same, opening an emulator or simulator |
+| `npm run mobile` (root) or `npm start -w mobile` | Expo dev server, opening the development build |
+| `npm run start -w mobile -- --go` | Expo dev server, opening Expo Go |
+| `npm run android -w mobile`, `npm run ios -w mobile` | **Native build** (`expo run:android` / `expo run:ios`): needs Android Studio or Xcode, 10–20 min the first time. Not for Expo Go |
 | `npm run lint -w mobile` | ESLint (`expo lint`) |
 | `npx tsc --noEmit -p mobile` | Type check |
 

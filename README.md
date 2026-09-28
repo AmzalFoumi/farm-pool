@@ -23,8 +23,8 @@ npm workspaces monorepo. Layout and reasoning: [.plans/STRUCTURE.md](.plans/STRU
   on the same Wi-Fi network
 - Git
 
-No Android Studio or Xcode required. The managed workflow builds on Expo's servers, and the demo
-path is Expo Go over the local network.
+No Android Studio or Xcode required for Expo Go, which runs every screen except video calls. Calls
+need the development build, which is built locally with Android Studio (see below).
 
 ## Running the app
 
@@ -49,6 +49,16 @@ Running `npm install` inside `mobile/` or `api/` creates a second, competing loc
 
 Scan the QR code with Expo Go. If the app fails to load, confirm the phone is on the same network —
 the development server is reachable at the machine's LAN IP, not `localhost`.
+
+**Expo Go or the development build.** The app now includes `expo-dev-client` (video calling needs
+native code Expo Go does not have), so `npm run mobile` opens the **development build** by default.
+To use Expo Go instead, start with `npm run start -w mobile -- --go`, or press `s` in the running
+terminal to switch. Every screen except calls works in Expo Go.
+
+**`npm run android -w mobile` is now a native build**, not "open in the emulator": it runs
+`expo run:android`, which needs Android Studio and takes 10–20 minutes the first time. To open the
+app in Expo Go on an emulator, run `npm run start -w mobile -- --go` and press `a`. Setting up a
+machine for the development build: [.plans/development-build/README.md](.plans/development-build/README.md).
 
 ## Working here
 
