@@ -41,6 +41,23 @@ function GridGlyph({ className }: { className: string }) {
   );
 }
 
+/** A component, not an inline `VStack`: FlatList clones its empty element with a native `style`
+ *  prop, which the web `VStack` (a plain `div`) cannot accept and crashes on. */
+function NoFilterMatches({ onClear }: { onClear: () => void }) {
+  return (
+    <VStack className="items-center">
+      <EmptyNote title="No listings match these filters" note="Try another crop or district." />
+      <Pressable
+        onPress={onClear}
+        accessibilityRole="button"
+        className="min-h-tap items-center justify-center rounded-pill border border-primary px-6 active:opacity-80"
+      >
+        <Text className="type-body-bold text-primary">Clear filters</Text>
+      </Pressable>
+    </VStack>
+  );
+}
+
 function matches(listing: Listing, needle: string) {
   const crop = cropById(listing.cropId).name.toLowerCase();
   return (
@@ -140,10 +157,12 @@ export default function ListingsScreen() {
       </VStack>
 
       {/* ── Filters ──────────────────────────────────────────────────── */}
-      <VStack className="gap-2 pt-3">
+      {/* `shrink-0` stops the list below from squeezing the chip rows shorter than a chip. */}
+      <VStack className="shrink-0 gap-2 pt-3">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          className="shrink-0 grow-0"
           contentContainerClassName="gap-2 px-gutter"
         >
           <FilterChip label="All crops" selected={!crop} onPress={() => setCrop(undefined)} />
@@ -161,6 +180,7 @@ export default function ListingsScreen() {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
+            className="shrink-0 grow-0"
             contentContainerClassName="gap-2 px-gutter"
           >
             <FilterChip
@@ -209,19 +229,7 @@ export default function ListingsScreen() {
                 needle ? (
                   <EmptyNote title="No matches" note={`Nothing matches “${query.trim()}”.`} />
                 ) : filtered ? (
-                  <VStack className="items-center">
-                    <EmptyNote
-                      title="No listings match these filters"
-                      note="Try another crop or district."
-                    />
-                    <Pressable
-                      onPress={clearFilters}
-                      accessibilityRole="button"
-                      className="min-h-tap items-center justify-center rounded-pill border border-primary px-6 active:opacity-80"
-                    >
-                      <Text className="type-body-bold text-primary">Clear filters</Text>
-                    </Pressable>
-                  </VStack>
+                  <NoFilterMatches onClear={clearFilters} />
                 ) : (
                   <EmptyNote
                     title="No listings yet"
