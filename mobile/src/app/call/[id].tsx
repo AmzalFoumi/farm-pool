@@ -54,12 +54,11 @@ export default function CallScreen() {
   }
 
   // Lazy on purpose, see top.
-  const AgoraCall = // eslint-disable-next-line @typescript-eslint/no-require-imports
-    (
-      require("@/features/calls/agora-call") as {
-        default: ComponentType<AgoraCallProps>;
-      }
-    ).default;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const agoraCall = require("@/features/calls/agora-call") as {
+    default: ComponentType<AgoraCallProps>;
+  };
+  const AgoraCall = agoraCall.default;
 
   return (
     <AgoraCall
