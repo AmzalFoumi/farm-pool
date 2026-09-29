@@ -32,6 +32,19 @@ export class MongooseCallRepository implements CallRepository {
     return toCall(doc);
   }
 
+  async updateIfRequested(
+    id: string,
+    changes: CallChanges,
+  ): Promise<Call | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.calls
+      .findOneAndUpdate({ _id: id, status: 'requested' }, changes, {
+        returnDocument: 'after',
+      })
+      .exec();
+    return doc ? toCall(doc) : null;
+  }
+
   async findOpen(callerId: string, listingId: string): Promise<Call | null> {
     const doc = await this.calls
       .findOne({

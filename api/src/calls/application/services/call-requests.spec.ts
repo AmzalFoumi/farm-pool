@@ -112,6 +112,19 @@ describe('call requests (FARM-24)', () => {
     ).rejects.toMatchObject({ kind: 'conflict', code: 'call_not_requested' });
   });
 
+  it('lets only one of two answers sent at once win', async () => {
+    const call = await request.execute(buyerId, { listingId });
+    const results = await Promise.allSettled([
+      answer.execute('farmer-1', call.id, 'accept'),
+      answer.execute('farmer-1', call.id, 'decline'),
+    ]);
+    expect(results.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
+    const [lost] = results.filter((r) => r.status === 'rejected');
+    expect(lost.reason).toMatchObject({
+      code: 'call_not_requested',
+    });
+  });
+
   it('lists a call for both people and nobody else', async () => {
     await request.execute(buyerId, { listingId });
     expect(await listMine.execute(buyerId)).toHaveLength(1);

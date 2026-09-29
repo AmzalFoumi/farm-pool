@@ -31,9 +31,18 @@ export class AnswerCall {
         'This call has already been answered',
       );
     }
-    const answered = await this.calls.update(call.id, {
+    // The check above gives the usual answer; this conditional write is what stops a
+    // double tap or a retry from answering twice.
+    const answered = await this.calls.updateIfRequested(call.id, {
       status: answer === 'accept' ? 'active' : 'declined',
     });
+    if (!answered) {
+      throw new CallError(
+        'conflict',
+        'call_not_requested',
+        'This call has already been answered',
+      );
+    }
     return toCallDto(answered);
   }
 }
