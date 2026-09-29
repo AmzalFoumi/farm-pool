@@ -101,6 +101,7 @@ function RootNavigator() {
 
         <Stack.Protected guard={isFarmer}>
           <Stack.Screen name="(farmer)" />
+          <Stack.Screen name="call-requests" />
         </Stack.Protected>
 
         <Stack.Protected guard={isCoordinator}>
@@ -130,6 +131,8 @@ function RootNavigator() {
             rather than being registered twice. */}
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="listing/[id]" />
+          {/* A call is between a buyer and a farmer, whose shells differ. */}
+          <Stack.Screen name="call/[id]" options={{ gestureEnabled: false }} />
         </Stack.Protected>
       </Stack>
     </>

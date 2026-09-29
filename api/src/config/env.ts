@@ -24,6 +24,9 @@ export const envSchema = z.object({
   JWT_EXPIRES_IN: z.string().min(1).default('30d'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
   HOST: z.string().min(1).default('0.0.0.0'),
+  // Optional so the api runs without them; only video call tokens need them (FARM-40).
+  AGORA_APP_ID: z.string().optional(),
+  AGORA_APP_CERTIFICATE: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

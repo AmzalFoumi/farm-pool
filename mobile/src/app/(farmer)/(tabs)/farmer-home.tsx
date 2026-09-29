@@ -115,6 +115,14 @@ export default function FarmerHomeScreen() {
               <Text className="type-body-bold text-foreground">View Orders</Text>
             </Pressable>
           </HStack>
+          {/* Video call requests from buyers (FARM-24). Not a tab: the bar is at five. */}
+          <Pressable
+            onPress={() => router.push("/call-requests")}
+            accessibilityRole="button"
+            className="min-h-tap rounded-card border border-border bg-card p-3.5 items-center justify-center"
+          >
+            <Text className="type-body-bold text-foreground">Call Requests</Text>
+          </Pressable>
         </VStack>
       </ScrollView>
     </View>

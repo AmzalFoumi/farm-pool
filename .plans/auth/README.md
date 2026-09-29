@@ -115,6 +115,9 @@ name should appear in an access rule:
 | `order:accept` | ✓ | | | |
 | `order:read-own` | ✓ | ✓ | ✓ | ✓ |
 | `order:cancel` | | ✓ | | |
+| `call:request` | | ✓ | | |
+| `call:answer` | ✓ | | | |
+| `call:join` | ✓ | ✓ | ✓ | ✓ |
 | `wanted:read` | ✓ | ✓ | ✓ | ✓ |
 | `wanted:create` | | ✓ | | |
 | `delivery:accept` | | | | ✓ |

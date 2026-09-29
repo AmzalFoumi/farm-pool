@@ -43,6 +43,7 @@ import { Image } from "@/components/ui/image";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { callsApi } from "@/features/calls/api";
 import { listingsApi } from "@/features/listings/api";
 import { CropTile } from "@/features/listings/crop-tile";
 import { ordersApi } from "@/features/orders/api";
@@ -82,6 +83,8 @@ export default function ListingDetailScreen() {
           <ListingBody
             listing={data}
             canOrder={auth.user ? can(auth.user.role, "order:place") : false}
+            canCall={auth.user ? can(auth.user.role, "call:request") : false}
+            onCallRequested={() => router.push("/calls")}
             token={token}
             onBack={() => router.back()}
             onPlaced={(orderId) =>
@@ -99,6 +102,8 @@ export default function ListingDetailScreen() {
 function ListingBody({
   listing,
   canOrder,
+  canCall,
+  onCallRequested,
   token,
   onBack,
   onPlaced,
@@ -107,6 +112,9 @@ function ListingBody({
 }: {
   listing: Listing;
   canOrder: boolean;
+  canCall: boolean;
+  /** After a call request is sent (or one was already open): go to the Calls tab. */
+  onCallRequested: () => void;
   token: string;
   onBack: () => void;
   onPlaced: (orderId: string) => void;
@@ -115,6 +123,23 @@ function ListingBody({
 }) {
   const crop = cropById(listing.cropId);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [calling, setCalling] = useState(false);
+  const [callError, setCallError] = useState<string | null>(null);
+
+  // FARM-24: ask the farmer for a video call. A repeat tap finds the open request instead.
+  const requestCall = async () => {
+    setCalling(true);
+    setCallError(null);
+    try {
+      await callsApi.request(token, { listingId: listing.id });
+      onCallRequested();
+    } catch (e) {
+      if (e instanceof ApiError && e.code === "call_already_open") onCallRequested();
+      else setCallError(e instanceof ApiError ? e.message : "Could not request a call");
+    } finally {
+      setCalling(false);
+    }
+  };
 
   const rows = [
     { label: "Unit price", value: `${formatPrice(listing.pricePerKg)} / kg` },
@@ -206,22 +231,31 @@ function ListingBody({
         </VStack>
       </ScrollView>
 
+      {callError ? (
+        <Text className="type-caption bg-card px-gutter pt-3 text-destructive">{callError}</Text>
+      ) : null}
+
       {/* Footer. `AppButton` is full-width with no size axis, so the pair mirrors
-          its construction (`h-control rounded-field`). "Request call" is disabled
-          and says so to a screen reader; it is FARM-24's to wire. */}
+          its construction (`h-control rounded-field`). "Request call" is for buyers
+          (FARM-24); for anyone else it stays visible but disabled. */}
       <HStack
         className="gap-3 border-t border-border bg-card px-gutter pt-3"
         style={{ paddingBottom: Math.max(bottomInset, 23) }}
       >
         <Pressable
-          disabled
+          onPress={() => void requestCall()}
+          disabled={!canCall || calling}
           accessibilityRole="button"
-          accessibilityState={{ disabled: true }}
-          accessibilityLabel={`Request a call with ${listing.farmerName}`}
-          className="h-control flex-1 flex-row items-center justify-center gap-2.5 rounded-field border border-brand-deep bg-card opacity-60"
+          accessibilityState={{ disabled: !canCall || calling }}
+          accessibilityLabel={`Request a video call with ${listing.farmerName}`}
+          className={`h-control flex-1 flex-row items-center justify-center gap-2.5 rounded-field border border-brand-deep bg-card active:opacity-80 ${
+            !canCall || calling ? "opacity-60" : ""
+          }`}
         >
           <Icon as={PhoneIcon} className="text-brand-deep" />
-          <Text className="type-h4 text-brand-deep">Request call</Text>
+          <Text className="type-h4 text-brand-deep">
+            {calling ? "Requesting…" : "Request call"}
+          </Text>
         </Pressable>
 
         {canOrder ? (

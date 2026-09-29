@@ -1,4 +1,4 @@
-import type { ListingStatus, OrderStatus, WantedStatus } from "@farm-pool/shared";
+import type { CallStatus, ListingStatus, OrderStatus, WantedStatus } from "@farm-pool/shared";
 
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
@@ -34,6 +34,15 @@ const LISTING: Record<ListingStatus, { label: string; tone: string }> = {
   sold: { label: "Sold", tone: "muted" }
 };
 
+/* A video call. Waiting on the farmer is `warning`, like a requested order; accepted and ready
+   to join is `success`; declined is `destructive`; a finished call is history, so `muted`. */
+const CALL: Record<CallStatus, { label: string; tone: string }> = {
+  requested: { label: "Requested", tone: "warning" },
+  active: { label: "Ready to join", tone: "success" },
+  declined: { label: "Declined", tone: "destructive" },
+  ended: { label: "Ended", tone: "muted" }
+};
+
 /* Written out in full so UniWind can see every class name at build time. */
 const TONE: Record<string, { box: string; text: string }> = {
   warning: { box: "bg-warning-subtle", text: "text-warning" },
@@ -62,6 +71,10 @@ export function WantedStatusPill({ status }: { status: WantedStatus }) {
 
 export function ListingStatusPill({ status }: { status: ListingStatus }) {
   return <Pill {...LISTING[status]} />;
+}
+
+export function CallStatusPill({ status }: { status: CallStatus }) {
+  return <Pill {...CALL[status]} />;
 }
 
 export function orderStatusLabel(status: OrderStatus) {
