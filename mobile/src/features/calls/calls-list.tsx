@@ -1,6 +1,6 @@
 /**
  * The calls this user made or received (FARM-24). Shared by the buyer's Calls tab and the
- * farmer's `/calls` screen, which differ only in how they are reached.
+ * farmer's `/call-requests` screen, which differ only in how they are reached.
  *
  * There are no push notifications yet, so a farmer learns about a new request here: the list
  * reloads whenever the screen regains focus, and on pull-down.
