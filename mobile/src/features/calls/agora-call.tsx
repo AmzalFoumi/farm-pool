@@ -75,7 +75,16 @@ export default function AgoraCall({ getToken, otherName, onHangUp, onClose }: Ag
       onUserJoined: (_c, remoteUid) => alive && setPhase({ kind: "connected", remoteUid }),
       onUserOffline: () => alive && setPhase({ kind: "waiting" }),
       onTokenPrivilegeWillExpire: () => {
-        void getTokenRef.current().then((t) => engine.current?.renewToken(t.token));
+        // Renewal fails if the network dropped or the other person ended the call; say so
+        // instead of letting the pass run out silently.
+        void getTokenRef
+          .current()
+          .then((t) => engine.current?.renewToken(t.token))
+          .catch(() => {
+            if (alive) {
+              setPhase({ kind: "failed", message: "The call pass could not be renewed." });
+            }
+          });
       },
       onConnectionStateChanged: (_c, state, reason) => {
         if (!alive) return;
