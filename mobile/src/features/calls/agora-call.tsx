@@ -37,7 +37,10 @@ export type AgoraCallProps = {
   /** Fetches a fresh pass from our api. */
   getToken: () => Promise<CallToken>;
   otherName: string;
+  /** Ends the call for both people. */
   onHangUp: () => void;
+  /** Leaves after a failed join without ending the call, so either person can try again. */
+  onClose: () => void;
 };
 
 /** Agora's video view is a native view, not a UniWind-styled one, so it takes a style. */
@@ -52,7 +55,7 @@ async function askForCameraAndMic(): Promise<boolean> {
   return Object.values(result).every((r) => r === PermissionsAndroid.RESULTS.GRANTED);
 }
 
-export default function AgoraCall({ getToken, otherName, onHangUp }: AgoraCallProps) {
+export default function AgoraCall({ getToken, otherName, onHangUp, onClose }: AgoraCallProps) {
   const insets = useSafeAreaInsets();
   const engine = useRef<IRtcEngine | null>(null);
   const [phase, setPhase] = useState<Phase>({ kind: "starting" });
@@ -150,7 +153,7 @@ export default function AgoraCall({ getToken, otherName, onHangUp }: AgoraCallPr
       <VStack className="flex-1 items-center justify-center gap-4 bg-background p-gutter">
         <Text className="type-h4 text-center text-foreground">Could not start the call</Text>
         <Text className="type-body text-center text-muted-foreground">{phase.message}</Text>
-        <AppButton label="Close" variant="outline" onPress={onHangUp} />
+        <AppButton label="Close" variant="outline" onPress={onClose} />
       </VStack>
     );
   }

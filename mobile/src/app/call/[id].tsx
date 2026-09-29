@@ -25,11 +25,14 @@ export default function CallScreen() {
   const { token } = useAuth();
   const otherName = name ?? "The other person";
 
+  const goBack = () => {
+    if (router.canGoBack()) router.back();
+    else router.replace("/");
+  };
   const leave = () => {
     // Record the end, but do not keep someone on a dead screen if the api is unreachable.
     void callsApi.end(token ?? "", id).catch(() => undefined);
-    if (router.canGoBack()) router.back();
-    else router.replace("/");
+    goBack();
   };
 
   if (isRunningInExpoGo()) {
@@ -52,17 +55,18 @@ export default function CallScreen() {
 
   // Lazy on purpose, see top.
   const AgoraCall = // eslint-disable-next-line @typescript-eslint/no-require-imports
-  (
-    require("@/features/calls/agora-call") as {
-      default: ComponentType<AgoraCallProps>;
-    }
-  ).default;
+    (
+      require("@/features/calls/agora-call") as {
+        default: ComponentType<AgoraCallProps>;
+      }
+    ).default;
 
   return (
     <AgoraCall
       getToken={() => callsApi.token(token ?? "", id)}
       otherName={otherName}
       onHangUp={leave}
+      onClose={goBack}
     />
   );
 }
