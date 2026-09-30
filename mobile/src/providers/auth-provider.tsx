@@ -38,6 +38,9 @@ type AuthContextValue = AuthState & {
   signOut(): Promise<void>;
   /** Re-check the saved session against the api (after a profile edit, say). */
   refresh(): Promise<void>;
+  /** Adopt a user record the api just returned (the driver's vehicle save, say) without a second
+   *  round trip. Unlike `refresh`, a dropped connection cannot sign anyone out here. */
+  updateUser(user: PublicUser): void;
 };
 
 const SIGNED_OUT: AuthState = { status: "signed-out", user: null, token: null };
@@ -97,6 +100,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async refresh() {
         setState(await loadSession());
+      },
+      updateUser(user) {
+        setState((current) =>
+          current.status === "signed-in" && current.user.id === user.id
+            ? { ...current, user }
+            : current
+        );
       }
     }),
     [state, adopt]

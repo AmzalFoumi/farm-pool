@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { driverProfileSchema } from "./driver";
 import { phoneSchema } from "./phone";
 import { accountStatusSchema, roleSchema } from "./role";
 
@@ -59,7 +60,10 @@ export const publicUserSchema = z.object({
   email: z.email().optional(),
   role: roleSchema,
   status: accountStatusSchema,
-  createdAt: z.iso.datetime()
+  createdAt: z.iso.datetime(),
+  /** A delivery partner's vehicle and its verification state; absent for every other role, and
+   *  for a driver who has not submitted one yet (FARM-45, `./driver.ts`). */
+  driver: driverProfileSchema.optional()
 });
 
 export type PublicUser = z.infer<typeof publicUserSchema>;

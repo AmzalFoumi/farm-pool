@@ -1,4 +1,4 @@
-import type { NewUser, User } from '../entities/user';
+import type { DriverProfile, NewUser, User } from '../entities/user';
 
 /**
  * "Something that can store users." The domain and the use-cases only ever see this interface;
@@ -12,6 +12,8 @@ export interface UserRepository {
   /** Rejects with `DuplicatePhoneError` when the phone (or email) is already registered. */
   create(user: NewUser): Promise<User>;
   findAll(): Promise<User[]>;
+  /** Replaces the user's `driver` object. Resolves `null` when no such user exists. */
+  saveDriverProfile(id: string, driver: DriverProfile): Promise<User | null>;
 }
 
 /**

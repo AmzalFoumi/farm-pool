@@ -7,7 +7,7 @@
 | Folder | Holds | Depends on |
 | ------ | ----- | ---------- |
 | `domain/` | `entities/` (`User`, `toPublicUser`), `value-objects/`, and `repositories/` (**interfaces only** — `UserRepository`, "something that can store an account"). Pure business rules, no NestJS, no database code. ESLint rejects a `@nestjs/*` or `mongoose` import here. | `packages/shared` |
-| `application/` | `services/` — the use-cases (`RegisterUser`, `LoginUser`, `GetMe`, `ListUsers`), plain constructor-injected classes; `ports/` — the interfaces they need (`PasswordHasher`, `TokenSigner`); `errors.ts` — `IdentityError` with stable codes. Same framework-free rule as `domain/`. Request/response shapes are the zod schemas in `packages/shared`, not DTO classes. | `domain/` |
+| `application/` | `services/` — the use-cases (`RegisterUser`, `LoginUser`, `GetMe`, `ListUsers`, `SaveDriverVehicle`), plain constructor-injected classes; `ports/` — the interfaces they need (`PasswordHasher`, `TokenSigner`); `errors.ts` — `IdentityError` with stable codes. Same framework-free rule as `domain/`. Request/response shapes are the zod schemas in `packages/shared`, not DTO classes. | `domain/` |
 | `infrastructure/` | `persistence/` — the Mongoose schema for the `users` collection, `MongooseUserRepository` (the real store) and `InMemoryUserRepository` (tests). `security/` — `ScryptPasswordHasher` (`node:crypto`) and `JsonwebtokenTokenSigner` (HS256). | `application/ports`, `domain/` |
 | `auth/` | The NestJS adapters: `JwtAuthGuard` (global; `@Public()` opts out), `RolesGuard` (`@Allow(action)` / `@Roles()`), `@CurrentUser()`. Other domains import the decorators from here. | `application/ports` |
 | `identity.controller.ts` | HTTP handlers. Thin: validate with `ZodValidationPipe(schema)`, call a use-case, return the result. | `application/` |
@@ -21,11 +21,27 @@
 | POST | `/identity/register` | anyone; all four roles self-register | 201 `AuthResponse`, 400 `validation_error`, 409 `phone_taken` |
 | POST | `/identity/login` | anyone | 200 `AuthResponse`, 401 `invalid_credentials` |
 | GET | `/identity/me` | any signed-in role | 200 `PublicUser`, 401 `unauthorized` |
+| PUT | `/identity/me/vehicle` | `driver:update-vehicle` (logistics); writes the caller's own account | 200 `PublicUser` with `driver`, 400 `validation_error`, 403 `forbidden` |
 | GET | `/identity/users` | `users:list` in the shared matrix (coordinator) | 200 `PublicUser[]`, 403 `forbidden` |
 
 Every refusal has the body `{ code, message }` (`apiErrorSchema` in shared); `validation_error`
 adds `issues: [{ path, message }]`. Full walk-through, token shape and the trade-offs:
 `.plans/auth/README.md`.
+
+## A driver's vehicle (FARM-45)
+
+A `logistics` account is created by the same register call as every other role, with no vehicle.
+The app then keeps the driver on a three-step wizard (`mobile/src/features/driver/`) until
+`PUT /identity/me/vehicle` has stored one. It is kept out of `registerSchema` on purpose: that
+object is shared by all four roles, and a required vehicle field there would break the other three.
+
+- **Stored embedded**, as `users.driver`, not in a collection of its own: one per driver, always
+  read with the account.
+- **Verification** is `pending` → `verified` | `rejected` (`driverVerificationSchema`). Only
+  `pending` is written today; *what* the check is and who makes it is open (`.plans/DECISIONS.md`).
+- **One rule** (`applyVehicle` in `domain/entities/user.ts`): a new plate or vehicle type goes back
+  to `pending`; capacity and district edits keep the current state.
+- **Contact number** is the account phone; it is not asked for again.
 
 ## Protecting a route in another domain
 

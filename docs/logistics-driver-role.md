@@ -218,6 +218,13 @@ LP-05 need nothing built.
 | `packages/shared/src/identity/auth.ts`        | `registerSchema` — one flat object shared by all four roles.                     |
 | `packages/shared/src/identity/permissions.ts` | Permission matrix; `"delivery:accept": ["logistics"]` exists, unused.            |
 
+> **FARM-45 status.** Built: vehicle capture after sign-up (LP-02, LP-07, LP-09, LP-10), the
+> verification state on the account (LP-03, LP-11), the `(driver)` shell guarded by
+> `can(role, "delivery:accept")` (LP-08) and the profile screen (LP-06, without rating). Not
+> built: surfacing the driver to a farmer at pickup (LP-04), which needs a job to attach to
+> (FARM-49), and anything that moves verification past `pending` (open question 3). The list below
+> is what was missing before FARM-45.
+
 ### 10.1 Missing for a driver
 
 - Vehicle data — nowhere in `registerSchema`, `User`, `UserDocument` or `publicUserSchema`. **FARM-49 can't assign a driver without it.**

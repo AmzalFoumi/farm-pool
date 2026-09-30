@@ -1,4 +1,10 @@
-import type { CallStatus, ListingStatus, OrderStatus, WantedStatus } from "@farm-pool/shared";
+import type {
+  CallStatus,
+  DriverVerification,
+  ListingStatus,
+  OrderStatus,
+  WantedStatus
+} from "@farm-pool/shared";
 
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
@@ -43,6 +49,14 @@ const CALL: Record<CallStatus, { label: string; tone: string }> = {
   ended: { label: "Ended", tone: "muted" }
 };
 
+/* A delivery partner's vehicle check (FARM-45). Waiting on a check is `warning`, like every other
+   thing waiting on someone; checked is `success`; refused is `destructive`. */
+const DRIVER: Record<DriverVerification, { label: string; tone: string }> = {
+  pending: { label: "Awaiting check", tone: "warning" },
+  verified: { label: "Verified", tone: "success" },
+  rejected: { label: "Not approved", tone: "destructive" }
+};
+
 /* Written out in full so UniWind can see every class name at build time. */
 const TONE: Record<string, { box: string; text: string }> = {
   warning: { box: "bg-warning-subtle", text: "text-warning" },
@@ -75,6 +89,10 @@ export function ListingStatusPill({ status }: { status: ListingStatus }) {
 
 export function CallStatusPill({ status }: { status: CallStatus }) {
   return <Pill {...CALL[status]} />;
+}
+
+export function DriverVerificationPill({ status }: { status: DriverVerification }) {
+  return <Pill {...DRIVER[status]} />;
 }
 
 export function orderStatusLabel(status: OrderStatus) {

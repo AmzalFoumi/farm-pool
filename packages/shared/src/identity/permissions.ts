@@ -27,6 +27,7 @@ export const actionSchema = z.enum([
   "wanted:read",
   "wanted:create",
   "delivery:accept",
+  "driver:update-vehicle",
   "users:list",
   "farmers:approve",
   "cooperative:read-dashboard",
@@ -55,6 +56,8 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   "wanted:read": ROLES,
   "wanted:create": ["buyer"],
   "delivery:accept": ["logistics"],
+  // A driver's own vehicle, on their own account; the use-case writes only to the caller.
+  "driver:update-vehicle": ["logistics"],
   // The coordinator is the trust checkpoint (`.plans/PRODUCT.md`); only they see everyone.
   "users:list": ["coordinator"],
   "farmers:approve": ["coordinator"],

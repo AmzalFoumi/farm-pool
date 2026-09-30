@@ -30,6 +30,7 @@ Owner: `identity`. Storage: `api/src/identity/infrastructure/persistence/user.sc
 | `passwordHash` | string | yes | | scrypt hash (`infrastructure/security/scrypt-password-hasher.ts`). | **no** |
 | `role` | enum `Role` | yes | | `farmer`, `buyer`, `coordinator`, `logistics`. `logistics` is what the picker labels "Delivery partner". | yes |
 | `status` | enum `AccountStatus` | yes, default `active` | | `active`, `pending_review`, `suspended`. Stored and returned; **no guard checks it yet**. | yes |
+| `driver` | embedded object | no | | A delivery partner's vehicle (FARM-45): `vehicleType` (enum `VehicleType`), `registration` (upper-cased plate), `capacityKg`, `operatingDistrict`, `verification` (enum `DriverVerification`: `pending`, `verified`, `rejected`), `updatedAt`. Absent for other roles and until the driver submits one. Only `pending` is written today. | yes (optional) |
 
 All four roles self-register through `POST /identity/register` (`.plans/auth/README.md`). Coordinator
 stays a public sign-up path; whether to gate or seed one is open (`.plans/auth/OPEN.md`).
@@ -196,7 +197,7 @@ the api already share; renaming them is a shared-package change, not a database-
 
 So nobody assumes it is: produce photos and image storage, quality grade, expiry, pickup
 coordinates or depots, saved or favourite farmers, benchmark prices, payments, delivery
-assignments and driver verification, in-app calls or messages (`calls` tab is a placeholder),
+assignments, the driver verification *process* (the state is stored, nothing moves it past `pending`), in-app calls or messages (`calls` tab is a placeholder),
 farmer responses to wanted requests, coordinator approval records, refresh tokens or sessions.
 Each is one optional field or one new collection when its story arrives; none needs a change to
 what exists.

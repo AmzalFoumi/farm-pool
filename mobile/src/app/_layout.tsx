@@ -62,6 +62,7 @@ function RootNavigator() {
   const signedIn = auth.status === "signed-in";
   const isCoordinator = signedIn && can(auth.user.role, "cooperative:read-dashboard");
   const isFarmer = signedIn && can(auth.user.role, "listing:create");
+  const isDriver = signedIn && can(auth.user.role, "delivery:accept");
 
   return (
     <>
@@ -69,8 +70,8 @@ function RootNavigator() {
       {/* Onboarding is the root stack, so `index` (the welcome screen) is
           what a cold start lands on when nobody is signed in. The tab shell
           lives one level in — `(farmer)` for a farmer (FARM-21),
-          `(coordinator-tabs)` for a coordinator (FARM-25), `(tabs)` for
-          everyone else; which one a signed-in user gets is decided here, once,
+          `(coordinator-tabs)` for a coordinator (FARM-25), `(driver)` for a
+          delivery partner (FARM-45), `(tabs)` for everyone else; which one a signed-in user gets is decided here, once,
           by which group's guard is open, rather than duplicated per screen.
 
           `Stack.Protected` does the routing an auth check used to need
@@ -95,8 +96,14 @@ function RootNavigator() {
             first, and `listing/[id]` has no `id` without a real navigation into
             it — declaring it first makes the app try to open it blank on cold
             start (FARM-25 regression, caught 2026-09-19). */}
-        <Stack.Protected guard={signedIn && !isCoordinator && !isFarmer}>
+        <Stack.Protected guard={signedIn && !isCoordinator && !isFarmer && !isDriver}>
           <Stack.Screen name="(tabs)" />
+        </Stack.Protected>
+
+        {/* A driver with no vehicle yet lands on the vehicle wizard, not the
+            tabs; `(driver)/_layout.tsx` decides which. */}
+        <Stack.Protected guard={isDriver}>
+          <Stack.Screen name="(driver)" />
         </Stack.Protected>
 
         <Stack.Protected guard={isFarmer}>

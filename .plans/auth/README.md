@@ -68,6 +68,7 @@ sequenceDiagram
 | POST | `/identity/register` | no | `registerSchema` | 201 `authResponse` | 400 `validation_error`, 409 `phone_taken` |
 | POST | `/identity/login` | no | `loginSchema` | 200 `authResponse` | 400 `validation_error`, 401 `invalid_credentials` |
 | GET | `/identity/me` | yes | — | 200 `publicUser` | 401 `unauthorized`, 404 `not_found` |
+| PUT | `/identity/me/vehicle` | yes, `driver:update-vehicle` | `driverVehicleSchema` | 200 `publicUser` | 400 `validation_error`, 401 `unauthorized`, 403 `forbidden` |
 | GET | `/identity/users` | yes, `users:list` | — | 200 `publicUser[]` | 401 `unauthorized`, 403 `forbidden` |
 | GET | `/` | no | — | 200 health | |
 
@@ -121,6 +122,7 @@ name should appear in an access rule:
 | `wanted:read` | ✓ | ✓ | ✓ | ✓ |
 | `wanted:create` | | ✓ | | |
 | `delivery:accept` | | | | ✓ |
+| `driver:update-vehicle` | | | | ✓ |
 | `users:list` | | | ✓ | |
 | `farmers:approve` | | | ✓ | |
 | `cooperative:read-dashboard` | | | ✓ | |

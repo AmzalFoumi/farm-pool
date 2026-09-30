@@ -18,6 +18,7 @@
  */
 export * from "./identity/role";
 export * from "./identity/phone";
+export * from "./identity/driver";
 export * from "./identity/auth";
 export * from "./identity/jwt";
 export * from "./identity/permissions";

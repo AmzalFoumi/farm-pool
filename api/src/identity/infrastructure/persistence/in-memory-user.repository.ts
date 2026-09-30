@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { NewUser, User } from '../../domain/entities/user';
+import type { DriverProfile, NewUser, User } from '../../domain/entities/user';
 import {
   DuplicatePhoneError,
   type UserRepository,
@@ -60,6 +60,18 @@ export class InMemoryUserRepository implements UserRepository {
     return Promise.resolve(this.all().map(snapshot));
   }
 
+  saveDriverProfile(id: string, driver: DriverProfile): Promise<User | null> {
+    const user = this.users.get(id);
+    if (!user) return Promise.resolve(null);
+    const updated: User = {
+      ...user,
+      driver: { ...driver },
+      updatedAt: new Date(),
+    };
+    this.users.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
   private all(): User[] {
     return [...this.users.values()];
   }
@@ -73,6 +85,14 @@ export class InMemoryUserRepository implements UserRepository {
 function snapshot(user: User): User {
   return {
     ...user,
+    ...(user.driver
+      ? {
+          driver: {
+            ...user.driver,
+            updatedAt: new Date(user.driver.updatedAt),
+          },
+        }
+      : {}),
     createdAt: new Date(user.createdAt),
     updatedAt: new Date(user.updatedAt),
   };

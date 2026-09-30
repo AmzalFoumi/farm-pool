@@ -472,6 +472,17 @@ video call; the farmer accepts or declines on their call list; both then join.
 
 Details: `api/src/calls/README.md`.
 
+### Driver vehicle: captured after sign-up, embedded in the user
+
+Decided 30 September 2026 (FARM-45). A delivery partner signs up like everyone else, then fills in
+their vehicle on a three-step wizard before the driver tabs open; `PUT /identity/me/vehicle`
+stores it as `users.driver`. Not in `registerSchema`, because that object is shared by all four
+roles and a required vehicle there breaks the other three. Embedded rather than a `vehicles`
+collection because there is one per driver and it is always read with the account; if a driver
+ever needs several vehicles, it becomes a collection keyed by `driverId`. Districts are picked
+from Sri Lanka's 25 on the phone but stored as free text, so they match a listing's district.
+Details: `api/src/identity/README.md`.
+
 ## Open
 
 *Persistence* and *Authentication*, formerly questions 1 and 2, were settled on 18 September 2026
@@ -584,6 +595,15 @@ means the *runtime* would already cope; it is the test runner that would not.
 
 When it is taken: swap `JsonwebtokenTokenSigner` for a `jose` adapter behind the same port, and
 lift the `@nestjs/config` / `@nestjs/mongoose` pins in the same change.
+
+### 4. What driver verification checks, and who does it
+
+The driver's `verification` state exists (`pending`, `verified`, `rejected`) and every new or
+changed vehicle is `pending`, but nothing moves it on: the product research names the outcome
+("verified" badge) and never the process — an ID document, a registration photo, a coordinator's
+inspection, or a coordinator vouching from personal knowledge (`.plans/PRODUCT.md`,
+`docs/logistics-driver-role.md` §1). Deciding it adds one endpoint (likely `drivers:verify` for the
+coordinator) and no migration. Until then no driver shows as verified.
 
 ---
 

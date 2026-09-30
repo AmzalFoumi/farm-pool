@@ -1,6 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { accountStatusSchema, roleSchema } from '@farm-pool/shared';
-import type { AccountStatus, Role } from '@farm-pool/shared';
+import {
+  accountStatusSchema,
+  driverVerificationSchema,
+  roleSchema,
+  vehicleTypeSchema,
+} from '@farm-pool/shared';
+import type {
+  AccountStatus,
+  DriverVerification,
+  Role,
+  VehicleType,
+} from '@farm-pool/shared';
 import type { HydratedDocument } from 'mongoose';
 
 /**
@@ -10,6 +20,40 @@ import type { HydratedDocument } from 'mongoose';
  * The role and status enums are read from the shared zod schemas so the database can never
  * accept a value the app and the api do not know about.
  */
+/**
+ * A driver's vehicle, embedded in their user document rather than kept in a collection of its
+ * own: there is exactly one per driver, it is always read with the account (`/identity/me`), and
+ * the logistics stories that assign drivers query users by role anyway. `_id: false` because it
+ * is a value, not an entity.
+ */
+@Schema({ _id: false })
+export class DriverProfileDocument {
+  @Prop({ type: String, required: true, enum: vehicleTypeSchema.options })
+  vehicleType: VehicleType;
+
+  /** Normalised by `vehicleRegistrationSchema`: upper case, single spaces. */
+  @Prop({ required: true })
+  registration: string;
+
+  @Prop({ required: true, min: 1 })
+  capacityKg: number;
+
+  @Prop({ required: true, trim: true })
+  operatingDistrict: string;
+
+  @Prop({
+    type: String,
+    required: true,
+    enum: driverVerificationSchema.options,
+  })
+  verification: DriverVerification;
+
+  @Prop({ required: true })
+  updatedAt: Date;
+}
+
+const DriverProfileSchema = SchemaFactory.createForClass(DriverProfileDocument);
+
 @Schema({ collection: 'users', timestamps: true })
 export class UserDocument {
   @Prop({ required: true, trim: true })
@@ -46,6 +90,10 @@ export class UserDocument {
     default: 'active',
   })
   status: AccountStatus;
+
+  /** Only a `logistics` user who has submitted a vehicle has one (FARM-45). */
+  @Prop({ type: DriverProfileSchema, required: false })
+  driver?: DriverProfileDocument;
 
   // Written by `timestamps: true`; declared so the mapper can read them with types.
   createdAt: Date;

@@ -156,6 +156,72 @@ describe('identity (e2e)', () => {
     }
   });
 
+  describe('PUT /identity/me/vehicle (FARM-45)', () => {
+    const driverPhone = `07${((suffix + 2) % 1e8).toString().padStart(8, '0')}`;
+    const vehicle = {
+      vehicleType: 'van',
+      registration: 'wp  cab-1234',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+    };
+    let driverToken: string;
+
+    beforeAll(async () => {
+      const res = await request(app.getHttpServer())
+        .post('/identity/register')
+        .send({
+          displayName: 'Sunil',
+          phone: driverPhone,
+          password: 'longenough',
+          role: 'logistics',
+        })
+        .expect(201);
+      const auth = body<AuthResponse>(res);
+      expect(auth.user).not.toHaveProperty('driver');
+      driverToken = auth.token;
+    });
+
+    it('as a driver → 200, stored pending, returned by /me', async () => {
+      const res = await request(app.getHttpServer())
+        .put('/identity/me/vehicle')
+        .set('Authorization', `Bearer ${driverToken}`)
+        .send(vehicle)
+        .expect(200);
+      expect(body<PublicUser>(res).driver).toMatchObject({
+        vehicleType: 'van',
+        registration: 'WP CAB-1234',
+        capacityKg: 1500,
+        operatingDistrict: 'Kurunegala',
+        verification: 'pending',
+      });
+
+      const me = await request(app.getHttpServer())
+        .get('/identity/me')
+        .set('Authorization', `Bearer ${driverToken}`)
+        .expect(200);
+      expect(body<PublicUser>(me).driver?.registration).toBe('WP CAB-1234');
+    });
+
+    it('with a bad plate → 400 validation_error on registration', async () => {
+      const res = await request(app.getHttpServer())
+        .put('/identity/me/vehicle')
+        .set('Authorization', `Bearer ${driverToken}`)
+        .send({ ...vehicle, registration: 'ABCD' })
+        .expect(400);
+      const error = body<ApiErrorBody>(res);
+      expect(error.code).toBe('validation_error');
+      expect(error.issues?.map((i) => i.path)).toContain('registration');
+    });
+
+    it('as a farmer → 403 forbidden', async () => {
+      await request(app.getHttpServer())
+        .put('/identity/me/vehicle')
+        .set('Authorization', `Bearer ${farmerToken}`)
+        .send(vehicle)
+        .expect(403);
+    });
+  });
+
   it('GET / (health) stays public', async () => {
     await request(app.getHttpServer()).get('/').expect(200);
   });
