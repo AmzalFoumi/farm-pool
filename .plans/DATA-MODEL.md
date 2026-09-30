@@ -197,12 +197,28 @@ the api already share; renaming them is a shared-package change, not a database-
 
 ## Not modelled yet
 
-So nobody assumes it is: produce photos and image storage, quality grade, expiry, pickup
-coordinates or depots, saved or favourite farmers, benchmark prices, payments, delivery
+So nobody assumes it is: produce photos and image storage, quality grade, expiry, depots, saved or favourite farmers, benchmark prices, payments, delivery
 batches and multi-stop routes, the driver verification *process* (the state is stored, nothing moves it past `pending`), in-app calls or messages (`calls` tab is a placeholder),
 farmer responses to wanted requests, coordinator approval records, refresh tokens or sessions.
 Each is one optional field or one new collection when its story arrives; none needs a change to
 what exists.
+
+## Places, and why there are no coordinates
+
+`district` and `town` on a listing are free text, and nothing anywhere holds a latitude or a
+longitude. The driver's pickup map therefore pins the **district centre**, resolved on the phone
+from `DISTRICT_POINTS` in `packages/shared/src/catalog/districts.ts` — 25 fixed places in the
+bundle, so it works with no signal and costs no geocoding quota. The map caption states that
+precision rather than implying a farm gate.
+
+A story that adds real farm-gate coordinates should put them on the **listing** (the place does not
+change per order), as two optional numbers beside `district`, and prefer them over the table
+wherever present.
+
+**A buyer has no location at all** — not on the account, not on the order. So a drop-off cannot be
+drawn today, which is why FARM-26 shipped the pickup half only. Whichever story fills this decides
+whether a delivery address belongs on the order (it can differ per order) or on the buyer's
+account; the order is the likelier home.
 
 ## How to change a field
 

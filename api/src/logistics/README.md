@@ -4,7 +4,12 @@
 farmer sees before handing over produce.
 
 **Built: the driver job board, accept, and pickup/drop-off confirmation (FARM-49/54, LP-20 … LP-24,
-LP-50, LP-52, LP-53).** Routing, batching, offline queueing and the return leg are still unbuilt.
+LP-50, LP-52, LP-53), plus a district-level pickup map (LP-22, part of LP-40).** Batching, true
+multi-stop routing, offline queueing and the return leg are still unbuilt.
+
+The map is **entirely client-side** — no endpoint here returns a coordinate. The app resolves a
+listing's district name through `DISTRICT_POINTS` in `packages/shared`, so the api stays unaware of
+maps and the lookup works with no signal. See `.plans/DECISIONS.md`, "Maps".
 
 **This domain owns no collection.** A job is not a stored record — it is an order that reached
 `open`, read together with the listing it was placed against. LP-21 forbids a job existing without

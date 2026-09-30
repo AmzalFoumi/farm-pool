@@ -24,6 +24,7 @@ import { DetailRow } from "@/features/driver/components/profile/detail-row";
 import { logisticsApi } from "@/features/logistics/api";
 import { ContactCard } from "@/features/logistics/contact-card";
 import { JobActions } from "@/features/logistics/job-actions";
+import { JobMap } from "@/features/logistics/job-map";
 import { OrderStatusPill } from "@/features/orders/status-pill";
 import { formatPrice } from "@/lib/format";
 import { useRequest } from "@/lib/use-request";
@@ -68,6 +69,11 @@ export default function JobDetailScreen() {
                   value={detail.fulfillmentOption === "solo" ? "Dedicated vehicle" : "Shared"}
                 />
               </VStack>
+
+              {/* Where it is, before who to call about it: a driver deciding whether to take a
+                  job looks at the place first. Renders nothing for a district the table does not
+                  know, so this is not conditional on having accepted. */}
+              <JobMap district={detail.district} town={detail.town} label={detail.farmerName} />
 
               {detail.pickup ? (
                 <ContactCard

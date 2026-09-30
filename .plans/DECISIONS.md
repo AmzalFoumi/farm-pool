@@ -483,6 +483,40 @@ ever needs several vehicles, it becomes a collection keyed by `driverId`. Distri
 from Sri Lanka's 25 on the phone but stored as free text, so they match a listing's district.
 Details: `api/src/identity/README.md`.
 
+### Maps: `react-native-maps` with Google as the provider, district-level pins
+
+Decided 30 September 2026 (FARM-26). The driver's job screen shows where a pickup is and hands off
+to the installed Google Maps app for directions.
+
+**`react-native-maps`, not `expo-maps`.** `expo-maps` is Expo's own library and the obvious first
+guess, but the SDK 57 docs rule it out twice over: it is Apple Maps on iOS with no Google option,
+and it does not run in Expo Go. This app's standing rule is that every screen except calls works in
+Expo Go (`Mobile: Expo, managed workflow` above), and breaking that for a map preview is a bad
+trade. `react-native-maps` gives Google on both platforms, needs no setup under Expo Go, and is
+still the library Expo documents for this. It is also alpha-free: `expo-maps` warns it "will
+frequently experience breaking changes".
+
+**A standalone build needs API keys that are not in this repo.** Expo Go supplies its own, so
+development needs nothing. Before a store build, add the `react-native-maps` config plugin to
+`mobile/app.json` with `androidGoogleMapsApiKey` / `iosGoogleMapsApiKey` from a Google Cloud
+project — and note that `app.json` is committed, so those keys want an `app.config.js` reading the
+environment rather than a literal. Left undone deliberately: a committed placeholder that looks
+configured is worse than an absence.
+
+**Pins are district centres, and the screen says so.** Nothing in the data holds a coordinate
+(`.plans/DATA-MODEL.md`, "Not modelled yet"), so `DISTRICT_POINTS` in
+`packages/shared/src/catalog/districts.ts` maps the 25 district names to their principal town. A
+table rather than a geocoding call: twenty-five values that never change do not need a network
+round trip or a billed key, and a bundled table works with no signal — the condition the app is
+designed for (LP-90). The caption under the map states the precision, because a pin implying a
+farm gate is worse than a town name when a driver acts on it. When a story adds real farm-gate
+coordinates to a listing, they take precedence per-listing and this stays the fallback.
+
+**Directions open the Google Maps app; no route is drawn.** A polyline would need the billed
+Directions API and would still route worse than the app the driver already has, which holds their
+offline tiles. The hand-off is the universal `google.com/maps/search/?api=1` URL, by place name
+rather than by the centroid, so the maps app's own search lands closer than this preview can.
+
 ## Open
 
 *Persistence* and *Authentication*, formerly questions 1 and 2, were settled on 18 September 2026

@@ -237,6 +237,16 @@ LP-05 need nothing built.
 > half of LP-52 — today the driver's word ends the lifecycle), offline queueing of a confirmation
 > taken with no signal (LP-54), and photos on a confirmation (LP-55).
 >
+> **Pickup preview status (FARM-26).** Built: the job screen shows a Google map of the pickup
+> district with a hand-off to the Google Maps app for directions (LP-22, the reachable part of
+> LP-40). The pin is the district centre, not the farm gate, and the screen says so — no listing
+> holds a coordinate.
+>
+> **The drop-off half is blocked on data, not effort.** A buyer has no location anywhere: not on
+> the account, not on the order. So "drop-off location" and "distance/route length" in LP-22, and
+> the optimised multi-stop route in LP-40, cannot be built until some story decides where a
+> delivery address lives. The order is the likelier home, since it can differ per order.
+>
 > **Assignment took the LP-20/24 route, not LP-31.** A driver accepts from a board rather than a
 > coordinator assigning them. That is the faster half of the story and it leaves LP-30/31/32 —
 > consolidated batches assembled by the coordinator — entirely unbuilt. The order carries a single
