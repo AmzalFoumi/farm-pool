@@ -21,6 +21,9 @@ export const actionSchema = z.enum([
   "order:read-own",
   "order:cancel",
   "order:accept",
+  "call:join",
+  "call:request",
+  "call:answer",
   "wanted:read",
   "wanted:create",
   "delivery:accept",
@@ -28,7 +31,9 @@ export const actionSchema = z.enum([
   "farmers:approve",
   "cooperative:read-dashboard",
   "cooperative:read-farmers",
-  "cooperative:read-tasks"
+  "cooperative:read-tasks",
+  "benchmark:read",
+  "benchmark:set"
 ]);
 
 export type Action = z.infer<typeof actionSchema>;
@@ -42,6 +47,10 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   "order:read-own": ROLES,
   "order:cancel": ["buyer"],
   "order:accept": ["farmer"],
+  // Any role may ask to join or end a call; the use-case then checks the caller is a participant.
+  "call:join": ROLES,
+  "call:request": ["buyer"],
+  "call:answer": ["farmer"],
   // Farmers read requests to answer them later; coordinators see their region's demand.
   "wanted:read": ROLES,
   "wanted:create": ["buyer"],
@@ -51,7 +60,9 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   "farmers:approve": ["coordinator"],
   "cooperative:read-dashboard": ["coordinator"],
   "cooperative:read-farmers": ["coordinator"],
-  "cooperative:read-tasks": ["coordinator"]
+  "cooperative:read-tasks": ["coordinator"],
+  "benchmark:read": ["coordinator"],
+  "benchmark:set": ["coordinator"]
 };
 
 export function can(role: Role, action: Action): boolean {

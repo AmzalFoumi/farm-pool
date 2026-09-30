@@ -3,10 +3,13 @@ import { useColorScheme } from "react-native";
 
 import { Colors } from "@/constants/theme";
 
-/* The four coordinator tabs (Figma section "coordinator", node 226:2). Same NativeTabs
-   mechanism as the buyer shell (`app-tabs.tsx`) — platform symbol sets, no PNG triples, nothing
-   here bypasses the design system. See `.plans/DECISIONS.md`, open question 1 for the same
-   iconography caveat that already applies to the buyer tabs. */
+/* The coordinator tabs (Figma section "coordinator", node 226:2, plus Benchmark for FARM-37 —
+   not in that Figma section, added because setting prices is a daily, standing responsibility
+   rather than an occasional detour through Region; the buyer shell already runs at five, which
+   is Android's practical ceiling for a native tab bar, so this stays within precedent). Same
+   NativeTabs mechanism as the buyer shell (`app-tabs.tsx`) — platform symbol sets, no PNG
+   triples, nothing here bypasses the design system. See `.plans/DECISIONS.md`, open question 1
+   for the same iconography caveat that already applies to the buyer tabs. */
 export default function CoordinatorTabs() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === "unspecified" ? "light" : scheme];
@@ -41,6 +44,11 @@ export default function CoordinatorTabs() {
       <NativeTabs.Trigger name="disputes">
         <NativeTabs.Trigger.Label>Disputes</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="exclamationmark.triangle" md="warning" />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="benchmark">
+        <NativeTabs.Trigger.Label>Prices</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="chart.bar" md="bar_chart" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );

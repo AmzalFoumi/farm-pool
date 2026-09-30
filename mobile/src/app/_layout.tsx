@@ -101,6 +101,7 @@ function RootNavigator() {
 
         <Stack.Protected guard={isFarmer}>
           <Stack.Screen name="(farmer)" />
+          <Stack.Screen name="call-requests" />
         </Stack.Protected>
 
         <Stack.Protected guard={isCoordinator}>
@@ -108,6 +109,9 @@ function RootNavigator() {
           {/* Pushed from Region's header avatar, not a tab — Figma draws it with a back
               arrow, unlike the four tab-root screens. */}
           <Stack.Screen name="coordinator-profile" />
+          {/* Pushed from a Daily Benchmark row or a "Needs you today" benchmark task
+              (FARM-37) — same reasoning as `coordinator-profile` above. */}
+          <Stack.Screen name="benchmark/[cropId]" />
         </Stack.Protected>
 
         {/* Orders and crop requests are reached from Home cards, not tabs,
@@ -127,6 +131,8 @@ function RootNavigator() {
             rather than being registered twice. */}
         <Stack.Protected guard={signedIn}>
           <Stack.Screen name="listing/[id]" />
+          {/* A call is between a buyer and a farmer, whose shells differ. */}
+          <Stack.Screen name="call/[id]" options={{ gestureEnabled: false }} />
         </Stack.Protected>
       </Stack>
     </>

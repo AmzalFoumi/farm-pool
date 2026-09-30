@@ -286,6 +286,8 @@ src/app/(tabs)/          "/home" "/listings" "/map" "/calls" "/profile"  signed-
 src/app/listing/[id].tsx "/listing/:id" Listing detail + Place order sheet
 src/app/orders/          "/orders", "/orders/:id"   My orders
 src/app/wanted/          "/wanted", "/wanted/new"   My requests
+src/app/call/[id].tsx    "/call/:id"    The live video call (development build only)
+src/app/call-requests.tsx "/call-requests" The farmer's call list (buyers use the Calls tab)
 ```
 
 Onboarding is the root stack, so a cold start lands on the welcome screen. The tab shell sits one
@@ -322,3 +324,18 @@ workspace packages automatically, and the Expo docs now say to *delete* `watchFo
 if an older guide put them there. If an import from `packages/shared` type-checks but fails to
 resolve at runtime, clear the Metro cache first — `npx expo start --clear` — rather than adding
 config. Most advice online predates SDK 52 and will make this worse.
+
+## Native-only libraries
+
+The app runs in a development build and, for every screen except calls, in Expo Go
+(`.plans/DECISIONS.md`, "Mobile: Expo, managed workflow"). Expo Go crashes the moment it loads a
+library whose native code it does not contain, so:
+
+- **Import a native-only library in exactly one file**, inside its feature folder. Today that is
+  `react-native-agora`, in `mobile/src/features/calls/agora-call.tsx`.
+- **Load that file lazily, behind `isRunningInExpoGo()`** from `expo`, as
+  `mobile/src/app/call/[id].tsx` does. Never import it at the top of a route, `_layout.tsx` or any
+  shared file: the router reads route files early, and one top-level import breaks Expo Go for
+  every screen.
+- **Adding or upgrading such a library means a rebuild** (`npx expo run:android`), and the new
+  `.apk` has to reach anyone who does not build. Say so in the pull request.

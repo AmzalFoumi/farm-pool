@@ -8,9 +8,15 @@
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "infoPlist": {
+        "NSCameraUsageDescription": "FarmPool uses the camera for video calls between buyers and farmers.",
+        "NSMicrophoneUsageDescription": "FarmPool uses the microphone for video calls between buyers and farmers."
+      }
     },
     "android": {
+      "package": "com.farmpool.app",
+      "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

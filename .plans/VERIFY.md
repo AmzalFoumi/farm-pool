@@ -126,6 +126,26 @@ Scan the QR code from a phone on the same Wi-Fi. The app must load. Catches: a p
 works in a simulator on the machine that built it — which is exactly the situation that ruins a
 live demo.
 
+**Development build and Expo Go both load** (since FARM-40)
+
+```
+npx expo start          # opens the development build
+npx expo start --go     # opens Expo Go
+```
+
+Both must reach the welcome screen. In Expo Go, opening a call must show "Video calls need the
+FarmPool development build", not a red error screen. Catches: a native-only library imported
+outside its guarded file, which breaks Expo Go for every screen.
+
+**A video call connects between two devices**
+
+Two devices on the development build, the api running with `AGORA_APP_ID` and
+`AGORA_APP_CERTIFICATE` set. A buyer taps Request call on a listing; the farmer opens Home → Call
+Requests and accepts; both tap Join call. Each must see and hear the other, and Mute, Camera off and
+Hang up must work; the call then shows Ended on both lists. Also decline one request and check the
+buyer sees Declined. Catches: a wrong App ID or certificate (the call screen says the pass was
+rejected), and permissions missing from the build.
+
 **Backend reachable from the phone**
 
 With the API running, hit an endpoint from the app on a physical device — not from a browser on the
