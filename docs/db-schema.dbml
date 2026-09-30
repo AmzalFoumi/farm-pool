@@ -1,0 +1,196 @@
+// FarmPool — what is actually in MongoDB today (main @ 7821502)
+// Paste into https://dbdiagram.io
+//
+// CAVEAT: this is a document store, not SQL. There are no foreign keys and no
+// joins — every "Ref" below is a plain string id the application resolves by
+// hand, drawn only to show intent. Enums are enforced by Mongoose because the
+// schemas read `.options` off the shared zod schemas in packages/shared.
+//
+// Five collections exist. There is no logistics collection at all: no jobs,
+// no stops, no vehicles, no payouts, no notifications, no depots, no crops
+// table (crops are a hard-coded list in packages/shared/src/catalog/crops.ts).
+
+// ===== People =====
+
+// api/src/identity/infrastructure/persistence/user.schema.ts
+// One record per person whatever their role. No per-role profile table exists —
+// a driver has nowhere to put a vehicle, which is what FARM-45 adds.
+Table users {
+  _id objectid [primary key]
+  displayName varchar [not null]
+  phone varchar [not null, unique, note: 'E.164, one account per number']
+  email varchar [unique, note: 'sparse — reserved for a later email credential, unused']
+  passwordHash varchar [not null, note: 'scrypt']
+  role user_role [not null]
+  status account_status [not null, default: 'active', note: 'stored and returned, NOT enforced by any guard yet']
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+// ===== Catalog =====
+
+// api/src/catalog/infrastructure/persistence/listing.schema.ts
+Table listings {
+  _id objectid [primary key]
+  farmerId varchar [not null, note: 'users._id as a string']
+  farmerName varchar [not null, note: 'denormalised copy']
+  cropId crop_id [not null]
+  quantityKg int [not null]
+  unit listing_unit
+  variety varchar
+  grade listing_grade
+  packaging listing_packaging
+  certifications "varchar[]"
+  pricePerKg decimal [not null]
+  harvestDate varchar [not null, note: 'YYYY-MM-DD as text, avoids timezone drift']
+  expiryDays int
+  photos "varchar[]"
+  acceptNegotiation boolean
+  district varchar [not null]
+  town varchar
+  address varchar
+  fulfillmentOption fulfillment_option [note: 'shared | solo — the batch/solo toggle']
+  farmgateNotes varchar
+  districtKey varchar [not null, note: 'lower-cased district, for case-insensitive filtering']
+  minOrderKg int [not null]
+  status listing_status [not null]
+  seedKey varchar [unique, note: 'sparse — dev seed only, so a re-run updates the same rows']
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+// api/src/catalog/infrastructure/persistence/wanted.schema.ts
+// A buyer's reverse listing — "I want to buy this".
+Table wanted_listings {
+  _id objectid [primary key]
+  buyerId varchar [not null]
+  cropId crop_id [not null]
+  quantityKg int [not null]
+  maxPricePerKg decimal
+  neededBy varchar [not null, note: 'YYYY-MM-DD']
+  district varchar [not null]
+  note varchar
+  status wanted_status [not null, default: 'open']
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+// ===== Orders =====
+
+// api/src/orders/infrastructure/persistence/order.schema.ts
+// One line per order — one crop, one listing, one buyer.
+Table orders {
+  _id objectid [primary key]
+  buyerId varchar [not null]
+  farmerId varchar [not null]
+  farmerName varchar [not null, note: 'denormalised copy']
+  listingId varchar [not null]
+  cropId crop_id [not null]
+  quantityKg int [not null]
+  pricePerKg decimal [not null, note: 'snapshot of the listing price at placement']
+  total decimal [not null]
+  note varchar
+  status order_status [not null]
+  createdAt timestamp
+  updatedAt timestamp
+}
+
+// ===== Coordination =====
+
+// api/src/coordination/infrastructure/persistence/cooperative.schema.ts
+Table cooperatives {
+  _id objectid [primary key]
+  coordinatorId varchar [not null]
+  name varchar [not null]
+  district varchar [not null]
+  memberFarmerIds "varchar[]" [not null, default: '[]', note: 'embedded array, not a join table']
+  seedKey varchar [unique, note: 'sparse — dev seed only']
+  createdAt timestamp
+  // NOTE: no updatedAt, unlike every other collection, despite timestamps: true
+}
+
+// ===== Enums (all read from packages/shared, so the DB cannot hold an unknown value) =====
+
+// packages/shared/src/identity/role.ts
+Enum user_role {
+  farmer
+  buyer
+  coordinator
+  logistics [note: 'labelled "Delivery partner" in the UI']
+}
+
+Enum account_status {
+  active
+  pending_review
+  suspended
+}
+
+// packages/shared/src/catalog/listing.ts
+Enum listing_status {
+  draft
+  pending_approval
+  verified
+  rejected
+  sold
+}
+
+Enum listing_unit {
+  kg
+  crates
+  sacks
+}
+
+Enum listing_grade {
+  A
+  B
+  C
+}
+
+Enum listing_packaging {
+  "plastic-crate"
+  "wooden-box"
+  cardboard
+  "mesh-bag"
+}
+
+Enum fulfillment_option {
+  shared
+  solo
+}
+
+// packages/shared/src/catalog/wanted.ts
+Enum wanted_status {
+  open
+  closed
+}
+
+// packages/shared/src/orders/order.ts
+// The last three are reserved for the logistics stories and nothing writes them yet.
+Enum order_status {
+  requested
+  accepted
+  declined
+  cancelled
+  open
+  assigned [note: 'FARM-49 — unwritten']
+  in_transit [note: 'FARM-54 — unwritten']
+  delivered [note: 'FARM-54 — unwritten']
+}
+
+// packages/shared/src/catalog/crops.ts — a hard-coded list, not a collection
+Enum crop_id {
+  onion
+  carrot
+  tomato
+  "green-chilli"
+  // …CROP_IDS is derived from the CROPS array
+}
+
+// ===== Relationships (application-resolved string ids, no DB constraint) =====
+
+Ref: listings.farmerId > users._id
+Ref: wanted_listings.buyerId > users._id
+Ref: orders.buyerId > users._id
+Ref: orders.farmerId > users._id
+Ref: orders.listingId > listings._id
+Ref: cooperatives.coordinatorId > users._id
