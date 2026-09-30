@@ -8,6 +8,7 @@
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "bundleIdentifier": "com.farmpool.app",
       "icon": "./assets/expo.icon",
       "infoPlist": {
         "NSCameraUsageDescription": "FarmPool uses the camera for video calls between buyers and farmers.",
