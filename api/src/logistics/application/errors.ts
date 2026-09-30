@@ -8,6 +8,7 @@ export type LogisticsErrorCode =
   | 'job_not_found'
   | 'job_taken'
   | 'not_your_job'
+  | 'wrong_stage'
   | 'no_vehicle'
   | 'load_too_heavy'
   | 'no_driver_assigned';

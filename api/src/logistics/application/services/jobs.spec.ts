@@ -3,6 +3,7 @@ import { InMemoryListingRepository } from '../../../catalog/infrastructure/persi
 import { InMemoryUserRepository } from '../../../identity/infrastructure/persistence/in-memory-user.repository';
 import { InMemoryOrderRepository } from '../../../orders/infrastructure/persistence/in-memory-order.repository';
 import { AcceptJob } from './accept-job';
+import { ConfirmDelivery, ConfirmPickup } from './confirm-delivery-step';
 import { GetAssignedDriver } from './get-assigned-driver';
 import { GetJob } from './get-job';
 import { ListMyJobs } from './list-my-jobs';
@@ -31,6 +32,8 @@ describe('logistics jobs', () => {
   let get: GetJob;
   let accept: AcceptJob;
   let assignedDriver: GetAssignedDriver;
+  let pickup: ConfirmPickup;
+  let deliver: ConfirmDelivery;
 
   let listingId: string;
   let driverId: string;
@@ -86,6 +89,8 @@ describe('logistics jobs', () => {
     get = new GetJob(orders, listings, users);
     accept = new AcceptJob(orders, listings, users);
     assignedDriver = new GetAssignedDriver(orders, users);
+    pickup = new ConfirmPickup(orders, listings, users);
+    deliver = new ConfirmDelivery(orders, listings, users);
 
     listingId = (await listings.seed({ ...listingFields })).id;
 
@@ -274,6 +279,101 @@ describe('logistics jobs', () => {
 
       await expect(mine.execute(driverId)).resolves.toMatchObject([
         { id, status: 'assigned' },
+      ]);
+    });
+  });
+
+  describe('fulfilment', () => {
+    /** An accepted job, ready for its pickup confirmation. */
+    const accepted = async () => {
+      const id = await seedOrder(120, 'open');
+      await accept.execute(driverId, id);
+      return id;
+    };
+
+    it('records the weight actually loaded and moves to in transit', async () => {
+      const id = await accepted();
+
+      const job = await pickup.execute(driverId, id, 95);
+
+      expect(job).toMatchObject({ status: 'in_transit', collectedKg: 95 });
+      await expect(orders.findById(id)).resolves.toMatchObject({
+        status: 'in_transit',
+        collectedKg: 95,
+        quantityKg: 120,
+      });
+    });
+
+    /* LP-50: the load on the lorry regularly is not the load on the order. Both directions are
+       recorded as typed — an api that refused them would leave the driver no way to be honest. */
+    it('accepts a short load and an over-collection alike', async () => {
+      const short = await accepted();
+      await expect(pickup.execute(driverId, short, 1)).resolves.toMatchObject({
+        collectedKg: 1,
+      });
+
+      const over = await seedOrder(120, 'open');
+      await accept.execute(driverId, over);
+      await expect(pickup.execute(driverId, over, 140)).resolves.toMatchObject({
+        collectedKg: 140,
+      });
+    });
+
+    it('runs the whole lifecycle to delivered', async () => {
+      const id = await accepted();
+      await pickup.execute(driverId, id, 120);
+
+      await expect(deliver.execute(driverId, id)).resolves.toMatchObject({
+        status: 'delivered',
+        collectedKg: 120,
+      });
+    });
+
+    it('refuses a drop-off before the pickup, and says which step is missing', async () => {
+      const id = await accepted();
+
+      await expect(deliver.execute(driverId, id)).rejects.toMatchObject({
+        code: 'wrong_stage',
+        message: 'Confirm the pickup before the drop-off',
+      });
+    });
+
+    it('refuses to confirm the same step twice', async () => {
+      const id = await accepted();
+      await pickup.execute(driverId, id, 120);
+      await deliver.execute(driverId, id);
+
+      await expect(deliver.execute(driverId, id)).rejects.toMatchObject({
+        code: 'wrong_stage',
+        message: 'This job is already finished',
+      });
+      await expect(pickup.execute(driverId, id, 120)).rejects.toMatchObject({
+        code: 'wrong_stage',
+      });
+    });
+
+    /* The guard is the repository filter, so this is the test that it actually guards. */
+    it('refuses a driver who does not hold the job', async () => {
+      const id = await accepted();
+      const other = await seedDriver('+94779999999', {
+        capacityKg: 1500,
+        operatingDistrict: 'Kurunegala',
+      });
+
+      await expect(pickup.execute(other, id, 120)).rejects.toMatchObject({
+        code: 'not_your_job',
+      });
+      await expect(orders.findById(id)).resolves.toMatchObject({
+        status: 'assigned',
+      });
+    });
+
+    it('leaves the job on the driver own list all the way through', async () => {
+      const id = await accepted();
+      await pickup.execute(driverId, id, 120);
+
+      await expect(mine.execute(driverId)).resolves.toMatchObject([
+        { id, status: 'in_transit' },
       ]);
     });
   });

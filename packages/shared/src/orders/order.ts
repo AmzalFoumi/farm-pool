@@ -72,6 +72,13 @@ export const orderSchema = z.object({
    * a badge that was true last week (`packages/shared/src/logistics/job.ts`).
    */
   assignedDriverId: z.string().optional(),
+  /**
+   * What the driver actually loaded at the farm gate (LP-50), which regularly differs from
+   * `quantityKg` — a short harvest, produce rejected at the gate, a damaged crate. Recorded at
+   * pickup and never overwritten afterwards. `quantityKg` stays the deal that was agreed; this is
+   * what moved.
+   */
+  collectedKg: kgSchema.optional(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime()
 });

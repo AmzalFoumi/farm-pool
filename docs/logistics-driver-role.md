@@ -7,8 +7,9 @@ SE3080 mid-project agile review (Group_038, Assignment 01) and reconciled agains
 **Status of this document.** It records what the role is _meant_ to do, and — in
 [§10](#10-driver-registration-what-exists-today) — what is actually built. As of `main` at
 `7821502`, registration, login and role-based access exist and work for all four roles (FARM-34);
-`api/src/logistics/` now holds the driver job board and accept (LP-20 … LP-24); everything from
-LP-30 onward — batching, routing, pickup confirmation, the return leg — is still unimplemented.
+`api/src/logistics/` now holds the driver job board, accept, and pickup/drop-off confirmation
+(LP-20 … LP-24, LP-50, LP-52, LP-53). Batching (LP-30 …), routing (LP-40 …), offline queueing
+(LP-54), photos (LP-55) and the return leg (LP-60) are still unimplemented.
 Where the agile review and `.plans/PRODUCT.md` disagree, the disagreement is noted in place rather
 than silently resolved; see [Conflicts and open questions](#conflicts-and-open-questions).
 
@@ -229,6 +230,12 @@ LP-05 need nothing built.
 > LP-24), and the driver surfaced to the farmer and buyer at pickup (LP-04, LP-51) — plate,
 > vehicle, verification state and a number to call. Contact is a `tel:` link both ways (LP-71),
 > not in-app messaging (LP-70, out of scope). See `api/src/logistics/README.md`.
+>
+> **Fulfilment status.** Built: the driver confirms pickup recording what was actually loaded
+> (LP-50) and confirms drop-off (LP-52), driving `assigned → in_transit → delivered` visibly for
+> the farmer and buyer (LP-53). Not built: the buyer's own confirmation of receipt (the second
+> half of LP-52 — today the driver's word ends the lifecycle), offline queueing of a confirmation
+> taken with no signal (LP-54), and photos on a confirmation (LP-55).
 >
 > **Assignment took the LP-20/24 route, not LP-31.** A driver accepts from a board rather than a
 > coordinator assigning them. That is the faster half of the story and it leaves LP-30/31/32 —

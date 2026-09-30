@@ -47,6 +47,10 @@ export class OrderDocument {
   @Prop({ required: false, index: true })
   assignedDriverId?: string;
 
+  /** What the driver actually loaded at the gate (LP-50); may differ from `quantityKg`. */
+  @Prop({ required: false, min: 1 })
+  collectedKg?: number;
+
   createdAt: Date;
   updatedAt: Date;
 }

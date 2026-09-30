@@ -58,6 +58,41 @@ export class InMemoryOrderRepository implements OrderRepository {
     return Promise.resolve(snapshot(updated));
   }
 
+  recordPickup(
+    id: string,
+    driverId: string,
+    collectedKg: number,
+  ): Promise<Order | null> {
+    return Promise.resolve(
+      this.claim(id, driverId, 'assigned', {
+        status: 'in_transit',
+        collectedKg,
+      }),
+    );
+  }
+
+  recordDelivery(id: string, driverId: string): Promise<Order | null> {
+    return Promise.resolve(
+      this.claim(id, driverId, 'in_transit', { status: 'delivered' }),
+    );
+  }
+
+  /** Mirrors the Mongo filter-as-guard: driver and stage are checked as part of the write. */
+  private claim(
+    id: string,
+    driverId: string,
+    from: OrderStatus,
+    patch: Partial<Order>,
+  ): Order | null {
+    const row = this.rows.get(id);
+    if (!row || row.assignedDriverId !== driverId || row.status !== from) {
+      return null;
+    }
+    const updated: Order = { ...row, ...patch, updatedAt: new Date() };
+    this.rows.set(id, updated);
+    return snapshot(updated);
+  }
+
   updateStatus(id: string, status: OrderStatus): Promise<Order> {
     const row = this.rows.get(id);
     if (!row) return Promise.reject(new Error(`No order ${id}`));

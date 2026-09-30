@@ -19,6 +19,19 @@ export interface OrderRepository {
    * given a job someone else holds.
    */
   assignDriver(id: string, driverId: string): Promise<Order | null>;
+  /**
+   * The driver confirms the load is on the vehicle (LP-50): `assigned` → `in_transit`, recording
+   * what was actually collected. Matches on the driver *and* the status in one operation, so the
+   * "is this your job" check cannot drift away from the write it guards. Resolves `null` when the
+   * job is not this driver's or not at that stage.
+   */
+  recordPickup(
+    id: string,
+    driverId: string,
+    collectedKg: number,
+  ): Promise<Order | null>;
+  /** The driver confirms drop-off (LP-52): `in_transit` → `delivered`. Same filter-as-guard. */
+  recordDelivery(id: string, driverId: string): Promise<Order | null>;
 }
 
 export const ORDER_REPOSITORY = Symbol('OrderRepository');

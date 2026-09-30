@@ -71,6 +71,9 @@ export function toJobDetail(
     ...toJobSummary(order, listing, status),
     ...(order.note !== undefined ? { note: order.note } : {}),
     ...(pickup !== undefined ? { pickup } : {}),
+    ...(order.collectedKg !== undefined
+      ? { collectedKg: order.collectedKg }
+      : {}),
   };
 }
 

@@ -67,10 +67,31 @@ export type PickupContact = z.infer<typeof pickupContactSchema>;
 export const jobDetailSchema = jobSummarySchema.extend({
   note: z.string().optional(),
   /** Absent until this driver accepts the job. */
-  pickup: pickupContactSchema.optional()
+  pickup: pickupContactSchema.optional(),
+  /** What was actually loaded at the gate. Absent until pickup is confirmed. */
+  collectedKg: kgSchema.optional()
 });
 
 export type JobDetail = z.infer<typeof jobDetailSchema>;
+
+/**
+ * What the driver confirms at the farm gate (LP-50).
+ *
+ * `collectedKg` is asked for rather than assumed, because the load on the lorry regularly is not
+ * the load on the order: a farmer harvests less than they listed, some of it is rejected at the
+ * gate, a crate is damaged. The ordered quantity is the default the app pre-fills, not the value
+ * the api records — a driver who taps straight through still records something true, and one who
+ * edits it records what actually happened.
+ *
+ * Deliberately not capped at the ordered quantity: over-collection is real (a farmer sends the
+ * extra 5 kg rather than keep it) and silently rejecting it would push the driver to lie.
+ */
+export const confirmPickupSchema = z.object({
+  collectedKg: kgSchema
+});
+
+export type ConfirmPickupInput = z.input<typeof confirmPickupSchema>;
+export type ConfirmPickupData = z.output<typeof confirmPickupSchema>;
 
 /**
  * The driver, as the farmer and buyer see them (LP-04, LP-51).

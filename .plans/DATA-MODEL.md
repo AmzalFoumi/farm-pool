@@ -97,6 +97,7 @@ one order; `items[]` is added beside these fields only if multi-item orders are 
 | `total` | number ≥ 0 | yes | | `quantityKg × pricePerKg`, computed in `PlaceOrder`. | yes |
 | `note` | string ≤ 280 | no | | | yes (optional) |
 | `status` | enum `OrderStatus` | yes | yes | See lifecycle below. | yes |
+| `collectedKg` | integer ≥ 1 | no | | What the driver actually loaded at the farm gate (LP-50), recorded at pickup and never overwritten. Deliberately **not** constrained against `quantityKg`: a short harvest and an over-collection are both ordinary, and refusing either would leave the driver no way to record the truth. `quantityKg` stays the deal agreed; this is what moved. | yes (optional) |
 | `assignedDriverId` | string → `users._id` | no | yes | The driver who accepted the job (LP-24). Written only by the logistics domain, through `ORDER_REPOSITORY.assignDriver`, which sets it and `status: assigned` in one operation. **Only the id is stored** — the driver's name, plate and verification are read live from the account, so a farmer at the gate is never shown a badge that was true last week. | yes (optional) |
 
 The client sends only `listingId`, `quantityKg` and `note`. Everything else is filled on the server

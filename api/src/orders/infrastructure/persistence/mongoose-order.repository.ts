@@ -64,6 +64,36 @@ export class MongooseOrderRepository implements OrderRepository {
     return doc ? toOrder(doc) : null;
   }
 
+  /* Driver and status both sit in the filter, not in an `if` above it. A separate read-then-check
+     would be a window in which the job could change hands. */
+  async recordPickup(
+    id: string,
+    driverId: string,
+    collectedKg: number,
+  ): Promise<Order | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.orders
+      .findOneAndUpdate(
+        { _id: id, assignedDriverId: driverId, status: 'assigned' },
+        { status: 'in_transit', collectedKg },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toOrder(doc) : null;
+  }
+
+  async recordDelivery(id: string, driverId: string): Promise<Order | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.orders
+      .findOneAndUpdate(
+        { _id: id, assignedDriverId: driverId, status: 'in_transit' },
+        { status: 'delivered' },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toOrder(doc) : null;
+  }
+
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {
     const doc = await this.orders
       .findByIdAndUpdate(id, { status }, { returnDocument: 'after' })
@@ -88,6 +118,9 @@ function toOrder(doc: OrderHydrated): Order {
     status: doc.status,
     ...(typeof doc.assignedDriverId === 'string'
       ? { assignedDriverId: doc.assignedDriverId }
+      : {}),
+    ...(typeof doc.collectedKg === 'number'
+      ? { collectedKg: doc.collectedKg }
       : {}),
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,

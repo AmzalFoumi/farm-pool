@@ -80,6 +80,11 @@ function OrderBody({
 
   const rows = [
     { label: "Quantity", value: `${order.quantityKg} kg` },
+    /* What the driver actually loaded, once they have (LP-50). Shown beside the ordered quantity
+       rather than replacing it: the difference between the two is the thing worth seeing. */
+    ...(order.collectedKg !== undefined
+      ? [{ label: "Collected", value: `${order.collectedKg} kg` }]
+      : []),
     { label: "Unit price", value: `${formatPrice(order.pricePerKg)} / kg` },
     { label: "Total", value: formatPrice(order.total) },
     { label: "Farmer", value: order.farmerName },

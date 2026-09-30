@@ -42,6 +42,26 @@ export const logisticsApi = {
     });
   },
 
+  /** The load is on the vehicle (LP-50). `collectedKg` is what was actually loaded, which may
+   *  differ from the ordered quantity in either direction. */
+  confirmPickup(token: string, orderId: string, collectedKg: number): Promise<JobDetail> {
+    return apiFetch(`/logistics/jobs/${orderId}/pickup`, {
+      method: "POST",
+      body: { collectedKg },
+      token,
+      schema: jobDetailSchema
+    });
+  },
+
+  /** The load is off it (LP-52). Ends this domain's half of the order lifecycle. */
+  confirmDelivery(token: string, orderId: string): Promise<JobDetail> {
+    return apiFetch(`/logistics/jobs/${orderId}/deliver`, {
+      method: "POST",
+      token,
+      schema: jobDetailSchema
+    });
+  },
+
   /** Who is driving this order — for its farmer at the gate, and its buyer (LP-04, LP-51).
    *  `no_driver_assigned` until someone accepts. */
   driverFor(token: string, orderId: string): Promise<AssignedDriver> {

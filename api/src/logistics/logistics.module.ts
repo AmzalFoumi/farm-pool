@@ -15,6 +15,10 @@ import {
   type OrderRepository,
 } from '../orders/domain/repositories/order.repository';
 import { AcceptJob } from './application/services/accept-job';
+import {
+  ConfirmDelivery,
+  ConfirmPickup,
+} from './application/services/confirm-delivery-step';
 import { GetAssignedDriver } from './application/services/get-assigned-driver';
 import { GetJob } from './application/services/get-job';
 import { ListMyJobs } from './application/services/list-my-jobs';
@@ -73,6 +77,24 @@ import { LogisticsController } from './logistics.controller';
         listings: ListingRepository,
         users: UserRepository,
       ) => new AcceptJob(orders, listings, users),
+    },
+    {
+      provide: ConfirmPickup,
+      inject: [ORDER_REPOSITORY, LISTING_REPOSITORY, USER_REPOSITORY],
+      useFactory: (
+        orders: OrderRepository,
+        listings: ListingRepository,
+        users: UserRepository,
+      ) => new ConfirmPickup(orders, listings, users),
+    },
+    {
+      provide: ConfirmDelivery,
+      inject: [ORDER_REPOSITORY, LISTING_REPOSITORY, USER_REPOSITORY],
+      useFactory: (
+        orders: OrderRepository,
+        listings: ListingRepository,
+        users: UserRepository,
+      ) => new ConfirmDelivery(orders, listings, users),
     },
     {
       provide: GetAssignedDriver,
