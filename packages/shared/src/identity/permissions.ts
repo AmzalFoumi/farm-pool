@@ -26,7 +26,9 @@ export const actionSchema = z.enum([
   "call:answer",
   "wanted:read",
   "wanted:create",
+  "delivery:read-jobs",
   "delivery:accept",
+  "delivery:read-driver",
   "driver:update-vehicle",
   "users:list",
   "farmers:approve",
@@ -55,7 +57,12 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   // Farmers read requests to answer them later; coordinators see their region's demand.
   "wanted:read": ROLES,
   "wanted:create": ["buyer"],
+  "delivery:read-jobs": ["logistics"],
   "delivery:accept": ["logistics"],
+  /* Any role may ask who is driving an order; the use-case then checks the caller is its farmer,
+     its buyer, or the driver themselves. A farmer seeing the plate before handing over produce is
+     the point of verification (LP-04), so this cannot be logistics-only. */
+  "delivery:read-driver": ROLES,
   // A driver's own vehicle, on their own account; the use-case writes only to the caller.
   "driver:update-vehicle": ["logistics"],
   // The coordinator is the trust checkpoint (`.plans/PRODUCT.md`); only they see everyone.

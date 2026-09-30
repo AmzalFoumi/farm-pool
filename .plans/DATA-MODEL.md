@@ -97,6 +97,7 @@ one order; `items[]` is added beside these fields only if multi-item orders are 
 | `total` | number ≥ 0 | yes | | `quantityKg × pricePerKg`, computed in `PlaceOrder`. | yes |
 | `note` | string ≤ 280 | no | | | yes (optional) |
 | `status` | enum `OrderStatus` | yes | yes | See lifecycle below. | yes |
+| `assignedDriverId` | string → `users._id` | no | yes | The driver who accepted the job (LP-24). Written only by the logistics domain, through `ORDER_REPOSITORY.assignDriver`, which sets it and `status: assigned` in one operation. **Only the id is stored** — the driver's name, plate and verification are read live from the account, so a farmer at the gate is never shown a badge that was true last week. | yes (optional) |
 
 The client sends only `listingId`, `quantityKg` and `note`. Everything else is filled on the server
 from the token and the listing, so a buyer cannot set their own price or farmer.
@@ -197,7 +198,7 @@ the api already share; renaming them is a shared-package change, not a database-
 
 So nobody assumes it is: produce photos and image storage, quality grade, expiry, pickup
 coordinates or depots, saved or favourite farmers, benchmark prices, payments, delivery
-assignments, the driver verification *process* (the state is stored, nothing moves it past `pending`), in-app calls or messages (`calls` tab is a placeholder),
+batches and multi-stop routes, the driver verification *process* (the state is stored, nothing moves it past `pending`), in-app calls or messages (`calls` tab is a placeholder),
 farmer responses to wanted requests, coordinator approval records, refresh tokens or sessions.
 Each is one optional field or one new collection when its story arrives; none needs a change to
 what exists.

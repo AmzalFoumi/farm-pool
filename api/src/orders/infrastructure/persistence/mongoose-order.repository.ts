@@ -33,6 +33,37 @@ export class MongooseOrderRepository implements OrderRepository {
     return docs.map(toOrder);
   }
 
+  async findByStatus(status: OrderStatus): Promise<Order[]> {
+    const docs = await this.orders
+      .find({ status })
+      .sort({ createdAt: -1 })
+      .exec();
+    return docs.map(toOrder);
+  }
+
+  async findByAssignedDriver(driverId: string): Promise<Order[]> {
+    const docs = await this.orders
+      .find({ assignedDriverId: driverId })
+      .sort({ createdAt: -1 })
+      .exec();
+    return docs.map(toOrder);
+  }
+
+  /* `findOneAndUpdate` with `status: 'open'` in the filter is what makes this a claim rather
+     than a write: Mongo matches and updates in one operation, so the second driver's filter
+     finds nothing and gets `null` instead of overwriting the first driver's assignment. */
+  async assignDriver(id: string, driverId: string): Promise<Order | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.orders
+      .findOneAndUpdate(
+        { _id: id, status: 'open' },
+        { status: 'assigned', assignedDriverId: driverId },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toOrder(doc) : null;
+  }
+
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {
     const doc = await this.orders
       .findByIdAndUpdate(id, { status }, { returnDocument: 'after' })
@@ -55,6 +86,9 @@ function toOrder(doc: OrderHydrated): Order {
     total: doc.total,
     ...(typeof doc.note === 'string' ? { note: doc.note } : {}),
     status: doc.status,
+    ...(typeof doc.assignedDriverId === 'string'
+      ? { assignedDriverId: doc.assignedDriverId }
+      : {}),
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };

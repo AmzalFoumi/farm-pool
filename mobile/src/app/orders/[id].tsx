@@ -13,6 +13,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "@/features/listings/crop-tile";
+import { AssignedDriverCard } from "@/features/logistics/assigned-driver-card";
 import { ordersApi } from "@/features/orders/api";
 import { OrderStatusPill, orderStatusLabel } from "@/features/orders/status-pill";
 import { ApiError } from "@/lib/api";
@@ -111,6 +112,9 @@ function OrderBody({
             </HStack>
           ))}
         </VStack>
+
+        {/* Renders itself away until a driver has taken the job, so there is no branch here. */}
+        <AssignedDriverCard token={token} orderId={order.id} />
 
         {order.status === "requested" ? (
           <Text className="type-caption text-muted-foreground">

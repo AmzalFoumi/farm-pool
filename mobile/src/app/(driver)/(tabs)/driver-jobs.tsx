@@ -1,12 +1,82 @@
-import { PlaceholderScreen } from "@/components/app/placeholder-screen";
+/**
+ * Jobs — the driver's board (LP-20) and the jobs they already hold, on one screen.
+ *
+ * Two lists rather than two tabs: a driver with three jobs in hand and one on offer should see
+ * both without navigating, and the board is short by design (their district, their capacity).
+ * "My jobs" comes first — work already promised outranks work on offer.
+ */
 
-/* The job board is FARM-49 (assignment) and FARM-54 (accept and deliver). Until then the tab
-   exists so the shell is navigable and a new driver sees where their work will appear. */
+import type { JobSummary } from "@farm-pool/shared";
+import { useFocusEffect, useRouter } from "expo-router";
+import { SectionList, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { AppBar } from "@/components/app/app-bar";
+import { EmptyNote, RequestView } from "@/components/app/request-view";
+import { Text } from "@/components/ui/text";
+import { logisticsApi } from "@/features/logistics/api";
+import { JobCard } from "@/features/logistics/job-card";
+import { useReloadOnRefocus, useRequest } from "@/lib/use-request";
+import { useAuth } from "@/providers/auth-provider";
+
 export default function DriverJobsScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { token } = useAuth();
+
+  /* One request for both lists so the two cannot disagree about a job that was just accepted —
+     the board and "mine" are the same order moving between them. */
+  const jobs = useRequest(
+    () =>
+      Promise.all([logisticsApi.mine(token ?? ""), logisticsApi.board(token ?? "")]).then(
+        ([mine, board]) => ({ mine, board })
+      ),
+    token ?? ""
+  );
+
+  // Coming back from accepting a job moves it from the board into My jobs.
+  useFocusEffect(useReloadOnRefocus(jobs.reload));
+
+  const open = (job: JobSummary) =>
+    router.push({ pathname: "/(driver)/job/[id]", params: { id: job.id } });
+
   return (
-    <PlaceholderScreen
-      title="Jobs"
-      note="Pickup and delivery jobs will appear here once buyers' orders are ready to collect."
-    />
+    <View className="flex-1 bg-background">
+      <AppBar title="Jobs" />
+      <RequestView request={jobs}>
+        {({ mine, board }) => (
+          <SectionList
+            sections={[
+              { title: "My jobs", data: mine, empty: "Nothing accepted yet." },
+              {
+                title: "Available near you",
+                data: board,
+                empty:
+                  "No jobs in your district right now. New ones appear when a buyer's order is ready to collect."
+              }
+            ]}
+            keyExtractor={(job) => job.id}
+            stickySectionHeadersEnabled={false}
+            contentContainerClassName="gap-3 p-gutter"
+            contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+            renderSectionHeader={({ section }) => (
+              <Text className="type-body-bold pt-2 text-foreground">{section.title}</Text>
+            )}
+            renderSectionFooter={({ section }) =>
+              section.data.length === 0 ? (
+                <Text className="type-caption text-muted-foreground">{section.empty}</Text>
+              ) : null
+            }
+            renderItem={({ item }) => <JobCard job={item} onPress={() => open(item)} />}
+            ListEmptyComponent={
+              <EmptyNote
+                title="No jobs yet"
+                note="Jobs appear here once buyers' orders in your district are ready to collect."
+              />
+            }
+          />
+        )}
+      </RequestView>
+    </View>
   );
 }

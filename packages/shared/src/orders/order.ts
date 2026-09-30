@@ -65,6 +65,13 @@ export const orderSchema = z.object({
   total: z.number().nonnegative(),
   note: z.string().optional(),
   status: orderStatusSchema,
+  /**
+   * The driver who accepted this job, once one has (FARM-49/54). Written by the logistics domain
+   * through `ORDER_REPOSITORY`, never by a client. Only the id is stored: the driver's name,
+   * plate and verification are read fresh from the account, so a farmer at pickup is never shown
+   * a badge that was true last week (`packages/shared/src/logistics/job.ts`).
+   */
+  assignedDriverId: z.string().optional(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime()
 });

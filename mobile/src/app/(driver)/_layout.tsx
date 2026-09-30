@@ -21,6 +21,9 @@ export default function DriverLayout() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={hasVehicle}>
         <Stack.Screen name="(tabs)" />
+        {/* A job is only reachable with a vehicle on file: the board is filtered by its capacity
+            and district, so without one there is nothing to open. */}
+        <Stack.Screen name="job/[id]" />
       </Stack.Protected>
       <Stack.Screen name="driver-vehicle" />
     </Stack>
