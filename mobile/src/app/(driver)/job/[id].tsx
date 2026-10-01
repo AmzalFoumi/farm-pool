@@ -11,6 +11,7 @@
 
 import { cropById, type JobDetail } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -31,6 +32,7 @@ import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function JobDetailScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
@@ -43,7 +45,7 @@ export default function JobDetailScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Job" onBack={() => router.back()} />
+      <AppBar title={t("jobs.detail.title")} onBack={() => router.back()} />
       <RequestView request={job}>
         {(detail) => (
           <>
@@ -51,22 +53,29 @@ export default function JobDetailScreen() {
               <JobHeader detail={detail} />
 
               <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
-                <DetailRow label="Ordered" value={`${detail.quantityKg.toLocaleString()} kg`} />
+                <DetailRow
+                  label={t("jobs.detail.ordered")}
+                  value={t("common.kg", { count: detail.quantityKg })}
+                />
                 {detail.collectedKg !== undefined ? (
                   <>
                     <Box className="h-px bg-border" />
                     <DetailRow
-                      label="Actually loaded"
-                      value={`${detail.collectedKg.toLocaleString()} kg`}
+                      label={t("jobs.detail.collected")}
+                      value={t("common.kg", { count: detail.collectedKg })}
                     />
                   </>
                 ) : null}
                 <Box className="h-px bg-border" />
-                <DetailRow label="Order value" value={formatPrice(detail.total)} />
+                <DetailRow label={t("jobs.detail.orderValue")} value={formatPrice(detail.total)} />
                 <Box className="h-px bg-border" />
                 <DetailRow
-                  label="Trip"
-                  value={detail.fulfillmentOption === "solo" ? "Dedicated vehicle" : "Shared"}
+                  label={t("jobs.detail.trip")}
+                  value={t(
+                    detail.fulfillmentOption === "solo"
+                      ? "jobs.detail.tripSolo"
+                      : "jobs.detail.tripShared"
+                  )}
                 />
               </VStack>
 
@@ -77,7 +86,7 @@ export default function JobDetailScreen() {
 
               {detail.pickup ? (
                 <ContactCard
-                  heading="Pickup"
+                  heading={t("jobs.detail.pickup")}
                   name={detail.pickup.farmerName}
                   phone={detail.pickup.farmerPhone}
                   meta={[detail.pickup.address, detail.pickup.town, detail.pickup.district]
@@ -99,7 +108,9 @@ export default function JobDetailScreen() {
 
               {detail.note ? (
                 <VStack className="gap-1">
-                  <Text className="type-body-bold text-foreground">Note from the buyer</Text>
+                  <Text className="type-body-bold text-foreground">
+                    {t("jobs.detail.buyerNote")}
+                  </Text>
                   <Text className="type-body text-muted-foreground">{detail.note}</Text>
                 </VStack>
               ) : null}
@@ -119,12 +130,13 @@ export default function JobDetailScreen() {
 }
 
 function JobHeader({ detail }: { detail: JobDetail }) {
+  const { t } = useTranslation();
   const crop = cropById(detail.cropId);
   return (
     <VStack className="gap-2">
       <HStack className="items-center justify-between gap-3">
         <Text className="type-h3 flex-1 text-foreground" numberOfLines={2}>
-          {crop.emoji} {detail.quantityKg} kg {crop.name}
+          {crop.emoji} {t("jobs.detail.heading", { count: detail.quantityKg, crop: crop.name })}
         </Text>
         <OrderStatusPill status={detail.status} />
       </HStack>

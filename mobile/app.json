@@ -48,7 +48,8 @@
         {
           "cameraPermission": "FarmPool uses the camera so you can photograph your driving licence and ID for the area coordinator to check."
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

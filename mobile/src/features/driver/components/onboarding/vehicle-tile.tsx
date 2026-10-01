@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { CheckIcon } from "@/components/app/icons";
 import { Box } from "@/components/ui/box";
 import { Pressable } from "@/components/ui/pressable";
@@ -28,12 +30,13 @@ export function VehicleTile({
   selected: boolean;
   onPress: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="radio"
       accessibilityState={{ selected }}
-      accessibilityLabel={`${label}, up to ${capacityKg.toLocaleString()} kilograms`}
+      accessibilityLabel={t("driverSignUp.vehicle.tileLabel", { label, count: capacityKg })}
       className={[
         "h-[120px] flex-1 justify-between rounded-card p-3.5",
         selected ? "border-2 border-primary bg-secondary" : "border border-border bg-card"
@@ -49,7 +52,7 @@ export function VehicleTile({
           {label}
         </Text>
         <Text className="type-body-sm text-muted-foreground">
-          up to {capacityKg.toLocaleString()} kg
+          {t("driverSignUp.vehicle.capacity", { count: capacityKg })}
         </Text>
       </VStack>
 

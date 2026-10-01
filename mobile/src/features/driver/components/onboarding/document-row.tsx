@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { CheckIcon } from "@/components/app/icons";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
@@ -26,6 +28,7 @@ export function DocumentRow({
   captured: boolean;
   onCapture: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <HStack className="items-center gap-3 rounded-card border border-border bg-card p-3.5">
       <Box
@@ -42,26 +45,28 @@ export function DocumentRow({
       <VStack className="flex-1 gap-0.5">
         <Text className="type-body-bold text-foreground">{title}</Text>
         <Text className="type-body-sm text-muted-foreground">
-          {captured ? "Photo added" : note}
+          {captured ? t("driverSignUp.documents.added") : note}
         </Text>
       </VStack>
 
       {captured ? (
         <HStack
           className="items-center gap-1.5 rounded-pill bg-success-subtle px-3 py-1.5"
-          accessibilityLabel={`${title} photo added`}
+          accessibilityLabel={`${title} — ${t("driverSignUp.documents.added")}`}
         >
           <CheckIcon />
-          <Text className="type-body-sm-bold text-success">Done</Text>
+          <Text className="type-body-sm-bold text-success">{t("driverSignUp.documents.done")}</Text>
         </HStack>
       ) : (
         <Pressable
           onPress={onCapture}
           accessibilityRole="button"
-          accessibilityLabel={`Take a photo of your ${title.toLowerCase()}`}
+          accessibilityLabel={t("driverSignUp.documents.takeLabel", { document: title })}
           className="min-h-tap items-center justify-center rounded-field bg-brand-deep px-4"
         >
-          <Text className="type-body-sm-bold text-brand-deep-foreground">Take photo</Text>
+          <Text className="type-body-sm-bold text-brand-deep-foreground">
+            {t("driverSignUp.documents.take")}
+          </Text>
         </Pressable>
       )}
     </HStack>

@@ -1,4 +1,5 @@
 import type { VehicleType } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { TextInput } from "react-native";
 
 import { HStack } from "@/components/ui/hstack";
@@ -37,14 +38,12 @@ export function Step3Vehicle({
   onSelectDistrict: (district: string) => void;
   errors: { vehicleType?: string; registration?: string; operatingDistrict?: string };
 }) {
+  const { t } = useTranslation();
   const tiles = SIGN_UP_VEHICLES.map((id) => VEHICLES.find((v) => v.id === id)!);
 
   return (
     <VStack className="gap-5">
-      <StepHeading
-        title="What do you drive?"
-        note="Pick your vehicle and type the number on the plate."
-      />
+      <StepHeading title={t("driverSignUp.vehicle.title")} note={t("driverSignUp.vehicle.note")} />
 
       <VStack className="gap-2.5" accessibilityRole="radiogroup">
         <HStack className="gap-2.5">
@@ -77,14 +76,16 @@ export function Step3Vehicle({
       </VStack>
 
       <VStack className="gap-1.5">
-        <Text className="type-body-sm-bold text-foreground">Number plate</Text>
+        <Text className="type-body-sm-bold text-foreground">
+          {t("driverSignUp.vehicle.plateLabel")}
+        </Text>
         <TextInput
           value={registration}
           onChangeText={onChangeRegistration}
-          placeholder="NC LH 4821"
+          placeholder={t("driverSignUp.vehicle.platePlaceholder")}
           autoCapitalize="characters"
           autoCorrect={false}
-          accessibilityLabel="Vehicle number plate"
+          accessibilityLabel={t("driverSignUp.vehicle.plateLabel")}
           className={[
             "type-body-lg h-control rounded-field border px-4 text-foreground",
             errors.registration ? "border-destructive bg-card" : "border-border bg-card"
@@ -101,9 +102,11 @@ export function Step3Vehicle({
           as a fifth one so the header still reads "step 3 of 4" as drawn. Raise with the
           designer: either it belongs here, or the board needs another way to place a driver. */}
       <VStack className="gap-1.5">
-        <Text className="type-body-sm-bold text-foreground">Where you collect</Text>
+        <Text className="type-body-sm-bold text-foreground">
+          {t("driverSignUp.vehicle.districtLabel")}
+        </Text>
         <Text className="type-caption text-muted-foreground">
-          Jobs in this district are shown to you first.
+          {t("driverSignUp.vehicle.districtNote")}
         </Text>
         <HStack className="flex-wrap gap-2 pt-1" accessibilityRole="radiogroup">
           {DISTRICTS.map((name) => (

@@ -1,4 +1,5 @@
 import { cropById, type JobSummary } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 
 import { Box } from "@/components/ui/box";
 import { Pressable } from "@/components/ui/pressable";
@@ -16,6 +17,7 @@ import { formatPrice } from "@/lib/format";
  * chevron, per CLAUDE.md rule 4: a driver taps this in a vehicle, one-handed.
  */
 export function JobCard({ job, onPress }: { job: JobSummary; onPress: () => void }) {
+  const { t } = useTranslation();
   const crop = cropById(job.cropId);
   const place = job.town ? `${job.town}, ${job.district}` : job.district;
 
@@ -23,7 +25,12 @@ export function JobCard({ job, onPress }: { job: JobSummary; onPress: () => void
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${job.quantityKg} kilos of ${crop.name} from ${place}, ${formatPrice(job.total)}`}
+      accessibilityLabel={t("jobs.cardLabel", {
+        count: job.quantityKg,
+        crop: crop.name,
+        place,
+        total: formatPrice(job.total)
+      })}
       className="elevation-card min-h-tap flex-row items-center gap-3 rounded-card border border-border bg-card p-3"
     >
       <CropTile emoji={crop.emoji} />
@@ -39,7 +46,7 @@ export function JobCard({ job, onPress }: { job: JobSummary; onPress: () => void
         <OrderStatusPill status={job.status} />
         {job.fulfillmentOption === "shared" ? (
           <Box className="rounded-pill bg-muted px-2 py-0.5">
-            <Text className="type-body-sm text-muted-foreground">Shared</Text>
+            <Text className="type-body-sm text-muted-foreground">{t("jobs.shared")}</Text>
           </Box>
         ) : null}
       </VStack>

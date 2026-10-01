@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -34,6 +35,7 @@ export function StepDone({
   coordinator?: string;
   onSeeJobs: () => void;
 }) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
   return (
@@ -44,7 +46,7 @@ export function StepDone({
         </Box>
 
         <VStack className="gap-3">
-          <Text className="type-h1 text-foreground">Sent for checking</Text>
+          <Text className="type-h1 text-foreground">{t("driverSignUp.done.title")}</Text>
           <Text className="type-body-lg text-muted-foreground">
             Your area coordinator reviews your details, usually within one day. We SMS you when jobs
             open up.
@@ -52,13 +54,13 @@ export function StepDone({
         </VStack>
 
         <VStack className="gap-2.5">
-          <SummaryRow icon={PhoneIcon} label={`Number verified · ${phone}`} />
+          <SummaryRow icon={PhoneIcon} label={t("driverSignUp.done.numberVerified", { phone })} />
           <SummaryRow icon={CheckIcon} label={`${vehicleLabel} · ${registration}`} />
           <SummaryRow
             icon={PaperclipIcon}
             tone="pending"
-            label="Documents with coordinator"
-            note={coordinator ?? "Waiting to be assigned"}
+            label={t("driverSignUp.done.withCoordinator")}
+            note={coordinator ?? t("driverSignUp.done.unassigned")}
           />
         </VStack>
       </ScrollView>
@@ -67,7 +69,7 @@ export function StepDone({
         className="border-t border-border bg-card px-4 pt-3"
         style={{ paddingBottom: Math.max(insets.bottom, 23) }}
       >
-        <AppButton label="See jobs near you" onPress={onSeeJobs} />
+        <AppButton label={t("driverSignUp.done.action")} onPress={onSeeJobs} />
       </View>
     </View>
   );

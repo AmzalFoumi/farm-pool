@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Linking } from "react-native";
 
 import { Box } from "@/components/ui/box";
@@ -32,6 +33,7 @@ export function ContactCard({
   /** Free text from the listing: gate directions, landmarks. */
   note?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <VStack className="gap-2.5">
       <Text className="type-body-bold text-foreground">{heading}</Text>
@@ -47,11 +49,11 @@ export function ContactCard({
         <Pressable
           onPress={() => void Linking.openURL(`tel:${phone}`)}
           accessibilityRole="button"
-          accessibilityLabel={`Call ${name} on ${phone}`}
+          accessibilityLabel={`${name} · ${phone}`}
           className="min-h-tap justify-center"
         >
           <HStack className="items-center justify-between gap-3">
-            <Text className="type-body text-muted-foreground">Phone</Text>
+            <Text className="type-body text-muted-foreground">{t("common.phone")}</Text>
             <Text className="type-body-bold text-primary">{phone}</Text>
           </HStack>
         </Pressable>
@@ -60,7 +62,7 @@ export function ContactCard({
           <>
             <Box className="h-px bg-border" />
             <VStack className="gap-0.5">
-              <Text className="type-body text-muted-foreground">Finding the place</Text>
+              <Text className="type-body text-muted-foreground">{t("jobs.detail.finding")}</Text>
               <Text className="type-body text-foreground">{note}</Text>
             </VStack>
           </>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { TextInput } from "react-native";
 
 import { PhoneIcon } from "@/components/ui/icon";
@@ -32,23 +33,23 @@ export function Step1Phone({
   errors: { displayName?: string; phone?: string };
   onSubmit: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <VStack className="gap-5">
-      <StepHeading
-        title="Your mobile number"
-        note="We send a 6-digit code by SMS. Buyers and farmers see this number on the day of a pickup."
-      />
+      <StepHeading title={t("driverSignUp.phone.title")} note={t("driverSignUp.phone.note")} />
 
       <VStack className="gap-1.5">
-        <Text className="type-body-sm-bold text-foreground">Your name</Text>
+        <Text className="type-body-sm-bold text-foreground">
+          {t("driverSignUp.phone.nameLabel")}
+        </Text>
         <TextInput
           value={displayName}
           onChangeText={onChangeDisplayName}
-          placeholder="As farmers will know you"
+          placeholder={t("driverSignUp.phone.namePlaceholder")}
           autoCapitalize="words"
           autoComplete="name"
           textContentType="name"
-          accessibilityLabel="Your name"
+          accessibilityLabel={t("driverSignUp.phone.nameLabel")}
           className={[
             "type-body-lg h-control rounded-field border px-4 text-foreground",
             errors.displayName ? "border-destructive bg-card" : "border-border bg-card"
@@ -68,9 +69,7 @@ export function Step1Phone({
         onSubmitEditing={onSubmit}
       />
 
-      <NoteCard icon={PhoneIcon}>
-        One number, one account. If the phone is shared at home, use your own number.
-      </NoteCard>
+      <NoteCard icon={PhoneIcon}>{t("driverSignUp.phone.oneAccount")}</NoteCard>
     </VStack>
   );
 }

@@ -15,7 +15,6 @@
  */
 
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -26,21 +25,16 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
-
-/** Sinhala and Tamil are written in their own scripts deliberately — a speaker
- *  scanning for their language should not have to read English to find it. */
-const LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "si", label: "සිංහල" },
-  { code: "ta", label: "தமிழ்" }
-] as const;
-
-type LanguageCode = (typeof LANGUAGES)[number]["code"];
+import { LANGUAGES } from "@/lib/i18n";
+import { useLocale } from "@/providers/locale-provider";
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const [language, setLanguage] = useState<LanguageCode>("en");
+  /* The picker now sets the app's language for real (LP-91) and the choice is remembered, so a
+     driver picks once. The chips are the first thing on the first screen precisely because
+     everything after them is unreadable to someone who got the wrong one. */
+  const { language, setLanguage } = useLocale();
 
   return (
     <View className="flex-1 bg-brand-deep">
@@ -63,9 +57,10 @@ export default function WelcomeScreen() {
         style={{ paddingBottom: insets.bottom + 24 }}
       >
         {/* Language picker. Each chip is min-h-tap and flex-1 so all three are
-            the same width and none is harder to hit than its neighbours. */}
+            the same width and none is harder to hit than its neighbours.
+            Each label is in its own script — see `lib/i18n/languages.ts`. */}
         <HStack className="gap-2" accessibilityRole="radiogroup">
-          {LANGUAGES.map(({ code, label }) => {
+          {LANGUAGES.map(({ code, label, endonym }) => {
             const selected = language === code;
             return (
               <Pressable
@@ -73,6 +68,10 @@ export default function WelcomeScreen() {
                 onPress={() => setLanguage(code)}
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
+                /* The visible label is in its own script; the screen reader gets the English
+                   name too, so a user whose reader has no Sinhala voice still hears which
+                   chip is which. */
+                accessibilityLabel={endonym}
                 className={[
                   "min-h-tap flex-1 items-center justify-center rounded-chip",
                   selected ? "bg-secondary" : "border border-border bg-card"

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { TextInput } from "react-native";
 
 import { HStack } from "@/components/ui/hstack";
@@ -24,6 +25,7 @@ export function PhoneField({
   error?: string;
   onSubmitEditing?: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <VStack className="gap-1.5">
       <HStack className="gap-2.5">
@@ -35,12 +37,12 @@ export function PhoneField({
           value={value}
           onChangeText={onChangeText}
           onSubmitEditing={onSubmitEditing}
-          placeholder="77 123 4567"
+          placeholder={t("driverSignUp.phone.numberPlaceholder")}
           keyboardType="phone-pad"
           autoComplete="tel"
           textContentType="telephoneNumber"
           returnKeyType="done"
-          accessibilityLabel="Your mobile number, without the country code"
+          accessibilityLabel={t("driverSignUp.phone.numberLabel")}
           className={[
             "type-body-lg h-[62px] flex-1 rounded-field border px-4 text-foreground",
             error ? "border-destructive bg-card" : "border-border bg-card"

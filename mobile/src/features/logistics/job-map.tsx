@@ -1,4 +1,5 @@
 import { districtPoint } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { Linking, Platform } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 
@@ -35,6 +36,7 @@ export function JobMap({
   /** What the pin is — the farmer's name, usually. */
   label: string;
 }) {
+  const { t } = useTranslation();
   const point = districtPoint(district);
   if (!point) return null;
 
@@ -80,17 +82,16 @@ export function JobMap({
       </Box>
 
       <Text className="type-body-sm text-muted-foreground">
-        Approximate — this is {point.name} district, not the farm gate. Call the farmer for
-        directions.
+        {t("jobs.detail.approximate", { district: point.name })}
       </Text>
 
       <Pressable
         onPress={openDirections}
         accessibilityRole="button"
-        accessibilityLabel={`Open directions to ${place} in Google Maps`}
+        accessibilityLabel={t("jobs.detail.directionsLabel", { place })}
         className="min-h-tap justify-center"
       >
-        <Text className="type-body-bold text-primary">Directions in Google Maps</Text>
+        <Text className="type-body-bold text-primary">{t("jobs.detail.directions")}</Text>
       </Pressable>
     </VStack>
   );

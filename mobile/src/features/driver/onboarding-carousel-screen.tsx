@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -31,24 +32,13 @@ import { OnboardingSlide } from "./components/onboarding/onboarding-slide";
  * which index is showing — see `components/onboarding/onboarding-slide.tsx`.
  */
 const SLIDES = [
-  {
-    art: <OneJobOneRouteArt />,
-    title: "One job, one route",
-    body: "A buyer books several farmers at once. You get it as a single job with the pickups already in the best order, and the drop at the end."
-  },
-  {
-    art: <ScanAtTheDropArt />,
-    title: "Scan at the drop, money moves",
-    body: "At each depot you scan the buyer's code. That confirms the delivery, releases the farmers' payment, and books your trip fee. No paperwork."
-  },
-  {
-    art: <WeakSignalArt />,
-    title: "Weak signal is fine",
-    body: "Your route, pickups and scans are saved on the phone. They sync on their own when you pass through network."
-  }
-];
+  { art: <OneJobOneRouteArt />, key: "slide1" },
+  { art: <ScanAtTheDropArt />, key: "slide2" },
+  { art: <WeakSignalArt />, key: "slide3" }
+] as const;
 
 export function OnboardingCarouselScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [index, setIndex] = useState(0);
@@ -62,13 +52,13 @@ export function OnboardingCarouselScreen() {
     <View className="flex-1 bg-background" style={{ paddingBottom: Math.max(insets.bottom, 8) }}>
       <OnboardingSlide
         art={slide.art}
-        title={slide.title}
-        body={slide.body}
+        title={t(`driverOnboarding.${slide.key}.title`)}
+        body={t(`driverOnboarding.${slide.key}.body`)}
         index={index}
         count={SLIDES.length}
         actions={
           last ? (
-            <AppButton label="Create my account" onPress={start} />
+            <AppButton label={t("driverOnboarding.createAccount")} onPress={start} />
           ) : (
             <HStack className="gap-2.5">
               {/* Skip goes where Next eventually goes, rather than out of the flow: a driver
@@ -76,13 +66,13 @@ export function OnboardingCarouselScreen() {
               <Pressable
                 onPress={start}
                 accessibilityRole="button"
-                accessibilityLabel="Skip the introduction"
+                accessibilityLabel={t("driverOnboarding.skipIntro")}
                 className="h-control items-center justify-center rounded-field border border-border bg-card px-6"
               >
-                <Text className="type-h4 text-muted-foreground">Skip</Text>
+                <Text className="type-h4 text-muted-foreground">{t("common.skip")}</Text>
               </Pressable>
               <View className="flex-1">
-                <AppButton label="Next" onPress={() => setIndex((i) => i + 1)} />
+                <AppButton label={t("common.next")} onPress={() => setIndex((i) => i + 1)} />
               </View>
             </HStack>
           )

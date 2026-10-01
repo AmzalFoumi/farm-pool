@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -38,6 +39,7 @@ export function OnboardingShell({
   footer: ReactNode;
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
   return (
@@ -47,13 +49,13 @@ export function OnboardingShell({
           <Pressable
             onPress={onBack}
             accessibilityRole="button"
-            accessibilityLabel="Go back"
+            accessibilityLabel={t("common.back")}
             className="h-tap w-tap items-center justify-center rounded-field border border-border bg-card"
           >
             <BackIcon />
           </Pressable>
           <Text className="type-title flex-1 text-foreground" numberOfLines={1}>
-            Delivery partner · step {step} of {SIGN_UP_STEPS}
+            {t("driverSignUp.stepLabel", { step, count: SIGN_UP_STEPS })}
           </Text>
         </HStack>
 
@@ -91,12 +93,13 @@ export function OnboardingShell({
  * the label spells out "step 1 of 4" instead of showing a percentage.
  */
 function StepProgress({ step }: { step: number }) {
+  const { t } = useTranslation();
   return (
     <HStack
       className="gap-1.5"
       accessibilityRole="progressbar"
       accessibilityValue={{ min: 0, max: SIGN_UP_STEPS, now: step }}
-      accessibilityLabel={`Step ${step} of ${SIGN_UP_STEPS}`}
+      accessibilityLabel={t("driverSignUp.stepLabel", { step, count: SIGN_UP_STEPS })}
     >
       {Array.from({ length: SIGN_UP_STEPS }, (_, i) => (
         <Box

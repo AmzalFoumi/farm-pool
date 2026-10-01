@@ -8,6 +8,7 @@
 
 import type { JobSummary } from "@farm-pool/shared";
 import { useFocusEffect, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { SectionList, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -20,6 +21,7 @@ import { useReloadOnRefocus, useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function DriverJobsScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
@@ -42,18 +44,13 @@ export default function DriverJobsScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Jobs" />
+      <AppBar title={t("jobs.title")} />
       <RequestView request={jobs}>
         {({ mine, board }) => (
           <SectionList
             sections={[
-              { title: "My jobs", data: mine, empty: "Nothing accepted yet." },
-              {
-                title: "Available near you",
-                data: board,
-                empty:
-                  "No jobs in your district right now. New ones appear when a buyer's order is ready to collect."
-              }
+              { title: t("jobs.mine"), data: mine, empty: t("jobs.mineEmpty") },
+              { title: t("jobs.available"), data: board, empty: t("jobs.availableEmpty") }
             ]}
             keyExtractor={(job) => job.id}
             stickySectionHeadersEnabled={false}
@@ -68,12 +65,7 @@ export default function DriverJobsScreen() {
               ) : null
             }
             renderItem={({ item }) => <JobCard job={item} onPress={() => open(item)} />}
-            ListEmptyComponent={
-              <EmptyNote
-                title="No jobs yet"
-                note="Jobs appear here once buyers' orders in your district are ready to collect."
-              />
-            }
+            ListEmptyComponent={<EmptyNote title={t("jobs.noneTitle")} note={t("jobs.noneBody")} />}
           />
         )}
       </RequestView>

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { ClockIcon, Icon, PhoneIcon } from "@/components/ui/icon";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
@@ -40,11 +42,15 @@ export function Step2Code({
   onResend: () => void;
   onVoiceCall: () => void;
 }) {
+  const { t } = useTranslation();
   const canResend = resendIn === 0;
 
   return (
     <VStack className="gap-5">
-      <StepHeading title="Enter the code" note={`Sent by SMS to ${phone}.`} />
+      <StepHeading
+        title={t("driverSignUp.code.title")}
+        note={t("driverSignUp.code.note", { phone })}
+      />
 
       <VStack className="gap-2">
         <CodeInput value={code} onChange={onChangeCode} onComplete={onComplete} />
@@ -61,7 +67,9 @@ export function Step2Code({
         accessibilityRole="button"
         accessibilityState={{ disabled: !canResend }}
         accessibilityLabel={
-          canResend ? "Send the code again" : `You can ask for a new code in ${resendIn} seconds`
+          canResend
+            ? t("driverSignUp.code.resendNow")
+            : t("driverSignUp.code.resendWait", { count: resendIn })
         }
         className="min-h-tap flex-row items-center gap-2"
       >
@@ -71,7 +79,9 @@ export function Step2Code({
           className={canResend ? "text-primary" : "text-muted-foreground"}
         />
         <Text className={`type-body ${canResend ? "text-primary" : "text-muted-foreground"}`}>
-          {canResend ? "Send the code again" : `Resend in ${countdown(resendIn)}`}
+          {canResend
+            ? t("driverSignUp.code.resendNow")
+            : t("driverSignUp.code.resendIn", { time: countdown(resendIn) })}
         </Text>
       </Pressable>
 
@@ -86,7 +96,9 @@ export function Step2Code({
         ].join(" ")}
       >
         <Icon as={PhoneIcon} size="sm" className="text-foreground" />
-        <Text className="type-body-sm-bold text-foreground">Call me the code instead</Text>
+        <Text className="type-body-sm-bold text-foreground">
+          {t("driverSignUp.code.voiceCall")}
+        </Text>
       </Pressable>
     </VStack>
   );

@@ -2,6 +2,7 @@ import { normalizeSriLankanPhone, registerSchema, type VehicleType } from "@farm
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/components/app/app-button";
 import { driverApi } from "@/features/driver/api";
@@ -36,6 +37,7 @@ type Step = 1 | 2 | 3 | 4 | "done";
 type Documents = Record<DocumentId, string | null>;
 
 export function DriverSignUpScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const auth = useAuth();
 
@@ -78,8 +80,9 @@ export function DriverSignUpScreen() {
   /* ── step 1 → 2 ─────────────────────────────────────────────────────────── */
   const sendCode = async () => {
     setErrors({});
-    if (displayName.trim().length < 2) return fail("displayName", "Enter your name");
-    if (!normalized) return fail("phone", "Enter a Sri Lankan mobile number, like 77 123 4567");
+    if (displayName.trim().length < 2)
+      return fail("displayName", t("driverSignUp.phone.nameError"));
+    if (!normalized) return fail("phone", t("driverSignUp.phone.numberError"));
 
     setBusy(true);
     try {
@@ -97,7 +100,7 @@ export function DriverSignUpScreen() {
     setBusy(true);
     try {
       const ok = await verifyCode(normalized ?? "", entered);
-      if (!ok) return fail("code", "That code is not right. Check the SMS and try again.");
+      if (!ok) return fail("code", t("driverSignUp.code.wrong"));
       setStep(3);
     } finally {
       setBusy(false);
@@ -107,10 +110,10 @@ export function DriverSignUpScreen() {
   /* ── step 3 → 4 ─────────────────────────────────────────────────────────── */
   const confirmVehicle = () => {
     setErrors({});
-    if (!vehicleType) return fail("vehicleType", "Pick the vehicle you drive");
+    if (!vehicleType) return fail("vehicleType", t("driverSignUp.vehicle.typeError"));
     if (registration.trim().length < 4)
-      return fail("registration", "Enter the number on the plate");
-    if (!district) return fail("operatingDistrict", "Pick the district you collect in");
+      return fail("registration", t("driverSignUp.vehicle.plateError"));
+    if (!district) return fail("operatingDistrict", t("driverSignUp.vehicle.districtError"));
     setStep(4);
   };
 
@@ -149,13 +152,13 @@ export function DriverSignUpScreen() {
     } catch (error) {
       if (error instanceof ApiError && error.code === "phone_taken") {
         setStep(1);
-        return fail("phone", "An account with this number already exists. Log in instead.");
+        return fail("phone", t("driverSignUp.phoneTakenLogIn"));
       }
       setErrors({
         form:
           error instanceof ApiError && error.code === "network_error"
-            ? "Can't reach the server. Check your connection and try again."
-            : "Could not finish sign-up. Please try again."
+            ? t("errors.network")
+            : t("driverSignUp.failed")
       });
     } finally {
       setBusy(false);
@@ -168,7 +171,7 @@ export function DriverSignUpScreen() {
   const capture = async (id: DocumentId) => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      setErrors({ documents: "Allow camera access to photograph your documents." });
+      setErrors({ documents: t("driverSignUp.documents.noCamera") });
       return;
     }
     const shot = await ImagePicker.launchCameraAsync({ quality: 0.6 });
@@ -240,10 +243,10 @@ export function DriverSignUpScreen() {
 
   function footerFor(current: Exclude<Step, "done">) {
     const label = {
-      1: busy ? "Sending…" : "Send code",
-      2: busy ? "Checking…" : "Verify",
-      3: "Continue",
-      4: busy ? "Sending…" : "Send for approval"
+      1: t(busy ? "driverSignUp.phone.actionBusy" : "driverSignUp.phone.action"),
+      2: t(busy ? "driverSignUp.code.actionBusy" : "driverSignUp.code.action"),
+      3: t("common.continue"),
+      4: t(busy ? "driverSignUp.documents.actionBusy" : "driverSignUp.documents.action")
     }[current];
 
     const onPress = { 1: sendCode, 2: () => verify(), 3: confirmVehicle, 4: submit }[current];

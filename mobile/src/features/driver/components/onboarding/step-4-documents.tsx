@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { DownloadIcon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -8,16 +10,8 @@ import { StepHeading } from "./onboarding-shell";
 
 /** Which documents a driver photographs, in the order the design lists them. */
 export const DRIVER_DOCUMENTS = [
-  {
-    id: "licence",
-    title: "Driving licence",
-    note: "Clear photo of the front"
-  },
-  {
-    id: "nationalId",
-    title: "National ID card",
-    note: "Front side, both sides later"
-  }
+  { id: "licence", titleKey: "licence", noteKey: "licenceNote" },
+  { id: "nationalId", titleKey: "nationalId", noteKey: "nationalIdNote" }
 ] as const;
 
 export type DocumentId = (typeof DRIVER_DOCUMENTS)[number]["id"];
@@ -32,16 +26,20 @@ export function Step4Documents({
   onCapture: (id: DocumentId) => void;
   error?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <VStack className="gap-5">
-      <StepHeading title="Two photos" note="Take a clear photo of each. No typing needed." />
+      <StepHeading
+        title={t("driverSignUp.documents.title")}
+        note={t("driverSignUp.documents.note")}
+      />
 
       <VStack className="gap-2.5">
         {DRIVER_DOCUMENTS.map((doc) => (
           <DocumentRow
             key={doc.id}
-            title={doc.title}
-            note={doc.note}
+            title={t(`driverSignUp.documents.${doc.titleKey}`)}
+            note={t(`driverSignUp.documents.${doc.noteKey}`)}
             captured={captured[doc.id] !== null}
             onCapture={() => onCapture(doc.id)}
           />
@@ -53,9 +51,7 @@ export function Step4Documents({
         ) : null}
       </VStack>
 
-      <NoteCard icon={DownloadIcon}>
-        No signal? The photos stay on your phone and upload when you get network.
-      </NoteCard>
+      <NoteCard icon={DownloadIcon}>{t("driverSignUp.documents.offline")}</NoteCard>
     </VStack>
   );
 }

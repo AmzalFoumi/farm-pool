@@ -563,6 +563,56 @@ exported as single SVGs. Slide 1 did not — its frame contains text, so Figma e
 vectors — and they are composed into one SVG by centring each on the box Figma reported, with the
 "1" and "2" badges rendered as React Native `<Text>` so Poppins resolves through expo-font.
 
+### Localisation: i18next, chosen language, and Noto in place of Poppins/Mulish
+
+Decided 1 October 2026 (LP-91). All four research interviews were conducted in Sinhala or Tamil,
+so these are not a translation layer over an English product — English is the third audience.
+
+**The fonts were the blocker, not the strings.** Poppins Bold and Mulish Regular map 471 and 936
+glyphs and **not one** of them is Sinhala or Tamil, so every translated string would have
+rendered as tofu. Both are replaced by Noto, the one family group drawn to a single design
+language across all three scripts. Sizes, line heights and tracking are unchanged from the Figma
+type frame; only the family moved. This contradicts the Figma typography frame and is a
+deliberate override — the alternative was shipping two of three languages unreadable.
+
+**The six faces are vendored and subset.** Upstream they are 1,860 KB, most of it Noto Sans Latin
+carrying Cyrillic, Greek and Vietnamese. `mobile/scripts/subset-fonts.py` cuts them to the three
+scripts this app renders: **607 KB, against the 368 KB of Poppins and Mulish they replace** —
++239 KB for three languages, on the rural 3G connection the product doc calls the binding
+constraint. Re-run that script after bumping an `@expo-google-fonts` package. Shaping tables are
+kept explicitly; Sinhala is unreadable without its conjunct and mark-positioning features.
+
+**One script face serves a whole screen.** Every subset keeps full ASCII, so "Rs 180 · 40 kg"
+inside a Sinhala sentence renders from the Sinhala face. React Native allows one `fontFamily` per
+`Text` and has no fallback chain, which is what makes this work at all. All six load at startup
+because `expo-font` registers a family once and cannot re-point a name at a different file.
+
+**The face is chosen in `components/ui/text/index.tsx`.** Every screen renders through that one
+component, so it is the only place a script has to be selected. English returns no override at
+all — `typography.css` already names the Latin faces — so the common path costs nothing. The
+bold/regular split is read from the `className` by one regex kept beside the table it mirrors.
+
+**`i18next`, with no language detector.** Plurals, interpolation and per-key fallback are most of
+what a hand-rolled `t()` grows into, and Sinhala and Tamil plural rules are something `Intl`
+already knows. The device locale is deliberately **not** read: a shared or second-hand phone in a
+rural household is routinely set to a language its current user cannot read, so silently picking
+Sinhala for a Tamil speaker is worse than asking. The welcome screen asks once and the answer is
+remembered next to the session token.
+
+**Server messages are translated by code, not by locale header.** The api already returns stable
+codes (`job_taken`, `phone_taken`), so the client maps code to string and the api needs no
+change. Unknown codes fall through to a generic message.
+
+**The Sinhala and Tamil files are unreviewed drafts.** They were written by an AI assistant as a
+starting point and say so in a `_review` block at the top of each file. They must not be treated
+as shippable: produce, weight and payment terms are exactly where a wrong word reads as careless
+to the people the research interviewed. `node mobile/scripts/check-locales.mjs` enforces key
+parity and placeholder integrity across the three files and warns while `_review.reviewedBy` is
+empty.
+
+**Converted so far: the driver flow only** — onboarding, sign-up, job board, job detail and the
+cards they share (130 keys). The other ~370 strings across the app are still hard-coded English.
+
 ## Open
 
 *Persistence* and *Authentication*, formerly questions 1 and 2, were settled on 18 September 2026

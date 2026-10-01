@@ -1,4 +1,5 @@
 import { type AssignedDriver } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
@@ -35,24 +36,28 @@ export function AssignedDriverCard({ token, orderId }: { token: string; orderId:
 }
 
 function DriverDetail({ driver }: { driver: AssignedDriver }) {
+  const { t } = useTranslation();
   return (
     <VStack className="gap-2.5">
       <HStack className="items-center justify-between">
-        <Text className="type-body-bold text-foreground">Collecting this order</Text>
+        <Text className="type-body-bold text-foreground">{t("jobs.driverCard.heading")}</Text>
         <DriverVerificationPill status={driver.verification} />
       </HStack>
 
       <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
         <VStack className="gap-0.5">
-          <Text className="type-caption text-muted-foreground">Plate number</Text>
+          <Text className="type-caption text-muted-foreground">{t("jobs.driverCard.plate")}</Text>
           <Text className="type-h3 text-foreground">{driver.registration}</Text>
         </VStack>
         <Box className="h-px bg-border" />
-        <DetailRow label="Vehicle" value={vehicleById(driver.vehicleType).label} />
+        <DetailRow
+          label={t("jobs.driverCard.vehicle")}
+          value={vehicleById(driver.vehicleType).label}
+        />
       </VStack>
 
       <ContactCard
-        heading="Driver"
+        heading={t("jobs.driverCard.driver")}
         name={driver.displayName}
         phone={driver.phone}
         meta={`${vehicleById(driver.vehicleType).label} · ${driver.operatingDistrict}`}
@@ -60,8 +65,7 @@ function DriverDetail({ driver }: { driver: AssignedDriver }) {
 
       {driver.verification !== "verified" ? (
         <Text className="type-caption text-muted-foreground">
-          This driver&apos;s vehicle has not been checked yet. Match the plate number above against
-          the vehicle before you hand over produce.
+          {t("jobs.driverCard.unverified")}
         </Text>
       ) : null}
     </VStack>

@@ -1,5 +1,6 @@
 import type { JobDetail } from "@farm-pool/shared";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
 import { AppButton } from "@/components/app/app-button";
@@ -20,16 +21,17 @@ import { ApiError } from "@/lib/api";
  * pre-filled with the ordered quantity so a driver for whom nothing changed taps straight
  * through, and edits it only when something did.
  */
-const MESSAGE: Record<string, string> = {
-  job_taken: "Another driver took this job first.",
-  load_too_heavy: "This load is heavier than your vehicle can carry.",
-  no_vehicle: "Add your vehicle before accepting a job.",
-  job_not_found: "This job is no longer available.",
-  not_your_job: "This job is not yours any more.",
-  wrong_stage: "This job has already moved on. Pull down to see where it is.",
-  validation_error: "Enter the weight in whole kilograms.",
-  network_error: "Can't reach the server. Check your connection and try again."
-};
+/** Every api code this screen can see. Unknown codes fall through to `jobs.actions.failed`,
+ *  so a new server error is a generic message rather than a crash or a raw code on a button. */
+const KNOWN_CODES = [
+  "job_taken",
+  "load_too_heavy",
+  "no_vehicle",
+  "job_not_found",
+  "not_your_job",
+  "wrong_stage",
+  "network_error"
+] as const;
 
 export function JobActions({
   job,
@@ -43,6 +45,7 @@ export function JobActions({
   /** Re-reads the job, so the next stage's button comes from the api, not from local state. */
   onChanged: () => void;
 }) {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [collected, setCollected] = useState(String(job.quantityKg));
@@ -57,7 +60,11 @@ export function JobActions({
       onChanged();
     } catch (e) {
       const code = e instanceof ApiError ? e.code : "unknown";
-      setError(MESSAGE[code] ?? "Could not do that. Please try again.");
+      setError(
+        (KNOWN_CODES as readonly string[]).includes(code)
+          ? t(`errors.${code}`)
+          : t("jobs.actions.failed")
+      );
       // The job may have moved under us; the reload says where it actually is.
       onChanged();
     } finally {
@@ -78,12 +85,12 @@ export function JobActions({
       <VStack className="gap-3">
         {job.status === "assigned" ? (
           <AppTextField
-            label="Weight loaded"
+            label={t("jobs.actions.weightLabel")}
             value={collected}
             onChangeText={setCollected}
             keyboardType="number-pad"
             returnKeyType="done"
-            error={collectedValid ? undefined : "Enter the weight in whole kilograms"}
+            error={collectedValid ? undefined : t("jobs.actions.weightError")}
           />
         ) : null}
 
@@ -95,7 +102,7 @@ export function JobActions({
 
         {job.status === "open" ? (
           <AppButton
-            label={busy ? "Taking this job…" : "Take this job"}
+            label={t(busy ? "jobs.actions.takeBusy" : "jobs.actions.take")}
             disabled={busy}
             onPress={() => void run(() => logisticsApi.accept(token, job.id))}
           />
@@ -103,7 +110,7 @@ export function JobActions({
 
         {job.status === "assigned" ? (
           <AppButton
-            label={busy ? "Confirming…" : "Confirm pickup"}
+            label={t(busy ? "jobs.actions.busy" : "jobs.actions.pickup")}
             disabled={busy || !collectedValid}
             onPress={() => void run(() => logisticsApi.confirmPickup(token, job.id, collectedKg))}
           />
@@ -111,7 +118,7 @@ export function JobActions({
 
         {job.status === "in_transit" ? (
           <AppButton
-            label={busy ? "Confirming…" : "Confirm delivery"}
+            label={t(busy ? "jobs.actions.busy" : "jobs.actions.deliver")}
             disabled={busy}
             onPress={() => void run(() => logisticsApi.confirmDelivery(token, job.id))}
           />
