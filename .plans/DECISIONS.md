@@ -517,6 +517,52 @@ Directions API and would still route worse than the app the driver already has, 
 offline tiles. The hand-off is the universal `google.com/maps/search/?api=1` URL, by place name
 rather than by the centroid, so the maps app's own search lands closer than this preview can.
 
+### Driver onboarding: its own carousel and wizard, with the SMS code stubbed
+
+Decided 1 October 2026 (Figma 196:6159, 196:6185, 196:6213, 196:6238, 196:6269, 196:6306,
+196:6361, 196:6409). A delivery partner leaves the role picker into three explainer slides and a
+four-step sign-up, instead of the one-screen form the other three roles share — a driver is
+deciding whether the work justifies running a vehicle, not just opening an account.
+
+**The SMS code is not real, and all of the pretence is in one file.** The design verifies by SMS
+and never asks for a password; the api requires one and has no code endpoint, no `codes`
+collection and no gateway. `mobile/src/features/driver/sms-code.ts` fakes exactly two functions —
+`requestCode` sends nothing, `verifyCode` accepts any six digits — and sign-up mints a random
+password with `expo-crypto` so the real `POST /identity/register` still works. Everything else on
+the path is real. **The known gap:** a driver who signs out cannot log back in, because they have
+no password and there is no code login. Closing it means adding the two endpoints and making
+`password` optional on `registerSchema`; nothing outside that one file and the screen changes.
+
+**Two fields were added that the design does not draw.** The driver's **name**, because
+`registerSchema` requires it and the farmer's pickup check shows it beside the plate (LP-04); and
+their **district**, because `PUT /identity/me/vehicle` requires it and the job board filters on
+it, so a driver without one finishes sign-up and lands on a permanently empty Jobs tab. Both are
+marked in their step files and are questions for the designer, not settled answers.
+
+**Capacity became a property of the vehicle type.** The design has no capacity field and prints
+"up to 1,500 kg" on each tile, so `VEHICLES` in `features/driver/vehicles.ts` now carries the
+design's four figures and sign-up stores them directly. The FARM-45 wizard still lets a driver
+adjust it. Note the consequence: capacity is what the job board filters by, so a tile's number is
+now load-bearing rather than a hint.
+
+**Only four of the six vehicle types are offered.** The design draws a 2x2 grid naming
+three-wheeler, small lorry, lorry and tractor trailer. `motorbike` and `van` stay in the shared
+enum — existing accounts use them and dropping an enum member would orphan those records — but
+cannot be chosen at sign-up. A van driver currently cannot register through this flow.
+
+**Documents are photographed and go nowhere.** `expo-image-picker` captures the licence and ID so
+step 4 is real rather than a dead button, but there is no upload endpoint and no object storage
+(`.plans/DATA-MODEL.md`), so the uri never leaves the screen. They are also deliberately not
+required to finish: the design's own note says they upload later when there is signal, so
+blocking on them would strand a driver with no connection at the last step. Storing identity
+documents also needs a retention and access decision nobody has taken.
+
+**Illustrations live beside the slides, not in `icons.tsx`.** Each is a 320x260 scene used once;
+bundling them with the shared glyph set would make every screen parse them. Slides 2 and 3
+exported as single SVGs. Slide 1 did not — its frame contains text, so Figma emitted eight
+vectors — and they are composed into one SVG by centring each on the box Figma reported, with the
+"1" and "2" badges rendered as React Native `<Text>` so Poppins resolves through expo-font.
+
 ## Open
 
 *Persistence* and *Authentication*, formerly questions 1 and 2, were settled on 18 September 2026

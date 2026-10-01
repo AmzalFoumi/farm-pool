@@ -42,7 +42,13 @@
       ],
       "expo-image",
       "expo-web-browser",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "FarmPool uses the camera so you can photograph your driving licence and ID for the area coordinator to check."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

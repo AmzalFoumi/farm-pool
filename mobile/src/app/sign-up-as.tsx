@@ -163,10 +163,20 @@ export default function SignUpAsScreen() {
           label={selectedRole ? `Continue as ${selectedRole.selectedLabel}` : "Continue"}
           disabled={!selectedRole}
           /* push, not replace: the back button on the form should return
-             here so a wrong tap on a role is one step to undo. */
-          onPress={() =>
-            selectedRole && router.push({ pathname: "/sign-up", params: { role: selectedRole.id } })
-          }
+             here so a wrong tap on a role is one step to undo.
+
+             A delivery partner takes their own route: three explainer slides and a four-step
+             wizard (Figma 196:6159 …), because a driver is deciding whether the work is worth
+             owning a vehicle for, not just opening an account. The other three roles share the
+             one-screen form. */
+          onPress={() => {
+            if (!selectedRole) return;
+            if (selectedRole.id === "logistics") {
+              router.push("/driver-onboarding");
+              return;
+            }
+            router.push({ pathname: "/sign-up", params: { role: selectedRole.id } });
+          }}
         />
       </View>
     </View>
