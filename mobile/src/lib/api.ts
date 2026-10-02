@@ -11,8 +11,13 @@ import type { ZodType } from "zod";
  * fails loudly here instead of as `undefined` three screens later.
  */
 
-/** Set in `mobile/.env` (see `.env.example`). On a phone it must be the machine's LAN address. */
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
+/** Set in `mobile/.env` (see `.env.example`). On a phone it must be the machine's LAN address.
+ *
+ *  An empty `EXPO_PUBLIC_API_URL=` counts as unset. `??` alone would not: an empty string is not
+ *  nullish, so the base URL became `""`, every request went out as a relative path, and the dev
+ *  server answered its own 404 — which surfaces in a screen as the generic `bad_response`
+ *  "Something went wrong" rather than anything pointing at configuration. */
+const API_URL = process.env.EXPO_PUBLIC_API_URL?.trim() || "http://localhost:3000";
 
 /** How long one request may take before it counts as `network_error`. Long enough for a rural
  *  3G round trip; short enough that a stalled `/identity/me` on cold start cannot hold the

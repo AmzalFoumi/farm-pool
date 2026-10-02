@@ -65,6 +65,20 @@ export const orderSchema = z.object({
   total: z.number().nonnegative(),
   note: z.string().optional(),
   status: orderStatusSchema,
+  /**
+   * The driver who accepted this job, once one has (FARM-49/54). Written by the logistics domain
+   * through `ORDER_REPOSITORY`, never by a client. Only the id is stored: the driver's name,
+   * plate and verification are read fresh from the account, so a farmer at pickup is never shown
+   * a badge that was true last week (`packages/shared/src/logistics/job.ts`).
+   */
+  assignedDriverId: z.string().optional(),
+  /**
+   * What the driver actually loaded at the farm gate (LP-50), which regularly differs from
+   * `quantityKg` — a short harvest, produce rejected at the gate, a damaged crate. Recorded at
+   * pickup and never overwritten afterwards. `quantityKg` stays the deal that was agreed; this is
+   * what moved.
+   */
+  collectedKg: kgSchema.optional(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime()
 });

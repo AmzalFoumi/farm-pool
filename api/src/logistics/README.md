@@ -3,10 +3,18 @@
 **Owns:** pickup, routing, maps, delivery assignment and tracking, and the driver verification a
 farmer sees before handing over produce.
 
-**Not built yet.** The folders below are an empty scaffold (`.gitkeep` files) and the module is
-registered in `app.module.ts` with no providers. The first story here follows
-`.plans/PLAYBOOK.md`, recipe 1, copying from `api/src/orders/` (which already has the states this
-domain will drive).
+**Built: the driver job board, accept, and pickup/drop-off confirmation (FARM-49/54, LP-20 … LP-24,
+LP-50, LP-52, LP-53), plus a district-level pickup map (LP-22, part of LP-40).** Batching, true
+multi-stop routing, offline queueing and the return leg are still unbuilt.
+
+The map is **entirely client-side** — no endpoint here returns a coordinate. The app resolves a
+listing's district name through `DISTRICT_POINTS` in `packages/shared`, so the api stays unaware of
+maps and the lookup works with no signal. See `.plans/DECISIONS.md`, "Maps".
+
+**This domain owns no collection.** A job is not a stored record — it is an order that reached
+`open`, read together with the listing it was placed against. LP-21 forbids a job existing without
+a confirmed order, and the cheapest way to guarantee that is to have nothing to keep in sync. See
+`domain/entities/job.ts`, which is mappers rather than state.
 
 ## Layout (light DDD)
 
@@ -20,19 +28,74 @@ domain will drive).
 
 ## Endpoints
 
-None yet. The action already reserved in the permission matrix: `delivery:accept` (role
-`logistics`, labelled "Delivery partner" in the app).
+| Method | Path | Allow | Result |
+| ------ | ---- | ----- | ------ |
+| GET | `/logistics/jobs` | `delivery:read-jobs` | 200 `JobSummary[]` — open jobs in the caller's district their vehicle can carry; 409 `no_vehicle` |
+| GET | `/logistics/jobs/mine` | `delivery:read-jobs` | 200 `JobSummary[]` — jobs this driver holds, newest first |
+| GET | `/logistics/jobs/:orderId` | `delivery:read-jobs` | 200 `JobDetail`; 403 `not_your_job`; 404 `job_not_found` |
+| POST | `/logistics/jobs/:orderId/accept` | `delivery:accept` | 200 `JobDetail` in `assigned`; 409 `job_taken` / `load_too_heavy` / `no_vehicle`; 404 |
+| POST | `/logistics/jobs/:orderId/pickup` | `delivery:confirm` | 200 `JobDetail` in `in_transit`, `collectedKg` recorded; 403 `not_your_job`; 409 `wrong_stage` |
+| POST | `/logistics/jobs/:orderId/deliver` | `delivery:confirm` | 200 `JobDetail` in `delivered`; 403; 409 `wrong_stage` |
+| GET | `/logistics/orders/:orderId/driver` | `delivery:read-driver` | 200 `AssignedDriver`; 403 `not_your_job`; 404 `no_driver_assigned` |
+
+Only the pickup takes a body — the weight actually loaded. Everything else is identified by the
+order it belongs to and acted on by the caller's own token.
+
+### Two rules worth knowing before you change anything
+
+**The farmer's phone number is attached only to a job its caller holds.** An open job on the board
+is readable by every driver — that is what makes it a board — and carries no contact details, so
+the endpoint cannot be walked to harvest farmers' numbers. The decision lives in `GetJob` and
+nowhere else; `toJobDetail` takes the contact as an argument rather than deriving it, so a mapper
+cannot start leaking one by accident.
+
+**Accepting is an atomic claim, not read-then-write.** `ORDER_REPOSITORY.assignDriver` matches on
+`status: 'open'` and updates in one operation, so two drivers tapping Accept in the same second
+produce one winner and one `job_taken`. Being quietly handed a job another driver is already
+driving to is the outcome this is engineered against.
+
+**The collected weight is recorded, not validated.** `collectedKg` at pickup is written exactly as
+the driver typed it, in either direction — a farmer harvesting 95 kg against a 100 kg order is the
+ordinary case, and so is sending an extra 5 kg rather than keeping it. An api that refused either
+would leave the driver no way to record the truth and push them to type a number that is not
+what is on the lorry. `quantityKg` remains the deal that was agreed; `collectedKg` is what moved,
+and the difference is visible to the farmer, the buyer and the driver.
+
+**Each fulfilment step is filter-as-guard, like the accept.** `recordPickup` and `recordDelivery`
+match on the driver *and* the stage inside the update, so "is this your job, is it at this stage"
+cannot drift away from the write it guards. The price is that a refusal does not say which of the
+three things was wrong; `ConfirmDeliveryStep.explain` reads the order back on the failing path to
+tell a driver at a farm gate whether they are at the wrong job or the wrong step.
+
+**Verification is deliberately not checked on accept.** Nothing moves a driver past `pending`
+yet (`docs/logistics-driver-role.md`, open question 3), so gating on `verified` would mean no
+driver could accept anything at all. `AcceptJob` names the line that changes when that question is
+answered, and a unit test pins the current behaviour.
 
 ## What already exists that this domain will touch
 
-- The order lifecycle already declares `open → assigned → in_transit → delivered`
+- The order lifecycle declares `open → assigned → in_transit → delivered`
   (`packages/shared/src/orders/order.ts`, `api/src/orders/README.md`). Moving an order through
   those states goes through the orders domain's `ORDER_REPOSITORY`; do not write to the `orders`
-  collection from here.
+  collection from here. `open → assigned` is written by `AcceptJob`; `in_transit` and `delivered`
+  are the next story's (LP-50/52).
 - The Map and Calls tabs in the app are placeholders (`PlaceholderScreen`); they are where pickup
   and tracking screens go.
 - Nothing about depots, vehicles or drivers is stored yet (`.plans/DATA-MODEL.md`, "Not modelled
   yet").
+
+## Reuse points
+
+- **`domain/entities/job.ts`** — `toJobSummary` / `toJobDetail` / `toPickupContact` /
+  `toAssignedDriver`. A batching or routing story shapes its responses through these, so a job
+  looks the same wherever it is read.
+- **`ORDER_REPOSITORY.assignDriver` / `recordPickup` / `recordDelivery`** are the pattern for every
+  later lifecycle move: filter on the actor and the status you require, update in the same
+  operation, return `null` when the filter missed, and diagnose only on that path.
+- **`ConfirmDeliveryStep`** is the base class to extend if a step is added between pickup and
+  drop-off (a per-stop confirmation for a batch, say) — the refusal diagnosis comes with it.
+- Unit tests: `application/services/jobs.spec.ts`, over the in-memory order, listing and user
+  repositories — no database, no Nest container.
 
 ## Personas are not domains
 

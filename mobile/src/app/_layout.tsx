@@ -1,6 +1,4 @@
 import { can } from "@farm-pool/shared";
-import { Mulish_400Regular, Mulish_700Bold } from "@expo-google-fonts/mulish";
-import { Poppins_700Bold } from "@expo-google-fonts/poppins";
 import { useFonts } from "expo-font";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -12,27 +10,28 @@ import { Uniwind } from "uniwind";
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "@/global.css";
+import { FONT_ASSETS } from "@/lib/i18n/fonts";
 import { AuthProvider, useAuth } from "@/providers/auth-provider";
+import { LocaleProvider } from "@/providers/locale-provider";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
-  /* The design system's three faces. The keys are the family names the
-     `type-*` utilities in `src/styles/typography.css` resolve to — rename one
-     here and every heading in the app silently falls back to the system font.
-     Only the cuts the Figma type scale actually uses are loaded; each extra
-     face is ~40 KB in the bundle for users often on a rural 3G connection. */
-  const [fontsLoaded] = useFonts({
-    Poppins_700Bold,
-    Mulish_400Regular,
-    Mulish_700Bold
-  });
+  /* Six faces: regular and bold in Latin, Sinhala and Tamil (LP-91). The keys are the family
+     names `src/styles/typography.css` and `lib/i18n/fonts.ts` resolve to — rename one here and
+     every heading in the app silently falls back to the system font.
 
-  /* Render nothing until the faces are in. Text laid out in the system font
-     and then reflowed into Poppins/Mulish is a visible jump on a cold start,
-     and the splash screen is already covering this moment anyway. */
+     All six load at startup rather than on language change, because `expo-font` registers a
+     family once and re-registering the same name with a different file is not supported. They
+     are subset to the three scripts this app renders (607 KB in total, from 1,860 KB upstream),
+     which is what makes loading all of them affordable on a rural 3G connection. */
+  const [fontsLoaded] = useFonts(FONT_ASSETS);
+
+  /* Render nothing until the faces are in. Text laid out in the system font and then reflowed
+     into Noto is a visible jump on a cold start, and the splash screen is already covering this
+     moment anyway. */
   if (!fontsLoaded) return null;
 
   return (
@@ -40,9 +39,13 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <GluestackUIProvider mode={colorScheme === "dark" ? "dark" : "light"}>
           <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-            <AuthProvider>
-              <RootNavigator />
-            </AuthProvider>
+            {/* Outside AuthProvider: the language is chosen on the welcome screen, before
+                anyone has an account, and must survive signing out. */}
+            <LocaleProvider>
+              <AuthProvider>
+                <RootNavigator />
+              </AuthProvider>
+            </LocaleProvider>
           </ThemeProvider>
         </GluestackUIProvider>
       </GestureHandlerRootView>
@@ -62,6 +65,7 @@ function RootNavigator() {
   const signedIn = auth.status === "signed-in";
   const isCoordinator = signedIn && can(auth.user.role, "cooperative:read-dashboard");
   const isFarmer = signedIn && can(auth.user.role, "listing:create");
+  const isDriver = signedIn && can(auth.user.role, "delivery:accept");
 
   return (
     <>
@@ -69,8 +73,8 @@ function RootNavigator() {
       {/* Onboarding is the root stack, so `index` (the welcome screen) is
           what a cold start lands on when nobody is signed in. The tab shell
           lives one level in — `(farmer)` for a farmer (FARM-21),
-          `(coordinator-tabs)` for a coordinator (FARM-25), `(tabs)` for
-          everyone else; which one a signed-in user gets is decided here, once,
+          `(coordinator-tabs)` for a coordinator (FARM-25), `(driver)` for a
+          delivery partner (FARM-45), `(tabs)` for everyone else; which one a signed-in user gets is decided here, once,
           by which group's guard is open, rather than duplicated per screen.
 
           `Stack.Protected` does the routing an auth check used to need
@@ -95,8 +99,14 @@ function RootNavigator() {
             first, and `listing/[id]` has no `id` without a real navigation into
             it — declaring it first makes the app try to open it blank on cold
             start (FARM-25 regression, caught 2026-09-19). */}
-        <Stack.Protected guard={signedIn && !isCoordinator && !isFarmer}>
+        <Stack.Protected guard={signedIn && !isCoordinator && !isFarmer && !isDriver}>
           <Stack.Screen name="(tabs)" />
+        </Stack.Protected>
+
+        {/* A driver with no vehicle yet lands on the vehicle wizard, not the
+            tabs; `(driver)/_layout.tsx` decides which. */}
+        <Stack.Protected guard={isDriver}>
+          <Stack.Screen name="(driver)" />
         </Stack.Protected>
 
         <Stack.Protected guard={isFarmer}>

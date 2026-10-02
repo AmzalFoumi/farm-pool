@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import type { NewUser, User } from '../../domain/entities/user';
+import type { DriverProfile, NewUser, User } from '../../domain/entities/user';
 import {
   DuplicatePhoneError,
   type UserRepository,
 } from '../../domain/repositories/user.repository';
-import { USER_MODEL, UserDocument, type UserHydrated } from './user.schema';
+import {
+  DriverProfileDocument,
+  USER_MODEL,
+  UserDocument,
+  type UserHydrated,
+} from './user.schema';
 
 /** MongoDB's error code for "unique index violated". */
 const DUPLICATE_KEY = 11000;
@@ -56,6 +61,17 @@ export class MongooseUserRepository implements UserRepository {
     const docs = await this.users.find().sort({ createdAt: 1 }).exec();
     return docs.map(toUser);
   }
+
+  async saveDriverProfile(
+    id: string,
+    driver: DriverProfile,
+  ): Promise<User | null> {
+    if (!/^[0-9a-f]{24}$/i.test(id)) return null;
+    const doc = await this.users
+      .findByIdAndUpdate(id, { $set: { driver } }, { new: true })
+      .exec();
+    return doc ? toUser(doc) : null;
+  }
 }
 
 function toUser(doc: UserHydrated): User {
@@ -67,8 +83,20 @@ function toUser(doc: UserHydrated): User {
     passwordHash: doc.passwordHash,
     role: doc.role,
     status: doc.status,
+    ...(doc.driver ? { driver: toDriverProfile(doc.driver) } : {}),
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
+  };
+}
+
+function toDriverProfile(driver: DriverProfileDocument): DriverProfile {
+  return {
+    vehicleType: driver.vehicleType,
+    registration: driver.registration,
+    capacityKg: driver.capacityKg,
+    operatingDistrict: driver.operatingDistrict,
+    verification: driver.verification,
+    updatedAt: driver.updatedAt,
   };
 }
 

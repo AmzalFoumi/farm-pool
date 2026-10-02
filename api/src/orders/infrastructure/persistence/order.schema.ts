@@ -42,6 +42,15 @@ export class OrderDocument {
   })
   status: OrderStatus;
 
+  /** Set when a driver accepts the job (FARM-49/54). Indexed: a driver's own job list is the
+   *  read that runs on every open of the Jobs tab. */
+  @Prop({ required: false, index: true })
+  assignedDriverId?: string;
+
+  /** What the driver actually loaded at the gate (LP-50); may differ from `quantityKg`. */
+  @Prop({ required: false, min: 1 })
+  collectedKg?: number;
+
   createdAt: Date;
   updatedAt: Date;
 }

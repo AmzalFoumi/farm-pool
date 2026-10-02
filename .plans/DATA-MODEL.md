@@ -30,6 +30,7 @@ Owner: `identity`. Storage: `api/src/identity/infrastructure/persistence/user.sc
 | `passwordHash` | string | yes | | scrypt hash (`infrastructure/security/scrypt-password-hasher.ts`). | **no** |
 | `role` | enum `Role` | yes | | `farmer`, `buyer`, `coordinator`, `logistics`. `logistics` is what the picker labels "Delivery partner". | yes |
 | `status` | enum `AccountStatus` | yes, default `active` | | `active`, `pending_review`, `suspended`. Stored and returned; **no guard checks it yet**. | yes |
+| `driver` | embedded object | no | | A delivery partner's vehicle (FARM-45): `vehicleType` (enum `VehicleType`), `registration` (upper-cased plate), `capacityKg`, `operatingDistrict`, `verification` (enum `DriverVerification`: `pending`, `verified`, `rejected`), `updatedAt`. Absent for other roles and until the driver submits one. Only `pending` is written today. | yes (optional) |
 
 All four roles self-register through `POST /identity/register` (`.plans/auth/README.md`). Coordinator
 stays a public sign-up path; whether to gate or seed one is open (`.plans/auth/OPEN.md`).
@@ -96,6 +97,8 @@ one order; `items[]` is added beside these fields only if multi-item orders are 
 | `total` | number ≥ 0 | yes | | `quantityKg × pricePerKg`, computed in `PlaceOrder`. | yes |
 | `note` | string ≤ 280 | no | | | yes (optional) |
 | `status` | enum `OrderStatus` | yes | yes | See lifecycle below. | yes |
+| `collectedKg` | integer ≥ 1 | no | | What the driver actually loaded at the farm gate (LP-50), recorded at pickup and never overwritten. Deliberately **not** constrained against `quantityKg`: a short harvest and an over-collection are both ordinary, and refusing either would leave the driver no way to record the truth. `quantityKg` stays the deal agreed; this is what moved. | yes (optional) |
+| `assignedDriverId` | string → `users._id` | no | yes | The driver who accepted the job (LP-24). Written only by the logistics domain, through `ORDER_REPOSITORY.assignDriver`, which sets it and `status: assigned` in one operation. **Only the id is stored** — the driver's name, plate and verification are read live from the account, so a farmer at the gate is never shown a badge that was true last week. | yes (optional) |
 
 The client sends only `listingId`, `quantityKg` and `note`. Everything else is filled on the server
 from the token and the listing, so a buyer cannot set their own price or farmer.
@@ -194,12 +197,28 @@ the api already share; renaming them is a shared-package change, not a database-
 
 ## Not modelled yet
 
-So nobody assumes it is: produce photos and image storage, quality grade, expiry, pickup
-coordinates or depots, saved or favourite farmers, benchmark prices, payments, delivery
-assignments and driver verification, in-app calls or messages (`calls` tab is a placeholder),
+So nobody assumes it is: produce photos and image storage, quality grade, expiry, depots, saved or favourite farmers, benchmark prices, payments, delivery
+batches and multi-stop routes, the driver verification *process* (the state is stored, nothing moves it past `pending`), in-app calls or messages (`calls` tab is a placeholder),
 farmer responses to wanted requests, coordinator approval records, refresh tokens or sessions.
 Each is one optional field or one new collection when its story arrives; none needs a change to
 what exists.
+
+## Places, and why there are no coordinates
+
+`district` and `town` on a listing are free text, and nothing anywhere holds a latitude or a
+longitude. The driver's pickup map therefore pins the **district centre**, resolved on the phone
+from `DISTRICT_POINTS` in `packages/shared/src/catalog/districts.ts` — 25 fixed places in the
+bundle, so it works with no signal and costs no geocoding quota. The map caption states that
+precision rather than implying a farm gate.
+
+A story that adds real farm-gate coordinates should put them on the **listing** (the place does not
+change per order), as two optional numbers beside `district`, and prefer them over the table
+wherever present.
+
+**A buyer has no location at all** — not on the account, not on the order. So a drop-off cannot be
+drawn today, which is why FARM-26 shipped the pickup half only. Whichever story fills this decides
+whether a delivery address belongs on the order (it can differ per order) or on the buyer's
+account; the order is the likelier home.
 
 ## How to change a field
 

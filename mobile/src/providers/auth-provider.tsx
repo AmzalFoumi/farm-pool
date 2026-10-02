@@ -1,4 +1,4 @@
-import type { LoginInput, PublicUser, RegisterInput } from "@farm-pool/shared";
+import type { AuthResponse, LoginInput, PublicUser, RegisterInput } from "@farm-pool/shared";
 import {
   createContext,
   useCallback,
@@ -33,11 +33,18 @@ export type AuthState =
   | { status: "signed-in"; user: PublicUser; token: string };
 
 type AuthContextValue = AuthState & {
-  signIn(input: LoginInput): Promise<PublicUser>;
-  signUp(input: RegisterInput): Promise<PublicUser>;
+  /* Both return the token as well as the user. A caller that has to make an authenticated
+     request *immediately* after signing in cannot read `token` off this context yet — the state
+     update has not rendered — and the driver sign-up does exactly that, saving the vehicle onto
+     the account it just created. Returning it avoids a round trip through an effect. */
+  signIn(input: LoginInput): Promise<AuthResponse>;
+  signUp(input: RegisterInput): Promise<AuthResponse>;
   signOut(): Promise<void>;
   /** Re-check the saved session against the api (after a profile edit, say). */
   refresh(): Promise<void>;
+  /** Adopt a user record the api just returned (the driver's vehicle save, say) without a second
+   *  round trip. Unlike `refresh`, a dropped connection cannot sign anyone out here. */
+  updateUser(user: PublicUser): void;
 };
 
 const SIGNED_OUT: AuthState = { status: "signed-out", user: null, token: null };
@@ -73,10 +80,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const adopt = useCallback(async (token: string, user: PublicUser) => {
+  const adopt = useCallback(async (token: string, user: PublicUser): Promise<AuthResponse> => {
     await setSessionToken(token);
     setState({ status: "signed-in", user, token });
-    return user;
+    return { token, user };
   }, []);
 
   const value = useMemo<AuthContextValue>(
@@ -97,6 +104,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async refresh() {
         setState(await loadSession());
+      },
+      updateUser(user) {
+        setState((current) =>
+          current.status === "signed-in" && current.user.id === user.id
+            ? { ...current, user }
+            : current
+        );
       }
     }),
     [state, adopt]

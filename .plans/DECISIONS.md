@@ -472,6 +472,147 @@ video call; the farmer accepts or declines on their call list; both then join.
 
 Details: `api/src/calls/README.md`.
 
+### Driver vehicle: captured after sign-up, embedded in the user
+
+Decided 30 September 2026 (FARM-45). A delivery partner signs up like everyone else, then fills in
+their vehicle on a three-step wizard before the driver tabs open; `PUT /identity/me/vehicle`
+stores it as `users.driver`. Not in `registerSchema`, because that object is shared by all four
+roles and a required vehicle there breaks the other three. Embedded rather than a `vehicles`
+collection because there is one per driver and it is always read with the account; if a driver
+ever needs several vehicles, it becomes a collection keyed by `driverId`. Districts are picked
+from Sri Lanka's 25 on the phone but stored as free text, so they match a listing's district.
+Details: `api/src/identity/README.md`.
+
+### Maps: `react-native-maps` with Google as the provider, district-level pins
+
+Decided 30 September 2026 (FARM-26). The driver's job screen shows where a pickup is and hands off
+to the installed Google Maps app for directions.
+
+**`react-native-maps`, not `expo-maps`.** `expo-maps` is Expo's own library and the obvious first
+guess, but the SDK 57 docs rule it out twice over: it is Apple Maps on iOS with no Google option,
+and it does not run in Expo Go. This app's standing rule is that every screen except calls works in
+Expo Go (`Mobile: Expo, managed workflow` above), and breaking that for a map preview is a bad
+trade. `react-native-maps` gives Google on both platforms, needs no setup under Expo Go, and is
+still the library Expo documents for this. It is also alpha-free: `expo-maps` warns it "will
+frequently experience breaking changes".
+
+**A standalone build needs API keys that are not in this repo.** Expo Go supplies its own, so
+development needs nothing. Before a store build, add the `react-native-maps` config plugin to
+`mobile/app.json` with `androidGoogleMapsApiKey` / `iosGoogleMapsApiKey` from a Google Cloud
+project — and note that `app.json` is committed, so those keys want an `app.config.js` reading the
+environment rather than a literal. Left undone deliberately: a committed placeholder that looks
+configured is worse than an absence.
+
+**Pins are district centres, and the screen says so.** Nothing in the data holds a coordinate
+(`.plans/DATA-MODEL.md`, "Not modelled yet"), so `DISTRICT_POINTS` in
+`packages/shared/src/catalog/districts.ts` maps the 25 district names to their principal town. A
+table rather than a geocoding call: twenty-five values that never change do not need a network
+round trip or a billed key, and a bundled table works with no signal — the condition the app is
+designed for (LP-90). The caption under the map states the precision, because a pin implying a
+farm gate is worse than a town name when a driver acts on it. When a story adds real farm-gate
+coordinates to a listing, they take precedence per-listing and this stays the fallback.
+
+**Directions open the Google Maps app; no route is drawn.** A polyline would need the billed
+Directions API and would still route worse than the app the driver already has, which holds their
+offline tiles. The hand-off is the universal `google.com/maps/search/?api=1` URL, by place name
+rather than by the centroid, so the maps app's own search lands closer than this preview can.
+
+### Driver onboarding: its own carousel and wizard, with the SMS code stubbed
+
+Decided 1 October 2026 (Figma 196:6159, 196:6185, 196:6213, 196:6238, 196:6269, 196:6306,
+196:6361, 196:6409). A delivery partner leaves the role picker into three explainer slides and a
+four-step sign-up, instead of the one-screen form the other three roles share — a driver is
+deciding whether the work justifies running a vehicle, not just opening an account.
+
+**The SMS code is not real, and all of the pretence is in one file.** The design verifies by SMS
+and never asks for a password; the api requires one and has no code endpoint, no `codes`
+collection and no gateway. `mobile/src/features/driver/sms-code.ts` fakes exactly two functions —
+`requestCode` sends nothing, `verifyCode` accepts any six digits — and sign-up mints a random
+password with `expo-crypto` so the real `POST /identity/register` still works. Everything else on
+the path is real. **The known gap:** a driver who signs out cannot log back in, because they have
+no password and there is no code login. Closing it means adding the two endpoints and making
+`password` optional on `registerSchema`; nothing outside that one file and the screen changes.
+
+**Two fields were added that the design does not draw.** The driver's **name**, because
+`registerSchema` requires it and the farmer's pickup check shows it beside the plate (LP-04); and
+their **district**, because `PUT /identity/me/vehicle` requires it and the job board filters on
+it, so a driver without one finishes sign-up and lands on a permanently empty Jobs tab. Both are
+marked in their step files and are questions for the designer, not settled answers.
+
+**Capacity became a property of the vehicle type.** The design has no capacity field and prints
+"up to 1,500 kg" on each tile, so `VEHICLES` in `features/driver/vehicles.ts` now carries the
+design's four figures and sign-up stores them directly. The FARM-45 wizard still lets a driver
+adjust it. Note the consequence: capacity is what the job board filters by, so a tile's number is
+now load-bearing rather than a hint.
+
+**Only four of the six vehicle types are offered.** The design draws a 2x2 grid naming
+three-wheeler, small lorry, lorry and tractor trailer. `motorbike` and `van` stay in the shared
+enum — existing accounts use them and dropping an enum member would orphan those records — but
+cannot be chosen at sign-up. A van driver currently cannot register through this flow.
+
+**Documents are photographed and go nowhere.** `expo-image-picker` captures the licence and ID so
+step 4 is real rather than a dead button, but there is no upload endpoint and no object storage
+(`.plans/DATA-MODEL.md`), so the uri never leaves the screen. They are also deliberately not
+required to finish: the design's own note says they upload later when there is signal, so
+blocking on them would strand a driver with no connection at the last step. Storing identity
+documents also needs a retention and access decision nobody has taken.
+
+**Illustrations live beside the slides, not in `icons.tsx`.** Each is a 320x260 scene used once;
+bundling them with the shared glyph set would make every screen parse them. Slides 2 and 3
+exported as single SVGs. Slide 1 did not — its frame contains text, so Figma emitted eight
+vectors — and they are composed into one SVG by centring each on the box Figma reported, with the
+"1" and "2" badges rendered as React Native `<Text>` so Poppins resolves through expo-font.
+
+### Localisation: i18next, chosen language, and Noto in place of Poppins/Mulish
+
+Decided 1 October 2026 (LP-91). All four research interviews were conducted in Sinhala or Tamil,
+so these are not a translation layer over an English product — English is the third audience.
+
+**The fonts were the blocker, not the strings.** Poppins Bold and Mulish Regular map 471 and 936
+glyphs and **not one** of them is Sinhala or Tamil, so every translated string would have
+rendered as tofu. Both are replaced by Noto, the one family group drawn to a single design
+language across all three scripts. Sizes, line heights and tracking are unchanged from the Figma
+type frame; only the family moved. This contradicts the Figma typography frame and is a
+deliberate override — the alternative was shipping two of three languages unreadable.
+
+**The six faces are vendored and subset.** Upstream they are 1,860 KB, most of it Noto Sans Latin
+carrying Cyrillic, Greek and Vietnamese. `mobile/scripts/subset-fonts.py` cuts them to the three
+scripts this app renders: **607 KB, against the 368 KB of Poppins and Mulish they replace** —
++239 KB for three languages, on the rural 3G connection the product doc calls the binding
+constraint. Re-run that script after bumping an `@expo-google-fonts` package. Shaping tables are
+kept explicitly; Sinhala is unreadable without its conjunct and mark-positioning features.
+
+**One script face serves a whole screen.** Every subset keeps full ASCII, so "Rs 180 · 40 kg"
+inside a Sinhala sentence renders from the Sinhala face. React Native allows one `fontFamily` per
+`Text` and has no fallback chain, which is what makes this work at all. All six load at startup
+because `expo-font` registers a family once and cannot re-point a name at a different file.
+
+**The face is chosen in `components/ui/text/index.tsx`.** Every screen renders through that one
+component, so it is the only place a script has to be selected. English returns no override at
+all — `typography.css` already names the Latin faces — so the common path costs nothing. The
+bold/regular split is read from the `className` by one regex kept beside the table it mirrors.
+
+**`i18next`, with no language detector.** Plurals, interpolation and per-key fallback are most of
+what a hand-rolled `t()` grows into, and Sinhala and Tamil plural rules are something `Intl`
+already knows. The device locale is deliberately **not** read: a shared or second-hand phone in a
+rural household is routinely set to a language its current user cannot read, so silently picking
+Sinhala for a Tamil speaker is worse than asking. The welcome screen asks once and the answer is
+remembered next to the session token.
+
+**Server messages are translated by code, not by locale header.** The api already returns stable
+codes (`job_taken`, `phone_taken`), so the client maps code to string and the api needs no
+change. Unknown codes fall through to a generic message.
+
+**The Sinhala and Tamil files are unreviewed drafts.** They were written by an AI assistant as a
+starting point and say so in a `_review` block at the top of each file. They must not be treated
+as shippable: produce, weight and payment terms are exactly where a wrong word reads as careless
+to the people the research interviewed. `node mobile/scripts/check-locales.mjs` enforces key
+parity and placeholder integrity across the three files and warns while `_review.reviewedBy` is
+empty.
+
+**Converted so far: the driver flow only** — onboarding, sign-up, job board, job detail and the
+cards they share (130 keys). The other ~370 strings across the app are still hard-coded English.
+
 ## Open
 
 *Persistence* and *Authentication*, formerly questions 1 and 2, were settled on 18 September 2026
@@ -584,6 +725,15 @@ means the *runtime* would already cope; it is the test runner that would not.
 
 When it is taken: swap `JsonwebtokenTokenSigner` for a `jose` adapter behind the same port, and
 lift the `@nestjs/config` / `@nestjs/mongoose` pins in the same change.
+
+### 4. What driver verification checks, and who does it
+
+The driver's `verification` state exists (`pending`, `verified`, `rejected`) and every new or
+changed vehicle is `pending`, but nothing moves it on: the product research names the outcome
+("verified" badge) and never the process — an ID document, a registration photo, a coordinator's
+inspection, or a coordinator vouching from personal knowledge (`.plans/PRODUCT.md`,
+`docs/logistics-driver-role.md` §1). Deciding it adds one endpoint (likely `drivers:verify` for the
+coordinator) and no migration. Until then no driver shows as verified.
 
 ---
 

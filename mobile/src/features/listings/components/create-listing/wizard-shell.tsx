@@ -13,18 +13,17 @@ import { VStack } from "@/components/ui/vstack";
 
 export type WizardStep = 1 | 2 | 3 | 4 | 5 | "review";
 
-/* Written out in full so UniWind can see every class name at build time. */
-const PROGRESS: Record<WizardStep, string> = {
-  1: "w-1/5",
-  2: "w-2/5",
-  3: "w-3/5",
-  4: "w-4/5",
-  5: "w-full",
-  review: "w-full"
+/* Written out in full so UniWind can see every class name at build time. Keyed by how many
+   steps the wizard has: five for a listing, three for a driver's vehicle (FARM-45). */
+const PROGRESS: Record<3 | 5, Record<WizardStep, string>> = {
+  5: { 1: "w-1/5", 2: "w-2/5", 3: "w-3/5", 4: "w-4/5", 5: "w-full", review: "w-full" },
+  3: { 1: "w-1/3", 2: "w-2/3", 3: "w-full", 4: "w-full", 5: "w-full", review: "w-full" }
 };
 
 type WizardShellProps = {
   step: WizardStep;
+  /** How many numbered steps come before the review. Defaults to the listing wizard's five. */
+  stepCount?: 3 | 5;
   title: string;
   onBack?: () => void;
   /** Shown inline under the header when the help button is tapped. Inline rather than an
@@ -38,13 +37,15 @@ type WizardShellProps = {
 };
 
 /**
- * The frame every create-listing step shares: back button, step label, title, help and progress
+ * The frame every create-listing step shares — and the driver's vehicle wizard, with
+ * `stepCount={3}`: back button, step label, title, help and progress
  * at the top; a scrolling body; a pinned action bar at the bottom. One copy, so the six steps
  * cannot drift, and both edges take their inset from `useSafeAreaInsets()` (CLAUDE.md rule 8),
  * so the header clears the notch and the buttons clear the home indicator.
  */
 export function WizardShell({
   step,
+  stepCount = 5,
   title,
   onBack,
   help,
@@ -70,7 +71,7 @@ export function WizardShell({
 
           <VStack className="flex-1 items-center">
             <Text className="type-body-sm-bold text-muted-foreground">
-              {step === "review" ? "Final check" : `Step ${step} of 5`}
+              {step === "review" ? "Final check" : `Step ${step} of ${stepCount}`}
             </Text>
             <Text className="type-title text-center text-foreground">{title}</Text>
           </VStack>
@@ -91,7 +92,7 @@ export function WizardShell({
         </HStack>
 
         <Box className="h-1.5 w-full overflow-hidden rounded-pill bg-muted">
-          <Box className={`h-full rounded-pill bg-brand-deep ${PROGRESS[step]}`} />
+          <Box className={`h-full rounded-pill bg-brand-deep ${PROGRESS[stepCount][step]}`} />
         </Box>
 
         {help && showHelp ? (

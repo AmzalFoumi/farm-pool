@@ -8,6 +8,7 @@
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "bundleIdentifier": "com.farmpool.app",
       "icon": "./assets/expo.icon",
       "infoPlist": {
         "NSCameraUsageDescription": "FarmPool uses the camera for video calls between buyers and farmers.",
@@ -41,7 +42,14 @@
       ],
       "expo-image",
       "expo-web-browser",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "FarmPool uses the camera so you can photograph your driving licence and ID for the area coordinator to check."
+        }
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

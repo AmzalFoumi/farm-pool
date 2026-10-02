@@ -15,6 +15,7 @@ import { GetMe } from './application/services/get-me';
 import { ListUsers } from './application/services/list-users';
 import { LoginUser } from './application/services/login-user';
 import { RegisterUser } from './application/services/register-user';
+import { SaveDriverVehicle } from './application/services/save-driver-vehicle';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
 import {
@@ -89,6 +90,11 @@ import { ScryptPasswordHasher } from './infrastructure/security/scrypt-password-
       provide: ListUsers,
       inject: [USER_REPOSITORY],
       useFactory: (users: UserRepository) => new ListUsers(users),
+    },
+    {
+      provide: SaveDriverVehicle,
+      inject: [USER_REPOSITORY],
+      useFactory: (users: UserRepository) => new SaveDriverVehicle(users),
     },
     // Global guards and the error mapping
     { provide: APP_GUARD, useClass: JwtAuthGuard },

@@ -1,0 +1,183 @@
+{
+  "common": {
+    "back": "Go back",
+    "next": "Next",
+    "skip": "Skip",
+    "continue": "Continue",
+    "tryAgain": "Try again",
+    "couldNotLoad": "Could not load",
+    "kg": "{{count, number}} kg",
+    "phone": "Phone"
+  },
+
+  "errors": {
+    "network": "Can't reach the server. Check your connection and try again.",
+    "generic": "Something went wrong. Please try again.",
+    "phone_taken": "An account with this number already exists.",
+    "job_taken": "Another driver took this job first.",
+    "load_too_heavy": "This load is heavier than your vehicle can carry.",
+    "no_vehicle": "Add your vehicle before accepting a job.",
+    "job_not_found": "This job is no longer available.",
+    "not_your_job": "This job is not yours any more.",
+    "wrong_stage": "This job has already moved on."
+  },
+
+  "orderStatus": {
+    "requested": "Requested",
+    "accepted": "Accepted",
+    "declined": "Declined",
+    "cancelled": "Cancelled",
+    "open": "Open",
+    "assigned": "Driver assigned",
+    "in_transit": "In transit",
+    "delivered": "Delivered"
+  },
+
+  "driverOnboarding": {
+    "slide1": {
+      "title": "One job, one route",
+      "body": "A buyer books several farmers at once. You get it as a single job with the pickups already in the best order, and the drop at the end."
+    },
+    "slide2": {
+      "title": "Scan at the drop, money moves",
+      "body": "At each depot you scan the buyer's code. That confirms the delivery, releases the farmers' payment, and books your trip fee. No paperwork."
+    },
+    "slide3": {
+      "title": "Weak signal is fine",
+      "body": "Your route, pickups and scans are saved on the phone. They sync on their own when you pass through network."
+    },
+    "createAccount": "Create my account",
+    "skipIntro": "Skip the introduction"
+  },
+
+  "driverSignUp": {
+    "stepLabel": "Delivery partner · step {{step}} of {{count}}",
+
+    "phone": {
+      "title": "Your mobile number",
+      "note": "We send a 6-digit code by SMS. Buyers and farmers see this number on the day of a pickup.",
+      "nameLabel": "Your name",
+      "namePlaceholder": "As farmers will know you",
+      "nameError": "Enter your name",
+      "numberLabel": "Your mobile number, without the country code",
+      "numberPlaceholder": "77 123 4567",
+      "numberError": "Enter a Sri Lankan mobile number, like 77 123 4567",
+      "oneAccount": "One number, one account. If the phone is shared at home, use your own number.",
+      "action": "Send code",
+      "actionBusy": "Sending…"
+    },
+
+    "code": {
+      "title": "Enter the code",
+      "note": "Sent by SMS to {{phone}}.",
+      "inputLabel": "Six digit code from the SMS",
+      "digitLabel": "Digit {{index}}",
+      "resendIn": "Resend in {{time}}",
+      "resendNow": "Send the code again",
+      "resendWait": "You can ask for a new code in {{count}} seconds",
+      "voiceCall": "Call me the code instead",
+      "wrong": "That code is not right. Check the SMS and try again.",
+      "action": "Verify",
+      "actionBusy": "Checking…"
+    },
+
+    "vehicle": {
+      "title": "What do you drive?",
+      "note": "Pick your vehicle and type the number on the plate.",
+      "capacity": "up to {{count, number}} kg",
+      "tileLabel": "{{label}}, up to {{count, number}} kilograms",
+      "plateLabel": "Number plate",
+      "platePlaceholder": "NC LH 4821",
+      "plateError": "Enter the number on the plate",
+      "typeError": "Pick the vehicle you drive",
+      "districtLabel": "Where you collect",
+      "districtNote": "Jobs in this district are shown to you first.",
+      "districtError": "Pick the district you collect in"
+    },
+
+    "documents": {
+      "title": "Two photos",
+      "note": "Take a clear photo of each. No typing needed.",
+      "licence": "Driving licence",
+      "licenceNote": "Clear photo of the front",
+      "nationalId": "National ID card",
+      "nationalIdNote": "Front side, both sides later",
+      "added": "Photo added",
+      "done": "Done",
+      "take": "Take photo",
+      "takeLabel": "Take a photo of your {{document}}",
+      "offline": "No signal? The photos stay on your phone and upload when you get network.",
+      "noCamera": "Allow camera access to photograph your documents.",
+      "action": "Send for approval",
+      "actionBusy": "Sending…"
+    },
+
+    "done": {
+      "title": "Sent for checking",
+      "body": "Your area coordinator reviews your details, usually within one day. We SMS you when jobs open up.",
+      "numberVerified": "Number verified · {{phone}}",
+      "withCoordinator": "Documents with coordinator",
+      "unassigned": "Waiting to be assigned",
+      "action": "See jobs near you"
+    },
+
+    "failed": "Could not finish sign-up. Please try again.",
+    "phoneTakenLogIn": "An account with this number already exists. Log in instead."
+  },
+
+  "jobs": {
+    "title": "Jobs",
+    "mine": "My jobs",
+    "mineEmpty": "Nothing accepted yet.",
+    "available": "Available near you",
+    "availableEmpty": "No jobs in your district right now. New ones appear when a buyer's order is ready to collect.",
+    "noneTitle": "No jobs yet",
+    "noneBody": "Jobs appear here once buyers' orders in your district are ready to collect.",
+    "cardLabel": "{{count, number}} kilos of {{crop}} from {{place}}, {{total}}",
+    "shared": "Shared",
+
+    "detail": {
+      "title": "Job",
+      "heading": "{{count, number}} kg {{crop}}",
+      "collectFrom": "Collect from {{name}}",
+      "ordered": "Ordered",
+      "collected": "Actually loaded",
+      "orderValue": "Order value",
+      "trip": "Trip",
+      "tripSolo": "Dedicated vehicle",
+      "tripShared": "Shared",
+      "buyerNote": "Note from the buyer",
+      "pickup": "Pickup",
+      "pickupLocked": "The farmer's phone number and directions to the gate appear once you take this job.",
+      "finding": "Finding the place",
+      "approximate": "Approximate — this is {{district}} district, not the farm gate. Call the farmer for directions.",
+      "directions": "Directions in Google Maps",
+      "directionsLabel": "Open directions to {{place}} in Google Maps"
+    },
+
+    "actions": {
+      "take": "Take this job",
+      "takeBusy": "Taking this job…",
+      "pickup": "Confirm pickup",
+      "deliver": "Confirm delivery",
+      "busy": "Confirming…",
+      "weightLabel": "Weight loaded",
+      "weightError": "Enter the weight in whole kilograms",
+      "failed": "Could not do that. Please try again."
+    },
+
+    "driverCard": {
+      "heading": "Collecting this order",
+      "plate": "Plate number",
+      "vehicle": "Vehicle",
+      "driver": "Driver",
+      "unverified": "This driver's vehicle has not been checked yet. Match the plate number above against the vehicle before you hand over produce."
+    }
+  },
+
+  "verification": {
+    "pending": "Awaiting check",
+    "verified": "Verified",
+    "rejected": "Not approved"
+  }
+}

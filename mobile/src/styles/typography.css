@@ -3,16 +3,28 @@
    Source of truth: Figma "FarmPool" → Typography frame (node 121:28499) and
    the `font/*` Figma variables. Two families, seven styles. That is all of it.
 
-     Headings  Poppins Bold   H1 30/36 · H2 26/32 · H3 22/28 · H4 18/24
-     Body      Mulish         Large 17/26 · Body 15/22 · Small 13/18
+     Headings  Noto Sans Bold H1 30/36 · H2 26/32 · H3 22/28 · H4 18/24
+     Body      Noto Sans      Large 17/26 · Body 15/22 · Small 13/18
                               (each with a Bold counterpart)
+
+   WHY NOTO AND NOT THE FIGMA FAMILIES (LP-91)
+   Poppins and Mulish contain no Sinhala or Tamil glyphs at all — the shipped
+   TTFs map 471 and 936 glyphs, none in either block — so every translated
+   string rendered as tofu. Noto is the one family group drawn to a single
+   design language across Latin, Sinhala and Tamil, so the app reads as one
+   app in all three. The sizes, line heights and tracking below are unchanged
+   from the Figma type frame; only the family moved.
+
+   The faces here are the LATIN ones. Sinhala and Tamil are applied at
+   runtime by `components/ui/text/index.tsx` via `lib/i18n/fonts.ts`, because
+   a CSS custom property cannot be swapped per locale in React Native.
 
    WHY THE FACE IS NAMED, NOT THE WEIGHT
    On the web, `font-family: Poppins; font-weight: 700` picks the bold cut.
    React Native has no such lookup — Android in particular will take a Regular
    face and *synthesise* a fake bold, which looks visibly wrong next to real
    Poppins Bold. So each token names the exact loaded face
-   (`Poppins_700Bold`), and the `type-*` utilities below deliberately set NO
+   (`NotoSans_700Bold`), and the `type-*` utilities below deliberately set NO
    `font-weight`. Do not add one: it can only make the rendering worse.
 
    The face names must match the keys passed to `useFonts()` in
@@ -23,9 +35,9 @@
   /* Families → `font-heading`, `font-body`, `font-body-bold`.
      Use these only when composing something the `type-*` scale does not cover.
      For anything that came from Figma, use a `type-*` utility instead. */
-  --font-heading: "Poppins_700Bold";
-  --font-body: "Mulish_400Regular";
-  --font-body-bold: "Mulish_700Bold";
+  --font-heading: "NotoSans_700Bold";
+  --font-body: "NotoSans_400Regular";
+  --font-body-bold: "NotoSans_700Bold";
 
   /* Raw size tokens → `text-h1`, `text-body`, … Sizes and metrics only, no
      family. Present so the scale is reachable from a component that sets its

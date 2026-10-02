@@ -19,6 +19,11 @@ export interface Order {
   total: number;
   note?: string;
   status: OrderStatus;
+  /** The driver who accepted this job (FARM-49/54). Written only by the logistics domain, and
+   *  only through this repository — see `api/src/logistics/README.md`. */
+  assignedDriverId?: string;
+  /** What the driver actually loaded (LP-50). Set at pickup; never overwritten. */
+  collectedKg?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,6 +43,12 @@ export function toOrderDto(order: Order): OrderDto {
     total: order.total,
     ...(order.note !== undefined ? { note: order.note } : {}),
     status: order.status,
+    ...(order.assignedDriverId !== undefined
+      ? { assignedDriverId: order.assignedDriverId }
+      : {}),
+    ...(order.collectedKg !== undefined
+      ? { collectedKg: order.collectedKg }
+      : {}),
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),
   };
