@@ -15,6 +15,17 @@ export interface PaymentRepository {
    * when the payment was already released or the held amount has moved since.
    */
   release(orderId: string, entry: PaymentEntry): Promise<Payment | null>;
+  /**
+   * Move the held balance for a renegotiated price (FARM-53): set the new total and held amount
+   * and append `entry`, only while the payment is `in_escrow` and still holds `expectedHeld`.
+   * Resolves `null` when it has been released or changed since the caller read it.
+   */
+  adjust(
+    orderId: string,
+    expectedHeld: number,
+    next: { total: number; heldAmount: number },
+    entry: PaymentEntry,
+  ): Promise<Payment | null>;
   /** Undo a payment whose order turned out not to be payable after all. */
   remove(id: string): Promise<void>;
 }

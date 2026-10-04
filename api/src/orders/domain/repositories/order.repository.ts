@@ -1,5 +1,5 @@
 import type { OrderStatus } from '@farm-pool/shared';
-import type { NewOrder, Order } from '../entities/order';
+import type { NewOrder, Order, PriceProposal } from '../entities/order';
 
 export interface OrderRepository {
   create(order: NewOrder): Promise<Order>;
@@ -44,6 +44,23 @@ export interface OrderRepository {
    * buyer's, is not delivered yet, or was already confirmed — so a second tap changes nothing.
    */
   markReceived(id: string, buyerId: string): Promise<Order | null>;
+  /**
+   * Put a new price to the other side (FARM-53). Written only while the price may still change
+   * (`RENEGOTIABLE_ORDER_STATUSES`) and only if no proposal is already open. Resolves `null`
+   * otherwise.
+   */
+  setPriceProposal(id: string, proposal: PriceProposal): Promise<Order | null>;
+  /**
+   * Answer the open proposal, identified by when it was made so a stale answer cannot settle a
+   * newer one. With `accepted`, the order takes that price and total — only while the price may
+   * still change. Without it, the proposal is just removed. Resolves `null` when that proposal
+   * is no longer the open one, or the order has moved past pickup.
+   */
+  resolvePriceProposal(
+    id: string,
+    proposedAt: Date,
+    accepted?: { pricePerKg: number; total: number },
+  ): Promise<Order | null>;
 }
 
 export const ORDER_REPOSITORY = Symbol('OrderRepository');

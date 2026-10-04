@@ -11,7 +11,13 @@ export type PaymentErrorCode =
   | 'already_paid'
   | 'payment_not_found'
   | 'not_delivered_yet'
-  | 'already_released';
+  | 'already_released'
+  | 'proposal_not_allowed'
+  | 'proposal_pending'
+  | 'no_open_proposal'
+  | 'own_proposal'
+  | 'price_unchanged'
+  | 'price_too_low';
 
 export class PaymentError extends DomainError<PaymentErrorCode> {
   constructor(kind: DomainErrorKind, code: PaymentErrorCode, message: string) {

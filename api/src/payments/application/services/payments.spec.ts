@@ -5,6 +5,8 @@ import { InMemoryPaymentRepository } from '../../infrastructure/persistence/in-m
 import { ConfirmReceipt } from './confirm-receipt';
 import { GetPayment } from './get-payment';
 import { PayForOrder } from './pay-for-order';
+import { ProposePrice } from './propose-price';
+import { RespondToPriceProposal } from './respond-to-price-proposal';
 
 describe('payments', () => {
   let orders: InMemoryOrderRepository;
@@ -12,6 +14,8 @@ describe('payments', () => {
   let pay: PayForOrder;
   let get: GetPayment;
   let confirm: ConfirmReceipt;
+  let propose: ProposePrice;
+  let respond: RespondToPriceProposal;
 
   /** An order in whatever status the test needs: 100 kg at Rs 180, so Rs 18,000. */
   const seedOrder = async (status: OrderStatus, pricePerKg = 180) => {
@@ -35,6 +39,8 @@ describe('payments', () => {
     pay = new PayForOrder(payments, orders, new SimulatedPaymentGateway());
     get = new GetPayment(payments);
     confirm = new ConfirmReceipt(payments, orders);
+    propose = new ProposePrice(payments, orders);
+    respond = new RespondToPriceProposal(payments, orders);
   });
 
   describe('paying for an order', () => {
@@ -238,6 +244,197 @@ describe('payments', () => {
         code: 'payment_not_found',
         kind: 'not_found',
       });
+    });
+  });
+
+  describe('renegotiating the price', () => {
+    /** A paid order: 100 kg at Rs 180, Rs 5,400 advanced and Rs 12,600 held. */
+    const paidOrder = async () => {
+      const orderId = await seedOrder('accepted');
+      await pay.execute('buyer-1', orderId);
+      return orderId;
+    };
+
+    it('records a proposal on the order without changing the price or the money', async () => {
+      const orderId = await paidOrder();
+
+      const order = await propose.execute('farmer-1', orderId, {
+        pricePerKg: 200,
+        reason: 'Dambulla price rose',
+      });
+
+      expect(order).toMatchObject({
+        pricePerKg: 180,
+        total: 18000,
+        priceProposal: {
+          proposedBy: 'farmer',
+          pricePerKg: 200,
+          reason: 'Dambulla price rose',
+        },
+      });
+      expect((await payments.findByOrder(orderId))?.heldAmount).toBe(12600);
+    });
+
+    it('lets either side propose before the buyer has paid', async () => {
+      const orderId = await seedOrder('accepted');
+
+      const order = await propose.execute('buyer-1', orderId, {
+        pricePerKg: 170,
+      });
+
+      expect(order.priceProposal).toMatchObject({ proposedBy: 'buyer' });
+    });
+
+    it.each<OrderStatus>(['requested', 'in_transit', 'delivered', 'cancelled'])(
+      'refuses a proposal on an order that is %s',
+      async (status) => {
+        const orderId = await seedOrder(status);
+
+        await expect(
+          propose.execute('buyer-1', orderId, { pricePerKg: 170 }),
+        ).rejects.toMatchObject({
+          code: 'proposal_not_allowed',
+          kind: 'conflict',
+        });
+      },
+    );
+
+    it('refuses a second proposal while one is waiting', async () => {
+      const orderId = await paidOrder();
+      await propose.execute('farmer-1', orderId, { pricePerKg: 200 });
+
+      await expect(
+        propose.execute('buyer-1', orderId, { pricePerKg: 170 }),
+      ).rejects.toMatchObject({ code: 'proposal_pending', kind: 'conflict' });
+    });
+
+    it('refuses the price the order already has, and anyone not on the order', async () => {
+      const orderId = await paidOrder();
+
+      await expect(
+        propose.execute('buyer-1', orderId, { pricePerKg: 180 }),
+      ).rejects.toMatchObject({ code: 'price_unchanged', kind: 'invalid' });
+      await expect(
+        propose.execute('buyer-2', orderId, { pricePerKg: 170 }),
+      ).rejects.toMatchObject({ code: 'not_your_order', kind: 'forbidden' });
+    });
+
+    it('refuses a price whose total is below the advance the farmer already has', async () => {
+      const orderId = await paidOrder();
+
+      // 100 kg at Rs 50 is Rs 5,000; the farmer already holds Rs 5,400.
+      await expect(
+        propose.execute('buyer-1', orderId, { pricePerKg: 50 }),
+      ).rejects.toMatchObject({ code: 'price_too_low', kind: 'invalid' });
+    });
+
+    it('on accept of a higher price: reprices the order and tops the held balance up', async () => {
+      const orderId = await paidOrder();
+      await propose.execute('farmer-1', orderId, { pricePerKg: 200 });
+
+      const order = await respond.execute('buyer-1', orderId, 'accept');
+
+      expect(order).toMatchObject({ pricePerKg: 200, total: 20000 });
+      expect(order).not.toHaveProperty('priceProposal');
+      const payment = await payments.findByOrder(orderId);
+      expect(payment).toMatchObject({
+        total: 20000,
+        advanceAmount: 5400,
+        heldAmount: 14600,
+        status: 'in_escrow',
+      });
+      expect(payment?.entries.at(-1)).toMatchObject({
+        kind: 'top_up',
+        amount: 2000,
+      });
+    });
+
+    it('on accept of a lower price: refunds the difference from the held balance', async () => {
+      const orderId = await paidOrder();
+      await propose.execute('buyer-1', orderId, { pricePerKg: 150 });
+
+      await respond.execute('farmer-1', orderId, 'accept');
+
+      const payment = await payments.findByOrder(orderId);
+      expect(payment).toMatchObject({
+        total: 15000,
+        advanceAmount: 5400,
+        heldAmount: 9600,
+      });
+      expect(payment?.entries.at(-1)).toMatchObject({
+        kind: 'refund',
+        amount: 3000,
+      });
+    });
+
+    it('releases the renegotiated balance, not the original one, on receipt', async () => {
+      const orderId = await paidOrder();
+      await propose.execute('farmer-1', orderId, { pricePerKg: 200 });
+      await respond.execute('buyer-1', orderId, 'accept');
+      await orders.updateStatus(orderId, 'delivered');
+
+      const payment = await confirm.execute('buyer-1', orderId);
+
+      expect(payment.entries.at(-1)).toMatchObject({
+        kind: 'balance_release',
+        amount: 14600,
+      });
+    });
+
+    it('on accept before payment: reprices the order, and the buyer then pays the new total', async () => {
+      const orderId = await seedOrder('accepted');
+      await propose.execute('farmer-1', orderId, { pricePerKg: 200 });
+      await respond.execute('buyer-1', orderId, 'accept');
+
+      const payment = await pay.execute('buyer-1', orderId);
+
+      expect(payment).toMatchObject({ total: 20000, advanceAmount: 6000 });
+    });
+
+    it('does not let the side that proposed accept its own price', async () => {
+      const orderId = await paidOrder();
+      await propose.execute('farmer-1', orderId, { pricePerKg: 200 });
+
+      await expect(
+        respond.execute('farmer-1', orderId, 'accept'),
+      ).rejects.toMatchObject({ code: 'own_proposal', kind: 'forbidden' });
+      expect((await orders.findById(orderId))?.pricePerKg).toBe(180);
+    });
+
+    it('on decline, by either side: removes the proposal and changes nothing else', async () => {
+      const orderId = await paidOrder();
+      await propose.execute('farmer-1', orderId, { pricePerKg: 200 });
+      const declined = await respond.execute('buyer-1', orderId, 'decline');
+      expect(declined).toMatchObject({ pricePerKg: 180, total: 18000 });
+      expect(declined).not.toHaveProperty('priceProposal');
+
+      // The proposer withdrawing is the same operation.
+      await propose.execute('farmer-1', orderId, { pricePerKg: 210 });
+      const withdrawn = await respond.execute('farmer-1', orderId, 'decline');
+      expect(withdrawn).not.toHaveProperty('priceProposal');
+      expect((await payments.findByOrder(orderId))?.entries).toHaveLength(2);
+    });
+
+    it('refuses an answer when nothing is waiting', async () => {
+      const orderId = await paidOrder();
+
+      await expect(
+        respond.execute('buyer-1', orderId, 'accept'),
+      ).rejects.toMatchObject({ code: 'no_open_proposal', kind: 'conflict' });
+    });
+
+    it('refuses to accept once the produce has been collected', async () => {
+      const orderId = await paidOrder();
+      await propose.execute('farmer-1', orderId, { pricePerKg: 200 });
+      await orders.updateStatus(orderId, 'in_transit');
+
+      await expect(
+        respond.execute('buyer-1', orderId, 'accept'),
+      ).rejects.toMatchObject({
+        code: 'proposal_not_allowed',
+        kind: 'conflict',
+      });
+      expect((await payments.findByOrder(orderId))?.heldAmount).toBe(12600);
     });
   });
 });

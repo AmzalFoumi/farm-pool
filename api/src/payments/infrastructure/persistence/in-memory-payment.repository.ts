@@ -44,6 +44,26 @@ export class InMemoryPaymentRepository implements PaymentRepository {
     return Promise.resolve(snapshot(updated));
   }
 
+  adjust(
+    orderId: string,
+    expectedHeld: number,
+    next: { total: number; heldAmount: number },
+    entry: PaymentEntry,
+  ): Promise<Payment | null> {
+    const row = this.rows.get(orderId);
+    if (!row || row.status !== 'in_escrow' || row.heldAmount !== expectedHeld) {
+      return Promise.resolve(null);
+    }
+    const updated: Payment = {
+      ...row,
+      ...next,
+      entries: [...row.entries, entry],
+      updatedAt: new Date(),
+    };
+    this.rows.set(orderId, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
   remove(id: string): Promise<void> {
     for (const [orderId, row] of this.rows) {
       if (row.id === id) this.rows.delete(orderId);

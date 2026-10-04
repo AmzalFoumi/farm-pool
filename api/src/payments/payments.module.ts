@@ -8,6 +8,8 @@ import { OrdersModule } from '../orders/orders.module';
 import { ConfirmReceipt } from './application/services/confirm-receipt';
 import { GetPayment } from './application/services/get-payment';
 import { PayForOrder } from './application/services/pay-for-order';
+import { ProposePrice } from './application/services/propose-price';
+import { RespondToPriceProposal } from './application/services/respond-to-price-proposal';
 import {
   PAYMENT_GATEWAY,
   type PaymentGateway,
@@ -53,6 +55,18 @@ import { PaymentsController } from './payments.controller';
       inject: [PAYMENT_REPOSITORY, ORDER_REPOSITORY],
       useFactory: (payments: PaymentRepository, orders: OrderRepository) =>
         new ConfirmReceipt(payments, orders),
+    },
+    {
+      provide: ProposePrice,
+      inject: [PAYMENT_REPOSITORY, ORDER_REPOSITORY],
+      useFactory: (payments: PaymentRepository, orders: OrderRepository) =>
+        new ProposePrice(payments, orders),
+    },
+    {
+      provide: RespondToPriceProposal,
+      inject: [PAYMENT_REPOSITORY, ORDER_REPOSITORY],
+      useFactory: (payments: PaymentRepository, orders: OrderRepository) =>
+        new RespondToPriceProposal(payments, orders),
     },
     {
       provide: GetPayment,

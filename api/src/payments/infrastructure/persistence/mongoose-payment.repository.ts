@@ -51,6 +51,22 @@ export class MongoosePaymentRepository implements PaymentRepository {
     return doc ? toPayment(doc) : null;
   }
 
+  async adjust(
+    orderId: string,
+    expectedHeld: number,
+    next: { total: number; heldAmount: number },
+    entry: PaymentEntry,
+  ): Promise<Payment | null> {
+    const doc = await this.payments
+      .findOneAndUpdate(
+        { orderId, status: 'in_escrow', heldAmount: expectedHeld },
+        { $set: next, $push: { entries: entry } },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toPayment(doc) : null;
+  }
+
   async remove(id: string): Promise<void> {
     await this.payments.findByIdAndDelete(id).exec();
   }

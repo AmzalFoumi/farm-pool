@@ -290,4 +290,128 @@ describe('payments (e2e)', () => {
       .expect(409);
     expect(body<ApiErrorBody>(res).code).toBe('already_released');
   });
+
+  describe('price renegotiation (FARM-53)', () => {
+    let renegotiated: string;
+    const proposalUrl = () => `/payments/orders/${renegotiated}/price-proposal`;
+
+    it('POST price-proposal as the farmer on a paid order → 200 with the proposal', async () => {
+      renegotiated = await placeOrder(true);
+      await request(app.getHttpServer())
+        .post(`/payments/orders/${renegotiated}/pay`)
+        .set(as(buyer))
+        .expect(201);
+
+      const res = await request(app.getHttpServer())
+        .post(proposalUrl())
+        .set(as(farmer))
+        .send({ pricePerKg: 250, reason: 'Market moved' })
+        .expect(200);
+      expect(body<Order>(res)).toMatchObject({
+        pricePerKg: 200,
+        priceProposal: { proposedBy: 'farmer', pricePerKg: 250 },
+      });
+    });
+
+    it('POST price-proposal with a bad price → 400 validation_error; as a driver → 403', async () => {
+      const bad = await request(app.getHttpServer())
+        .post(proposalUrl())
+        .set(as(buyer))
+        .send({ pricePerKg: 0 })
+        .expect(400);
+      expect(body<ApiErrorBody>(bad).code).toBe('validation_error');
+
+      const asDriver = await request(app.getHttpServer())
+        .post(proposalUrl())
+        .set(as(driver))
+        .send({ pricePerKg: 250 })
+        .expect(403);
+      expect(body<ApiErrorBody>(asDriver).code).toBe('forbidden');
+    });
+
+    it('POST price-proposal while one is open → 409 proposal_pending', async () => {
+      const res = await request(app.getHttpServer())
+        .post(proposalUrl())
+        .set(as(buyer))
+        .send({ pricePerKg: 180 })
+        .expect(409);
+      expect(body<ApiErrorBody>(res).code).toBe('proposal_pending');
+    });
+
+    it('POST accept as the proposer → 403 own_proposal; as another buyer → 403 not_your_order', async () => {
+      const own = await request(app.getHttpServer())
+        .post(`${proposalUrl()}/accept`)
+        .set(as(farmer))
+        .expect(403);
+      expect(body<ApiErrorBody>(own).code).toBe('own_proposal');
+
+      const other = await request(app.getHttpServer())
+        .post(`${proposalUrl()}/accept`)
+        .set(as(otherBuyer))
+        .expect(403);
+      expect(body<ApiErrorBody>(other).code).toBe('not_your_order');
+    });
+
+    it('POST accept as the buyer → 200 repriced, held balance topped up', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`${proposalUrl()}/accept`)
+        .set(as(buyer))
+        .expect(200);
+      const order = body<Order>(res);
+      expect(order).toMatchObject({ pricePerKg: 250, total: 5000 });
+      expect(order).not.toHaveProperty('priceProposal');
+
+      const payment = await request(app.getHttpServer())
+        .get(`/payments/orders/${renegotiated}`)
+        .set(as(buyer))
+        .expect(200);
+      expect(body<Payment>(payment)).toMatchObject({
+        total: 5000,
+        advanceAmount: 1200,
+        heldAmount: 3800,
+      });
+      expect(body<Payment>(payment).entries.at(-1)).toMatchObject({
+        kind: 'top_up',
+        amount: 1000,
+      });
+    });
+
+    it('POST decline with nothing open → 409 no_open_proposal', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`${proposalUrl()}/decline`)
+        .set(as(buyer))
+        .expect(409);
+      expect(body<ApiErrorBody>(res).code).toBe('no_open_proposal');
+    });
+
+    it('POST price-proposal below the advance → 400 price_too_low; then propose and decline → 200', async () => {
+      const low = await request(app.getHttpServer())
+        .post(proposalUrl())
+        .set(as(buyer))
+        .send({ pricePerKg: 10 })
+        .expect(400);
+      expect(body<ApiErrorBody>(low).code).toBe('price_too_low');
+
+      await request(app.getHttpServer())
+        .post(proposalUrl())
+        .set(as(buyer))
+        .send({ pricePerKg: 220 })
+        .expect(200);
+      const res = await request(app.getHttpServer())
+        .post(`${proposalUrl()}/decline`)
+        .set(as(farmer))
+        .expect(200);
+      expect(body<Order>(res)).toMatchObject({ pricePerKg: 250, total: 5000 });
+      expect(body<Order>(res)).not.toHaveProperty('priceProposal');
+    });
+
+    it('POST price-proposal on a delivered order → 409 proposal_not_allowed', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/payments/orders/${orderId}/price-proposal`)
+        .set(as(buyer))
+        .send({ pricePerKg: 150 })
+        .expect(409);
+      expect(body<ApiErrorBody>(res).code).toBe('proposal_not_allowed');
+    });
+  });
 });
