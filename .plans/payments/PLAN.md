@@ -145,10 +145,13 @@ Then as the seed farmer, opening the order by link (there is no farmer order lis
   it and changed nothing; Accept made the total Rs 16,000 and the held amount Rs 10,600
 - the farmer's receipt reads "The buyer paid…", "You received Rs 5,400 as an advance.",
   "Rs 2,000 was returned to the buyer because the price went down."
+- after the buyer confirms receipt, the farmer's card reads "Paid in full", Rs 0 held, "You have
+  been paid in full for this order.", and the receipt adds "You received Rs 12,600 after the
+  buyer confirmed the order arrived."
 
 And the pay sheet and the confirm-receipt sheet in dark mode, as the buyer.
 
-**Not seen:** the farmer's receipt after the balance is released, anything in Sinhala or Tamil,
+**Not seen:** anything in Sinhala or Tamil,
 and the browser build, which does not load at all
 (`Unable to resolve module …/rndevtools/ReactDevToolsSettingsManager`, cause not found).
 
