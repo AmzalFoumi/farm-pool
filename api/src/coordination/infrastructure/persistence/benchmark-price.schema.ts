@@ -15,7 +15,7 @@ import type { BenchmarkPriceSource, CropId } from '@farm-pool/shared';
   timestamps: { createdAt: false, updatedAt: false },
 })
 export class BenchmarkPriceDocument {
-  @Prop({ required: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   cropId: CropId;
 
   @Prop({ required: true, trim: true, index: true })
@@ -27,7 +27,7 @@ export class BenchmarkPriceDocument {
   @Prop({ required: true })
   highPricePerKg: number;
 
-  @Prop({ required: true, enum: ['manual', 'regional_index'] })
+  @Prop({ type: String, required: true, enum: ['manual', 'regional_index'] })
   source: BenchmarkPriceSource;
 
   @Prop({ required: true })
