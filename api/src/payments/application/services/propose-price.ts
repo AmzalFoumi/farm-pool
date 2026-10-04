@@ -1,5 +1,6 @@
 import {
   RENEGOTIABLE_ORDER_STATUSES,
+  toCents,
   type Order,
   type ProposePriceData,
 } from '@farm-pool/shared';
@@ -69,7 +70,7 @@ export class ProposePrice {
     await assertCoversAdvance(
       this.payments,
       orderId,
-      order.quantityKg * data.pricePerKg,
+      toCents(order.quantityKg * data.pricePerKg),
     );
 
     const updated = await this.orders.setPriceProposal(orderId, {

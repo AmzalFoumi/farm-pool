@@ -367,6 +367,19 @@ describe('payments', () => {
       });
     });
 
+    it('rounds a repriced total to whole cents, so advance and held still add up', async () => {
+      const orderId = await paidOrder();
+      // 100 × 64.01 is 6401.000000000001 in floating point.
+      await propose.execute('buyer-1', orderId, { pricePerKg: 64.01 });
+
+      const order = await respond.execute('farmer-1', orderId, 'accept');
+
+      expect(order.total).toBe(6401);
+      const payment = await payments.findByOrder(orderId);
+      expect(payment?.total).toBe(6401);
+      expect(payment!.advanceAmount + payment!.heldAmount).toBe(6401);
+    });
+
     it('releases the renegotiated balance, not the original one, on receipt', async () => {
       const orderId = await paidOrder();
       await propose.execute('farmer-1', orderId, { pricePerKg: 200 });

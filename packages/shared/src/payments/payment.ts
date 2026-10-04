@@ -19,7 +19,12 @@ import { z } from "zod";
 /** The share of the total released to the farmer the moment the buyer pays. */
 export const ADVANCE_RATE = 0.3;
 
-const toCents = (rupees: number) => Math.round(rupees * 100) / 100;
+/**
+ * Round an amount of rupees to whole cents. A total is a quantity times a price, and that product
+ * is not always exact in floating point (100 × 1.1 is 110.00000000000001), so every total is put
+ * through this before it is stored or compared.
+ */
+export const toCents = (rupees: number): number => Math.round(rupees * 100) / 100;
 
 /**
  * Split a total into the advance and the part that stays held. The held part is the remainder,

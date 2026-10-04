@@ -1,4 +1,8 @@
-import { RENEGOTIABLE_ORDER_STATUSES, type Order } from '@farm-pool/shared';
+import {
+  RENEGOTIABLE_ORDER_STATUSES,
+  toCents,
+  type Order,
+} from '@farm-pool/shared';
 import { toOrderDto } from '../../../orders/domain/entities/order';
 import type { OrderRepository } from '../../../orders/domain/repositories/order.repository';
 import { newEntry } from '../../domain/entities/payment';
@@ -75,7 +79,7 @@ export class RespondToPriceProposal {
       );
     }
 
-    const newTotal = order.quantityKg * proposal.pricePerKg;
+    const newTotal = toCents(order.quantityKg * proposal.pricePerKg);
     await assertCoversAdvance(this.payments, orderId, newTotal);
 
     /* The order is claimed first, on the exact proposal read above and only while the price may
@@ -107,8 +111,6 @@ export class RespondToPriceProposal {
     return toOrderDto(repriced);
   }
 }
-
-const toCents = (rupees: number) => Math.round(rupees * 100) / 100;
 
 function noOpenProposal(): PaymentError {
   return new PaymentError(
