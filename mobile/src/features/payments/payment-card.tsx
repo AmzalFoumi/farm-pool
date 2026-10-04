@@ -1,6 +1,8 @@
 import type { Payment } from "@farm-pool/shared";
 
 import { HStack } from "@/components/ui/hstack";
+import { ChevronRightIcon, Icon } from "@/components/ui/icon";
+import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { PaymentStatusPill } from "@/features/orders/status-pill";
@@ -16,12 +18,14 @@ import { formatPrice } from "@/lib/format";
 export function PaymentCard({
   payment,
   viewer,
-  farmerName
+  farmerName,
+  onViewReceipt
 }: {
   payment: Payment;
   /** Which side of the deal is reading. Decides the wording, never the numbers. */
   viewer: "buyer" | "farmer";
   farmerName: string;
+  onViewReceipt: () => void;
 }) {
   const paidOut = payment.total - payment.heldAmount;
   const farmer = viewer === "farmer";
@@ -59,6 +63,15 @@ export function PaymentCard({
             <Text className="type-body-bold flex-1 text-right text-foreground">{value}</Text>
           </HStack>
         ))}
+        {/* The whole row is the tap target, not the chevron. */}
+        <Pressable
+          onPress={onViewReceipt}
+          accessibilityRole="button"
+          className="min-h-tap flex-row items-center justify-between border-t border-border pt-3 active:opacity-80"
+        >
+          <Text className="type-body-bold text-primary">View receipt</Text>
+          <Icon as={ChevronRightIcon} className="h-5 w-5 text-primary" />
+        </Pressable>
       </VStack>
 
       <Text className="type-caption text-muted-foreground">{note}</Text>

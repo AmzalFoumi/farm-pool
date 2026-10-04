@@ -73,6 +73,7 @@ function OrderBody({
 }) {
   const crop = cropById(order.cropId);
   const { user } = useAuth();
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
@@ -99,6 +100,18 @@ function OrderBody({
     payment.data.status === "in_escrow"
       ? payment.data
       : null;
+
+  const openReceipt = () =>
+    router.push({ pathname: "/receipt/[orderId]", params: { orderId: order.id } });
+
+  /* Straight to the receipt after money moves (FARM-48): the research's farmer wanted an
+     immediate confirmation, and a buyer who has just paid should see proof before anything
+     else. The order behind it is reloaded so "back" lands on the new state. */
+  const afterMoneyMoved = () => {
+    payment.reload();
+    onChanged();
+    openReceipt();
+  };
 
   const cancel = async () => {
     setBusy(true);
@@ -157,7 +170,12 @@ function OrderBody({
         <AssignedDriverCard token={token} orderId={order.id} />
 
         {payment.status === "ready" ? (
-          <PaymentCard payment={payment.data} viewer={viewer} farmerName={order.farmerName} />
+          <PaymentCard
+            payment={payment.data}
+            viewer={viewer}
+            farmerName={order.farmerName}
+            onViewReceipt={openReceipt}
+          />
         ) : null}
 
         {order.status === "requested" ? (
@@ -213,10 +231,7 @@ function OrderBody({
             payment={heldPayment}
             token={token}
             bottomInset={bottomInset}
-            onConfirmed={() => {
-              payment.reload();
-              onChanged();
-            }}
+            onConfirmed={afterMoneyMoved}
           />
         </>
       ) : null}
@@ -227,10 +242,7 @@ function OrderBody({
         order={order}
         token={token}
         bottomInset={bottomInset}
-        onPaid={() => {
-          payment.reload();
-          onChanged();
-        }}
+        onPaid={afterMoneyMoved}
       />
     </>
   );

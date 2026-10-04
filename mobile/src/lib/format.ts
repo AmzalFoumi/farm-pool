@@ -14,3 +14,11 @@ export function formatDate(isoDate: string) {
     timeZone: "UTC"
   });
 }
+
+/** `2026-10-04T08:12:00.000Z` → `1:42 pm`, in the phone's own time zone: a receipt is read by
+ *  the person who was there, and "when" means their clock. */
+export function formatTime(isoDateTime: string) {
+  const at = new Date(isoDateTime);
+  if (Number.isNaN(at.getTime())) return "";
+  return at.toLocaleTimeString("en-GB", { hour: "numeric", minute: "2-digit", hour12: true });
+}
