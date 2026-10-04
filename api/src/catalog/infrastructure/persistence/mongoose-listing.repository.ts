@@ -63,6 +63,14 @@ export class MongooseListingRepository implements ListingRepository {
     return docs.map(toListing);
   }
 
+  async update(id: string, updates: Partial<Listing>): Promise<Listing> {
+    const doc = await this.listings
+      .findOneAndUpdate({ _id: id }, { $set: updates }, { new: true })
+      .exec();
+    if (!doc) throw new Error('Not found');
+    return toListing(doc);
+  }
+
   async create(listing: NewListing): Promise<Listing> {
     const created = await this.listings.create({
       ...listing,

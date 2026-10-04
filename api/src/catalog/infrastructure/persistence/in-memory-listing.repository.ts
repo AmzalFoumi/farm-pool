@@ -63,6 +63,14 @@ export class InMemoryListingRepository implements ListingRepository {
     return Promise.resolve(snapshot(row));
   }
 
+  update(id: string, updates: Partial<Listing>): Promise<Listing> {
+    const row = this.rows.get(id);
+    if (!row) return Promise.reject(new Error('Not found'));
+    const updated = { ...row, ...updates, updatedAt: new Date() };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
   upsertBySeedKey(seedKey: string, listing: NewListing): Promise<Listing> {
     const existing = [...this.rows.values()].find((l) => l.seedKey === seedKey);
     const now = new Date();

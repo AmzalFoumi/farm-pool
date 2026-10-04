@@ -180,6 +180,11 @@ export default function FarmerListingsScreen() {
         isOpen={isActionSheetOpen}
         onClose={() => setIsActionSheetOpen(false)}
         listing={selectedListing}
+        onEdit={() => {
+          if (selectedListing) {
+            router.push(`/(farmer)/listings/${selectedListing.id}/edit` as any);
+          }
+        }}
       />
     </View>
   );

@@ -24,6 +24,7 @@ export interface ListingRepository {
   findByFarmerId(farmerId: string): Promise<Listing[]>;
   /** Farmer listing creation (FARM-21). */
   create(listing: NewListing): Promise<Listing>;
+  update(id: string, listing: Partial<Listing>): Promise<Listing>;
   upsertBySeedKey(seedKey: string, listing: NewListing): Promise<Listing>;
 }
 
