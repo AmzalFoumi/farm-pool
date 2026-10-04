@@ -77,6 +77,16 @@ export class InMemoryOrderRepository implements OrderRepository {
     );
   }
 
+  markPaid(id: string, buyerId: string): Promise<Order | null> {
+    const row = this.rows.get(id);
+    if (!row || row.buyerId !== buyerId || row.status !== 'accepted') {
+      return Promise.resolve(null);
+    }
+    const updated: Order = { ...row, status: 'open', updatedAt: new Date() };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
   /** Mirrors the Mongo filter-as-guard: driver and stage are checked as part of the write. */
   private claim(
     id: string,

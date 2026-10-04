@@ -94,6 +94,18 @@ export class MongooseOrderRepository implements OrderRepository {
     return doc ? toOrder(doc) : null;
   }
 
+  async markPaid(id: string, buyerId: string): Promise<Order | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.orders
+      .findOneAndUpdate(
+        { _id: id, buyerId, status: 'accepted' },
+        { status: 'open' },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toOrder(doc) : null;
+  }
+
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {
     const doc = await this.orders
       .findByIdAndUpdate(id, { status }, { returnDocument: 'after' })

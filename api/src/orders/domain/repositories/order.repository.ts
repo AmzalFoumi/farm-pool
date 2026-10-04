@@ -32,6 +32,12 @@ export interface OrderRepository {
   ): Promise<Order | null>;
   /** The driver confirms drop-off (LP-52): `in_transit` → `delivered`. Same filter-as-guard. */
   recordDelivery(id: string, driverId: string): Promise<Order | null>;
+  /**
+   * The buyer has paid (FARM-41): `accepted` → `open`, which is what puts the order on the
+   * driver job board. Matches on the buyer *and* the status in one operation. Resolves `null`
+   * when the order is not this buyer's or is not waiting to be paid for.
+   */
+  markPaid(id: string, buyerId: string): Promise<Order | null>;
 }
 
 export const ORDER_REPOSITORY = Symbol('OrderRepository');
