@@ -33,9 +33,11 @@ split; the held part is the remainder, so the two always add back up to the tota
 **Entries are append-only.** Each movement of money is one entry with its own receipt number. A
 receipt is those entries read back in order; there is no second stored document to disagree.
 
-**Confirming receipt releases once.** The order is stamped `receivedAt` first, which can happen
-only once, and the release then matches on the amount that was read. The sum released is the
-agreed balance; it is not reduced for a short load (`collectedKg`) — that is a dispute.
+**Confirming receipt releases once.** The release is the claim: it matches on `in_escrow` and on
+the amount that was read, so it can happen once. The order is stamped `receivedAt` after it. If
+the stamp fails, the next confirmation finds the payment released and the order unstamped, and
+finishes the stamp instead of refusing. The sum released is the agreed balance; it is not reduced
+for a short load (`collectedKg`) — that is a dispute.
 
 **A renegotiated price moves only the held part.** Either side proposes; the other accepts or
 declines; one proposal at a time; only while the order is `accepted`, `open` or `assigned`. On

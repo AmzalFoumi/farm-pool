@@ -42,7 +42,15 @@ export class ConfirmReceipt {
         'This order has not been paid for yet',
       );
     }
-    if (payment.status === 'released') throw alreadyReleased();
+    if (payment.status === 'released') {
+      /* The money left on an earlier try but the stamp on the order did not land. Finish that
+         try rather than refuse it: nothing more is paid, the order just catches up. */
+      if (order.status === 'delivered' && order.receivedAt === undefined) {
+        await this.orders.markReceived(orderId, buyerId);
+        return toPaymentDto(payment);
+      }
+      throw alreadyReleased();
+    }
     if (order.status !== 'delivered') {
       throw new PaymentError(
         'conflict',
@@ -51,16 +59,16 @@ export class ConfirmReceipt {
       );
     }
 
-    /* The stamp on the order is the claim: it can be taken once. The release then matches on the
-       amount read above, so the sum that leaves is the sum this request decided on. */
-    const received = await this.orders.markReceived(orderId, buyerId);
-    if (!received) throw alreadyReleased();
-
+    /* The release is the claim: it matches on `in_escrow` and on the amount read above, so it can
+       happen once and only for the sum this request decided on. The order is stamped after it.
+       The other way round, a release that failed after the stamp would leave the balance held
+       with no request able to release it. */
     const released = await this.payments.release(
       orderId,
       newEntry('balance_release', payment.heldAmount, new Date()),
     );
     if (!released) throw alreadyReleased();
+    await this.orders.markReceived(orderId, buyerId);
     return toPaymentDto(released);
   }
 }

@@ -227,6 +227,41 @@ describe('payments', () => {
       expect((await payments.findByOrder(orderId))?.entries).toHaveLength(3);
     });
 
+    it('leaves the order unstamped when the release fails, so a retry still releases', async () => {
+      const orderId = await paidOrder('delivered');
+      jest
+        .spyOn(payments, 'release')
+        .mockRejectedValueOnce(new Error('database down'));
+
+      await expect(confirm.execute('buyer-1', orderId)).rejects.toThrow(
+        'database down',
+      );
+      expect((await orders.findById(orderId))?.receivedAt).toBeUndefined();
+
+      const payment = await confirm.execute('buyer-1', orderId);
+
+      expect(payment).toMatchObject({ status: 'released', heldAmount: 0 });
+      expect((await orders.findById(orderId))?.receivedAt).toBeInstanceOf(Date);
+    });
+
+    it('finishes the stamp on a retry when it failed after the release', async () => {
+      const orderId = await paidOrder('delivered');
+      jest
+        .spyOn(orders, 'markReceived')
+        .mockRejectedValueOnce(new Error('database down'));
+
+      await expect(confirm.execute('buyer-1', orderId)).rejects.toThrow(
+        'database down',
+      );
+      expect((await payments.findByOrder(orderId))?.status).toBe('released');
+
+      const payment = await confirm.execute('buyer-1', orderId);
+
+      expect(payment).toMatchObject({ status: 'released', heldAmount: 0 });
+      expect(payment.entries).toHaveLength(3);
+      expect((await orders.findById(orderId))?.receivedAt).toBeInstanceOf(Date);
+    });
+
     it('refuses anyone but the buyer, including the farmer who is owed the money', async () => {
       const orderId = await paidOrder('delivered');
 
