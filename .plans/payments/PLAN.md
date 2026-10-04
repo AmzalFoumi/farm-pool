@@ -99,26 +99,36 @@ requested ─farmer(FARM-46)─▶ accepted ─BUYER PAYS (FARM-41)─▶ open �
 - [x] `api/src/payments/README.md`
 
 **Gate 3 — mobile pay (FARM-41)**
-- [ ] `features/payments/api.ts`, `pay-sheet.tsx`, `payment-card.tsx`, `PaymentStatusPill`
-- [ ] Order screen: "Pay Rs X" for the buyer on an `accepted` order
-- [ ] Dev-only seed script for an `accepted` order, only if FARM-46 is not merged yet
-- [ ] `tsc` and lint clean; tap targets 48dp; dark mode checked
+- [x] `features/payments/api.ts`, `pay-sheet.tsx`, `payment-card.tsx`, `PaymentStatusPill`
+- [x] Order screen: "Pay Rs X" for the buyer on an `accepted` order
+- [x] Dev-only seed for an `accepted` order: `npm run seed:demo-order -w api`
+- [x] `tsc` and lint clean on the changed files; tap targets 48dp
+- [ ] Seen running, in light and dark mode (not done: see "Not yet verified")
 
 **Gate 4 — confirm receipt (FARM-51)**
-- [ ] `ORDER_REPOSITORY.markReceived`; `ConfirmReceipt` use-case and endpoint; tests
-- [ ] Order screen: "Confirm I received it" on a `delivered` order; card shows released
+- [x] `ORDER_REPOSITORY.markReceived`; `ConfirmReceipt` use-case and endpoint; tests
+- [x] Order screen: "Confirm I received it" on a `delivered` order; card shows released
 
 **Gate 5 — receipt (FARM-48)**
-- [ ] `app/receipt/[orderId].tsx`, registered in `_layout.tsx`; buyer and farmer wording
-- [ ] Opens straight after paying and after confirming; "View receipt" row on the order screen
+- [x] `app/receipt/[orderId].tsx`, registered in `_layout.tsx`; buyer and farmer wording
+- [x] Opens straight after paying and after confirming; "View receipt" row on the order screen
 
 **Gate 6 — renegotiation (FARM-53)**
-- [ ] `setPriceProposal` / `resolvePriceProposal`; `ProposePrice`, `RespondToPriceProposal`; tests
-- [ ] Held amount adjusted with a `top_up` or `refund` entry when money is already in escrow
-- [ ] `price-proposal-card.tsx` on the order screen
+- [x] `setPriceProposal` / `resolvePriceProposal`; `ProposePrice`, `RespondToPriceProposal`; tests
+- [x] Held amount adjusted with a `top_up` or `refund` entry when money is already in escrow
+- [x] `price-proposal-card.tsx` on the order screen
 
 **Gate 7 — docs**
-- [ ] `DECISIONS.md`, `DATA-MODEL.md`, `auth/README.md`, `orders/README.md`
+- [x] `DECISIONS.md`, `DATA-MODEL.md`, `auth/README.md`, `orders/README.md`
+
+## Not yet verified
+
+**No screen in this work has been seen running.** The browser build of the app fails to load
+with `Unable to resolve module …/rndevtools/ReactDevToolsSettingsManager` from inside
+`react-native`, before any screen renders, and no phone or emulator was attached. The cause was
+not found; a browser stand-in for the driver map did not fix it, so it is not that. The api is
+covered by tests; the screens are covered only by the type checker and the linter. Step 5 below
+is still to do.
 
 ## Verification
 
