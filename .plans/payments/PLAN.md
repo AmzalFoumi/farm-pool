@@ -135,11 +135,26 @@ database, as the seed buyer:
   "Paid in full", Rs 0 held; a second confirm is refused with `already_released`
 - the order screen and the receipt in dark mode
 
-**Not seen:** the farmer's side of these screens (their wording, and Accept / Decline on a
-proposal — the farmer's answer and the driver's steps were sent over HTTP), the two sheets in
-dark mode, and anything in Sinhala or Tamil. The browser build of the app does not load at all
-(`Unable to resolve module …/rndevtools/ReactDevToolsSettingsManager`, cause not found), so none
-of this was checked on web.
+Then as the seed farmer, opening the order by link (there is no farmer order list until FARM-46):
+
+- an accepted, unpaid order shows "You accepted. A driver is booked once the buyer pays." and no
+  Pay button
+- a paid order shows the payment card in the farmer's words ("Buyer paid", "Paid to you",
+  "Rs 12,600 is held for you…")
+- a buyer's proposal of Rs 160 / kg shows with its reason, Accept and Decline. Decline removed
+  it and changed nothing; Accept made the total Rs 16,000 and the held amount Rs 10,600
+- the farmer's receipt reads "The buyer paid…", "You received Rs 5,400 as an advance.",
+  "Rs 2,000 was returned to the buyer because the price went down."
+
+And the pay sheet and the confirm-receipt sheet in dark mode, as the buyer.
+
+**Not seen:** the farmer's receipt after the balance is released, anything in Sinhala or Tamil,
+and the browser build, which does not load at all
+(`Unable to resolve module …/rndevtools/ReactDevToolsSettingsManager`, cause not found).
+
+**Found on the way, in shared components rather than in this work:** in dark mode the back
+arrow in `AppBar` is invisible, and the label of `AppButton`'s `outline` variant ("Not yet",
+"Decline", "Withdraw", "Cancel") is dark green on a dark card and hard to read.
 
 ## Verification
 
