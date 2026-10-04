@@ -1,5 +1,5 @@
 import type { OrderStatus } from '@farm-pool/shared';
-import type { NewOrder, Order } from '../entities/order';
+import type { NewOrder, Order, PriceProposal } from '../entities/order';
 
 export interface OrderRepository {
   create(order: NewOrder): Promise<Order>;
@@ -32,6 +32,40 @@ export interface OrderRepository {
   ): Promise<Order | null>;
   /** The driver confirms drop-off (LP-52): `in_transit` → `delivered`. Same filter-as-guard. */
   recordDelivery(id: string, driverId: string): Promise<Order | null>;
+  /**
+   * The buyer has paid (FARM-41): `accepted` → `open`, which is what puts the order on the
+   * driver job board. Matches on the buyer, the status *and* the total that was paid in one
+   * operation. Resolves `null` when the order is not this buyer's, is not waiting to be paid
+   * for, or was repriced (FARM-53) after the caller read it.
+   */
+  markPaid(
+    id: string,
+    buyerId: string,
+    expectedTotal: number,
+  ): Promise<Order | null>;
+  /**
+   * The buyer confirms the produce arrived (FARM-51): stamps `receivedAt` on a `delivered` order
+   * that has none. The status stays `delivered`. Resolves `null` when the order is not this
+   * buyer's, is not delivered yet, or was already confirmed — so a second tap changes nothing.
+   */
+  markReceived(id: string, buyerId: string): Promise<Order | null>;
+  /**
+   * Put a new price to the other side (FARM-53). Written only while the price may still change
+   * (`RENEGOTIABLE_ORDER_STATUSES`) and only if no proposal is already open. Resolves `null`
+   * otherwise.
+   */
+  setPriceProposal(id: string, proposal: PriceProposal): Promise<Order | null>;
+  /**
+   * Answer the open proposal, identified by when it was made so a stale answer cannot settle a
+   * newer one. With `accepted`, the order takes that price and total — only while the price may
+   * still change. Without it, the proposal is just removed. Resolves `null` when that proposal
+   * is no longer the open one, or the order has moved past pickup.
+   */
+  resolvePriceProposal(
+    id: string,
+    proposedAt: Date,
+    accepted?: { pricePerKg: number; total: number },
+  ): Promise<Order | null>;
 }
 
 export const ORDER_REPOSITORY = Symbol('OrderRepository');

@@ -3,6 +3,7 @@ import type {
   DriverVerification,
   ListingStatus,
   OrderStatus,
+  PaymentStatus,
   WantedStatus
 } from "@farm-pool/shared";
 
@@ -57,6 +58,13 @@ const DRIVER: Record<DriverVerification, { label: string; tone: string }> = {
   rejected: { label: "Not approved", tone: "destructive" }
 };
 
+/* The money on an order (FARM-41). Held is `info`, like an order on the move: nothing is wrong
+   and nothing is finished. Paid out in full is `success`. */
+const PAYMENT: Record<PaymentStatus, { label: string; tone: string }> = {
+  in_escrow: { label: "Held safely", tone: "info" },
+  released: { label: "Paid in full", tone: "success" }
+};
+
 /* Written out in full so UniWind can see every class name at build time. */
 const TONE: Record<string, { box: string; text: string }> = {
   warning: { box: "bg-warning-subtle", text: "text-warning" },
@@ -93,6 +101,10 @@ export function CallStatusPill({ status }: { status: CallStatus }) {
 
 export function DriverVerificationPill({ status }: { status: DriverVerification }) {
   return <Pill {...DRIVER[status]} />;
+}
+
+export function PaymentStatusPill({ status }: { status: PaymentStatus }) {
+  return <Pill {...PAYMENT[status]} />;
 }
 
 export function orderStatusLabel(status: OrderStatus) {

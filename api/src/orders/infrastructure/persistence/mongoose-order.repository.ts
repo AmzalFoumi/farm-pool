@@ -1,8 +1,13 @@
+import { RENEGOTIABLE_ORDER_STATUSES } from '@farm-pool/shared';
 import type { OrderStatus } from '@farm-pool/shared';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import type { NewOrder, Order } from '../../domain/entities/order';
+import type {
+  NewOrder,
+  Order,
+  PriceProposal,
+} from '../../domain/entities/order';
 import type { OrderRepository } from '../../domain/repositories/order.repository';
 import { ORDER_MODEL, OrderDocument, type OrderHydrated } from './order.schema';
 
@@ -94,6 +99,81 @@ export class MongooseOrderRepository implements OrderRepository {
     return doc ? toOrder(doc) : null;
   }
 
+  async markPaid(
+    id: string,
+    buyerId: string,
+    expectedTotal: number,
+  ): Promise<Order | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.orders
+      .findOneAndUpdate(
+        { _id: id, buyerId, status: 'accepted', total: expectedTotal },
+        { status: 'open' },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toOrder(doc) : null;
+  }
+
+  async markReceived(id: string, buyerId: string): Promise<Order | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.orders
+      .findOneAndUpdate(
+        {
+          _id: id,
+          buyerId,
+          status: 'delivered',
+          receivedAt: { $exists: false },
+        },
+        { receivedAt: new Date() },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toOrder(doc) : null;
+  }
+
+  async setPriceProposal(
+    id: string,
+    proposal: PriceProposal,
+  ): Promise<Order | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.orders
+      .findOneAndUpdate(
+        {
+          _id: id,
+          status: { $in: RENEGOTIABLE_ORDER_STATUSES },
+          priceProposal: { $exists: false },
+        },
+        { $set: { priceProposal: proposal } },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toOrder(doc) : null;
+  }
+
+  async resolvePriceProposal(
+    id: string,
+    proposedAt: Date,
+    accepted?: { pricePerKg: number; total: number },
+  ): Promise<Order | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.orders
+      .findOneAndUpdate(
+        {
+          _id: id,
+          'priceProposal.proposedAt': proposedAt,
+          ...(accepted ? { status: { $in: RENEGOTIABLE_ORDER_STATUSES } } : {}),
+        },
+        {
+          $unset: { priceProposal: 1 },
+          ...(accepted ? { $set: accepted } : {}),
+        },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toOrder(doc) : null;
+  }
+
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {
     const doc = await this.orders
       .findByIdAndUpdate(id, { status }, { returnDocument: 'after' })
@@ -121,6 +201,19 @@ function toOrder(doc: OrderHydrated): Order {
       : {}),
     ...(typeof doc.collectedKg === 'number'
       ? { collectedKg: doc.collectedKg }
+      : {}),
+    ...(doc.receivedAt instanceof Date ? { receivedAt: doc.receivedAt } : {}),
+    ...(doc.priceProposal
+      ? {
+          priceProposal: {
+            proposedBy: doc.priceProposal.proposedBy,
+            pricePerKg: doc.priceProposal.pricePerKg,
+            ...(typeof doc.priceProposal.reason === 'string'
+              ? { reason: doc.priceProposal.reason }
+              : {}),
+            proposedAt: doc.priceProposal.proposedAt,
+          },
+        }
       : {}),
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,

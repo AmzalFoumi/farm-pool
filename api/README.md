@@ -29,6 +29,7 @@ listings, safe to re-run.
 | `npm test -w api` | Unit tests: use-cases over in-memory repositories, guards, hasher, signer |
 | `npm run test:e2e -w api` | HTTP tests against an in-memory MongoDB (`mongodb-memory-server`, ~100 MB download on first run) |
 | `npm run seed:listings -w api` | Dev seed; refuses to run with `NODE_ENV=production` |
+| `npm run seed:demo-order -w api` | Dev seed: a buyer (`+94771000002`), the seed farmer and one `accepted` order to pay. Temporary, until FARM-46 |
 
 After editing `packages/shared/src`, run `npm run build -w @farm-pool/shared` first: this
 workspace compiles against the built `dist/`.

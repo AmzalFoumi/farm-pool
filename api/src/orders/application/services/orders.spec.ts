@@ -53,6 +53,19 @@ describe('orders', () => {
     expect(order).not.toHaveProperty('note');
   });
 
+  it('rounds the total to whole cents', async () => {
+    // 100 × 64.01 is 6401.000000000001 in floating point.
+    const id = (await listings.seed({ ...listingFields, pricePerKg: 64.01 }))
+      .id;
+
+    const order = await place.execute('buyer-1', {
+      listingId: id,
+      quantityKg: 100,
+    });
+
+    expect(order.total).toBe(6401);
+  });
+
   it('does not touch the listing quantity', async () => {
     await place.execute('buyer-1', { listingId, quantityKg: 25 });
     expect((await listings.findById(listingId))?.quantityKg).toBe(100);

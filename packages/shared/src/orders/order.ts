@@ -52,6 +52,32 @@ export const placeOrderSchema = z.object({
 export type PlaceOrderInput = z.input<typeof placeOrderSchema>;
 export type PlaceOrderData = z.output<typeof placeOrderSchema>;
 
+/**
+ * A new price one side has put to the other before pickup (FARM-53). At most one is open on an
+ * order at a time; the side that did not propose it accepts or declines, and either answer
+ * removes it. Accepting rewrites `pricePerKg` and `total`.
+ */
+export const priceProposalSchema = z.object({
+  proposedBy: z.enum(["buyer", "farmer"]),
+  pricePerKg: pricePerKgSchema,
+  reason: z.string().optional(),
+  proposedAt: z.iso.datetime()
+});
+
+export type PriceProposal = z.infer<typeof priceProposalSchema>;
+
+/** What either side sends to propose a new price. Who is proposing comes from the token. */
+export const proposePriceSchema = z.object({
+  pricePerKg: pricePerKgSchema,
+  reason: z.string().trim().max(280, "Keep the reason under 280 characters").optional()
+});
+
+export type ProposePriceInput = z.input<typeof proposePriceSchema>;
+export type ProposePriceData = z.output<typeof proposePriceSchema>;
+
+/** A price can be renegotiated until the produce is on the vehicle. */
+export const RENEGOTIABLE_ORDER_STATUSES: readonly OrderStatus[] = ["accepted", "open", "assigned"];
+
 export const orderSchema = z.object({
   id: z.string(),
   buyerId: z.string(),
@@ -79,6 +105,13 @@ export const orderSchema = z.object({
    * what moved.
    */
   collectedKg: kgSchema.optional(),
+  /**
+   * When the buyer confirmed the produce arrived (FARM-51). Deliberately a timestamp beside
+   * `delivered` rather than a status after it: the driver's half of the lifecycle ends at
+   * `delivered`, and whether the held money was released is the payment's to say.
+   */
+  receivedAt: z.iso.datetime().optional(),
+  priceProposal: priceProposalSchema.optional(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime()
 });

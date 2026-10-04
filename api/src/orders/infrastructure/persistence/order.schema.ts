@@ -3,6 +3,24 @@ import type { CropId, OrderStatus } from '@farm-pool/shared';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { HydratedDocument } from 'mongoose';
 
+/** A price waiting for an answer (FARM-53). Embedded: it is never read without its order. */
+@Schema({ _id: false })
+export class PriceProposalDocument {
+  @Prop({ type: String, required: true, enum: ['buyer', 'farmer'] })
+  proposedBy: 'buyer' | 'farmer';
+
+  @Prop({ required: true, min: 0 })
+  pricePerKg: number;
+
+  @Prop({ required: false, trim: true })
+  reason?: string;
+
+  @Prop({ required: true })
+  proposedAt: Date;
+}
+
+const PriceProposalSchema = SchemaFactory.createForClass(PriceProposalDocument);
+
 /** Storage shape of an order in the `orders` collection. One line per order. */
 @Schema({ collection: 'orders', timestamps: true })
 export class OrderDocument {
@@ -50,6 +68,14 @@ export class OrderDocument {
   /** What the driver actually loaded at the gate (LP-50); may differ from `quantityKg`. */
   @Prop({ required: false, min: 1 })
   collectedKg?: number;
+
+  /** When the buyer confirmed receipt (FARM-51). Absent until they do. */
+  @Prop({ required: false })
+  receivedAt?: Date;
+
+  /** Absent unless a new price is waiting for an answer. */
+  @Prop({ type: PriceProposalSchema, required: false })
+  priceProposal?: PriceProposalDocument;
 
   createdAt: Date;
   updatedAt: Date;

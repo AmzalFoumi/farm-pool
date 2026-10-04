@@ -7,6 +7,7 @@ import { DatabaseModule } from './database/database.module';
 import { IdentityModule } from './identity/identity.module';
 import { CatalogModule } from './catalog/catalog.module';
 import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
 import { CallsModule } from './calls/calls.module';
 import { LogisticsModule } from './logistics/logistics.module';
 import { CoordinationModule } from './coordination/coordination.module';
@@ -20,6 +21,7 @@ import { DomainErrorFilter } from './shared/http/domain-error.filter';
     IdentityModule,
     CatalogModule,
     OrdersModule,
+    PaymentsModule,
     CallsModule,
     LogisticsModule,
     CoordinationModule,

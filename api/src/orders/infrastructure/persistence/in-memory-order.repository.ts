@@ -1,6 +1,11 @@
+import { RENEGOTIABLE_ORDER_STATUSES } from '@farm-pool/shared';
 import type { OrderStatus } from '@farm-pool/shared';
 import { randomUUID } from 'node:crypto';
-import type { NewOrder, Order } from '../../domain/entities/order';
+import type {
+  NewOrder,
+  Order,
+  PriceProposal,
+} from '../../domain/entities/order';
 import type { OrderRepository } from '../../domain/repositories/order.repository';
 
 /** Map-backed `OrderRepository` for unit tests. */
@@ -77,6 +82,78 @@ export class InMemoryOrderRepository implements OrderRepository {
     );
   }
 
+  markPaid(
+    id: string,
+    buyerId: string,
+    expectedTotal: number,
+  ): Promise<Order | null> {
+    const row = this.rows.get(id);
+    if (
+      !row ||
+      row.buyerId !== buyerId ||
+      row.status !== 'accepted' ||
+      row.total !== expectedTotal
+    ) {
+      return Promise.resolve(null);
+    }
+    const updated: Order = { ...row, status: 'open', updatedAt: new Date() };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
+  markReceived(id: string, buyerId: string): Promise<Order | null> {
+    const row = this.rows.get(id);
+    if (
+      !row ||
+      row.buyerId !== buyerId ||
+      row.status !== 'delivered' ||
+      row.receivedAt !== undefined
+    ) {
+      return Promise.resolve(null);
+    }
+    const now = new Date();
+    const updated: Order = { ...row, receivedAt: now, updatedAt: now };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
+  setPriceProposal(id: string, proposal: PriceProposal): Promise<Order | null> {
+    const row = this.rows.get(id);
+    if (
+      !row ||
+      !RENEGOTIABLE_ORDER_STATUSES.includes(row.status) ||
+      row.priceProposal !== undefined
+    ) {
+      return Promise.resolve(null);
+    }
+    const updated: Order = {
+      ...row,
+      priceProposal: proposal,
+      updatedAt: new Date(),
+    };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
+  resolvePriceProposal(
+    id: string,
+    proposedAt: Date,
+    accepted?: { pricePerKg: number; total: number },
+  ): Promise<Order | null> {
+    const row = this.rows.get(id);
+    if (
+      !row ||
+      row.priceProposal?.proposedAt.getTime() !== proposedAt.getTime() ||
+      (accepted && !RENEGOTIABLE_ORDER_STATUSES.includes(row.status))
+    ) {
+      return Promise.resolve(null);
+    }
+    const updated: Order = { ...row, ...accepted, updatedAt: new Date() };
+    delete updated.priceProposal;
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
   /** Mirrors the Mongo filter-as-guard: driver and stage are checked as part of the write. */
   private claim(
     id: string,
@@ -112,6 +189,7 @@ export class InMemoryOrderRepository implements OrderRepository {
 function snapshot(row: Order): Order {
   return {
     ...row,
+    ...(row.priceProposal ? { priceProposal: { ...row.priceProposal } } : {}),
     createdAt: new Date(row.createdAt),
     updatedAt: new Date(row.updatedAt),
   };

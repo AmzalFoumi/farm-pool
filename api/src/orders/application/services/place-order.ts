@@ -1,4 +1,4 @@
-import type { Order, PlaceOrderData } from '@farm-pool/shared';
+import { toCents, type Order, type PlaceOrderData } from '@farm-pool/shared';
 import type { ListingRepository } from '../../../catalog/domain/repositories/listing.repository';
 import { toOrderDto } from '../../domain/entities/order';
 import type { OrderRepository } from '../../domain/repositories/order.repository';
@@ -57,7 +57,7 @@ export class PlaceOrder {
       cropId: listing.cropId,
       quantityKg: data.quantityKg,
       pricePerKg: listing.pricePerKg,
-      total: data.quantityKg * listing.pricePerKg,
+      total: toCents(data.quantityKg * listing.pricePerKg),
       ...(data.note ? { note: data.note } : {}),
       status: 'requested',
     });
