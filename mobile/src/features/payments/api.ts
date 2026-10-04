@@ -14,5 +14,14 @@ export const paymentsApi = {
   /** No body: the amount is the order's own total, decided on the server. */
   pay(token: string, orderId: string): Promise<Payment> {
     return apiFetch(`${forOrder(orderId)}/pay`, { method: "POST", token, schema: paymentSchema });
+  },
+
+  /** The produce arrived: releases the held balance to the farmer. Cannot be undone. */
+  confirmReceipt(token: string, orderId: string): Promise<Payment> {
+    return apiFetch(`${forOrder(orderId)}/confirm-receipt`, {
+      method: "POST",
+      token,
+      schema: paymentSchema
+    });
   }
 };

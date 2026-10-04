@@ -2,7 +2,8 @@
  * One order, for its buyer and its farmer.
  *
  * The footer holds the one thing the buyer can do at this stage: cancel while it is still
- * `requested`, pay once the farmer has accepted (FARM-41).
+ * `requested`, pay once the farmer has accepted (FARM-41), and confirm it arrived once the driver
+ * has delivered it (FARM-51).
  */
 
 import { can, cropById, type Order } from "@farm-pool/shared";
@@ -22,6 +23,7 @@ import { AssignedDriverCard } from "@/features/logistics/assigned-driver-card";
 import { ordersApi } from "@/features/orders/api";
 import { OrderStatusPill, orderStatusLabel } from "@/features/orders/status-pill";
 import { paymentsApi } from "@/features/payments/api";
+import { ConfirmReceiptSheet } from "@/features/payments/confirm-receipt-sheet";
 import { PaySheet } from "@/features/payments/pay-sheet";
 import { PaymentCard } from "@/features/payments/payment-card";
 import { ApiError } from "@/lib/api";
@@ -74,6 +76,7 @@ function OrderBody({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   /* An order nobody has paid for yet answers `payment_not_found`, which is the ordinary case
      rather than a failure, so this request is read directly instead of through `RequestView`. */
@@ -85,6 +88,17 @@ function OrderBody({
     viewer === "buyer" &&
     user !== null &&
     can(user.role, "payment:pay");
+  /* Only while money is still held: a delivered order that was never paid for through the app,
+     or one already confirmed, has nothing left to release. */
+  const heldPayment =
+    order.status === "delivered" &&
+    viewer === "buyer" &&
+    user !== null &&
+    can(user.role, "order:confirm-receipt") &&
+    payment.status === "ready" &&
+    payment.data.status === "in_escrow"
+      ? payment.data
+      : null;
 
   const cancel = async () => {
     setBusy(true);
@@ -182,6 +196,29 @@ function OrderBody({
         >
           <AppButton label={`Pay ${formatPrice(order.total)}`} onPress={() => setPaying(true)} />
         </VStack>
+      ) : null}
+
+      {heldPayment ? (
+        <>
+          <VStack
+            className="border-t border-border bg-card px-gutter pt-3"
+            style={{ paddingBottom: Math.max(bottomInset, 23) }}
+          >
+            <AppButton label="Confirm I received it" onPress={() => setConfirming(true)} />
+          </VStack>
+          <ConfirmReceiptSheet
+            open={confirming}
+            onClose={() => setConfirming(false)}
+            order={order}
+            payment={heldPayment}
+            token={token}
+            bottomInset={bottomInset}
+            onConfirmed={() => {
+              payment.reload();
+              onChanged();
+            }}
+          />
+        </>
       ) : null}
 
       <PaySheet
