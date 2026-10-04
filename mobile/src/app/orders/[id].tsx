@@ -3,7 +3,7 @@
  *
  * The footer holds the one thing the buyer can do at this stage: cancel while it is still
  * `requested`, pay once the farmer has accepted (FARM-41), and confirm it arrived once the driver
- * has delivered it (FARM-51).
+ * has delivered it (FARM-51). Either side can propose a new price until pickup (FARM-53).
  */
 
 import { can, cropById, type Order } from "@farm-pool/shared";
@@ -26,6 +26,7 @@ import { paymentsApi } from "@/features/payments/api";
 import { ConfirmReceiptSheet } from "@/features/payments/confirm-receipt-sheet";
 import { PaySheet } from "@/features/payments/pay-sheet";
 import { PaymentCard } from "@/features/payments/payment-card";
+import { PriceProposalCard } from "@/features/payments/price-proposal-card";
 import { ApiError } from "@/lib/api";
 import { formatDate, formatPrice } from "@/lib/format";
 import { useRequest } from "@/lib/use-request";
@@ -183,6 +184,19 @@ function OrderBody({
             Waiting for {order.farmerName} to accept. You can cancel until they do.
           </Text>
         ) : null}
+        {user !== null && can(user.role, "order:renegotiate") ? (
+          <PriceProposalCard
+            order={order}
+            viewer={viewer}
+            token={token}
+            onChanged={() => {
+              // Accepting a price moves the held balance, so both are read again.
+              payment.reload();
+              onChanged();
+            }}
+          />
+        ) : null}
+
         {order.status === "accepted" ? (
           <Text className="type-caption text-muted-foreground">
             {viewer === "buyer"
