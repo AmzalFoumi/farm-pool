@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import type { NewPayment, Payment } from '../../domain/entities/payment';
+import type {
+  NewPayment,
+  Payment,
+  PaymentEntry,
+} from '../../domain/entities/payment';
 import type { PaymentRepository } from '../../domain/repositories/payment.repository';
 import {
   PAYMENT_MODEL,
@@ -33,6 +37,17 @@ export class MongoosePaymentRepository implements PaymentRepository {
 
   async findByOrder(orderId: string): Promise<Payment | null> {
     const doc = await this.payments.findOne({ orderId }).exec();
+    return doc ? toPayment(doc) : null;
+  }
+
+  async release(orderId: string, entry: PaymentEntry): Promise<Payment | null> {
+    const doc = await this.payments
+      .findOneAndUpdate(
+        { orderId, status: 'in_escrow', heldAmount: entry.amount },
+        { status: 'released', heldAmount: 0, $push: { entries: entry } },
+        { returnDocument: 'after' },
+      )
+      .exec();
     return doc ? toPayment(doc) : null;
   }
 

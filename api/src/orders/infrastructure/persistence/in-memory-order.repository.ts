@@ -87,6 +87,22 @@ export class InMemoryOrderRepository implements OrderRepository {
     return Promise.resolve(snapshot(updated));
   }
 
+  markReceived(id: string, buyerId: string): Promise<Order | null> {
+    const row = this.rows.get(id);
+    if (
+      !row ||
+      row.buyerId !== buyerId ||
+      row.status !== 'delivered' ||
+      row.receivedAt !== undefined
+    ) {
+      return Promise.resolve(null);
+    }
+    const now = new Date();
+    const updated: Order = { ...row, receivedAt: now, updatedAt: now };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
   /** Mirrors the Mongo filter-as-guard: driver and stage are checked as part of the write. */
   private claim(
     id: string,

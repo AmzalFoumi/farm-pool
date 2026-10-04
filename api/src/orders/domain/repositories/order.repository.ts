@@ -38,6 +38,12 @@ export interface OrderRepository {
    * when the order is not this buyer's or is not waiting to be paid for.
    */
   markPaid(id: string, buyerId: string): Promise<Order | null>;
+  /**
+   * The buyer confirms the produce arrived (FARM-51): stamps `receivedAt` on a `delivered` order
+   * that has none. The status stays `delivered`. Resolves `null` when the order is not this
+   * buyer's, is not delivered yet, or was already confirmed — so a second tap changes nothing.
+   */
+  markReceived(id: string, buyerId: string): Promise<Order | null>;
 }
 
 export const ORDER_REPOSITORY = Symbol('OrderRepository');

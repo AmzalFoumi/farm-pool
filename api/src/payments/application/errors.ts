@@ -9,7 +9,9 @@ export type PaymentErrorCode =
   | 'not_your_order'
   | 'order_not_payable'
   | 'already_paid'
-  | 'payment_not_found';
+  | 'payment_not_found'
+  | 'not_delivered_yet'
+  | 'already_released';
 
 export class PaymentError extends DomainError<PaymentErrorCode> {
   constructor(kind: DomainErrorKind, code: PaymentErrorCode, message: string) {

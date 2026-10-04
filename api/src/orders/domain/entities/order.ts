@@ -24,6 +24,8 @@ export interface Order {
   assignedDriverId?: string;
   /** What the driver actually loaded (LP-50). Set at pickup; never overwritten. */
   collectedKg?: number;
+  /** When the buyer confirmed the produce arrived (FARM-51). Set once; never overwritten. */
+  receivedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,6 +50,9 @@ export function toOrderDto(order: Order): OrderDto {
       : {}),
     ...(order.collectedKg !== undefined
       ? { collectedKg: order.collectedKg }
+      : {}),
+    ...(order.receivedAt !== undefined
+      ? { receivedAt: order.receivedAt.toISOString() }
       : {}),
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),

@@ -2,6 +2,7 @@ import type { OrderStatus } from '@farm-pool/shared';
 import { InMemoryOrderRepository } from '../../../orders/infrastructure/persistence/in-memory-order.repository';
 import { SimulatedPaymentGateway } from '../../infrastructure/gateway/simulated-payment-gateway';
 import { InMemoryPaymentRepository } from '../../infrastructure/persistence/in-memory-payment.repository';
+import { ConfirmReceipt } from './confirm-receipt';
 import { GetPayment } from './get-payment';
 import { PayForOrder } from './pay-for-order';
 
@@ -10,6 +11,7 @@ describe('payments', () => {
   let payments: InMemoryPaymentRepository;
   let pay: PayForOrder;
   let get: GetPayment;
+  let confirm: ConfirmReceipt;
 
   /** An order in whatever status the test needs: 100 kg at Rs 180, so Rs 18,000. */
   const seedOrder = async (status: OrderStatus, pricePerKg = 180) => {
@@ -32,6 +34,7 @@ describe('payments', () => {
     payments = new InMemoryPaymentRepository();
     pay = new PayForOrder(payments, orders, new SimulatedPaymentGateway());
     get = new GetPayment(payments);
+    confirm = new ConfirmReceipt(payments, orders);
   });
 
   describe('paying for an order', () => {
@@ -159,6 +162,79 @@ describe('payments', () => {
       const orderId = await seedOrder('accepted');
 
       await expect(get.execute('buyer-1', orderId)).rejects.toMatchObject({
+        code: 'payment_not_found',
+        kind: 'not_found',
+      });
+    });
+  });
+
+  describe('confirming receipt', () => {
+    /** A paid order, then moved to wherever the delivery has got to. */
+    const paidOrder = async (status: OrderStatus) => {
+      const orderId = await seedOrder('accepted');
+      await pay.execute('buyer-1', orderId);
+      await orders.updateStatus(orderId, status);
+      return orderId;
+    };
+
+    it('releases the held balance to the farmer and stamps the order', async () => {
+      const orderId = await paidOrder('delivered');
+
+      const payment = await confirm.execute('buyer-1', orderId);
+
+      expect(payment).toMatchObject({
+        status: 'released',
+        total: 18000,
+        advanceAmount: 5400,
+        heldAmount: 0,
+      });
+      expect(payment.entries.map((e) => [e.kind, e.amount])).toEqual([
+        ['deposit', 18000],
+        ['advance_release', 5400],
+        ['balance_release', 12600],
+      ]);
+      const order = await orders.findById(orderId);
+      expect(order?.status).toBe('delivered');
+      expect(order?.receivedAt).toBeInstanceOf(Date);
+    });
+
+    it.each<OrderStatus>(['open', 'assigned', 'in_transit'])(
+      'refuses while the order is still %s',
+      async (status) => {
+        const orderId = await paidOrder(status);
+
+        await expect(confirm.execute('buyer-1', orderId)).rejects.toMatchObject(
+          { code: 'not_delivered_yet', kind: 'conflict' },
+        );
+        expect((await payments.findByOrder(orderId))?.heldAmount).toBe(12600);
+      },
+    );
+
+    it('releases once: a second confirmation is refused and pays nothing more', async () => {
+      const orderId = await paidOrder('delivered');
+      await confirm.execute('buyer-1', orderId);
+
+      await expect(confirm.execute('buyer-1', orderId)).rejects.toMatchObject({
+        code: 'already_released',
+        kind: 'conflict',
+      });
+      expect((await payments.findByOrder(orderId))?.entries).toHaveLength(3);
+    });
+
+    it('refuses anyone but the buyer, including the farmer who is owed the money', async () => {
+      const orderId = await paidOrder('delivered');
+
+      await expect(confirm.execute('farmer-1', orderId)).rejects.toMatchObject({
+        code: 'not_your_order',
+        kind: 'forbidden',
+      });
+      expect((await payments.findByOrder(orderId))?.status).toBe('in_escrow');
+    });
+
+    it('refuses an order that was never paid for', async () => {
+      const orderId = await seedOrder('delivered');
+
+      await expect(confirm.execute('buyer-1', orderId)).rejects.toMatchObject({
         code: 'payment_not_found',
         kind: 'not_found',
       });

@@ -51,6 +51,10 @@ export class OrderDocument {
   @Prop({ required: false, min: 1 })
   collectedKg?: number;
 
+  /** When the buyer confirmed receipt (FARM-51). Absent until they do. */
+  @Prop({ required: false })
+  receivedAt?: Date;
+
   createdAt: Date;
   updatedAt: Date;
 }

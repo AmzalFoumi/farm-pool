@@ -106,6 +106,23 @@ export class MongooseOrderRepository implements OrderRepository {
     return doc ? toOrder(doc) : null;
   }
 
+  async markReceived(id: string, buyerId: string): Promise<Order | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.orders
+      .findOneAndUpdate(
+        {
+          _id: id,
+          buyerId,
+          status: 'delivered',
+          receivedAt: { $exists: false },
+        },
+        { receivedAt: new Date() },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toOrder(doc) : null;
+  }
+
   async updateStatus(id: string, status: OrderStatus): Promise<Order> {
     const doc = await this.orders
       .findByIdAndUpdate(id, { status }, { returnDocument: 'after' })
@@ -134,6 +151,7 @@ function toOrder(doc: OrderHydrated): Order {
     ...(typeof doc.collectedKg === 'number'
       ? { collectedKg: doc.collectedKg }
       : {}),
+    ...(doc.receivedAt instanceof Date ? { receivedAt: doc.receivedAt } : {}),
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };

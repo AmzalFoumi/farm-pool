@@ -21,7 +21,8 @@ import {
 
 /**
  * The escrow story over HTTP: a buyer pays an accepted order, the order reaches the driver job
- * board, and both sides can read the payment — plus every refusal in the endpoint table.
+ * board, both sides can read the payment, and confirming receipt releases the balance — plus
+ * every refusal in the endpoint table.
  *
  * Farmer acceptance (FARM-46) has no endpoint yet, so an order is moved to `accepted` through
  * the repository, which is exactly the state that story will leave it in.
@@ -221,5 +222,72 @@ describe('payments (e2e)', () => {
       .set(as(otherBuyer))
       .expect(403);
     expect(body<ApiErrorBody>(res).code).toBe('not_your_order');
+  });
+
+  it('POST confirm-receipt before delivery → 409 not_delivered_yet', async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/payments/orders/${orderId}/confirm-receipt`)
+      .set(as(buyer))
+      .expect(409);
+    expect(body<ApiErrorBody>(res).code).toBe('not_delivered_yet');
+  });
+
+  it('the driver accepts, collects and delivers the paid order', async () => {
+    await request(app.getHttpServer())
+      .post(`/logistics/jobs/${orderId}/accept`)
+      .set(as(driver))
+      .expect(200);
+    await request(app.getHttpServer())
+      .post(`/logistics/jobs/${orderId}/pickup`)
+      .set(as(driver))
+      .send({ collectedKg: 20 })
+      .expect(200);
+    await request(app.getHttpServer())
+      .post(`/logistics/jobs/${orderId}/deliver`)
+      .set(as(driver))
+      .expect(200);
+  });
+
+  it('POST confirm-receipt as the farmer → 403 forbidden; as another buyer → 403 not_your_order', async () => {
+    const asFarmer = await request(app.getHttpServer())
+      .post(`/payments/orders/${orderId}/confirm-receipt`)
+      .set(as(farmer))
+      .expect(403);
+    expect(body<ApiErrorBody>(asFarmer).code).toBe('forbidden');
+
+    const other = await request(app.getHttpServer())
+      .post(`/payments/orders/${orderId}/confirm-receipt`)
+      .set(as(otherBuyer))
+      .expect(403);
+    expect(body<ApiErrorBody>(other).code).toBe('not_your_order');
+  });
+
+  it('POST confirm-receipt as the buyer → 200 released, balance paid, order stamped', async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/payments/orders/${orderId}/confirm-receipt`)
+      .set(as(buyer))
+      .expect(200);
+    const payment = body<Payment>(res);
+    expect(payment).toMatchObject({ status: 'released', heldAmount: 0 });
+    expect(payment.entries.map((e) => [e.kind, e.amount])).toEqual([
+      ['deposit', 4000],
+      ['advance_release', 1200],
+      ['balance_release', 2800],
+    ]);
+
+    const order = await request(app.getHttpServer())
+      .get(`/orders/${orderId}`)
+      .set(as(buyer))
+      .expect(200);
+    expect(body<Order>(order)).toMatchObject({ status: 'delivered' });
+    expect(typeof body<Order>(order).receivedAt).toBe('string');
+  });
+
+  it('POST confirm-receipt again → 409 already_released', async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/payments/orders/${orderId}/confirm-receipt`)
+      .set(as(buyer))
+      .expect(409);
+    expect(body<ApiErrorBody>(res).code).toBe('already_released');
   });
 });

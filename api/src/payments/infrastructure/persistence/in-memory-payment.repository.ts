@@ -1,5 +1,9 @@
 import { randomUUID } from 'node:crypto';
-import type { NewPayment, Payment } from '../../domain/entities/payment';
+import type {
+  NewPayment,
+  Payment,
+  PaymentEntry,
+} from '../../domain/entities/payment';
 import type { PaymentRepository } from '../../domain/repositories/payment.repository';
 
 /** Map-backed `PaymentRepository` for unit tests. Keyed by order, like the unique index. */
@@ -22,6 +26,22 @@ export class InMemoryPaymentRepository implements PaymentRepository {
   findByOrder(orderId: string): Promise<Payment | null> {
     const row = this.rows.get(orderId);
     return Promise.resolve(row ? snapshot(row) : null);
+  }
+
+  release(orderId: string, entry: PaymentEntry): Promise<Payment | null> {
+    const row = this.rows.get(orderId);
+    if (!row || row.status !== 'in_escrow' || row.heldAmount !== entry.amount) {
+      return Promise.resolve(null);
+    }
+    const updated: Payment = {
+      ...row,
+      status: 'released',
+      heldAmount: 0,
+      entries: [...row.entries, entry],
+      updatedAt: new Date(),
+    };
+    this.rows.set(orderId, updated);
+    return Promise.resolve(snapshot(updated));
   }
 
   remove(id: string): Promise<void> {

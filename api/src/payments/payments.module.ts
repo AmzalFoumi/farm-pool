@@ -5,6 +5,7 @@ import {
   type OrderRepository,
 } from '../orders/domain/repositories/order.repository';
 import { OrdersModule } from '../orders/orders.module';
+import { ConfirmReceipt } from './application/services/confirm-receipt';
 import { GetPayment } from './application/services/get-payment';
 import { PayForOrder } from './application/services/pay-for-order';
 import {
@@ -46,6 +47,12 @@ import { PaymentsController } from './payments.controller';
         orders: OrderRepository,
         gateway: PaymentGateway,
       ) => new PayForOrder(payments, orders, gateway),
+    },
+    {
+      provide: ConfirmReceipt,
+      inject: [PAYMENT_REPOSITORY, ORDER_REPOSITORY],
+      useFactory: (payments: PaymentRepository, orders: OrderRepository) =>
+        new ConfirmReceipt(payments, orders),
     },
     {
       provide: GetPayment,
