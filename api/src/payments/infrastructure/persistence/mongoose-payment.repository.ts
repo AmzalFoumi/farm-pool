@@ -5,6 +5,7 @@ import type {
   NewPayment,
   Payment,
   PaymentEntry,
+  TakenPayment,
 } from '../../domain/entities/payment';
 import type { PaymentRepository } from '../../domain/repositories/payment.repository';
 import {
@@ -40,7 +41,24 @@ export class MongoosePaymentRepository implements PaymentRepository {
     return doc ? toPayment(doc) : null;
   }
 
-  async release(orderId: string, entry: PaymentEntry): Promise<Payment | null> {
+  async activate(
+    orderId: string,
+    gatewayRef: string,
+  ): Promise<TakenPayment | null> {
+    const doc = await this.payments
+      .findOneAndUpdate(
+        { orderId, status: 'pending' },
+        { status: 'in_escrow', gatewayRef },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? (toPayment(doc) as TakenPayment) : null;
+  }
+
+  async release(
+    orderId: string,
+    entry: PaymentEntry,
+  ): Promise<TakenPayment | null> {
     const doc = await this.payments
       .findOneAndUpdate(
         { orderId, status: 'in_escrow', heldAmount: entry.amount },
@@ -48,7 +66,7 @@ export class MongoosePaymentRepository implements PaymentRepository {
         { returnDocument: 'after' },
       )
       .exec();
-    return doc ? toPayment(doc) : null;
+    return doc ? (toPayment(doc) as TakenPayment) : null;
   }
 
   async adjust(
@@ -59,12 +77,20 @@ export class MongoosePaymentRepository implements PaymentRepository {
   ): Promise<Payment | null> {
     const doc = await this.payments
       .findOneAndUpdate(
-        { orderId, status: 'in_escrow', heldAmount: expectedHeld },
+        {
+          orderId,
+          status: { $in: ['pending', 'in_escrow'] },
+          heldAmount: expectedHeld,
+        },
         { $set: next, $push: { entries: entry } },
         { returnDocument: 'after' },
       )
       .exec();
     return doc ? toPayment(doc) : null;
+  }
+
+  async discardPending(orderId: string): Promise<void> {
+    await this.payments.deleteOne({ orderId, status: 'pending' }).exec();
   }
 
   async remove(id: string): Promise<void> {
@@ -91,7 +117,7 @@ function toPayment(doc: PaymentHydrated): Payment {
     heldAmount: doc.heldAmount,
     status: doc.status,
     method: doc.method,
-    gatewayRef: doc.gatewayRef,
+    ...(doc.gatewayRef ? { gatewayRef: doc.gatewayRef } : {}),
     entries: doc.entries.map((entry) => ({
       kind: entry.kind,
       amount: entry.amount,

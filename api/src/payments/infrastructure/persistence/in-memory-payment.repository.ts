@@ -3,6 +3,7 @@ import type {
   NewPayment,
   Payment,
   PaymentEntry,
+  TakenPayment,
 } from '../../domain/entities/payment';
 import type { PaymentRepository } from '../../domain/repositories/payment.repository';
 
@@ -28,12 +29,25 @@ export class InMemoryPaymentRepository implements PaymentRepository {
     return Promise.resolve(row ? snapshot(row) : null);
   }
 
-  release(orderId: string, entry: PaymentEntry): Promise<Payment | null> {
+  activate(orderId: string, gatewayRef: string): Promise<TakenPayment | null> {
+    const row = this.rows.get(orderId);
+    if (!row || row.status !== 'pending') return Promise.resolve(null);
+    const updated: TakenPayment = {
+      ...row,
+      status: 'in_escrow',
+      gatewayRef,
+      updatedAt: new Date(),
+    };
+    this.rows.set(orderId, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
+  release(orderId: string, entry: PaymentEntry): Promise<TakenPayment | null> {
     const row = this.rows.get(orderId);
     if (!row || row.status !== 'in_escrow' || row.heldAmount !== entry.amount) {
       return Promise.resolve(null);
     }
-    const updated: Payment = {
+    const updated: TakenPayment = {
       ...row,
       status: 'released',
       heldAmount: 0,
@@ -51,7 +65,7 @@ export class InMemoryPaymentRepository implements PaymentRepository {
     entry: PaymentEntry,
   ): Promise<Payment | null> {
     const row = this.rows.get(orderId);
-    if (!row || row.status !== 'in_escrow' || row.heldAmount !== expectedHeld) {
+    if (!row || row.status === 'released' || row.heldAmount !== expectedHeld) {
       return Promise.resolve(null);
     }
     const updated: Payment = {
@@ -64,6 +78,11 @@ export class InMemoryPaymentRepository implements PaymentRepository {
     return Promise.resolve(snapshot(updated));
   }
 
+  discardPending(orderId: string): Promise<void> {
+    if (this.rows.get(orderId)?.status === 'pending') this.rows.delete(orderId);
+    return Promise.resolve();
+  }
+
   remove(id: string): Promise<void> {
     for (const [orderId, row] of this.rows) {
       if (row.id === id) this.rows.delete(orderId);
@@ -72,6 +91,6 @@ export class InMemoryPaymentRepository implements PaymentRepository {
   }
 }
 
-function snapshot(row: Payment): Payment {
+function snapshot<Row extends Payment>(row: Row): Row {
   return { ...row, entries: row.entries.map((entry) => ({ ...entry })) };
 }

@@ -1,6 +1,6 @@
 import type { Payment } from '@farm-pool/shared';
 import type { OrderRepository } from '../../../orders/domain/repositories/order.repository';
-import { newEntry, toPaymentDto } from '../../domain/entities/payment';
+import { isTaken, newEntry, toPaymentDto } from '../../domain/entities/payment';
 import type { PaymentRepository } from '../../domain/repositories/payment.repository';
 import { PaymentError } from '../errors';
 
@@ -35,7 +35,7 @@ export class ConfirmReceipt {
       );
     }
     const payment = await this.payments.findByOrder(orderId);
-    if (!payment) {
+    if (!payment || !isTaken(payment)) {
       throw new PaymentError(
         'not_found',
         'payment_not_found',

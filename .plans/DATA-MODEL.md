@@ -138,9 +138,9 @@ The escrow record for one order (FARM-41). **No real money moves** — see `.pla
 | `total` | number ≥ 0 | yes | | What the deal is worth now. Follows the order's total when a price is renegotiated. | yes |
 | `advanceAmount` | number ≥ 0 | yes | | Released to the farmer when the buyer paid: `ADVANCE_RATE` (30%) of the total at that moment, rounded to a rupee. Never changes afterwards. | yes |
 | `heldAmount` | number ≥ 0 | yes | | Still held. `total − advanceAmount` while `in_escrow`; 0 once released. | yes |
-| `status` | enum `PaymentStatus` | yes | yes | `in_escrow` → `released` (the buyer confirming receipt). | yes |
+| `status` | enum `PaymentStatus`, plus `pending` | yes | yes | `in_escrow` → `released` (the buyer confirming receipt). `pending` is api-only: the record is written before the charge so only one request can charge, then becomes `in_escrow` or is deleted. Never sent to the app. | yes, except `pending` |
 | `method` | enum `PaymentMethod` | yes | | `simulated` is the only value. | yes |
-| `gatewayRef` | string | yes | | What the gateway called the charge. For reconciling against a real provider later. | **no** |
+| `gatewayRef` | string | no | | Absent while `pending`. What the gateway called the charge. For reconciling against a real provider later. | **no** |
 | `entries` | array of embedded objects | yes | | Every movement of money, oldest first, append-only: `kind` (`deposit`, `advance_release`, `balance_release`, `top_up`, `refund`), `amount`, `receiptNo` (`FP-YYMMDD-XXXXXX`), `at`. A receipt is these read back in order. | yes |
 
 ## `calls`

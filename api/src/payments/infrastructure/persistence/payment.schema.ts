@@ -1,15 +1,11 @@
-import {
-  paymentEntryKindSchema,
-  paymentMethodSchema,
-  paymentStatusSchema,
-} from '@farm-pool/shared';
-import type {
-  PaymentEntryKind,
-  PaymentMethod,
-  PaymentStatus,
-} from '@farm-pool/shared';
+import { paymentEntryKindSchema, paymentMethodSchema } from '@farm-pool/shared';
+import type { PaymentEntryKind, PaymentMethod } from '@farm-pool/shared';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { HydratedDocument } from 'mongoose';
+import {
+  STORED_PAYMENT_STATUSES,
+  type StoredPaymentStatus,
+} from '../../domain/entities/payment';
 
 /** One movement of money. Embedded: an entry is never read without its payment. */
 @Schema({ _id: false })
@@ -54,16 +50,17 @@ export class PaymentDocument {
   @Prop({
     type: String,
     required: true,
-    enum: paymentStatusSchema.options,
+    enum: STORED_PAYMENT_STATUSES,
     index: true,
   })
-  status: PaymentStatus;
+  status: StoredPaymentStatus;
 
   @Prop({ type: String, required: true, enum: paymentMethodSchema.options })
   method: PaymentMethod;
 
-  @Prop({ required: true })
-  gatewayRef: string;
+  /** Absent while `pending`: the charge has not come back yet. */
+  @Prop()
+  gatewayRef?: string;
 
   @Prop({ type: [PaymentEntrySchema], default: [] })
   entries: PaymentEntryDocument[];

@@ -26,14 +26,35 @@ export interface Payment {
   total: number;
   advanceAmount: number;
   heldAmount: number;
-  status: PaymentStatus;
+  status: StoredPaymentStatus;
   method: PaymentMethod;
   /** What the gateway called the charge. Kept for reconciling against a real provider later;
-   *  never sent to the app. */
-  gatewayRef: string;
+   *  never sent to the app. Absent while the payment is `pending`: nothing is charged yet. */
+  gatewayRef?: string;
   entries: PaymentEntry[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+/**
+ * `pending` exists only inside the api. It is the claim one Pay request holds on an order while
+ * its charge is in flight, so a second request cannot charge as well. It becomes `in_escrow`
+ * when the charge succeeds and is deleted when it does not. The app never sees it: to the app a
+ * pending payment is no payment yet.
+ */
+export type StoredPaymentStatus = PaymentStatus | 'pending';
+
+export const STORED_PAYMENT_STATUSES = [
+  'pending',
+  'in_escrow',
+  'released',
+] as const satisfies readonly StoredPaymentStatus[];
+
+/** A payment whose money was really taken: anything but a `pending` claim. */
+export type TakenPayment = Payment & { status: PaymentStatus };
+
+export function isTaken(payment: Payment): payment is TakenPayment {
+  return payment.status !== 'pending';
 }
 
 export type NewPayment = Omit<Payment, 'id' | 'createdAt' | 'updatedAt'>;
@@ -59,7 +80,7 @@ export function newEntry(
   return { kind, amount, receiptNo: newReceiptNo(at), at };
 }
 
-export function toPaymentDto(payment: Payment): PaymentDto {
+export function toPaymentDto(payment: TakenPayment): PaymentDto {
   return {
     id: payment.id,
     orderId: payment.orderId,

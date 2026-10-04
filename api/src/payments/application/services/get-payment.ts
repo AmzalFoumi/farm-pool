@@ -1,5 +1,5 @@
 import type { Payment } from '@farm-pool/shared';
-import { toPaymentDto } from '../../domain/entities/payment';
+import { isTaken, toPaymentDto } from '../../domain/entities/payment';
 import type { PaymentRepository } from '../../domain/repositories/payment.repository';
 import { PaymentError } from '../errors';
 
@@ -9,7 +9,8 @@ export class GetPayment {
 
   async execute(callerId: string, orderId: string): Promise<Payment> {
     const payment = await this.payments.findByOrder(orderId);
-    if (!payment) {
+    // A `pending` claim is a charge still in flight: to the app, no payment yet.
+    if (!payment || !isTaken(payment)) {
       throw new PaymentError(
         'not_found',
         'payment_not_found',

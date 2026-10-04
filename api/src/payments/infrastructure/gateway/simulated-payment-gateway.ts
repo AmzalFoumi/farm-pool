@@ -11,7 +11,20 @@ import type { PaymentGateway } from '../../domain/gateways/payment-gateway';
 export class SimulatedPaymentGateway implements PaymentGateway {
   readonly method = 'simulated' as const;
 
-  charge(): Promise<{ reference: string }> {
-    return Promise.resolve({ reference: `sim_${randomUUID()}` });
+  /** One made-up reference per key, so asking twice for the same deal is one charge. */
+  private readonly charges = new Map<string, string>();
+
+  charge(input: { idempotencyKey: string }): Promise<{ reference: string }> {
+    const reference =
+      this.charges.get(input.idempotencyKey) ?? `sim_${randomUUID()}`;
+    this.charges.set(input.idempotencyKey, reference);
+    return Promise.resolve({ reference });
+  }
+
+  refund(input: { reference: string }): Promise<void> {
+    for (const [key, reference] of this.charges) {
+      if (reference === input.reference) this.charges.delete(key);
+    }
+    return Promise.resolve();
   }
 }

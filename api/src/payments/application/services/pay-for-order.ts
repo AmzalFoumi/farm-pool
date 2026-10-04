@@ -1,9 +1,16 @@
 import { splitTotal, type Payment } from '@farm-pool/shared';
 import type { OrderRepository } from '../../../orders/domain/repositories/order.repository';
-import { newEntry, toPaymentDto } from '../../domain/entities/payment';
+import { isTaken, newEntry, toPaymentDto } from '../../domain/entities/payment';
 import type { PaymentGateway } from '../../domain/gateways/payment-gateway';
 import type { PaymentRepository } from '../../domain/repositories/payment.repository';
 import { PaymentError } from '../errors';
+
+/**
+ * How long a `pending` claim blocks a second attempt. A claim older than this belongs to a
+ * request that died part-way, and the next attempt takes it over. Far longer than any request
+ * lives, so a claim that is still being worked on is never taken from under it.
+ */
+export const PENDING_CLAIM_TTL_MS = 10 * 60 * 1000;
 
 /**
  * The buyer pays for an order the farmer has accepted (FARM-41).
@@ -15,6 +22,10 @@ import { PaymentError } from '../errors';
  *
  * The amount is the order's own total, never a number from the request: a client cannot name
  * what it pays any more than it can name its price.
+ *
+ * THE ORDER OF THE STEPS IS THE SAFETY. The payment record is written first, as `pending`, and
+ * the unique index on `orderId` lets one request do that. Only that request charges. So two taps
+ * on Pay cannot both take money, and every step after the charge that fails gives it back.
  */
 export class PayForOrder {
   constructor(
@@ -39,45 +50,78 @@ export class PayForOrder {
         'Only the buyer who placed an order can pay for it',
       );
     }
-    if (await this.payments.findByOrder(orderId)) {
+
+    const existing = await this.payments.findByOrder(orderId);
+    if (existing && isTaken(existing)) {
+      /* The money was taken on an earlier try but the order never opened. Finish that try
+         rather than refuse it: nothing more is charged, the order just catches up. */
+      if (existing.status === 'in_escrow' && order.status === 'accepted') {
+        const opened = await this.orders.markPaid(
+          orderId,
+          buyerId,
+          existing.total,
+        );
+        if (opened) return toPaymentDto(existing);
+      }
       throw alreadyPaid();
+    }
+    if (existing) {
+      const age = Date.now() - existing.createdAt.getTime();
+      if (age < PENDING_CLAIM_TTL_MS) throw inProgress();
+      await this.payments.discardPending(orderId);
     }
     if (order.status !== 'accepted') {
       throw notPayable();
     }
 
-    const { reference } = await this.gateway.charge({
-      orderId,
-      buyerId,
-      amount: order.total,
-    });
-
     const now = new Date();
     const { advanceAmount, heldAmount } = splitTotal(order.total);
-    const payment = await this.payments.create({
+    const claim = await this.payments.create({
       orderId,
       buyerId,
       farmerId: order.farmerId,
       total: order.total,
       advanceAmount,
       heldAmount,
-      status: 'in_escrow',
+      status: 'pending',
       method: this.gateway.method,
-      gatewayRef: reference,
       entries: [
         newEntry('deposit', order.total, now),
         newEntry('advance_release', advanceAmount, now),
       ],
     });
     // Lost the race against a second tap: the storage holds one payment per order.
-    if (!payment) throw alreadyPaid();
+    if (!claim) throw inProgress();
+
+    let reference: string;
+    try {
+      /* The key names the deal, not the attempt: a retry after a crash asks for the same charge
+         again instead of a second one, and a repriced order is a new deal with a new key. */
+      ({ reference } = await this.gateway.charge({
+        orderId,
+        buyerId,
+        amount: order.total,
+        idempotencyKey: `${orderId}:${order.total}`,
+      }));
+    } catch (error) {
+      await this.payments.discardPending(orderId);
+      throw error;
+    }
+
+    const payment = await this.payments.activate(orderId, reference);
+    if (!payment) {
+      // Only when this request outlived its own claim and another one took it over.
+      await this.gateway.refund({ reference, amount: order.total });
+      throw inProgress();
+    }
 
     /* The order is claimed last, only from `accepted` and only at the total that was charged.
        If it moved or was repriced while the charge was in flight, the payment just written
-       describes money for a deal that is no longer on, so it is taken back out rather than left
-       holding. */
+       describes money for a deal that is no longer on, so the charge is given back and the
+       payment is taken out rather than left holding. */
     const opened = await this.orders.markPaid(orderId, buyerId, order.total);
     if (!opened) {
+      await this.gateway.refund({ reference, amount: order.total });
       await this.payments.remove(payment.id);
       throw await this.whyNotPayable(orderId, order.total);
     }
@@ -106,6 +150,14 @@ function alreadyPaid(): PaymentError {
     'conflict',
     'already_paid',
     'This order has already been paid for',
+  );
+}
+
+function inProgress(): PaymentError {
+  return new PaymentError(
+    'conflict',
+    'payment_in_progress',
+    'A payment for this order is already being taken. Try again in a moment',
   );
 }
 

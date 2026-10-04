@@ -487,6 +487,13 @@ the split, the release. The app says "demo payment" on the pay sheet and on the 
 a simulation that looked like a charge would be the one screen that lies. Swapping in a provider
 is one class and one line in `payments.module.ts`.
 
+The pay flow is already ordered for a real provider, so that swap does not need a rewrite: the
+payment record is written as `pending` before the charge, the charge carries an idempotency key,
+and a charge whose order turns out not to be payable is refunded
+(`api/src/payments/README.md`, "The record is written before the charge"). One thing is left for
+whoever adds the provider: a reconciliation job for a charge whose request died and was never
+retried.
+
 **The buyer pays the whole total once; 30% is released at once, 70% is held.** The alternative —
 pay the advance now and the balance at receipt — gives the buyer two payment steps and the farmer
 no guarantee the balance exists, which is the opposite of what escrow is for. `ADVANCE_RATE` is a

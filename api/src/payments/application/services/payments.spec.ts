@@ -4,7 +4,7 @@ import { SimulatedPaymentGateway } from '../../infrastructure/gateway/simulated-
 import { InMemoryPaymentRepository } from '../../infrastructure/persistence/in-memory-payment.repository';
 import { ConfirmReceipt } from './confirm-receipt';
 import { GetPayment } from './get-payment';
-import { PayForOrder } from './pay-for-order';
+import { PayForOrder, PENDING_CLAIM_TTL_MS } from './pay-for-order';
 import { ProposePrice } from './propose-price';
 import { RespondToPriceProposal } from './respond-to-price-proposal';
 
@@ -139,10 +139,115 @@ describe('payments', () => {
           return { reference: 'sim_test' };
         });
 
+      const refund = jest.spyOn(SimulatedPaymentGateway.prototype, 'refund');
+
       await expect(pay.execute('buyer-1', orderId)).rejects.toMatchObject({
         code: 'order_not_payable',
       });
       expect(await payments.findByOrder(orderId)).toBeNull();
+      expect(refund).toHaveBeenCalledWith({
+        reference: 'sim_test',
+        amount: 18000,
+      });
+      charge.mockRestore();
+      refund.mockRestore();
+    });
+
+    it('charges once when Pay is tapped twice at the same moment', async () => {
+      const orderId = await seedOrder('accepted');
+      const charge = jest.spyOn(SimulatedPaymentGateway.prototype, 'charge');
+
+      const results = await Promise.allSettled([
+        pay.execute('buyer-1', orderId),
+        pay.execute('buyer-1', orderId),
+      ]);
+
+      expect(charge).toHaveBeenCalledTimes(1);
+      expect(results.map((r) => r.status).sort()).toEqual([
+        'fulfilled',
+        'rejected',
+      ]);
+      expect(results.find((r) => r.status === 'rejected')).toMatchObject({
+        reason: { code: 'payment_in_progress', kind: 'conflict' },
+      });
+      charge.mockRestore();
+    });
+
+    it('leaves nothing behind when the charge fails, so the buyer can try again', async () => {
+      const orderId = await seedOrder('accepted');
+      const charge = jest
+        .spyOn(SimulatedPaymentGateway.prototype, 'charge')
+        .mockRejectedValueOnce(new Error('card declined'));
+
+      await expect(pay.execute('buyer-1', orderId)).rejects.toThrow(
+        'card declined',
+      );
+      expect(await payments.findByOrder(orderId)).toBeNull();
+      expect((await orders.findById(orderId))?.status).toBe('accepted');
+      charge.mockRestore();
+
+      await expect(pay.execute('buyer-1', orderId)).resolves.toMatchObject({
+        status: 'in_escrow',
+      });
+    });
+
+    /** The claim a Pay request holds while its charge is in flight, left by a request that died. */
+    const leaveClaim = (orderId: string) =>
+      payments.create({
+        orderId,
+        buyerId: 'buyer-1',
+        farmerId: 'farmer-1',
+        total: 18000,
+        advanceAmount: 5400,
+        heldAmount: 12600,
+        status: 'pending',
+        method: 'simulated',
+        entries: [],
+      });
+
+    it('refuses while another request holds the claim, and shows no payment yet', async () => {
+      const orderId = await seedOrder('accepted');
+      await leaveClaim(orderId);
+
+      await expect(pay.execute('buyer-1', orderId)).rejects.toMatchObject({
+        code: 'payment_in_progress',
+        kind: 'conflict',
+      });
+      await expect(get.execute('buyer-1', orderId)).rejects.toMatchObject({
+        code: 'payment_not_found',
+      });
+    });
+
+    it('takes over a claim left by a request that died', async () => {
+      const orderId = await seedOrder('accepted');
+      await leaveClaim(orderId);
+      const later = Date.now() + PENDING_CLAIM_TTL_MS + 1;
+      const now = jest.spyOn(Date, 'now').mockReturnValue(later);
+
+      const payment = await pay.execute('buyer-1', orderId);
+
+      expect(payment).toMatchObject({ status: 'in_escrow', total: 18000 });
+      expect(payment.entries).toHaveLength(2);
+      expect((await orders.findById(orderId))?.status).toBe('open');
+      now.mockRestore();
+    });
+
+    it('opens the order on a retry when that step failed after the money was taken', async () => {
+      const orderId = await seedOrder('accepted');
+      const charge = jest.spyOn(SimulatedPaymentGateway.prototype, 'charge');
+      jest
+        .spyOn(orders, 'markPaid')
+        .mockRejectedValueOnce(new Error('database down'));
+      await expect(pay.execute('buyer-1', orderId)).rejects.toThrow(
+        'database down',
+      );
+      expect((await orders.findById(orderId))?.status).toBe('accepted');
+
+      const payment = await pay.execute('buyer-1', orderId);
+
+      expect(payment).toMatchObject({ status: 'in_escrow', total: 18000 });
+      expect((await orders.findById(orderId))?.status).toBe('open');
+      expect(charge).toHaveBeenCalledTimes(1);
       charge.mockRestore();
     });
   });

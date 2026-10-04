@@ -9,6 +9,7 @@ export type PaymentErrorCode =
   | 'not_your_order'
   | 'order_not_payable'
   | 'already_paid'
+  | 'payment_in_progress'
   | 'payment_not_found'
   | 'not_delivered_yet'
   | 'already_released'
