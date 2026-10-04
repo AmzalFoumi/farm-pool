@@ -439,6 +439,58 @@ describe('payments', () => {
       expect(payment).toMatchObject({ total: 20000, advanceAmount: 6000 });
     });
 
+    it('tries again when the held balance moved between the read and the write', async () => {
+      const orderId = await paidOrder();
+      await propose.execute('farmer-1', orderId, { pricePerKg: 200 });
+      const adjust = jest.spyOn(payments, 'adjust').mockResolvedValueOnce(null);
+
+      await respond.execute('buyer-1', orderId, 'accept');
+
+      expect(adjust).toHaveBeenCalledTimes(2);
+      expect(await payments.findByOrder(orderId)).toMatchObject({
+        total: 20000,
+        heldAmount: 14600,
+      });
+    });
+
+    it('says so, rather than answering as if it worked, when the payment cannot follow the order', async () => {
+      const orderId = await paidOrder();
+      await propose.execute('farmer-1', orderId, { pricePerKg: 200 });
+      jest.spyOn(payments, 'adjust').mockResolvedValue(null);
+
+      await expect(
+        respond.execute('buyer-1', orderId, 'accept'),
+      ).rejects.toMatchObject({
+        code: 'payment_out_of_step',
+        kind: 'conflict',
+      });
+    });
+
+    it('undoes a payment whose price was accepted while the charge was in flight', async () => {
+      const orderId = await seedOrder('accepted');
+      await propose.execute('farmer-1', orderId, { pricePerKg: 200 });
+      const charge = jest
+        .spyOn(SimulatedPaymentGateway.prototype, 'charge')
+        .mockImplementationOnce(async () => {
+          await respond.execute('buyer-1', orderId, 'accept');
+          return { reference: 'sim_test' };
+        });
+
+      await expect(pay.execute('buyer-1', orderId)).rejects.toMatchObject({
+        code: 'price_changed',
+        kind: 'conflict',
+      });
+      expect(await payments.findByOrder(orderId)).toBeNull();
+      expect(await orders.findById(orderId)).toMatchObject({
+        status: 'accepted',
+        total: 20000,
+      });
+      charge.mockRestore();
+
+      const payment = await pay.execute('buyer-1', orderId);
+      expect(payment).toMatchObject({ total: 20000, heldAmount: 14000 });
+    });
+
     it('does not let the side that proposed accept its own price', async () => {
       const orderId = await paidOrder();
       await propose.execute('farmer-1', orderId, { pricePerKg: 200 });

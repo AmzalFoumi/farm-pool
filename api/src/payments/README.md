@@ -44,6 +44,13 @@ declines; one proposal at a time; only while the order is `accepted`, `open` or 
 accept the order is repriced and the difference is a `top_up` from the buyer or a `refund` to
 them. The advance is never taken back, so a new total below it is refused (`price_too_low`).
 
+**The order's total and the payment's total may not drift apart.** Accepting a price reprices the
+order first and then moves the held balance; if the payment changed in between, it is read again
+and retried, and only after three failed tries is the request refused (`payment_out_of_step`)
+instead of answered as if it worked. Paying claims the order at the total it charged, so a price
+accepted while the charge was in flight undoes the payment (`price_changed`) and the buyer pays
+again at the new total.
+
 ## Layout (light DDD)
 
 | Folder | Holds | Depends on |
@@ -57,11 +64,11 @@ them. The advance is never taken back, so a new total below it is refused (`pric
 
 | Method | Path | Allow | Result |
 | ------ | ---- | ----- | ------ |
-| POST | `/payments/orders/:orderId/pay` | `payment:pay` (buyer) | 201 `Payment` in `in_escrow`, order now `open`; 403 `not_your_order`; 404 `order_not_found`; 409 `order_not_payable` / `already_paid` |
+| POST | `/payments/orders/:orderId/pay` | `payment:pay` (buyer) | 201 `Payment` in `in_escrow`, order now `open`; 403 `not_your_order`; 404 `order_not_found`; 409 `order_not_payable` / `already_paid` / `price_changed` |
 | GET | `/payments/orders/:orderId` | `payment:read-own` | 200 `Payment` for its buyer or its farmer; 403 `not_your_order`; 404 `payment_not_found` |
 | POST | `/payments/orders/:orderId/confirm-receipt` | `order:confirm-receipt` (buyer) | 200 `Payment` in `released`; 403 `not_your_order`; 404 `payment_not_found`; 409 `not_delivered_yet` / `already_released` |
 | POST | `/payments/orders/:orderId/price-proposal` | `order:renegotiate` (buyer, farmer) | 200 `Order` carrying the proposal; 400 `price_unchanged` / `price_too_low`; 403 `not_your_order`; 409 `proposal_not_allowed` / `proposal_pending` |
-| POST | `/payments/orders/:orderId/price-proposal/accept` | `order:renegotiate` | 200 `Order` repriced; 403 `own_proposal`; 409 `no_open_proposal` / `proposal_not_allowed` |
+| POST | `/payments/orders/:orderId/price-proposal/accept` | `order:renegotiate` | 200 `Order` repriced; 403 `own_proposal`; 409 `no_open_proposal` / `proposal_not_allowed` / `payment_out_of_step` |
 | POST | `/payments/orders/:orderId/price-proposal/decline` | `order:renegotiate` | 200 `Order` unchanged, proposal removed (also how the proposer withdraws); 409 `no_open_proposal` |
 
 The proposal routes return the `Order`, not the `Payment`: the proposal lives on the order.
@@ -79,7 +86,7 @@ client cannot name what it pays any more than it can name its price.
 | 2 | `identity/auth/jwt-auth.guard.ts`, `roles.guard.ts` | The token is verified; `@Allow('payment:pay')` is checked against the shared matrix. |
 | 3 | `payments.controller.ts` | `@CurrentUser()` supplies the buyer id. |
 | 4 | `application/services/pay-for-order.ts` | Loads the order through the orders port. Refuses if missing, not the caller's, already paid, or not `accepted`. Charges the gateway, splits the total, writes the payment with its first two entries. |
-| 5 | `orders/.../mongoose-order.repository.ts` | `markPaid` moves the order `accepted` → `open`, matching buyer and status in one operation. If it finds nothing, step 4's payment is removed and the request is refused. |
+| 5 | `orders/.../mongoose-order.repository.ts` | `markPaid` moves the order `accepted` → `open`, matching buyer, status and the total charged in one operation. If it finds nothing, step 4's payment is removed and the request is refused. |
 | 6 | `domain/entities/payment.ts` | `toPaymentDto` shapes the response; `gatewayRef` is left out. |
 
 ## Reuse points

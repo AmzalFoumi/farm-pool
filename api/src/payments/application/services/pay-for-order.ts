@@ -72,15 +72,32 @@ export class PayForOrder {
     // Lost the race against a second tap: the storage holds one payment per order.
     if (!payment) throw alreadyPaid();
 
-    /* The order is claimed last, and only from `accepted`. If it moved while the charge was in
-       flight, the payment just written describes money for a deal that is no longer on, so it
-       is taken back out rather than left holding. */
-    const opened = await this.orders.markPaid(orderId, buyerId);
+    /* The order is claimed last, only from `accepted` and only at the total that was charged.
+       If it moved or was repriced while the charge was in flight, the payment just written
+       describes money for a deal that is no longer on, so it is taken back out rather than left
+       holding. */
+    const opened = await this.orders.markPaid(orderId, buyerId, order.total);
     if (!opened) {
       await this.payments.remove(payment.id);
-      throw notPayable();
+      throw await this.whyNotPayable(orderId, order.total);
     }
     return toPaymentDto(payment);
+  }
+
+  /** A repriced order can be paid again at its new total; any other refusal is final. */
+  private async whyNotPayable(
+    orderId: string,
+    chargedTotal: number,
+  ): Promise<PaymentError> {
+    const current = await this.orders.findById(orderId);
+    if (current?.status === 'accepted' && current.total !== chargedTotal) {
+      return new PaymentError(
+        'conflict',
+        'price_changed',
+        'The price of this order has just changed. Check the new total and pay again',
+      );
+    }
+    return notPayable();
   }
 }
 

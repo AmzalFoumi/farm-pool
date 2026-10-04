@@ -91,10 +91,14 @@ export class RespondToPriceProposal {
     );
     if (!repriced) throw noOpenProposal();
 
-    const payment = await this.payments.findByOrder(orderId);
-    if (payment && payment.total !== newTotal) {
+    /* The order now carries the new total, so the payment has to follow it. `adjust` refuses
+       when the payment changed after it was read here; it is then read again and tried again,
+       because by this point the caller has no proposal left to answer a second time. */
+    for (let attempt = 0; attempt < ADJUST_ATTEMPTS; attempt += 1) {
+      const payment = await this.payments.findByOrder(orderId);
+      if (!payment || payment.total === newTotal) return toOrderDto(repriced);
       const difference = toCents(newTotal - payment.total);
-      await this.payments.adjust(
+      const adjusted = await this.payments.adjust(
         orderId,
         payment.heldAmount,
         {
@@ -107,10 +111,18 @@ export class RespondToPriceProposal {
           new Date(),
         ),
       );
+      if (adjusted) return toOrderDto(repriced);
     }
-    return toOrderDto(repriced);
+    throw new PaymentError(
+      'conflict',
+      'payment_out_of_step',
+      'The price changed, but the payment could not be updated to match. Please report this order',
+    );
   }
 }
+
+/** How many times the held balance is read and moved before the request gives up. */
+const ADJUST_ATTEMPTS = 3;
 
 function noOpenProposal(): PaymentError {
   return new PaymentError(

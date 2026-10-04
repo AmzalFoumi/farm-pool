@@ -34,10 +34,15 @@ export interface OrderRepository {
   recordDelivery(id: string, driverId: string): Promise<Order | null>;
   /**
    * The buyer has paid (FARM-41): `accepted` → `open`, which is what puts the order on the
-   * driver job board. Matches on the buyer *and* the status in one operation. Resolves `null`
-   * when the order is not this buyer's or is not waiting to be paid for.
+   * driver job board. Matches on the buyer, the status *and* the total that was paid in one
+   * operation. Resolves `null` when the order is not this buyer's, is not waiting to be paid
+   * for, or was repriced (FARM-53) after the caller read it.
    */
-  markPaid(id: string, buyerId: string): Promise<Order | null>;
+  markPaid(
+    id: string,
+    buyerId: string,
+    expectedTotal: number,
+  ): Promise<Order | null>;
   /**
    * The buyer confirms the produce arrived (FARM-51): stamps `receivedAt` on a `delivered` order
    * that has none. The status stays `delivered`. Resolves `null` when the order is not this

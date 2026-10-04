@@ -17,7 +17,9 @@ export type PaymentErrorCode =
   | 'no_open_proposal'
   | 'own_proposal'
   | 'price_unchanged'
-  | 'price_too_low';
+  | 'price_too_low'
+  | 'price_changed'
+  | 'payment_out_of_step';
 
 export class PaymentError extends DomainError<PaymentErrorCode> {
   constructor(kind: DomainErrorKind, code: PaymentErrorCode, message: string) {

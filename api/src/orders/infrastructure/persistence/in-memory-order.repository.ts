@@ -82,9 +82,18 @@ export class InMemoryOrderRepository implements OrderRepository {
     );
   }
 
-  markPaid(id: string, buyerId: string): Promise<Order | null> {
+  markPaid(
+    id: string,
+    buyerId: string,
+    expectedTotal: number,
+  ): Promise<Order | null> {
     const row = this.rows.get(id);
-    if (!row || row.buyerId !== buyerId || row.status !== 'accepted') {
+    if (
+      !row ||
+      row.buyerId !== buyerId ||
+      row.status !== 'accepted' ||
+      row.total !== expectedTotal
+    ) {
       return Promise.resolve(null);
     }
     const updated: Order = { ...row, status: 'open', updatedAt: new Date() };
