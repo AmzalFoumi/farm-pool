@@ -103,7 +103,7 @@ requested ─farmer(FARM-46)─▶ accepted ─BUYER PAYS (FARM-41)─▶ open �
 - [x] Order screen: "Pay Rs X" for the buyer on an `accepted` order
 - [x] Dev-only seed for an `accepted` order: `npm run seed:demo-order -w api`
 - [x] `tsc` and lint clean on the changed files; tap targets 48dp
-- [ ] Seen running, in light and dark mode (not done: see "Not yet verified")
+- [x] Seen running on an Android emulator, in light and dark mode (see "Seen running")
 
 **Gate 4 — confirm receipt (FARM-51)**
 - [x] `ORDER_REPOSITORY.markReceived`; `ConfirmReceipt` use-case and endpoint; tests
@@ -121,14 +121,25 @@ requested ─farmer(FARM-46)─▶ accepted ─BUYER PAYS (FARM-41)─▶ open �
 **Gate 7 — docs**
 - [x] `DECISIONS.md`, `DATA-MODEL.md`, `auth/README.md`, `orders/README.md`
 
-## Not yet verified
+## Seen running
 
-**No screen in this work has been seen running.** The browser build of the app fails to load
-with `Unable to resolve module …/rndevtools/ReactDevToolsSettingsManager` from inside
-`react-native`, before any screen renders, and no phone or emulator was attached. The cause was
-not found; a browser stand-in for the driver map did not fix it, so it is not that. The api is
-covered by tests; the screens are covered only by the type checker and the linter. Step 5 below
-is still to do.
+Walked on an Android emulator (development build) on 4 October 2026, against a local throwaway
+database, as the seed buyer:
+
+- the accepted order shows "Pay Rs 18,000"; the sheet shows Rs 5,400 now and Rs 12,600 held
+- paying opens the receipt with two entries; the order then shows "Open" and the payment card
+- proposing Rs 200 / kg shows the waiting card with Withdraw; after the farmer accepts, the
+  total is Rs 20,000 and the receipt gains "You added Rs 2,000 because the price went up"
+- after the driver delivers, "Confirm I received it" opens the sheet, which states the amount
+  and the 100 kg ordered against the 95 kg collected; confirming opens the receipt at
+  "Paid in full", Rs 0 held; a second confirm is refused with `already_released`
+- the order screen and the receipt in dark mode
+
+**Not seen:** the farmer's side of these screens (their wording, and Accept / Decline on a
+proposal — the farmer's answer and the driver's steps were sent over HTTP), the two sheets in
+dark mode, and anything in Sinhala or Tamil. The browser build of the app does not load at all
+(`Unable to resolve module …/rndevtools/ReactDevToolsSettingsManager`, cause not found), so none
+of this was checked on web.
 
 ## Verification
 
@@ -137,6 +148,6 @@ is still to do.
 3. From `api/`: `npx jest --config ./test/jest-e2e.json --runInBand` — real HTTP against an
    in-memory database, every refusal in the endpoint table.
 4. `npx tsc --noEmit -p mobile` and `npm run lint -w mobile`.
-5. By hand in the app: buyer pays an accepted order → receipt opens → order shows "Open" and the
+5. By hand in the app (done once, see "Seen running"): buyer pays an accepted order → receipt opens → order shows "Open" and the
    escrow card; driver accepts, picks up, delivers; buyer taps "Confirm I received it" → payment
    shows released. Then a price proposal from each side. Repeat the screens in dark mode.
