@@ -1,6 +1,11 @@
-/** One order. The buyer can cancel it only while it is still `requested`. */
+/**
+ * One order, for its buyer and its farmer.
+ *
+ * The footer holds the one thing the buyer can do at this stage: cancel while it is still
+ * `requested`, pay once the farmer has accepted (FARM-41).
+ */
 
-import { cropById, type Order } from "@farm-pool/shared";
+import { can, cropById, type Order } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -16,6 +21,9 @@ import { CropTile } from "@/features/listings/crop-tile";
 import { AssignedDriverCard } from "@/features/logistics/assigned-driver-card";
 import { ordersApi } from "@/features/orders/api";
 import { OrderStatusPill, orderStatusLabel } from "@/features/orders/status-pill";
+import { paymentsApi } from "@/features/payments/api";
+import { PaySheet } from "@/features/payments/pay-sheet";
+import { PaymentCard } from "@/features/payments/payment-card";
 import { ApiError } from "@/lib/api";
 import { formatDate, formatPrice } from "@/lib/format";
 import { useRequest } from "@/lib/use-request";
@@ -62,8 +70,21 @@ function OrderBody({
   onChanged: () => void;
 }) {
   const crop = cropById(order.cropId);
+  const { user } = useAuth();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
+
+  /* An order nobody has paid for yet answers `payment_not_found`, which is the ordinary case
+     rather than a failure, so this request is read directly instead of through `RequestView`. */
+  const payment = useRequest(() => paymentsApi.get(token, order.id), `${token}|${order.id}`);
+
+  const viewer = user?.id === order.farmerId ? "farmer" : "buyer";
+  const canPay =
+    order.status === "accepted" &&
+    viewer === "buyer" &&
+    user !== null &&
+    can(user.role, "payment:pay");
 
   const cancel = async () => {
     setBusy(true);
@@ -121,9 +142,20 @@ function OrderBody({
         {/* Renders itself away until a driver has taken the job, so there is no branch here. */}
         <AssignedDriverCard token={token} orderId={order.id} />
 
+        {payment.status === "ready" ? (
+          <PaymentCard payment={payment.data} viewer={viewer} farmerName={order.farmerName} />
+        ) : null}
+
         {order.status === "requested" ? (
           <Text className="type-caption text-muted-foreground">
             Waiting for {order.farmerName} to accept. You can cancel until they do.
+          </Text>
+        ) : null}
+        {order.status === "accepted" ? (
+          <Text className="type-caption text-muted-foreground">
+            {viewer === "buyer"
+              ? `${order.farmerName} accepted. Pay to confirm the order and book a driver.`
+              : "You accepted. A driver is booked once the buyer pays."}
           </Text>
         ) : null}
         {error ? <Text className="type-caption text-destructive">{error}</Text> : null}
@@ -142,6 +174,27 @@ function OrderBody({
           />
         </VStack>
       ) : null}
+
+      {canPay ? (
+        <VStack
+          className="border-t border-border bg-card px-gutter pt-3"
+          style={{ paddingBottom: Math.max(bottomInset, 23) }}
+        >
+          <AppButton label={`Pay ${formatPrice(order.total)}`} onPress={() => setPaying(true)} />
+        </VStack>
+      ) : null}
+
+      <PaySheet
+        open={paying}
+        onClose={() => setPaying(false)}
+        order={order}
+        token={token}
+        bottomInset={bottomInset}
+        onPaid={() => {
+          payment.reload();
+          onChanged();
+        }}
+      />
     </>
   );
 }
