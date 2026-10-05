@@ -38,7 +38,8 @@ export default function FarmerListingsScreen() {
   const byFilter = (status: ListingStatus) => {
     if (filter === "active") return status === "verified" || status === "pending_approval";
     if (filter === "paused") return status === "paused";
-    if (filter === "drafts") return status === "draft";
+    // A rejected listing sits with the drafts: it needs the farmer to fix it and send it again.
+    if (filter === "drafts") return status === "draft" || status === "rejected";
     if (filter === "sold") return status === "sold";
     return false;
   };
@@ -49,7 +50,7 @@ export default function FarmerListingsScreen() {
         (item) => item.status === "verified" || item.status === "pending_approval"
       ).length,
       paused: rows.filter((item) => item.status === "paused").length,
-      drafts: rows.filter((item) => item.status === "draft").length,
+      drafts: rows.filter((item) => item.status === "draft" || item.status === "rejected").length,
       sold: rows.filter((item) => item.status === "sold").length
     };
   };
