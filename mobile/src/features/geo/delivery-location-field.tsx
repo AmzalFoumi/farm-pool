@@ -146,6 +146,7 @@ export function DeliveryLocationField({
                 </Text>
               ) : null}
               <AppButton
+                testID="delivery-save-place"
                 label={saving ? "Saving…" : "Save this place"}
                 variant="outline"
                 disabled={saving || label.trim().length === 0}
@@ -157,6 +158,7 @@ export function DeliveryLocationField({
       ) : (
         <HStack className="gap-2">
           <AppButton
+            testID="delivery-pin"
             label={saved.length > 0 ? "Somewhere else" : "Pin the delivery point"}
             variant="outline"
             onPress={() => setPinning(true)}

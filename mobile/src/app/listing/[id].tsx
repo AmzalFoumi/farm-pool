@@ -385,6 +385,7 @@ function PlaceOrderSheet({
         <VStack className="w-full gap-4 pt-2">
           <Text className="type-h3 text-foreground">Place order</Text>
           <AppTextField
+            testID="order-quantity"
             label="Quantity (kg)"
             value={quantity}
             onChangeText={setQuantity}
@@ -411,6 +412,7 @@ function PlaceOrderSheet({
             onUserChanged={onUserChanged}
           />
           <AppButton
+            testID="order-send"
             label={submitting ? "Sending…" : "Send request"}
             onPress={() => void submit()}
             disabled={submitting}

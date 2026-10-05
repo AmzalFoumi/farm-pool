@@ -67,6 +67,7 @@ export function PointPicker({
 
       <Box className="h-52 overflow-hidden rounded-card border border-border">
         <MapView
+          testID="point-picker-map"
           provider={MAP_PROVIDER}
           style={{ flex: 1 }}
           initialRegion={{

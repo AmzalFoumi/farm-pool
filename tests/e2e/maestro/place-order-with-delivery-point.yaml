@@ -1,0 +1,60 @@
+# FARM-26 — a buyer places an order and pins where it should be delivered.
+#
+# This is the flow that found two bugs by hand: the sheet crashed on open (useAuth inside a
+# portal), and the map drew a blank white box on iOS (no Google Maps SDK in Expo Go). Both would
+# pass a typecheck and every unit test, so this is the only thing that holds them down.
+#
+# `appId` is Expo Go's, not ours: under Expo Go the app has no bundle id of its own. See README.
+appId: host.exp.Exponent
+---
+- openLink: exp://127.0.0.1:8081/--/listings
+- assertVisible:
+    text: "Listings"
+    timeout: 30000
+
+# Open the first listing. Text here is a crop name from the seed rather than UI copy, so it does
+# not move with the language.
+- tapOn:
+    text: "Pumpkin"
+- assertVisible:
+    text: "Place order"
+    timeout: 15000
+
+- tapOn:
+    text: "Place order"
+
+# The sheet renders at all — this assertion is what the portal crash broke.
+- assertVisible:
+    id: "order-quantity"
+    timeout: 10000
+- assertVisible:
+    id: "delivery-pin"
+
+- tapOn:
+    id: "order-quantity"
+- inputText: "25"
+- hideKeyboard
+
+# The delivery point: the picker opens and the map actually draws.
+- tapOn:
+    id: "delivery-pin"
+- assertVisible:
+    id: "point-picker-map"
+    timeout: 10000
+
+# Tapping the map drops a pin. Proof is the Clear button, which only exists once a point is set.
+- tapOn:
+    id: "point-picker-map"
+- assertVisible:
+    text: "Clear"
+    timeout: 5000
+
+- takeScreenshot: pinned-delivery-point
+
+- tapOn:
+    id: "order-send"
+
+# Placing an order lands on its detail screen.
+- assertVisible:
+    text: "Order"
+    timeout: 20000

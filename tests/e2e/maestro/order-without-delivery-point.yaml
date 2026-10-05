@@ -1,0 +1,31 @@
+# FARM-26 — the delivery point is optional, and the order goes through without one.
+#
+# Worth its own flow rather than a branch in the first: "a buyer with no signal can still order"
+# is the promise the optional field makes, and a flow that only ever pins would never check it.
+appId: host.exp.Exponent
+---
+- openLink: exp://127.0.0.1:8081/--/listings
+- assertVisible:
+    text: "Listings"
+    timeout: 30000
+
+- tapOn:
+    text: "Pumpkin"
+- tapOn:
+    text: "Place order"
+
+- assertVisible:
+    id: "order-quantity"
+    timeout: 10000
+
+- tapOn:
+    id: "order-quantity"
+- inputText: "10"
+- hideKeyboard
+
+# Straight to Send — no pin. The button must not be gated on a delivery point.
+- tapOn:
+    id: "order-send"
+- assertVisible:
+    text: "Order"
+    timeout: 20000
