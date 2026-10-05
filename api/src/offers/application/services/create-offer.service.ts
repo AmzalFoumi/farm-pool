@@ -1,4 +1,4 @@
-import type { CreateOfferData, CropId } from '@farm-pool/shared';
+import { toCents, type CreateOfferData, type CropId } from '@farm-pool/shared';
 import { Inject, Injectable } from '@nestjs/common';
 import { LISTING_REPOSITORY } from '../../../catalog/domain/repositories/listing.repository';
 import type { ListingRepository } from '../../../catalog/domain/repositories/listing.repository';
@@ -75,7 +75,7 @@ export class CreateOfferService {
       initiatedBy: requesterRole,
       pricePerKg: data.proposedPrice,
       quantityKg: data.proposedQuantityKg,
-      total: data.proposedPrice * data.proposedQuantityKg,
+      total: toCents(data.proposedPrice * data.proposedQuantityKg),
       note: data.note,
       status: 'PENDING',
       actionRequiredBy: requesterRole === 'FARMER' ? 'BUYER' : 'FARMER',

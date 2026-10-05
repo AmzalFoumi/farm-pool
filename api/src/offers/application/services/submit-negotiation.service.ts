@@ -1,4 +1,4 @@
-import type { SubmitNegotiationData } from '@farm-pool/shared';
+import { toCents, type SubmitNegotiationData } from '@farm-pool/shared';
 import { Inject, Injectable } from '@nestjs/common';
 import { sideOf, type Offer } from '../../domain/entities/offer';
 import { OFFER_REPOSITORY } from '../../domain/repositories/offer.repository';
@@ -55,7 +55,7 @@ export class SubmitNegotiationService {
     });
     offer.pricePerKg = data.proposedPrice;
     offer.quantityKg = data.proposedQuantityKg;
-    offer.total = data.proposedPrice * data.proposedQuantityKg;
+    offer.total = toCents(data.proposedPrice * data.proposedQuantityKg);
     offer.note = data.note;
     offer.status = 'NEGOTIATING';
     offer.actionRequiredBy = side === 'FARMER' ? 'BUYER' : 'FARMER';
