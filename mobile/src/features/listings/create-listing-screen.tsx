@@ -134,8 +134,9 @@ export function CreateListingScreen({ initialData }: { initialData?: Listing }) 
       harvestDate: listingData.step5?.harvestDate || new Date().toISOString().split("T")[0],
       expiryDays: listingData.step5?.validityDays,
       /* Step 3 only attaches stock sample photos (upload is not built), so none are sent:
-         a buyer must never see a stock photo presented as this farmer's harvest. */
-      photos: [],
+         a buyer must never see a stock photo presented as this farmer's harvest. An edit
+         sends back the photos the listing already has, so saving does not wipe them. */
+      photos: initialData?.photos ?? [],
       // Step 5 will not continue without a district, so this is always the farmer's answer.
       district: listingData.step5?.district ?? "",
       fulfillmentOption: listingData.step5?.fulfillmentOption || "shared"
