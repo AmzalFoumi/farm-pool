@@ -5,6 +5,7 @@ import {
   districtSchema,
   fulfillmentOptionSchema,
   kgSchema,
+  pickupPointSchema,
   pricePerKgSchema
 } from "../catalog/listing";
 import { vehicleTypeSchema, driverVerificationSchema } from "../identity/driver";
@@ -36,6 +37,15 @@ export const jobSummarySchema = z.object({
   /** Where the produce is collected — the listing's district. */
   district: districtSchema,
   town: z.string().optional(),
+  /**
+   * The farm gate, when the farmer dropped a pin (FARM-26). Present on the board as well as the
+   * detail: it carries no more privacy than the town already does, and a driver deciding whether
+   * a trip is worth taking wants the real distance, not a district's.
+   *
+   * Absent on an older listing or one posted without a GPS fix — the app falls back to the
+   * district centre, and says which it is showing.
+   */
+  pickupPoint: pickupPointSchema.optional(),
   /** `shared` is a consolidated batch candidate, `solo` a dedicated vehicle (LP-32). */
   fulfillmentOption: fulfillmentOptionSchema.optional(),
   /** `open` on the board; `assigned`, `in_transit` or `delivered` on a driver's own list. */

@@ -47,6 +47,9 @@ export function toJobSummary(
     farmerName: order.farmerName,
     district: listing.district,
     ...(listing.town !== undefined ? { town: listing.town } : {}),
+    ...(listing.pickupPoint !== undefined
+      ? { pickupPoint: listing.pickupPoint }
+      : {}),
     ...(listing.fulfillmentOption !== undefined
       ? { fulfillmentOption: listing.fulfillmentOption }
       : {}),

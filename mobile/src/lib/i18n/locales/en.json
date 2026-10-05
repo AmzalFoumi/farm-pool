@@ -9,7 +9,6 @@
     "kg": "{{count, number}} kg",
     "phone": "Phone"
   },
-
   "errors": {
     "network": "Can't reach the server. Check your connection and try again.",
     "generic": "Something went wrong. Please try again.",
@@ -21,7 +20,6 @@
     "not_your_job": "This job is not yours any more.",
     "wrong_stage": "This job has already moved on."
   },
-
   "orderStatus": {
     "requested": "Requested",
     "accepted": "Accepted",
@@ -32,7 +30,6 @@
     "in_transit": "In transit",
     "delivered": "Delivered"
   },
-
   "driverOnboarding": {
     "slide1": {
       "title": "One job, one route",
@@ -49,10 +46,8 @@
     "createAccount": "Create my account",
     "skipIntro": "Skip the introduction"
   },
-
   "driverSignUp": {
     "stepLabel": "Delivery partner · step {{step}} of {{count}}",
-
     "phone": {
       "title": "Your mobile number",
       "note": "We send a 6-digit code by SMS. Buyers and farmers see this number on the day of a pickup.",
@@ -66,7 +61,6 @@
       "action": "Send code",
       "actionBusy": "Sending…"
     },
-
     "code": {
       "title": "Enter the code",
       "note": "Sent by SMS to {{phone}}.",
@@ -80,7 +74,6 @@
       "action": "Verify",
       "actionBusy": "Checking…"
     },
-
     "vehicle": {
       "title": "What do you drive?",
       "note": "Pick your vehicle and type the number on the plate.",
@@ -94,7 +87,6 @@
       "districtNote": "Jobs in this district are shown to you first.",
       "districtError": "Pick the district you collect in"
     },
-
     "documents": {
       "title": "Two photos",
       "note": "Take a clear photo of each. No typing needed.",
@@ -111,7 +103,6 @@
       "action": "Send for approval",
       "actionBusy": "Sending…"
     },
-
     "done": {
       "title": "Sent for checking",
       "body": "Your area coordinator reviews your details, usually within one day. We SMS you when jobs open up.",
@@ -120,11 +111,9 @@
       "unassigned": "Waiting to be assigned",
       "action": "See jobs near you"
     },
-
     "failed": "Could not finish sign-up. Please try again.",
     "phoneTakenLogIn": "An account with this number already exists. Log in instead."
   },
-
   "jobs": {
     "title": "Jobs",
     "mine": "My jobs",
@@ -135,7 +124,6 @@
     "noneBody": "Jobs appear here once buyers' orders in your district are ready to collect.",
     "cardLabel": "{{count, number}} kilos of {{crop}} from {{place}}, {{total}}",
     "shared": "Shared",
-
     "detail": {
       "title": "Job",
       "heading": "{{count, number}} kg {{crop}}",
@@ -152,9 +140,10 @@
       "finding": "Finding the place",
       "approximate": "Approximate — this is {{district}} district, not the farm gate. Call the farmer for directions.",
       "directions": "Directions in Google Maps",
-      "directionsLabel": "Open directions to {{place}} in Google Maps"
+      "directionsLabel": "Open directions to {{place}} in Google Maps",
+      "exactPin": "The farmer pinned this gate. Tap for directions.",
+      "pinLabel": "Farm gate"
     },
-
     "actions": {
       "take": "Take this job",
       "takeBusy": "Taking this job…",
@@ -165,7 +154,6 @@
       "weightError": "Enter the weight in whole kilograms",
       "failed": "Could not do that. Please try again."
     },
-
     "driverCard": {
       "heading": "Collecting this order",
       "plate": "Plate number",
@@ -174,7 +162,6 @@
       "unverified": "This driver's vehicle has not been checked yet. Match the plate number above against the vehicle before you hand over produce."
     }
   },
-
   "verification": {
     "pending": "Awaiting check",
     "verified": "Verified",

@@ -82,7 +82,12 @@ export default function JobDetailScreen() {
               {/* Where it is, before who to call about it: a driver deciding whether to take a
                   job looks at the place first. Renders nothing for a district the table does not
                   know, so this is not conditional on having accepted. */}
-              <JobMap district={detail.district} town={detail.town} label={detail.farmerName} />
+              <JobMap
+                district={detail.district}
+                town={detail.town}
+                pickupPoint={detail.pickupPoint}
+                label={detail.farmerName}
+              />
 
               {detail.pickup ? (
                 <ContactCard

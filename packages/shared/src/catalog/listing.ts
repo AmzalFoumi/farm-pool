@@ -49,6 +49,35 @@ export const kgSchema = z.number().int("Whole kilograms only").positive("Must be
 
 export const pricePerKgSchema = z.number().positive("Must be more than Rs 0");
 
+/**
+ * Where the produce is actually collected — the farm gate, not the district (FARM-26).
+ *
+ * On the **listing**, not the farmer's account, because a farmer may harvest from more than one
+ * plot and the place belongs to the batch being sold. A driver navigating to a 2 ha field needs
+ * the gate they can reach a lorry to, which is a per-listing answer.
+ *
+ * Optional throughout. Listings created before this existed have none, and a farmer with no
+ * signal when the GPS fails must still be able to post produce — so every reader falls back to
+ * the district centre in `DISTRICT_POINTS`. A listing without a point is less useful, never
+ * broken.
+ *
+ * Bounds are Sri Lanka's, deliberately tight: the common failure is a transposed pair, and
+ * latitude 80 / longitude 7 lands in Kazakhstan rather than failing loudly. Catching it here
+ * means it is a form error the farmer can fix, not a driver sent to the wrong continent.
+ */
+export const pickupPointSchema = z.object({
+  latitude: z
+    .number()
+    .min(5.8, "That is south of Sri Lanka — check the pin")
+    .max(10.0, "That is north of Sri Lanka — check the pin"),
+  longitude: z
+    .number()
+    .min(79.5, "That is west of Sri Lanka — check the pin")
+    .max(82.0, "That is east of Sri Lanka — check the pin")
+});
+
+export type PickupPoint = z.infer<typeof pickupPointSchema>;
+
 export const listingSchema = z.object({
   id: z.string(),
   farmerId: z.string(),
@@ -69,6 +98,8 @@ export const listingSchema = z.object({
   district: districtSchema,
   town: z.string().optional(),
   address: z.string().optional(),
+  /** The farm gate, when the farmer dropped a pin (FARM-26). Absent on older listings. */
+  pickupPoint: pickupPointSchema.optional(),
   fulfillmentOption: fulfillmentOptionSchema.optional(),
   farmgateNotes: z.string().optional(),
   /** The smallest quantity a buyer may order. Set by the farmer or the seed, never by the buyer. */
@@ -116,6 +147,7 @@ export const createListingSchema = z
     district: districtSchema,
     town: shortText(60).optional(),
     address: shortText(200).optional(),
+    pickupPoint: pickupPointSchema.optional(),
     fulfillmentOption: fulfillmentOptionSchema.optional(),
     farmgateNotes: shortText(500).optional(),
     minOrderKg: kgSchema.optional()

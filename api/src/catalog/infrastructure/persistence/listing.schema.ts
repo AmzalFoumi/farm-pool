@@ -24,6 +24,18 @@ import type { HydratedDocument } from 'mongoose';
  * `seedKey` is set only by the dev seed so a re-run updates the same rows; real listings never
  * have one (sparse unique index, so its absence does not collide).
  */
+/** A farm gate's coordinates. `_id: false` because it is a value, not an entity. */
+@Schema({ _id: false })
+export class PickupPointDocument {
+  @Prop({ required: true })
+  latitude: number;
+
+  @Prop({ required: true })
+  longitude: number;
+}
+
+const PickupPointSchema = SchemaFactory.createForClass(PickupPointDocument);
+
 @Schema({ collection: 'listings', timestamps: true })
 export class ListingDocument {
   @Prop({ required: true, index: true })
@@ -77,6 +89,15 @@ export class ListingDocument {
 
   @Prop({ required: false })
   address?: string;
+
+  /**
+   * The farm gate (FARM-26). Embedded rather than a GeoJSON `2dsphere` point: nothing today asks
+   * "which listings are near me", only "where is this one". A geo index is one migration away if
+   * a radius search ever arrives, and guessing at it now would mean carrying GeoJSON's
+   * [lng, lat] ordering — the classic source of transposed coordinates — for no present benefit.
+   */
+  @Prop({ type: PickupPointSchema, required: false })
+  pickupPoint?: PickupPointDocument;
 
   @Prop({ type: String, required: false, enum: FULFILLMENT_OPTIONS })
   fulfillmentOption?: FulfillmentOption;
