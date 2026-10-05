@@ -34,7 +34,7 @@ export const offersApi = {
     });
   },
 
-  accept(token: string, offerId: string): Promise<void> {
+  accept(token: string, offerId: string): Promise<{ orderId: string }> {
     return apiFetch(`/offers/${encodeURIComponent(offerId)}/accept`, {
       method: "POST",
       token

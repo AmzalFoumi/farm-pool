@@ -90,7 +90,7 @@ export class PlaceOrder {
       pricePerKg: offer.pricePerKg,
       total: toCents(offer.quantityKg * offer.pricePerKg),
       ...(offer.note ? { note: offer.note } : {}),
-      status: 'accepted',
+      status: 'open',
     });
     return toOrderDto(created);
   }

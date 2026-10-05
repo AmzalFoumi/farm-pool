@@ -71,10 +71,34 @@ export class InMemoryListingRepository implements ListingRepository {
     return Promise.resolve(snapshot(updated));
   }
 
-  markSoldIfVerified(id: string): Promise<Listing | null> {
+  deductQuantity(id: string, quantity: number): Promise<Listing | null> {
     const row = this.rows.get(id);
-    if (!row || row.status !== 'verified') return Promise.resolve(null);
-    const updated = { ...row, status: 'sold' as const, updatedAt: new Date() };
+    if (!row || row.status !== 'verified' || row.quantityKg < quantity) {
+      return Promise.resolve(null);
+    }
+    const newQuantity = row.quantityKg - quantity;
+    const newStatus = newQuantity < row.minOrderKg ? 'sold' : row.status;
+    const updated = {
+      ...row,
+      quantityKg: newQuantity,
+      status: newStatus as ListingStatus,
+      updatedAt: new Date(),
+    };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
+  refundQuantity(id: string, quantity: number): Promise<Listing | null> {
+    const row = this.rows.get(id);
+    if (!row) return Promise.resolve(null);
+    const newQuantity = row.quantityKg + quantity;
+    const newStatus = row.status === 'sold' ? 'verified' : row.status;
+    const updated = {
+      ...row,
+      quantityKg: newQuantity,
+      status: newStatus as ListingStatus,
+      updatedAt: new Date(),
+    };
     this.rows.set(id, updated);
     return Promise.resolve(snapshot(updated));
   }

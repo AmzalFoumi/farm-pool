@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
 import { useState, useCallback } from "react";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cropById } from "@farm-pool/shared";
 
@@ -60,6 +60,8 @@ export default function OffersScreen() {
 
   const [negotiatingOfferId, setNegotiatingOfferId] = useState<string | null>(null);
   const [viewHistoryOfferId, setViewHistoryOfferId] = useState<string | null>(null);
+  const [isAcceptingOfferId, setIsAcceptingOfferId] = useState<string | null>(null);
+  const [isDecliningOfferId, setIsDecliningOfferId] = useState<string | null>(null);
 
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
   const req = useRequest(() => listingsApi.get(token ?? "", id), `${token}|${id}`);
@@ -203,6 +205,57 @@ export default function OffersScreen() {
               offer={offer}
               onNegotiate={() => setNegotiatingOfferId(offer.id)}
               onViewHistory={() => setViewHistoryOfferId(offer.id)}
+              onAccept={() => {
+                Alert.alert(
+                  "Accept Offer",
+                  "Are you sure you want to accept this offer? This action will finalize the order and deduct the quantity from your listing.",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                      text: "Accept",
+                      onPress: async () => {
+                        if (!token || isAcceptingOfferId) return; // Prevent double taps or concurrent actions
+                        setIsAcceptingOfferId(offer.id);
+                        try {
+                          await offersApi.accept(token, offer.id);
+                          offersReq.reload();
+                        } catch (err) {
+                          console.error("Failed to accept offer:", err);
+                          Alert.alert("Error", "Failed to accept the offer. Please try again.");
+                        } finally {
+                          setIsAcceptingOfferId(null);
+                        }
+                      }
+                    }
+                  ]
+                );
+              }}
+              onDecline={() => {
+                Alert.alert(
+                  "Decline Offer",
+                  "Are you sure you want to decline this offer? This action cannot be undone.",
+                  [
+                    { text: "No", style: "cancel" },
+                    {
+                      text: "Yes, Decline",
+                      style: "destructive",
+                      onPress: async () => {
+                        if (!token || isDecliningOfferId) return;
+                        setIsDecliningOfferId(offer.id);
+                        try {
+                          await offersApi.decline(token, offer.id);
+                          offersReq.reload();
+                        } catch (err) {
+                          console.error("Failed to decline offer:", err);
+                          Alert.alert("Error", "Failed to decline the offer. Please try again.");
+                        } finally {
+                          setIsDecliningOfferId(null);
+                        }
+                      }
+                    }
+                  ]
+                );
+              }}
             />
           ))}
       </ScrollView>

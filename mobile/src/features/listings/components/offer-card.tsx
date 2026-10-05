@@ -68,11 +68,15 @@ export type Offer = {
 export function OfferCard({
   offer,
   onNegotiate,
-  onViewHistory
+  onViewHistory,
+  onAccept,
+  onDecline
 }: {
   offer: Offer;
   onNegotiate?: () => void;
   onViewHistory?: () => void;
+  onAccept?: () => void;
+  onDecline?: () => void;
 }) {
   if (offer.status === "new") {
     return (
@@ -125,7 +129,10 @@ export function OfferCard({
         </HStack>
 
         <VStack className="gap-2 pt-1">
-          <Pressable className="w-full flex-row items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 active:scale-95">
+          <Pressable
+            onPress={onAccept}
+            className="w-full flex-row items-center justify-center gap-1.5 rounded-xl bg-primary px-3 py-2.5 active:scale-95"
+          >
             <View className="text-primary-foreground">
               <CheckCircleIcon />
             </View>
@@ -144,7 +151,10 @@ export function OfferCard({
               </View>
               <Text className="text-[12px] font-bold text-foreground">Negotiate</Text>
             </Pressable>
-            <Pressable className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-destructive-subtle px-3 py-2.5 active:scale-95">
+            <Pressable
+              onPress={onDecline}
+              className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-destructive-subtle px-3 py-2.5 active:scale-95"
+            >
               <Text className="text-[12px] font-bold text-destructive">Decline</Text>
             </Pressable>
           </HStack>
@@ -225,7 +235,10 @@ export function OfferCard({
         </Pressable>
 
         <HStack className="gap-2 pt-1">
-          <Pressable className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-primary px-2 py-2.5 active:scale-95">
+          <Pressable
+            onPress={onAccept}
+            className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-primary px-2 py-2.5 active:scale-95"
+          >
             <Text className="text-[12px] font-bold text-primary-foreground">Accept</Text>
           </Pressable>
           <Pressable
@@ -234,7 +247,10 @@ export function OfferCard({
           >
             <Text className="text-[12px] font-bold text-foreground">Negotiate</Text>
           </Pressable>
-          <Pressable className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-destructive-subtle px-2 py-2.5 active:scale-95">
+          <Pressable
+            onPress={onDecline}
+            className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-destructive-subtle px-2 py-2.5 active:scale-95"
+          >
             <Text className="text-[12px] font-bold text-destructive">Decline</Text>
           </Pressable>
         </HStack>
@@ -437,8 +453,11 @@ export function OfferCard({
       </Text>
 
       <HStack className="gap-2 pt-1">
-        <Pressable className="flex-1 rounded-xl bg-muted px-3 py-2.5 items-center justify-center active:scale-95">
-          <Text className="text-[12px] font-bold text-foreground">View Details</Text>
+        <Pressable
+          onPress={onViewHistory}
+          className="flex-1 rounded-xl bg-muted px-3 py-2.5 items-center justify-center active:scale-95"
+        >
+          <Text className="text-[12px] font-bold text-foreground">View Negotiation History</Text>
         </Pressable>
         <Pressable className="flex-1 rounded-xl bg-brand-deep px-3 py-2.5 items-center justify-center active:scale-95">
           <Text className="text-[12px] font-bold text-brand-deep-foreground">

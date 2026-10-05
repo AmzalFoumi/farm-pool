@@ -44,7 +44,7 @@ export class AcceptOfferService {
     // Step 2 — single atomic claim, no read-check-then-write race window
     const reserved =
       offer.listingType === 'STANDARD'
-        ? await this.listings.markSoldIfVerified(offer.listingId)
+        ? await this.listings.deductQuantity(offer.listingId, offer.quantityKg)
         : await this.wanteds.markClosedIfOpen(offer.listingId);
 
     if (!reserved) {
@@ -52,7 +52,7 @@ export class AcceptOfferService {
       throw new OfferError(
         'conflict',
         'conflict',
-        'Listing is no longer available',
+        'Not enough quantity available',
       );
     }
 
@@ -108,7 +108,7 @@ export class AcceptOfferService {
 
   private async revertListing(offer: Offer) {
     if (offer.listingType === 'STANDARD') {
-      await this.listings.update(offer.listingId, { status: 'verified' });
+      await this.listings.refundQuantity(offer.listingId, offer.quantityKg);
     } else {
       await this.wanteds.updateStatus(offer.listingId, 'open');
     }

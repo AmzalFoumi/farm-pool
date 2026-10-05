@@ -25,8 +25,10 @@ export interface ListingRepository {
   /** Farmer listing creation (FARM-21). */
   create(listing: NewListing): Promise<Listing>;
   update(id: string, listing: Partial<Listing>): Promise<Listing>;
-  /** Atomically marks a listing as sold only if currently "verified". Returns null if already sold/unavailable — that null IS the concurrency guard. Do not replace with a read-then-write check. */
-  markSoldIfVerified(id: string): Promise<Listing | null>;
+  /** Atomically deducts quantity from a verified listing. Returns null if insufficient stock. Auto-closes listing if stock drops below minOrderKg. */
+  deductQuantity(id: string, quantity: number): Promise<Listing | null>;
+  /** Restores deducted quantity and flips status back to verified if it was sold. */
+  refundQuantity(id: string, quantity: number): Promise<Listing | null>;
   upsertBySeedKey(seedKey: string, listing: NewListing): Promise<Listing>;
 }
 
