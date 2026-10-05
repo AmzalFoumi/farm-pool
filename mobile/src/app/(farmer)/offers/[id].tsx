@@ -12,39 +12,82 @@ import { Text } from "@/components/ui/text";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { Pressable } from "@/components/ui/pressable";
-import { Offer, OfferCard } from "@/features/listings/components/offer-card";
-import { MOCK_OFFERS } from "@/features/listings/components/mock-data";
+import {
+  type Offer as UiOffer,
+  OfferCard,
+  type OfferStatus
+} from "@/features/listings/components/offer-card";
+import { NegotiateSheet } from "@/features/listings/components/negotiate-sheet";
+import { NegotiationHistorySheet } from "@/features/listings/components/negotiation-history-sheet";
 import { BackIcon } from "@/components/app/icons";
+import { offersApi } from "@/features/offers/api";
+import { Offer as SharedOffer } from "@farm-pool/shared";
 
-type OfferStatus = "all" | "new" | "negotiating" | "confirmed" | "history";
+function mapOfferToUI(offer: SharedOffer): UiOffer {
+  let status: OfferStatus = "new";
+  if (offer.status === "PENDING") status = "new";
+  else if (offer.status === "NEGOTIATING") status = "negotiating";
+  else if (offer.status === "ACCEPTED") status = "confirmed";
+  else if (offer.status === "DECLINED" || offer.status === "EXPIRED") status = "history";
+
+  return {
+    id: offer.id,
+    status,
+    isMyTurn: offer.actionRequiredBy === "FARMER",
+    buyer: {
+      name: "Buyer " + offer.buyerId.slice(-4),
+      initials: "B",
+      subtitle: "Verified Buyer"
+    },
+    rate: offer.pricePerKg,
+    quantityKg: offer.quantityKg,
+    total: offer.total,
+    contractId: offer.orderId,
+    yourCounter: offer.negotiationHistory.reverse().find((h) => h.senderType === "FARMER")
+      ?.proposedPrice,
+    buyerCounter: offer.negotiationHistory.reverse().find((h) => h.senderType === "BUYER")
+      ?.proposedPrice,
+    latestMessage: offer.negotiationHistory[offer.negotiationHistory.length - 1]?.note
+  };
+}
 
 export default function OffersScreen() {
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
-  const [filter, setFilter] = useState<OfferStatus>("all");
+  const [filter, setFilter] = useState<OfferStatus | "all">("all");
+
+  const [negotiatingOfferId, setNegotiatingOfferId] = useState<string | null>(null);
+  const [viewHistoryOfferId, setViewHistoryOfferId] = useState<string | null>(null);
 
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
   const req = useRequest(() => listingsApi.get(token ?? "", id), `${token}|${id}`);
 
+  const offersReq = useRequest(
+    () => offersApi.forListing(token ?? "", id),
+    `offers|${token}|${id}`
+  );
+
+  const allOffers = (offersReq.data ?? []).map(mapOfferToUI);
+
   const filters = [
-    { key: "all", label: "All", count: MOCK_OFFERS.length },
-    { key: "new", label: "New", count: MOCK_OFFERS.filter((o) => o.status === "new").length },
+    { key: "all", label: "All", count: allOffers.length },
+    { key: "new", label: "New", count: allOffers.filter((o) => o.status === "new").length },
     {
       key: "negotiating",
       label: "Negotiating",
-      count: MOCK_OFFERS.filter((o) => o.status === "negotiating").length
+      count: allOffers.filter((o) => o.status === "negotiating").length
     },
     {
       key: "confirmed",
       label: "Confirmed",
-      count: MOCK_OFFERS.filter((o) => o.status === "confirmed").length
+      count: allOffers.filter((o) => o.status === "confirmed").length
     },
     {
       key: "history",
       label: "History",
-      count: MOCK_OFFERS.filter((o) => o.status === "history").length
+      count: allOffers.filter((o) => o.status === "history").length
     }
   ] as const;
 
@@ -133,13 +176,61 @@ export default function OffersScreen() {
 
       {/* Content */}
       <ScrollView className="flex-1" contentContainerClassName="px-4 py-4 gap-3.5 pb-28">
-        {MOCK_OFFERS.filter((offer) => {
-          if (filter === "all") return true;
-          return offer.status === filter;
-        }).map((offer) => (
-          <OfferCard key={offer.id} offer={offer} />
-        ))}
+        {offersReq.status === "loading" && (
+          <Text className="text-center text-muted-foreground mt-4">Loading offers...</Text>
+        )}
+        {offersReq.status === "error" && (
+          <Text className="text-center text-destructive mt-4">Failed to load offers.</Text>
+        )}
+        {offersReq.status === "ready" && allOffers.length === 0 && (
+          <Text className="text-center text-muted-foreground mt-4">No offers yet.</Text>
+        )}
+        {allOffers
+          .filter((offer) => {
+            if (filter === "all") return true;
+            return offer.status === filter;
+          })
+          .map((offer) => (
+            <OfferCard
+              key={offer.id}
+              offer={offer}
+              onNegotiate={() => setNegotiatingOfferId(offer.id)}
+              onViewHistory={() => setViewHistoryOfferId(offer.id)}
+            />
+          ))}
       </ScrollView>
+
+      {negotiatingOfferId && (
+        <NegotiateSheet
+          isOpen={true}
+          onClose={() => setNegotiatingOfferId(null)}
+          offer={allOffers.find((o) => o.id === negotiatingOfferId)!}
+          onSubmit={async (rate, quantity, note) => {
+            if (!token) return;
+            try {
+              await offersApi.negotiate(token, negotiatingOfferId, {
+                senderType: "FARMER",
+                proposedPrice: rate,
+                proposedQuantityKg: quantity,
+                note: note || undefined
+              });
+              offersReq.reload(); // refresh the list
+            } catch (err) {
+              console.error("Failed to negotiate:", err);
+            } finally {
+              setNegotiatingOfferId(null);
+            }
+          }}
+        />
+      )}
+
+      {viewHistoryOfferId && (
+        <NegotiationHistorySheet
+          isOpen={true}
+          onClose={() => setViewHistoryOfferId(null)}
+          offer={(offersReq.data ?? []).find((o) => o.id === viewHistoryOfferId) ?? null}
+        />
+      )}
     </View>
   );
 }

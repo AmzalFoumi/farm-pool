@@ -1,12 +1,46 @@
-import { View } from "react-native";
+import { View, Animated, Easing } from "react-native";
+import { useEffect, useRef } from "react";
 import { Text } from "@/components/ui/text";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Card } from "@/components/ui/card";
-import { CheckCircleIcon, DotsIcon, EditIcon, MailIcon } from "@/components/app/icons";
+import {
+  CheckCircleIcon,
+  DotsIcon,
+  EditIcon,
+  MailIcon,
+  HourglassIcon
+} from "@/components/app/icons";
+import { Spinner } from "@/components/ui/spinner";
 
 export type OfferStatus = "new" | "negotiating" | "confirmed" | "history";
+
+function SpinningHourglass() {
+  const spinAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(spinAnim, {
+        toValue: 1,
+        duration: 2000,
+        easing: Easing.linear,
+        useNativeDriver: true
+      })
+    ).start();
+  }, [spinAnim]);
+
+  const spin = spinAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"]
+  });
+
+  return (
+    <Animated.View style={{ transform: [{ rotate: spin }] }}>
+      <HourglassIcon color="#64748b" size={16} />
+    </Animated.View>
+  );
+}
 
 export type Offer = {
   id: string;
@@ -31,7 +65,15 @@ export type Offer = {
   contractId?: string;
 };
 
-export function OfferCard({ offer }: { offer: Offer }) {
+export function OfferCard({
+  offer,
+  onNegotiate,
+  onViewHistory
+}: {
+  offer: Offer;
+  onNegotiate?: () => void;
+  onViewHistory?: () => void;
+}) {
   if (offer.status === "new") {
     return (
       <Card className="p-4 bg-card rounded-2xl shadow-sm gap-3">
@@ -93,11 +135,14 @@ export function OfferCard({ offer }: { offer: Offer }) {
           </Pressable>
 
           <HStack className="gap-2 w-full">
-            <Pressable className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-muted px-3 py-2.5 active:scale-95">
+            <Pressable
+              onPress={onNegotiate}
+              className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-muted px-3 py-2.5 active:scale-95"
+            >
               <View className="text-foreground">
                 <EditIcon />
               </View>
-              <Text className="text-[12px] font-bold text-foreground">Counter</Text>
+              <Text className="text-[12px] font-bold text-foreground">Negotiate</Text>
             </Pressable>
             <Pressable className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-destructive-subtle px-3 py-2.5 active:scale-95">
               <Text className="text-[12px] font-bold text-destructive">Decline</Text>
@@ -170,12 +215,24 @@ export function OfferCard({ offer }: { offer: Offer }) {
           </View>
         )}
 
+        <Pressable
+          onPress={onViewHistory}
+          className="flex-row items-center justify-center rounded-xl bg-brand-deep/10 px-3 py-2.5 active:scale-95"
+        >
+          <Text className="text-[12px] font-bold text-brand-deep">
+            View Full Negotiation History
+          </Text>
+        </Pressable>
+
         <HStack className="gap-2 pt-1">
           <Pressable className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-primary px-2 py-2.5 active:scale-95">
             <Text className="text-[12px] font-bold text-primary-foreground">Accept</Text>
           </Pressable>
-          <Pressable className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-muted px-2 py-2.5 active:scale-95">
-            <Text className="text-[12px] font-bold text-foreground">Counter</Text>
+          <Pressable
+            onPress={onNegotiate}
+            className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-muted px-2 py-2.5 active:scale-95"
+          >
+            <Text className="text-[12px] font-bold text-foreground">Negotiate</Text>
           </Pressable>
           <Pressable className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-destructive-subtle px-2 py-2.5 active:scale-95">
             <Text className="text-[12px] font-bold text-destructive">Decline</Text>
@@ -234,24 +291,30 @@ export function OfferCard({ offer }: { offer: Offer }) {
           </VStack>
         </HStack>
 
-        <View className="rounded-xl border border-border bg-card p-3">
-          <Text className="text-[12px] leading-5 text-muted-foreground">
-            You already sent your counter-offer. No action is needed until the buyer replies.
-          </Text>
-        </View>
-
-        <HStack className="gap-2 pt-1">
-          <Pressable className="flex-[3] rounded-xl bg-brand-deep px-3 py-2.5 items-center justify-center active:scale-95">
-            <Text className="text-[13px] font-bold text-brand-deep-foreground">
-              View Negotiation
+        <View className="pt-2 gap-3">
+          <View className="flex-row items-center justify-center gap-2 rounded-xl bg-muted py-3 opacity-70">
+            <SpinningHourglass />
+            <Text className="text-[13px] font-semibold text-muted-foreground">
+              Waiting for buyer to accept or counter...
             </Text>
-          </Pressable>
-          <Pressable className="flex-1 h-11 items-center justify-center rounded-xl bg-muted active:scale-95">
-            <View className="text-foreground">
-              <DotsIcon />
-            </View>
-          </Pressable>
-        </HStack>
+          </View>
+
+          <HStack className="gap-2">
+            <Pressable
+              onPress={onViewHistory}
+              className="flex-[3] flex-row items-center justify-center rounded-xl bg-brand-deep px-3 py-2.5 active:scale-95"
+            >
+              <Text className="text-[13px] font-bold text-brand-deep-foreground">
+                View Negotiation
+              </Text>
+            </Pressable>
+            <Pressable className="flex-1 h-11 items-center justify-center rounded-xl bg-muted active:scale-95">
+              <View className="text-foreground">
+                <DotsIcon />
+              </View>
+            </Pressable>
+          </HStack>
+        </View>
       </Card>
     );
   }

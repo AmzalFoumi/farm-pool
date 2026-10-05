@@ -71,6 +71,14 @@ export class InMemoryListingRepository implements ListingRepository {
     return Promise.resolve(snapshot(updated));
   }
 
+  markSoldIfVerified(id: string): Promise<Listing | null> {
+    const row = this.rows.get(id);
+    if (!row || row.status !== 'verified') return Promise.resolve(null);
+    const updated = { ...row, status: 'sold' as const, updatedAt: new Date() };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
   upsertBySeedKey(seedKey: string, listing: NewListing): Promise<Listing> {
     const existing = [...this.rows.values()].find((l) => l.seedKey === seedKey);
     const now = new Date();

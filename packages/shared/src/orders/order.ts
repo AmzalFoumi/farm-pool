@@ -84,9 +84,11 @@ export const orderSchema = z.object({
   farmerId: z.string(),
   farmerName: z.string(),
   listingId: z.string(),
+  /** The Offer that was negotiated and accepted to produce this order (FARM-46). */
+  offerId: z.string().optional(),
   cropId: cropIdSchema,
   quantityKg: kgSchema,
-  /** Snapshot of the listing price when the order was placed. */
+  /** Snapshot of the listing price at placement, or the accepted Offer's final negotiated price. */
   pricePerKg: pricePerKgSchema,
   total: z.number().nonnegative(),
   note: z.string().optional(),

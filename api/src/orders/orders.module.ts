@@ -58,6 +58,6 @@ import { OrdersController } from './orders.controller';
   /* The logistics domain reads and claims orders through this port (LP-21: a job exists only for
      a confirmed order). Exporting the port, not the model, is what keeps that dependency one-way
      — logistics never touches the `orders` collection itself. */
-  exports: [ORDER_REPOSITORY],
+  exports: [ORDER_REPOSITORY, PlaceOrder],
 })
 export class OrdersModule {}

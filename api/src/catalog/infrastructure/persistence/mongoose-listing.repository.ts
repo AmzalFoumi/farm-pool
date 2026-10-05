@@ -71,6 +71,17 @@ export class MongooseListingRepository implements ListingRepository {
     return toListing(doc);
   }
 
+  async markSoldIfVerified(id: string): Promise<Listing | null> {
+    const doc = await this.listings
+      .findOneAndUpdate(
+        { _id: id, status: 'verified' },
+        { $set: { status: 'sold' } },
+        { new: true },
+      )
+      .exec();
+    return doc ? toListing(doc) : null;
+  }
+
   async create(listing: NewListing): Promise<Listing> {
     const created = await this.listings.create({
       ...listing,

@@ -91,6 +91,6 @@ import {
       useFactory: (wanted: WantedRepository) => new CloseWanted(wanted),
     },
   ],
-  exports: [LISTING_REPOSITORY],
+  exports: [LISTING_REPOSITORY, WANTED_REPOSITORY],
 })
 export class CatalogModule {}

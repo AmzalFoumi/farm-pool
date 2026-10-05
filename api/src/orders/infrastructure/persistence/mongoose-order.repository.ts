@@ -190,6 +190,7 @@ function toOrder(doc: OrderHydrated): Order {
     farmerId: doc.farmerId,
     farmerName: doc.farmerName,
     listingId: doc.listingId,
+    ...(typeof doc.offerId === 'string' ? { offerId: doc.offerId } : {}),
     cropId: doc.cropId,
     quantityKg: doc.quantityKg,
     pricePerKg: doc.pricePerKg,

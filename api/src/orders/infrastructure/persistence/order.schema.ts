@@ -36,6 +36,9 @@ export class OrderDocument {
   @Prop({ required: true, index: true })
   listingId: string;
 
+  @Prop({ type: String, required: false, index: true })
+  offerId?: string;
+
   @Prop({ type: String, required: true, enum: CROP_IDS })
   cropId: CropId;
 
