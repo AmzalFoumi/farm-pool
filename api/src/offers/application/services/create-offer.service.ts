@@ -22,6 +22,17 @@ export class CreateOfferService {
     requesterRole: 'FARMER' | 'BUYER',
     data: CreateOfferData,
   ): Promise<Offer> {
+    /* Refused until FARM-47. An order made from a wanted request has no listing, and the
+       listing is where a driver reads the pickup place from, so the buyer could pay for an
+       order no driver is ever shown. The WANTED branch below is kept for that story. */
+    if (data.listingType === 'WANTED') {
+      throw new OfferError(
+        'conflict',
+        'wanted_offers_unavailable',
+        'Offers on a wanted request are not available yet',
+      );
+    }
+
     let buyerId: string;
     let farmerId: string;
     let cropId: CropId;

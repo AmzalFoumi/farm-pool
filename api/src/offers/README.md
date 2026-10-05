@@ -32,7 +32,7 @@ be created as `open`: that would skip payment.
 | Method | Path | Allow | Result |
 | ------ | ---- | ----- | ------ |
 | GET | `/offers/listing/:listingId` | `listing:read` | 200 `Offer[]` — the offers on that listing the caller is a side of |
-| POST | `/offers` | `order:place` (buyer) | 201 `Offer` in `PENDING`; 409 when the listing is not `verified` |
+| POST | `/offers` | `order:place` (buyer) | 201 `Offer` in `PENDING`; 409 when the listing is not `verified`; 409 `wanted_offers_unavailable` for a wanted request |
 | POST | `/offers/:id/negotiation` | `order:renegotiate` | `Offer` in `NEGOTIATING`; 403 `not_your_offer`; 400 when it is not the caller's turn |
 | POST | `/offers/:id/accept` | `order:renegotiate` | `{ orderId }`; 403 `not_your_offer`; 400 when it is not the caller's turn; 409 when the stock is gone |
 | POST | `/offers/:id/decline` | `order:renegotiate` | `Offer` in `DECLINED`; 403 `not_your_offer` |
@@ -68,8 +68,11 @@ left with less than its `minOrderKg` becomes `sold`.
 
 - **No screen starts an offer.** The buyer's Place order still creates a plain `requested` order,
   which the farmer answers through `/orders/:id/accept` or `/decline`.
-- **Offers on a buyer's "wanted" request do not work** (FARM-47): creating one needs
-  `order:place`, which only buyers have, and accepting one looks the request up as a listing.
+- **Offers on a buyer's "wanted" request are refused** with 409 `wanted_offers_unavailable`
+  (FARM-47). An order made from one would have no listing, and the listing is where a driver
+  reads the pickup place from, so the buyer could pay for an order no driver is ever shown.
+  Two more things block it: creating one needs `order:place`, which only buyers have, and
+  `executeFromOffer` looks the request up as a listing.
 - Offers do not expire (`expire-offers.service.ts` is a note, not a job).
 - The services import NestJS inside `application/`, which `npm run lint -w api` reports.
 - No tests.
