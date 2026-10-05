@@ -1,8 +1,11 @@
 import {
   cropById,
+  CROPS,
+  CROP_CATEGORIES,
   type CreateListingInput,
   type CropCategory,
-  type CropId
+  type CropId,
+  type Listing
 } from "@farm-pool/shared";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -34,7 +37,7 @@ import Step5Logistics, {
 } from "./components/create-listing/step-5-logistics";
 import StepReview from "./components/create-listing/step-review";
 
-export function CreateListingScreen() {
+export function CreateListingScreen({ initialData }: { initialData?: Listing }) {
   const router = useRouter();
   const auth = useAuth();
   const insets = useSafeAreaInsets();
@@ -50,9 +53,40 @@ export function CreateListingScreen() {
     step3?: Step3HarvestPhotosData;
     step4?: Step4PriceData;
     step5?: Step5LogisticsData;
-  }>({
-    category: "Vegetables",
-    cropId: "tomato"
+  }>(() => {
+    if (initialData) {
+      const crop = cropById(initialData.cropId);
+      return {
+        category: crop?.category ?? CROP_CATEGORIES[0],
+        cropId: initialData.cropId,
+        step2: {
+          quantity: initialData.quantityKg,
+          unit: (initialData.unit || "kg") as any,
+          grade: initialData.grade || "A",
+          variety: initialData.variety || "",
+          packaging: initialData.packaging || "plastic-crate",
+          certifications: initialData.certifications || [],
+          moqKg: initialData.minOrderKg
+        },
+        step3: {
+          photos: initialData.photos || [],
+          widePhotoUri: initialData.photos?.[0] ?? null,
+          closeupPhotoUri: initialData.photos?.[1] ?? null,
+          packagingPhotoUri: initialData.photos?.[2] ?? null
+        },
+        step4: {
+          pricePerKg: initialData.pricePerKg,
+          grossEarnings: initialData.pricePerKg * initialData.quantityKg
+        },
+        step5: {
+          harvestDate: initialData.harvestDate,
+          validityDays: initialData.expiryDays,
+          district: initialData.district,
+          fulfillmentOption: initialData.fulfillmentOption ?? "shared"
+        }
+      };
+    }
+    return { category: CROP_CATEGORIES[0], cropId: CROPS[0].id };
   });
 
   const handleStep1Next = (data: { category: CropCategory; cropId: CropId }) => {
@@ -88,9 +122,9 @@ export function CreateListingScreen() {
     const totalKg = toKg(rawQuantity, unit);
 
     const payload: CreateListingInput = {
-      cropId: listingData.cropId || "tomato",
+      cropId: listingData.cropId || CROPS[0].id,
       quantityKg: Math.max(1, totalKg),
-      unit,
+      unit: unit as any,
       variety: listingData.step2?.variety || "Standard / Local",
       grade: listingData.step2?.grade || "A",
       packaging: listingData.step2?.packaging,
@@ -100,8 +134,9 @@ export function CreateListingScreen() {
       harvestDate: listingData.step5?.harvestDate || new Date().toISOString().split("T")[0],
       expiryDays: listingData.step5?.validityDays,
       /* Step 3 only attaches stock sample photos (upload is not built), so none are sent:
-         a buyer must never see a stock photo presented as this farmer's harvest. */
-      photos: [],
+         a buyer must never see a stock photo presented as this farmer's harvest. An edit
+         sends back the photos the listing already has, so saving does not wipe them. */
+      photos: initialData?.photos ?? [],
       // Step 5 will not continue without a district, so this is always the farmer's answer.
       district: listingData.step5?.district ?? "",
       fulfillmentOption: listingData.step5?.fulfillmentOption || "shared"
@@ -116,7 +151,11 @@ export function CreateListingScreen() {
     setPublishError(null);
     setSubmitting(true);
     try {
-      await listingsApi.create(auth.token, payload);
+      if (initialData) {
+        await listingsApi.update(auth.token, initialData.id, payload);
+      } else {
+        await listingsApi.create(auth.token, payload);
+      }
       setIsPublished(true);
     } catch (e) {
       const detail =
@@ -155,12 +194,13 @@ export function CreateListingScreen() {
             </Badge>
 
             <Heading className="type-h3 text-foreground text-center">
-              Listing Submitted for Review!
+              {initialData ? "Listing Updated!" : "Listing Submitted for Review!"}
             </Heading>
 
             <Text className="type-body text-muted-foreground text-center px-4">
-              Your produce listing has been saved into the database and is currently waiting for
-              verification from your regional area coordinator.
+              {initialData
+                ? "Your produce listing has been successfully updated."
+                : "Your produce listing has been saved into the database and is currently waiting for verification from your regional area coordinator."}
             </Text>
           </VStack>
 
@@ -230,10 +270,16 @@ export function CreateListingScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      {step === 1 && <Step1CategoryInfo onNext={handleStep1Next} onBack={handleBack} />}
+      {step === 1 && (
+        <Step1CategoryInfo
+          initialData={{ category: listingData.category, cropId: listingData.cropId }}
+          onNext={handleStep1Next}
+          onBack={handleBack}
+        />
+      )}
       {step === 2 && (
         <Step2Quantity
-          cropId={listingData.cropId || "tomato"}
+          cropId={listingData.cropId || CROPS[0].id}
           initialData={listingData.step2}
           onNext={handleStep2Next}
           onBack={handleBack}
@@ -242,7 +288,7 @@ export function CreateListingScreen() {
       )}
       {step === 3 && (
         <Step3HarvestPhotos
-          cropId={listingData.cropId || "tomato"}
+          cropId={listingData.cropId || CROPS[0].id}
           batchInfo={{
             quantity: listingData.step2?.quantity ?? 300,
             unit: listingData.step2?.unit ?? "kg",
@@ -256,7 +302,7 @@ export function CreateListingScreen() {
       )}
       {step === 4 && (
         <Step4Price
-          cropId={listingData.cropId || "tomato"}
+          cropId={listingData.cropId || CROPS[0].id}
           batchInfo={{
             quantity: listingData.step2?.quantity ?? 300,
             unit: listingData.step2?.unit ?? "kg",
@@ -270,7 +316,7 @@ export function CreateListingScreen() {
       )}
       {step === 5 && (
         <Step5Logistics
-          cropId={listingData.cropId || "tomato"}
+          cropId={listingData.cropId || CROPS[0].id}
           batchInfo={{
             quantity: listingData.step2?.quantity ?? 300,
             unit: listingData.step2?.unit ?? "kg",
@@ -285,7 +331,7 @@ export function CreateListingScreen() {
       )}
       {step === 6 && (
         <StepReview
-          cropId={listingData.cropId || "tomato"}
+          cropId={listingData.cropId || CROPS[0].id}
           step2={listingData.step2}
           step3={listingData.step3}
           step4={listingData.step4}

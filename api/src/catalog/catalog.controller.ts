@@ -14,6 +14,7 @@ import {
   Get,
   HttpCode,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -23,6 +24,7 @@ import { Allow } from '../identity/auth/roles.decorator';
 import { ZodValidationPipe } from '../shared/http/zod-validation.pipe';
 import { CloseWanted } from './application/services/close-wanted';
 import { CreateListing } from './application/services/create-listing';
+import { UpdateListing } from './application/services/update-listing';
 import { CreateWanted } from './application/services/create-wanted';
 import { GetListing } from './application/services/get-listing';
 import { ListListings } from './application/services/list-listings';
@@ -48,6 +50,7 @@ export class CatalogController {
   constructor(
     private readonly listListings: ListListings,
     private readonly getListing: GetListing,
+    private readonly updateListing: UpdateListing,
     private readonly createListing: CreateListing,
     private readonly listMyListings: ListMyListings,
     private readonly createWanted: CreateWanted,
@@ -84,6 +87,16 @@ export class CatalogController {
   @Get('listings/:id')
   listing(@Param('id') id: string): Promise<Listing> {
     return this.getListing.execute(id);
+  }
+
+  @Allow('listing:create')
+  @Patch('listings/:id')
+  updateListingRoute(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(createListingSchema)) body: CreateListingData,
+  ): Promise<Listing> {
+    return this.updateListing.execute(id, user.sub, body);
   }
 
   @Allow('wanted:read')

@@ -7,8 +7,10 @@ import {
 } from '../catalog/domain/repositories/listing.repository';
 import { CancelOrder } from './application/services/cancel-order';
 import { GetOrder } from './application/services/get-order';
+import { ListIncomingOrders } from './application/services/list-incoming-orders';
 import { ListMyOrders } from './application/services/list-my-orders';
 import { PlaceOrder } from './application/services/place-order';
+import { RespondToOrder } from './application/services/respond-to-order';
 import {
   ORDER_REPOSITORY,
   type OrderRepository,
@@ -45,6 +47,16 @@ import { OrdersController } from './orders.controller';
       useFactory: (orders: OrderRepository) => new ListMyOrders(orders),
     },
     {
+      provide: ListIncomingOrders,
+      inject: [ORDER_REPOSITORY],
+      useFactory: (orders: OrderRepository) => new ListIncomingOrders(orders),
+    },
+    {
+      provide: RespondToOrder,
+      inject: [ORDER_REPOSITORY],
+      useFactory: (orders: OrderRepository) => new RespondToOrder(orders),
+    },
+    {
       provide: GetOrder,
       inject: [ORDER_REPOSITORY],
       useFactory: (orders: OrderRepository) => new GetOrder(orders),
@@ -58,6 +70,6 @@ import { OrdersController } from './orders.controller';
   /* The logistics domain reads and claims orders through this port (LP-21: a job exists only for
      a confirmed order). Exporting the port, not the model, is what keeps that dependency one-way
      — logistics never touches the `orders` collection itself. */
-  exports: [ORDER_REPOSITORY],
+  exports: [ORDER_REPOSITORY, PlaceOrder],
 })
 export class OrdersModule {}

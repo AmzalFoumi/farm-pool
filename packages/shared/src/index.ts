@@ -28,6 +28,7 @@ export * from "./catalog/listing";
 export * from "./catalog/wanted";
 export * from "./catalog/benchmark";
 export * from "./orders/order";
+export * from "./orders/offer";
 export * from "./payments/payment";
 export * from "./logistics/job";
 export * from "./calls/call";

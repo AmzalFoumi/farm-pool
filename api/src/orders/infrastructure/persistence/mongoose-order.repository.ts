@@ -38,6 +38,30 @@ export class MongooseOrderRepository implements OrderRepository {
     return docs.map(toOrder);
   }
 
+  async findByFarmer(farmerId: string): Promise<Order[]> {
+    const docs = await this.orders
+      .find({ farmerId })
+      .sort({ createdAt: -1 })
+      .exec();
+    return docs.map(toOrder);
+  }
+
+  async answerRequest(
+    id: string,
+    farmerId: string,
+    answer: 'accepted' | 'declined',
+  ): Promise<Order | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.orders
+      .findOneAndUpdate(
+        { _id: id, farmerId, status: 'requested' },
+        { status: answer },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toOrder(doc) : null;
+  }
+
   async findByStatus(status: OrderStatus): Promise<Order[]> {
     const docs = await this.orders
       .find({ status })
@@ -190,6 +214,7 @@ function toOrder(doc: OrderHydrated): Order {
     farmerId: doc.farmerId,
     farmerName: doc.farmerName,
     listingId: doc.listingId,
+    ...(typeof doc.offerId === 'string' ? { offerId: doc.offerId } : {}),
     cropId: doc.cropId,
     quantityKg: doc.quantityKg,
     pricePerKg: doc.pricePerKg,

@@ -92,7 +92,6 @@ export default function StepReview({
       onBack={onBack}
       footer={
         <>
-          {" "}
           {error ? (
             <Text className="type-caption text-destructive" accessibilityRole="alert">
               Could not publish: {error}

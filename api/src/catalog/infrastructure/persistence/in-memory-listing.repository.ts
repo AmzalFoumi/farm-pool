@@ -63,6 +63,46 @@ export class InMemoryListingRepository implements ListingRepository {
     return Promise.resolve(snapshot(row));
   }
 
+  update(id: string, updates: Partial<Listing>): Promise<Listing> {
+    const row = this.rows.get(id);
+    if (!row) return Promise.reject(new Error('Not found'));
+    const updated = { ...row, ...updates, updatedAt: new Date() };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
+  deductQuantity(id: string, quantity: number): Promise<Listing | null> {
+    const row = this.rows.get(id);
+    if (!row || row.status !== 'verified' || row.quantityKg < quantity) {
+      return Promise.resolve(null);
+    }
+    const newQuantity = row.quantityKg - quantity;
+    const newStatus = newQuantity < row.minOrderKg ? 'sold' : row.status;
+    const updated = {
+      ...row,
+      quantityKg: newQuantity,
+      status: newStatus as ListingStatus,
+      updatedAt: new Date(),
+    };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
+  refundQuantity(id: string, quantity: number): Promise<Listing | null> {
+    const row = this.rows.get(id);
+    if (!row) return Promise.resolve(null);
+    const newQuantity = row.quantityKg + quantity;
+    const newStatus = row.status === 'sold' ? 'verified' : row.status;
+    const updated = {
+      ...row,
+      quantityKg: newQuantity,
+      status: newStatus as ListingStatus,
+      updatedAt: new Date(),
+    };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
   upsertBySeedKey(seedKey: string, listing: NewListing): Promise<Listing> {
     const existing = [...this.rows.values()].find((l) => l.seedKey === seedKey);
     const now = new Date();

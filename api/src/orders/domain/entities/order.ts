@@ -13,6 +13,7 @@ export interface Order {
   farmerId: string;
   farmerName: string;
   listingId: string;
+  offerId?: string;
   cropId: CropId;
   quantityKg: number;
   pricePerKg: number;
@@ -49,6 +50,7 @@ export function toOrderDto(order: Order): OrderDto {
     farmerId: order.farmerId,
     farmerName: order.farmerName,
     listingId: order.listingId,
+    ...(order.offerId ? { offerId: order.offerId } : {}),
     cropId: order.cropId,
     quantityKg: order.quantityKg,
     pricePerKg: order.pricePerKg,
