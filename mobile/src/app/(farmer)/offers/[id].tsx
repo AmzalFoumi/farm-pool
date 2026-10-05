@@ -21,9 +21,12 @@ import { NegotiateSheet } from "@/features/listings/components/negotiate-sheet";
 import { NegotiationHistorySheet } from "@/features/listings/components/negotiation-history-sheet";
 import { BackIcon } from "@/components/app/icons";
 import { offersApi } from "@/features/offers/api";
+import { ApiError } from "@/lib/api";
 import { Offer as SharedOffer } from "@farm-pool/shared";
 
 function mapOfferToUI(offer: SharedOffer): UiOffer {
+  // A copy, newest first: `reverse()` on the original would reorder the cached history.
+  const newestFirst = [...offer.negotiationHistory].reverse();
   let status: OfferStatus = "new";
   if (offer.status === "PENDING") status = "new";
   else if (offer.status === "NEGOTIATING") status = "negotiating";
@@ -43,10 +46,8 @@ function mapOfferToUI(offer: SharedOffer): UiOffer {
     quantityKg: offer.quantityKg,
     total: offer.total,
     contractId: offer.orderId,
-    yourCounter: offer.negotiationHistory.reverse().find((h) => h.senderType === "FARMER")
-      ?.proposedPrice,
-    buyerCounter: offer.negotiationHistory.reverse().find((h) => h.senderType === "BUYER")
-      ?.proposedPrice,
+    yourCounter: newestFirst.find((h) => h.senderType === "FARMER")?.proposedPrice,
+    buyerCounter: newestFirst.find((h) => h.senderType === "BUYER")?.proposedPrice,
     latestMessage: offer.negotiationHistory[offer.negotiationHistory.length - 1]?.note
   };
 }
@@ -275,10 +276,16 @@ export default function OffersScreen() {
                 note: note || undefined
               });
               offersReq.reload(); // refresh the list
-            } catch (err) {
-              console.error("Failed to negotiate:", err);
-            } finally {
               setNegotiatingOfferId(null);
+            } catch (err) {
+              // The sheet stays open so what was typed is not lost.
+              console.error("Failed to negotiate:", err);
+              Alert.alert(
+                "Error",
+                err instanceof ApiError
+                  ? err.message
+                  : "Failed to send the counter-offer. Please try again."
+              );
             }
           }}
         />
