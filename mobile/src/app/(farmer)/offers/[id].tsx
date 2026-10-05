@@ -1,5 +1,5 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import { useState, useCallback } from "react";
 import { View, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { cropById } from "@farm-pool/shared";
@@ -70,6 +70,13 @@ export default function OffersScreen() {
   );
 
   const allOffers = (offersReq.data ?? []).map(mapOfferToUI);
+
+  useFocusEffect(
+    useCallback(() => {
+      const timer = setInterval(offersReq.silentRefresh, 10000);
+      return () => clearInterval(timer);
+    }, [offersReq.silentRefresh])
+  );
 
   const filters = [
     { key: "all", label: "All", count: allOffers.length },

@@ -10,7 +10,7 @@ import { apiFetch } from "@/lib/api";
 
 export const offersApi = {
   forListing(token: string, listingId: string): Promise<Offer[]> {
-    return apiFetch(`/offers/listing/${encodeURIComponent(listingId)}`, {
+    return apiFetch(`/offers/listing/${encodeURIComponent(listingId)}?_t=${Date.now()}`, {
       token,
       schema: offerListSchema
     });

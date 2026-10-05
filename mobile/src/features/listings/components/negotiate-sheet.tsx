@@ -34,7 +34,7 @@ export function NegotiateSheet({
       setQuantity(String(offer.quantityKg));
       setNote("");
     }
-  }, [isOpen, offer]);
+  }, [isOpen, offer?.id]);
 
   if (!offer) return null;
 
@@ -65,10 +65,14 @@ export function NegotiateSheet({
         </ActionsheetDragIndicatorWrapper>
 
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          className="w-full"
+          behavior={Platform.OS === "ios" ? "padding" : "padding"}
+          className="w-full flex-1"
         >
-          <ScrollView className="w-full" showsVerticalScrollIndicator={false}>
+          <ScrollView
+            className="w-full flex-1"
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
             {/* Header */}
             <HStack className="items-start justify-between mb-4">
               <VStack>
