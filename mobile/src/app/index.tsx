@@ -15,6 +15,7 @@
  */
 
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -35,6 +36,9 @@ export default function WelcomeScreen() {
      driver picks once. The chips are the first thing on the first screen precisely because
      everything after them is unreadable to someone who got the wrong one. */
   const { language, setLanguage } = useLocale();
+  /* Translated last, but it matters most here: this is the screen the chips are on, so a tap on
+     සිංහල that left this copy in English would say the switch had not worked. */
+  const { t } = useTranslation();
 
   return (
     <View className="flex-1 bg-brand-deep">
@@ -46,9 +50,7 @@ export default function WelcomeScreen() {
 
         <Text className="type-display mt-4.5 text-brand-deep-foreground">FarmPool</Text>
 
-        <Text className="type-body-lg mt-5.5 text-brand-deep-muted">
-          Farm produce, straight from the field to wholesale buyers.
-        </Text>
+        <Text className="type-body-lg mt-5.5 text-brand-deep-muted">{t("welcome.tagline")}</Text>
       </VStack>
 
       {/* ── Sheet ────────────────────────────────────────────────────── */}
@@ -89,10 +91,14 @@ export default function WelcomeScreen() {
           })}
         </HStack>
 
-        <AppButton label="Sign up" icon={<PlusIcon />} onPress={() => router.push("/sign-up-as")} />
+        <AppButton
+          label={t("common.signUp")}
+          icon={<PlusIcon />}
+          onPress={() => router.push("/sign-up-as")}
+        />
 
         <AppButton
-          label="Log in"
+          label={t("common.logIn")}
           variant="outline"
           icon={<LoginIcon />}
           onPress={() => router.push("/log-in")}
@@ -100,9 +106,7 @@ export default function WelcomeScreen() {
 
         <HStack className="mt-0.5 items-center gap-2.5">
           <MailIcon />
-          <Text className="type-caption text-muted-foreground">
-            Need help? Call your area coordinator
-          </Text>
+          <Text className="type-caption text-muted-foreground">{t("welcome.help")}</Text>
         </HStack>
       </VStack>
     </View>
