@@ -69,6 +69,9 @@ export class PlaceOrder {
    * Creates an Order directly from an already-negotiated and accepted Offer (FARM-46).
    * Bypasses PlaceOrderData validation deliberately — price and quantity are the final
    * negotiated terms, not the listing's original asking price.
+   *
+   * The order starts at `accepted`, which is "agreed, waiting for the buyer to pay". Paying is
+   * what moves it to `open` and onto the driver job board (FARM-41).
    */
   async executeFromOffer(offer: Offer): Promise<Order> {
     const listing = await this.listings.findById(offer.listingId);
@@ -90,7 +93,7 @@ export class PlaceOrder {
       pricePerKg: offer.pricePerKg,
       total: toCents(offer.quantityKg * offer.pricePerKg),
       ...(offer.note ? { note: offer.note } : {}),
-      status: 'open',
+      status: 'accepted',
     });
     return toOrderDto(created);
   }
