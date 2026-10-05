@@ -5,14 +5,25 @@ import { readFileSync } from "node:fs";
 
 export const API = process.env.E2E_API_URL ?? "http://localhost:3000";
 
-/** Throwaway accounts live in this block so a human can spot and delete them. A Sri Lankan
- *  number is a leading 0 and nine digits, so the prefix leaves room for exactly two. */
-const E2E_PHONE_PREFIX = "07700099";
+/**
+ * A phone number no other test is using — across files, runs and machines.
+ *
+ * The number is the account identity, so uniqueness is the whole job. Two earlier attempts were
+ * not enough and both failed in a way worth recording: a plain counter restarts every run and
+ * collides with the last one, and a clock-seeded block collides between **files**, because
+ * `node --test` runs them in parallel processes that all start in the same millisecond.
+ *
+ * So: random, with a retry in `signUp` for the rare clash. Six digits is a million slots against
+ * a few dozen accounts a run.
+ *
+ * Everything starts `0770`, which is the marker to grep for when clearing test data off the
+ * shared cluster. A Sri Lankan number is a leading 0 and nine digits; that prefix leaves six.
+ */
+const E2E_PHONE_PREFIX = "0770";
 
-let phoneCounter = 0;
-/** A phone number no other test is using. Numbers are the account identity, so they cannot clash. */
 export function nextPhone() {
-  return `${E2E_PHONE_PREFIX}${String(phoneCounter++).padStart(2, "0")}`;
+  const digits = String(Math.floor(Math.random() * 1_000_000)).padStart(6, "0");
+  return `${E2E_PHONE_PREFIX}${digits}`;
 }
 
 export const PASSWORD = "e2epassword123";
@@ -39,8 +50,14 @@ export const api = {
   del: (p, token) => call(p, { method: "DELETE", token })
 };
 
-/** Create an account and return its token and user. */
-export async function signUp(role, displayName) {
+/**
+ * Create an account and return its token and user.
+ *
+ * Retries on `phone_taken`, which is the one failure here that means "try another number" rather
+ * than "something is wrong" — numbers are random, so a clash is luck, not a bug. Any other
+ * failure throws immediately, because a test that quietly retried a 400 would hide it.
+ */
+export async function signUp(role, displayName, attempt = 0) {
   const phone = nextPhone();
   const { status, body } = await api.post("/identity/register", {
     displayName,
@@ -48,8 +65,11 @@ export async function signUp(role, displayName) {
     password: PASSWORD,
     role
   });
-  if (status !== 201) throw new Error(`register ${role}: ${JSON.stringify(body)}`);
-  return { token: body.token, user: body.user, phone };
+  if (status === 201) return { token: body.token, user: body.user, phone };
+  if (body?.code === "phone_taken" && attempt < 5) {
+    return signUp(role, displayName, attempt + 1);
+  }
+  throw new Error(`register ${role}: ${JSON.stringify(body)}`);
 }
 
 /**

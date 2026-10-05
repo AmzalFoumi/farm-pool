@@ -20,9 +20,10 @@ built-in runner, so there is nothing to keep in step with the api's jest version
 
 ## What they assume
 
-**A real database.** They create accounts with throwaway phone numbers under `+9477000099xx` and
+**A real database.** They create accounts with throwaway phone numbers under `+94770xxxxxx` and
 leave them behind; that is deliberate, because a test that cleans up cannot tell you whether the
-data it wrote was readable on the next request.
+data it wrote was readable on the next request. To clear them out of the shared cluster later,
+match users on `phone: /^\+94770/`.
 
 **Two transitions have no endpoint yet** and are nudged directly in Mongo:
 
@@ -30,6 +31,14 @@ data it wrote was readable on the next request.
 | ---------- | ------------------------ | ----------- |
 | listing `pending_approval` → `verified` | Coordinator approval is unbuilt (FARM-43) | FARM-43 lands |
 | order `requested` → `open` | Farmer acceptance is unbuilt (FARM-46) | FARM-46 lands |
+
+## The files
+
+| File | Covers |
+| ---- | ------ |
+| `driver-registration.test.mjs` | FARM-45 — account, then vehicle on its own endpoint; plate normalisation; the board refusing until a vehicle exists |
+| `driver-lifecycle.test.mjs` | FARM-49/54 — board filters, the accept race, pickup and drop-off, and what the farmer sees at the gate |
+| `delivery-flow.test.mjs` | FARM-26 — farm gate, delivery point and the distance between them |
 
 Both are marked `NUDGE:` in the source. They are the two places these tests lie about the system,
 so they are the first thing to delete when the real endpoints exist.
