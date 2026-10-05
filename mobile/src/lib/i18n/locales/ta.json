@@ -148,7 +148,11 @@
       "directions": "Google Maps இல் வழிகள்",
       "directionsLabel": "Google Maps இல் {{place}} க்கான வழிகளைத் திற",
       "exactPin": "விவசாயி இந்த வாயிலைக் குறித்துள்ளார். வழிகளுக்கு தட்டவும்.",
-      "pinLabel": "பண்ணை வாயில்"
+      "pinLabel": "பண்ணை வாயில்",
+      "distance": "நேர் தூரம் {{km}} கி.மீ.",
+      "dropOff": "வழங்கும் இடம்",
+      "dropOffUnset": "வழங்கும் இடம் அமைக்கப்படவில்லை",
+      "tripLength": "பயண தூரம்"
     },
     "actions": {
       "take": "இந்த வேலையை ஏற்க",

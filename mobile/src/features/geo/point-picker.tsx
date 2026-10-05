@@ -1,4 +1,4 @@
-import { districtPoint, type PickupPoint } from "@farm-pool/shared";
+import { districtPoint, type GeoPoint } from "@farm-pool/shared";
 import { useState } from "react";
 import MapView, { Marker, PROVIDER_GOOGLE, type LatLng } from "react-native-maps";
 
@@ -9,30 +9,36 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 
 /**
- * Where the lorry should actually come (FARM-26).
+ * Drop a pin on a place (FARM-26). Used by the farmer for a farm gate and the buyer for a
+ * delivery point — the two are the same gesture and must behave identically.
  *
- * The farmer drags a pin rather than typing coordinates, because nobody knows their farm's
- * latitude and a typed pair is a transposition waiting to happen. The map opens centred on the
- * district they already chose on this step, so the first drag is short.
+ * The pin is tapped and dragged rather than typed, because nobody knows their own latitude and a
+ * typed pair is a transposition waiting to happen.
  *
- * **Optional, and visibly so.** A farmer with no signal, no GPS fix, or no patience must still be
- * able to post produce — the driver falls back to the district centre and is told that is what
- * they are looking at. Making this required would mean a farmer who cannot drop a pin cannot
- * sell, which is a worse failure than an approximate map.
+ * **Optional wherever it is used, and visibly so.** No signal, no GPS fix or no patience must
+ * never stop someone posting produce or placing an order — readers fall back to the district and
+ * say so. Making it required would turn a convenience into a barrier.
  *
- * No "use my current location" button. A farmer fills this in from the house as often as from the
- * field, and a GPS fix taken in the wrong place is worse than no pin at all: it looks exact. The
- * pin they place deliberately is the one worth storing.
+ * No "use my current location" button. People fill these in from the house as often as from the
+ * place itself, and a fix taken somewhere else is worse than no pin at all because it looks
+ * exact. The pin placed deliberately is the one worth storing.
  */
-export function PickupPointField({
+export function PointPicker({
   district,
+  title,
+  help,
+  unsetNote,
   value,
   onChange
 }: {
-  /** The district chosen earlier on this step; the map opens here. */
+  /** The district to centre on until a pin is placed. */
   district: string;
-  value?: PickupPoint;
-  onChange: (point: PickupPoint | undefined) => void;
+  title: string;
+  help: string;
+  /** What is shown when nothing is pinned — says what happens without one. */
+  unsetNote: string;
+  value?: GeoPoint;
+  onChange: (point: GeoPoint | undefined) => void;
 }) {
   const centre = districtPoint(district);
   const [touched, setTouched] = useState(false);
@@ -54,11 +60,8 @@ export function PickupPointField({
   return (
     <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
       <VStack className="gap-0.5">
-        <Text className="type-h4 text-foreground">Farm gate</Text>
-        <Text className="type-caption text-muted-foreground">
-          Tap the map where a lorry should come. Optional — without it the driver sees the district
-          only.
-        </Text>
+        <Text className="type-h4 text-foreground">{title}</Text>
+        <Text className="type-caption text-muted-foreground">{help}</Text>
       </VStack>
 
       <Box className="h-52 overflow-hidden rounded-card border border-border">
@@ -82,7 +85,7 @@ export function PickupPointField({
               coordinate={value}
               draggable
               onDragEnd={place}
-              title="Farm gate"
+              title={title}
               /* Draggable as well as tappable: a tap gets within a field, a drag gets the gate. */
             />
           ) : null}
@@ -95,7 +98,7 @@ export function PickupPointField({
             ? `Pinned at ${value.latitude.toFixed(4)}, ${value.longitude.toFixed(4)}`
             : touched
               ? "No pin set"
-              : `Not set — drivers will see ${centre.name} district`}
+              : unsetNote}
         </Text>
         {value ? (
           <AppButton

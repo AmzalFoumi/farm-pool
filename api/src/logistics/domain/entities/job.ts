@@ -1,3 +1,4 @@
+import { distanceKm } from '@farm-pool/shared';
 import type {
   AssignedDriver,
   JobDetail,
@@ -49,6 +50,18 @@ export function toJobSummary(
     ...(listing.town !== undefined ? { town: listing.town } : {}),
     ...(listing.pickupPoint !== undefined
       ? { pickupPoint: listing.pickupPoint }
+      : {}),
+    ...(order.dropOff !== undefined ? { dropOff: order.dropOff } : {}),
+    /* Only when both ends are real. A distance measured from a district centre would be a precise
+       number built on a guess — and a driver quoting a fee from it would be wrong by however far
+       the gate is from the town. Absent is honest; approximate is not. */
+    ...(listing.pickupPoint && order.dropOff
+      ? {
+          distanceKm:
+            Math.round(
+              distanceKm(listing.pickupPoint, order.dropOff.point) * 10,
+            ) / 10,
+        }
       : {}),
     ...(listing.fulfillmentOption !== undefined
       ? { fulfillmentOption: listing.fulfillmentOption }

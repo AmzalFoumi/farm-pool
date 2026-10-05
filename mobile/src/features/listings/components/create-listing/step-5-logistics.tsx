@@ -14,9 +14,9 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { PointPicker } from "@/features/geo/point-picker";
 import { CropTile } from "@/features/listings/crop-tile";
 
-import { PickupPointField } from "./pickup-point-field";
 import { WizardActions, WizardShell } from "./wizard-shell";
 
 export type Step5LogisticsData = {
@@ -261,7 +261,14 @@ export default function Step5Logistics({
       </VStack>
 
       {/* Shown once the district resolves, because that is what the map centres on. */}
-      <PickupPointField district={district} value={pickupPoint} onChange={setPickupPoint} />
+      <PointPicker
+        district={district}
+        title="Farm gate"
+        help="Tap the map where a lorry should come. Optional — without it the driver sees the district only."
+        unsetNote={`Not set — drivers will see ${district} district`}
+        value={pickupPoint}
+        onChange={setPickupPoint}
+      />
 
       {/* Transport Method Section */}
       <VStack className="gap-3">

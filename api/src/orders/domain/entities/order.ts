@@ -1,4 +1,9 @@
-import type { CropId, Order as OrderDto, OrderStatus } from '@farm-pool/shared';
+import type {
+  CropId,
+  DropOff,
+  Order as OrderDto,
+  OrderStatus,
+} from '@farm-pool/shared';
 
 /**
  * A buyer's purchase request against one listing. See the lifecycle in
@@ -24,6 +29,9 @@ export interface Order {
   assignedDriverId?: string;
   /** What the driver actually loaded (LP-50). Set at pickup; never overwritten. */
   collectedKg?: number;
+  /** Where the buyer wants it delivered (FARM-26). Snapshotted at placement, never a reference
+   *  to the buyer's saved list — renaming a saved place must not rewrite a past delivery. */
+  dropOff?: DropOff;
   /** When the buyer confirmed the produce arrived (FARM-51). Set once; never overwritten. */
   receivedAt?: Date;
   /** A new price waiting for the other side's answer (FARM-53). At most one at a time. */
@@ -61,6 +69,7 @@ export function toOrderDto(order: Order): OrderDto {
     ...(order.collectedKg !== undefined
       ? { collectedKg: order.collectedKg }
       : {}),
+    ...(order.dropOff !== undefined ? { dropOff: order.dropOff } : {}),
     ...(order.receivedAt !== undefined
       ? { receivedAt: order.receivedAt.toISOString() }
       : {}),

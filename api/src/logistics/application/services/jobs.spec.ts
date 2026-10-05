@@ -422,3 +422,85 @@ describe('logistics jobs', () => {
     });
   });
 });
+
+/**
+ * Both ends of the trip (FARM-26). The farm gate comes from the listing, the drop-off from the
+ * order, and the distance exists only when both are real — see `toJobSummary`.
+ */
+describe('job distance', () => {
+  const GATE = { latitude: 7.6281, longitude: 80.2447 }; // near Wariyapola
+  const DAMBULLA = { latitude: 7.8742, longitude: 80.6511 };
+
+  let listings: InMemoryListingRepository;
+  let orders: InMemoryOrderRepository;
+  let users: InMemoryUserRepository;
+  let board: ListOpenJobs;
+  let driverId: string;
+
+  const seed = async (opts: {
+    pickupPoint?: typeof GATE;
+    dropOff?: { point: typeof DAMBULLA };
+  }) => {
+    const listing = await listings.seed({
+      ...listingFields,
+      ...(opts.pickupPoint ? { pickupPoint: opts.pickupPoint } : {}),
+    });
+    await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg: 120,
+      pricePerKg: 180,
+      total: 21600,
+      status: 'open',
+      ...(opts.dropOff ? { dropOff: opts.dropOff } : {}),
+    });
+  };
+
+  beforeEach(async () => {
+    listings = new InMemoryListingRepository();
+    orders = new InMemoryOrderRepository();
+    users = new InMemoryUserRepository();
+    board = new ListOpenJobs(orders, listings, users);
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000800',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'small-lorry',
+      registration: 'NW CAB-1111',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+    driverId = driver.id;
+  });
+
+  it('measures gate to drop-off when both are known', async () => {
+    await seed({ pickupPoint: GATE, dropOff: { point: DAMBULLA } });
+
+    const [job] = await board.execute(driverId);
+
+    // ~48 km straight line between Wariyapola and Dambulla.
+    expect(job.distanceKm).toBeGreaterThan(40);
+    expect(job.distanceKm).toBeLessThan(55);
+  });
+
+  /* A distance from a district centre would be precise enough to be believed and wrong enough to
+     matter on a quote, so there is no distance at all until both ends are real. */
+  it('gives no distance when either end is missing', async () => {
+    await seed({ dropOff: { point: DAMBULLA } });
+    expect((await board.execute(driverId))[0].distanceKm).toBeUndefined();
+
+    orders = new InMemoryOrderRepository();
+    listings = new InMemoryListingRepository();
+    board = new ListOpenJobs(orders, listings, users);
+    await seed({ pickupPoint: GATE });
+    expect((await board.execute(driverId))[0].distanceKm).toBeUndefined();
+  });
+});

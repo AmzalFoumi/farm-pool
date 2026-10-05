@@ -17,6 +17,7 @@ import {
   cropById,
   placeOrderSchema,
   type FulfillmentOption,
+  type DropOff,
   type Listing,
   type ListingPackaging
 } from "@farm-pool/shared";
@@ -46,6 +47,7 @@ import { VStack } from "@/components/ui/vstack";
 import { callsApi } from "@/features/calls/api";
 import { listingsApi } from "@/features/listings/api";
 import { CropTile } from "@/features/listings/crop-tile";
+import { DeliveryLocationField } from "@/features/geo/delivery-location-field";
 import { ordersApi } from "@/features/orders/api";
 import { ApiError } from "@/lib/api";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -317,6 +319,7 @@ function PlaceOrderSheet({
   bottomInset: number;
 }) {
   const [quantity, setQuantity] = useState(String(listing.minOrderKg));
+  const [dropOff, setDropOff] = useState<DropOff | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -326,7 +329,13 @@ function PlaceOrderSheet({
 
   const submit = async () => {
     setError(null);
-    const parsed = placeOrderSchema.safeParse({ listingId: listing.id, quantityKg: kg });
+    const parsed = placeOrderSchema.safeParse({
+      listingId: listing.id,
+      quantityKg: kg,
+      /* Omitted entirely when the buyer did not set one — an absent key is what "no delivery
+         point" means on the api, and the driver falls back to the district. */
+      ...(dropOff ? { dropOff } : {})
+    });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Enter a quantity");
       return;
@@ -374,6 +383,14 @@ function PlaceOrderSheet({
               {inRange ? formatPrice(kg * listing.pricePerKg) : "—"}
             </Text>
           </HStack>
+
+          {/* Centred on the listing's district so a new pin opens near the farm, which is the
+              likeliest neighbourhood for a first drag. */}
+          <DeliveryLocationField
+            district={listing.district}
+            value={dropOff}
+            onChange={setDropOff}
+          />
           <AppButton
             label={submitting ? "Sending…" : "Send request"}
             onPress={() => void submit()}

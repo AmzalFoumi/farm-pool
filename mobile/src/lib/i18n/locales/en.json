@@ -142,7 +142,11 @@
       "directions": "Directions in Google Maps",
       "directionsLabel": "Open directions to {{place}} in Google Maps",
       "exactPin": "The farmer pinned this gate. Tap for directions.",
-      "pinLabel": "Farm gate"
+      "pinLabel": "Farm gate",
+      "distance": "{{km}} km straight line",
+      "dropOff": "Deliver to",
+      "dropOffUnset": "No delivery point set",
+      "tripLength": "Trip length"
     },
     "actions": {
       "take": "Take this job",

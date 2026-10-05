@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { driverProfileSchema } from "./driver";
+import { savedLocationSchema } from "./saved-location";
 import { phoneSchema } from "./phone";
 import { accountStatusSchema, roleSchema } from "./role";
 
@@ -63,7 +64,10 @@ export const publicUserSchema = z.object({
   createdAt: z.iso.datetime(),
   /** A delivery partner's vehicle and its verification state; absent for every other role, and
    *  for a driver who has not submitted one yet (FARM-45, `./driver.ts`). */
-  driver: driverProfileSchema.optional()
+  driver: driverProfileSchema.optional(),
+  /** Places this buyer delivers to often (FARM-26). Absent rather than empty when none are
+   *  saved, so an account that never used the feature carries nothing. */
+  savedLocations: z.array(savedLocationSchema).optional()
 });
 
 export type PublicUser = z.infer<typeof publicUserSchema>;

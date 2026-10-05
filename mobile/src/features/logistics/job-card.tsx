@@ -40,6 +40,9 @@ export function JobCard({ job, onPress }: { job: JobSummary; onPress: () => void
         </Text>
         <Text className="type-caption text-muted-foreground" numberOfLines={1}>
           {place} · {formatPrice(job.total)}
+          {job.distanceKm !== undefined
+            ? ` · ${t("jobs.detail.distance", { km: job.distanceKm })}`
+            : ""}
         </Text>
       </VStack>
       <VStack className="items-end gap-1">

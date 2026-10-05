@@ -22,6 +22,18 @@ export class PriceProposalDocument {
 const PriceProposalSchema = SchemaFactory.createForClass(PriceProposalDocument);
 
 /** Storage shape of an order in the `orders` collection. One line per order. */
+/** Where the buyer wants it delivered (FARM-26). Embedded value, no `_id`. */
+@Schema({ _id: false })
+export class DropOffDocument {
+  @Prop({ required: false, trim: true })
+  label?: string;
+
+  @Prop({ type: Object, required: true })
+  point: { latitude: number; longitude: number };
+}
+
+const DropOffSchema = SchemaFactory.createForClass(DropOffDocument);
+
 @Schema({ collection: 'orders', timestamps: true })
 export class OrderDocument {
   @Prop({ required: true, index: true })
@@ -68,6 +80,9 @@ export class OrderDocument {
   /** What the driver actually loaded at the gate (LP-50); may differ from `quantityKg`. */
   @Prop({ required: false, min: 1 })
   collectedKg?: number;
+
+  @Prop({ type: DropOffSchema, required: false })
+  dropOff?: DropOffDocument;
 
   /** When the buyer confirmed receipt (FARM-51). Absent until they do. */
   @Prop({ required: false })

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { sriLankaPointSchema, type GeoPoint } from "../geo/point";
 import { cropIdSchema } from "./crops";
 
 /**
@@ -60,23 +61,10 @@ export const pricePerKgSchema = z.number().positive("Must be more than Rs 0");
  * signal when the GPS fails must still be able to post produce — so every reader falls back to
  * the district centre in `DISTRICT_POINTS`. A listing without a point is less useful, never
  * broken.
- *
- * Bounds are Sri Lanka's, deliberately tight: the common failure is a transposed pair, and
- * latitude 80 / longitude 7 lands in Kazakhstan rather than failing loudly. Catching it here
- * means it is a form error the farmer can fix, not a driver sent to the wrong continent.
  */
-export const pickupPointSchema = z.object({
-  latitude: z
-    .number()
-    .min(5.8, "That is south of Sri Lanka — check the pin")
-    .max(10.0, "That is north of Sri Lanka — check the pin"),
-  longitude: z
-    .number()
-    .min(79.5, "That is west of Sri Lanka — check the pin")
-    .max(82.0, "That is east of Sri Lanka — check the pin")
-});
+export const pickupPointSchema = sriLankaPointSchema;
 
-export type PickupPoint = z.infer<typeof pickupPointSchema>;
+export type PickupPoint = GeoPoint;
 
 export const listingSchema = z.object({
   id: z.string(),

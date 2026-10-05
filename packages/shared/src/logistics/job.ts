@@ -9,6 +9,7 @@ import {
   pricePerKgSchema
 } from "../catalog/listing";
 import { vehicleTypeSchema, driverVerificationSchema } from "../identity/driver";
+import { dropOffSchema } from "../orders/order";
 
 /**
  * A delivery job, as a driver sees it (LP-20 … LP-24).
@@ -46,6 +47,19 @@ export const jobSummarySchema = z.object({
    * district centre, and says which it is showing.
    */
   pickupPoint: pickupPointSchema.optional(),
+  /**
+   * Where the load is going, when the buyer gave one (FARM-26). The farm gate alone tells a
+   * driver where to start; this is what makes the trip a trip.
+   */
+  dropOff: dropOffSchema.optional(),
+  /**
+   * Straight-line kilometres from gate to drop-off, computed on the api so every screen agrees.
+   * Present only when **both** ends are known — a distance from a district centre would be a
+   * number precise enough to be believed and wrong enough to matter on a quote.
+   *
+   * Straight-line, not road: see `distanceKm`. Whatever shows this must say so.
+   */
+  distanceKm: z.number().nonnegative().optional(),
   /** `shared` is a consolidated batch candidate, `solo` a dedicated vehicle (LP-32). */
   fulfillmentOption: fulfillmentOptionSchema.optional(),
   /** `open` on the board; `assigned`, `in_transit` or `delivered` on a driver's own list. */
