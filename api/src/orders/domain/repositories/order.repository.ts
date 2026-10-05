@@ -6,12 +6,24 @@ export interface OrderRepository {
   findById(id: string): Promise<Order | null>;
   /** Orders placed by this buyer, newest first. */
   findByBuyer(buyerId: string): Promise<Order[]>;
+  /** Orders placed against this farmer's listings, newest first. */
+  findByFarmer(farmerId: string): Promise<Order[]>;
   /** Every order in one status, newest first. The driver job board reads `open` through this
    *  rather than querying the `orders` collection from the logistics domain. */
   findByStatus(status: OrderStatus): Promise<Order[]>;
   /** Orders this driver has accepted, newest first. */
   findByAssignedDriver(driverId: string): Promise<Order[]>;
   updateStatus(id: string, status: OrderStatus): Promise<Order>;
+  /**
+   * The farmer answers a purchase request (FARM-46): `requested` → `accepted` or `declined`.
+   * Matches on the farmer and the status in one operation. Resolves `null` when the order is not
+   * this farmer's or is no longer waiting for an answer.
+   */
+  answerRequest(
+    id: string,
+    farmerId: string,
+    answer: 'accepted' | 'declined',
+  ): Promise<Order | null>;
   /**
    * Claim an `open` order for a driver, atomically: sets `assignedDriverId` and moves the status
    * to `assigned`, but only if the order is still `open`. Resolves `null` when it is not — that

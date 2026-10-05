@@ -10,8 +10,10 @@ import { Allow } from '../identity/auth/roles.decorator';
 import { ZodValidationPipe } from '../shared/http/zod-validation.pipe';
 import { CancelOrder } from './application/services/cancel-order';
 import { GetOrder } from './application/services/get-order';
+import { ListIncomingOrders } from './application/services/list-incoming-orders';
 import { ListMyOrders } from './application/services/list-my-orders';
 import { PlaceOrder } from './application/services/place-order';
+import { RespondToOrder } from './application/services/respond-to-order';
 
 /**
  * HTTP entry points for the orders domain. Thin: validate, call one use-case, return.
@@ -20,10 +22,13 @@ import { PlaceOrder } from './application/services/place-order';
  * | ------ | ------------------- | ---------------- | ----------------------------------- |
  * | POST   | /orders             | `order:place`    | 201 `Order` · 404 · 409 · 400       |
  * | GET    | /orders/mine        | `order:read-own` | 200 `Order[]` (caller as buyer)     |
+ * | GET    | /orders/incoming    | `order:read-own` | 200 `Order[]` (caller as farmer)    |
  * | GET    | /orders/:id         | `order:read-own` | 200 `Order` · 403 unless buyer/farmer |
  * | POST   | /orders/:id/cancel  | `order:cancel`   | 200 `Order` · 403 · 409             |
+ * | POST   | /orders/:id/accept  | `order:accept`   | 200 `Order` · 403 · 409             |
+ * | POST   | /orders/:id/decline | `order:accept`   | 200 `Order` · 403 · 409             |
  *
- * `mine` is declared before `:id` so the router does not read it as an id.
+ * `mine` and `incoming` are declared before `:id` so the router does not read it as an id.
  */
 @Controller('orders')
 export class OrdersController {
@@ -32,6 +37,8 @@ export class OrdersController {
     private readonly listMyOrders: ListMyOrders,
     private readonly getOrder: GetOrder,
     private readonly cancelOrder: CancelOrder,
+    private readonly listIncomingOrders: ListIncomingOrders,
+    private readonly respondToOrder: RespondToOrder,
   ) {}
 
   @Allow('order:place')
@@ -47,6 +54,12 @@ export class OrdersController {
   @Get('mine')
   mine(@CurrentUser() user: AuthenticatedUser): Promise<Order[]> {
     return this.listMyOrders.execute(user.sub);
+  }
+
+  @Allow('order:read-own')
+  @Get('incoming')
+  incoming(@CurrentUser() user: AuthenticatedUser): Promise<Order[]> {
+    return this.listIncomingOrders.execute(user.sub);
   }
 
   @Allow('order:read-own')
@@ -66,5 +79,25 @@ export class OrdersController {
     @Param('id') id: string,
   ): Promise<Order> {
     return this.cancelOrder.execute(user.sub, id);
+  }
+
+  @Allow('order:accept')
+  @Post(':id/accept')
+  @HttpCode(200)
+  accept(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ): Promise<Order> {
+    return this.respondToOrder.execute(user.sub, id, 'accepted');
+  }
+
+  @Allow('order:accept')
+  @Post(':id/decline')
+  @HttpCode(200)
+  decline(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ): Promise<Order> {
+    return this.respondToOrder.execute(user.sub, id, 'declined');
   }
 }
