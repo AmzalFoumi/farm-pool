@@ -28,6 +28,13 @@ export interface Offer {
   updatedAt: Date;
 }
 
+/** Which side of this offer a user is on, or `null` when they are on neither. */
+export function sideOf(offer: Offer, userId: string): SenderType | null {
+  if (userId === offer.farmerId) return 'FARMER';
+  if (userId === offer.buyerId) return 'BUYER';
+  return null;
+}
+
 export type NewOffer = Omit<Offer, 'id' | 'createdAt' | 'updatedAt'>;
 
 export function toOfferDto(offer: Offer): OfferDto {

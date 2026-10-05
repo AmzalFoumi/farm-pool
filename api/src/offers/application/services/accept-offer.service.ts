@@ -6,7 +6,7 @@ import { WANTED_REPOSITORY } from '../../../catalog/domain/repositories/wanted.r
 import type { WantedRepository } from '../../../catalog/domain/repositories/wanted.repository';
 import { PlaceOrder } from '../../../orders/application/services/place-order';
 import type { Order } from '@farm-pool/shared';
-import type { Offer } from '../../domain/entities/offer';
+import { sideOf, type Offer } from '../../domain/entities/offer';
 import { OFFER_REPOSITORY } from '../../domain/repositories/offer.repository';
 import type { OfferRepository } from '../../domain/repositories/offer.repository';
 import { OfferError } from '../errors';
@@ -22,10 +22,21 @@ export class AcceptOfferService {
     private readonly placeOrder: PlaceOrder,
   ) {}
 
-  async execute(offerId: string): Promise<{ orderId: string }> {
+  async execute(
+    callerId: string,
+    offerId: string,
+  ): Promise<{ orderId: string }> {
     const offer = await this.offers.findById(offerId);
     if (!offer) {
       throw new OfferError('not_found', 'not_found', 'Offer not found');
+    }
+    const side = sideOf(offer, callerId);
+    if (!side) {
+      throw new OfferError(
+        'forbidden',
+        'not_your_offer',
+        'Only the buyer and the farmer on an offer can answer it',
+      );
     }
 
     if (offer.status !== 'PENDING' && offer.status !== 'NEGOTIATING') {
@@ -33,6 +44,15 @@ export class AcceptOfferService {
         'invalid',
         'invalid',
         'Offer cannot be accepted in its current state',
+      );
+    }
+
+    // The side that made the latest proposal cannot accept it for the other side.
+    if (offer.actionRequiredBy !== side) {
+      throw new OfferError(
+        'invalid',
+        'invalid',
+        'The other side has to accept this offer',
       );
     }
 

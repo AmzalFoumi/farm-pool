@@ -3,7 +3,8 @@ import {
   type DomainErrorKind,
 } from '../../shared/kernel/domain-error';
 
-export type OfferErrorCode = 'not_found' | 'conflict' | 'invalid';
+export type OfferErrorCode =
+  'not_found' | 'conflict' | 'invalid' | 'not_your_offer';
 
 export class OfferError extends DomainError<OfferErrorCode> {
   constructor(kind: DomainErrorKind, code: OfferErrorCode, message: string) {

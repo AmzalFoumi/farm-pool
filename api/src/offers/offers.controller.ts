@@ -51,24 +51,31 @@ export class OffersController {
   @Allow('order:renegotiate')
   @Post(':id/negotiation')
   async negotiate(
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
     @Body(new ZodValidationPipe(submitNegotiationSchema))
     data: SubmitNegotiationData,
   ) {
-    const offer = await this.submitNegotiation.execute(id, data);
+    const offer = await this.submitNegotiation.execute(user.sub, id, data);
     return toOfferDto(offer);
   }
 
   @Allow('order:renegotiate')
   @Post(':id/accept')
-  async accept(@Param('id') id: string) {
-    return this.acceptOffer.execute(id);
+  async accept(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ) {
+    return this.acceptOffer.execute(user.sub, id);
   }
 
   @Allow('order:renegotiate')
   @Post(':id/decline')
-  async decline(@Param('id') id: string) {
-    const offer = await this.declineOffer.execute(id);
+  async decline(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ) {
+    const offer = await this.declineOffer.execute(user.sub, id);
     return toOfferDto(offer);
   }
 }
