@@ -1,9 +1,10 @@
 import { districtPoint, type PickupPoint } from "@farm-pool/shared";
 import { useTranslation } from "react-i18next";
 import { Linking, Platform } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 
 import { Box } from "@/components/ui/box";
+import { MAP_PROVIDER } from "@/features/geo/map-provider";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -70,7 +71,7 @@ export function JobMap({
     <VStack className="gap-2">
       <Box className="h-44 overflow-hidden rounded-card border border-border">
         <MapView
-          provider={PROVIDER_GOOGLE}
+          provider={MAP_PROVIDER}
           style={{ flex: 1 }}
           initialRegion={{
             latitude: point.latitude,

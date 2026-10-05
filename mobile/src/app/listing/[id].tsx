@@ -19,7 +19,9 @@ import {
   type FulfillmentOption,
   type DropOff,
   type Listing,
-  type ListingPackaging
+  type ListingPackaging,
+  type PublicUser,
+  type SavedLocation
 } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -88,6 +90,8 @@ export default function ListingDetailScreen() {
             canCall={auth.user ? can(auth.user.role, "call:request") : false}
             onCallRequested={() => router.push("/calls")}
             token={token}
+            savedLocations={auth.user?.savedLocations ?? []}
+            onUserChanged={auth.updateUser}
             onBack={() => router.back()}
             onPlaced={(orderId) =>
               router.replace({ pathname: "/orders/[id]", params: { id: orderId } })
@@ -107,6 +111,8 @@ function ListingBody({
   canCall,
   onCallRequested,
   token,
+  savedLocations,
+  onUserChanged,
   onBack,
   onPlaced,
   topInset,
@@ -118,6 +124,10 @@ function ListingBody({
   /** After a call request is sent (or one was already open): go to the Calls tab. */
   onCallRequested: () => void;
   token: string;
+  /* Threaded down rather than read from context: the Place order sheet renders through a portal,
+     outside the AuthProvider subtree, so `useAuth()` throws in anything it contains. */
+  savedLocations: readonly SavedLocation[];
+  onUserChanged: (user: PublicUser) => void;
   onBack: () => void;
   onPlaced: (orderId: string) => void;
   topInset: number;
@@ -277,6 +287,8 @@ function ListingBody({
         onClose={() => setSheetOpen(false)}
         listing={listing}
         token={token}
+        savedLocations={savedLocations}
+        onUserChanged={onUserChanged}
         onPlaced={onPlaced}
         bottomInset={bottomInset}
       />
@@ -308,6 +320,8 @@ function PlaceOrderSheet({
   onClose,
   listing,
   token,
+  savedLocations,
+  onUserChanged,
   onPlaced,
   bottomInset
 }: {
@@ -315,6 +329,8 @@ function PlaceOrderSheet({
   onClose: () => void;
   listing: Listing;
   token: string;
+  savedLocations: readonly SavedLocation[];
+  onUserChanged: (user: PublicUser) => void;
   onPlaced: (orderId: string) => void;
   bottomInset: number;
 }) {
@@ -390,6 +406,9 @@ function PlaceOrderSheet({
             district={listing.district}
             value={dropOff}
             onChange={setDropOff}
+            token={token}
+            savedLocations={savedLocations}
+            onUserChanged={onUserChanged}
           />
           <AppButton
             label={submitting ? "Sending…" : "Send request"}

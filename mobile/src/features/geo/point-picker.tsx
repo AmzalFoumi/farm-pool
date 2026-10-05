@@ -1,8 +1,9 @@
 import { districtPoint, type GeoPoint } from "@farm-pool/shared";
 import { useState } from "react";
-import MapView, { Marker, PROVIDER_GOOGLE, type LatLng } from "react-native-maps";
+import MapView, { Marker, type LatLng } from "react-native-maps";
 
 import { AppButton } from "@/components/app/app-button";
+import { MAP_PROVIDER } from "@/features/geo/map-provider";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
@@ -66,7 +67,7 @@ export function PointPicker({
 
       <Box className="h-52 overflow-hidden rounded-card border border-border">
         <MapView
-          provider={PROVIDER_GOOGLE}
+          provider={MAP_PROVIDER}
           style={{ flex: 1 }}
           initialRegion={{
             latitude: pin.latitude,

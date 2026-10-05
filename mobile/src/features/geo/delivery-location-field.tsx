@@ -1,4 +1,4 @@
-import type { DropOff, SavedLocation } from "@farm-pool/shared";
+import type { DropOff, PublicUser, SavedLocation } from "@farm-pool/shared";
 import { useState } from "react";
 
 import { AppButton } from "@/components/app/app-button";
@@ -11,7 +11,6 @@ import { VStack } from "@/components/ui/vstack";
 import { locationsApi } from "@/features/geo/api";
 import { PointPicker } from "@/features/geo/point-picker";
 import { ApiError } from "@/lib/api";
-import { useAuth } from "@/providers/auth-provider";
 
 /**
  * Where the buyer wants the load delivered (FARM-26).
@@ -24,19 +23,31 @@ import { useAuth } from "@/providers/auth-provider";
  * Choosing a saved place **copies** its label and point into the order rather than referencing
  * it, which is why this hands the parent a whole `DropOff` and not an id. Renaming or deleting a
  * saved place later must not rewrite where a past delivery went.
+ *
+ * **The session arrives as props, not from `useAuth`.** This renders inside the Place order
+ * Actionsheet, and gluestack mounts an Actionsheet through a portal — outside the subtree under
+ * `AuthProvider`, so a `useAuth()` here throws "must be used inside <AuthProvider>". The screen
+ * that owns the sheet is inside the provider and already passes `token` down for exactly this
+ * reason; the saved list and the update callback follow the same route.
  */
 export function DeliveryLocationField({
   district,
   value,
-  onChange
+  onChange,
+  token,
+  savedLocations,
+  onUserChanged
 }: {
   /** Where to centre a new pin — the listing's district, so the map opens near the farm. */
   district: string;
   value?: DropOff;
   onChange: (dropOff: DropOff | undefined) => void;
+  token: string;
+  savedLocations: readonly SavedLocation[];
+  /** Hands the updated user back up so the session's saved list stays current. */
+  onUserChanged: (user: PublicUser) => void;
 }) {
-  const auth = useAuth();
-  const saved = auth.status === "signed-in" ? (auth.user.savedLocations ?? []) : [];
+  const saved = savedLocations;
 
   const [pinning, setPinning] = useState(false);
   const [label, setLabel] = useState("");
@@ -51,15 +62,15 @@ export function DeliveryLocationField({
   /* Saving is optional and separate from choosing: a one-off delivery should not clutter the
      list the buyer picks from every week. The order already carries the point either way. */
   const saveForNextTime = async () => {
-    if (!auth.token || !value) return;
+    if (!token || !value) return;
     setError(null);
     setSaving(true);
     try {
-      const user = await locationsApi.save(auth.token, {
+      const user = await locationsApi.save(token, {
         label: label.trim(),
         point: value.point
       });
-      auth.updateUser(user);
+      onUserChanged(user);
       onChange({ label: label.trim(), point: value.point });
       setLabel("");
     } catch (e) {
