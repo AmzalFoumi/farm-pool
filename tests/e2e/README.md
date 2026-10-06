@@ -32,6 +32,19 @@ match users on `phone: /^\+94770/`.
 | listing `pending_approval` → `verified` | Coordinator approval is unbuilt (FARM-43) | FARM-43 lands |
 | order `requested` → `open` | Farmer acceptance is unbuilt (FARM-46) | FARM-46 lands |
 
+## Testing the driver rules by hand
+
+```bash
+node tests/e2e/seed-driver-scenario.mjs
+```
+
+Puts six jobs on the board, each proving exactly one rule, and prints what to expect from each.
+Two of them never appear at all — a board that hides work a lorry cannot take is a behaviour worth
+seeing, not just a refusal. It clears whatever the driver is holding first, so it is re-runnable.
+
+Verified against the api on 2026-10-06: accept A → B refused `window_clash` → C accepts → E
+refused `vehicle_full`, with A's promised window byte-identical afterwards.
+
 ## The files
 
 | File | Covers |
