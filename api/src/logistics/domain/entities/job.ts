@@ -1,6 +1,7 @@
-import { distanceKm } from '@farm-pool/shared';
+import { distanceKm, windowsOverlap } from '@farm-pool/shared';
 import type {
   AssignedDriver,
+  CollectionWindow,
   JobDetail,
   JobSummary,
   PickupContact,
@@ -46,9 +47,50 @@ export function isJobStatus(status: Order['status']): status is JobStatus {
  * kilograms that were never harvested.
  */
 export function committedKg(jobs: readonly Order[]): number {
-  return jobs
-    .filter((o) => o.status === 'assigned' || o.status === 'in_transit')
-    .reduce((total, o) => total + (o.collectedKg ?? o.quantityKg), 0);
+  return liveJobs(jobs).reduce(
+    (total, o) => total + (o.collectedKg ?? o.quantityKg),
+    0,
+  );
+}
+
+/** Jobs a driver still owes someone. The same set capacity and time are both measured against. */
+function liveJobs(jobs: readonly Order[]): readonly Order[] {
+  return jobs.filter(
+    (o) => o.status === 'assigned' || o.status === 'in_transit',
+  );
+}
+
+/** Every window a driver has already promised a farmer. */
+export function committedWindows(
+  jobs: readonly Order[],
+): readonly CollectionWindow[] {
+  return liveJobs(jobs)
+    .map((o) => o.committedWindow)
+    .filter((w): w is CollectionWindow => w !== undefined);
+}
+
+/**
+ * Can this driver still promise `wanted` without breaking a promise already made?
+ *
+ * **This is the whole of FARM-61 in one function, and it is deliberately a check, not a
+ * recalculation.** The alternative — recomputing every ETA from the driver's queue each time they
+ * accept — is what makes a farmer's 2 pm quietly become 4 pm, with produce already harvested and
+ * sitting in the sun. Here, a new job either fits in the gaps between existing promises or it is
+ * refused. Nothing a driver does later can move a window a farmer was already given.
+ *
+ * Overlap is the only test, and that is a deliberate simplification: it says one vehicle cannot be
+ * at two gates at once, which is true and needs no map. It does *not* yet say the driver can
+ * physically travel between two non-overlapping windows — 2:00–2:30 in Kalutara and 2:45–3:15 in
+ * Jaffna pass this check and are impossible. Travel time needs a road-distance estimate the app
+ * does not have (`distanceKm` is straight-line haversine, and a hill road runs 1.5–2x that), so it
+ * is the next layer rather than a missing piece of this one. Refusing the overlaps is strictly
+ * better than refusing nothing, and never refuses something that was actually possible.
+ */
+export function windowIsFree(
+  jobs: readonly Order[],
+  wanted: CollectionWindow,
+): boolean {
+  return !committedWindows(jobs).some((held) => windowsOverlap(held, wanted));
 }
 
 /**
@@ -72,6 +114,12 @@ export function toJobSummary(
     ...(listing.town !== undefined ? { town: listing.town } : {}),
     ...(listing.pickupPoint !== undefined
       ? { pickupPoint: listing.pickupPoint }
+      : {}),
+    ...(listing.collectionWindow !== undefined
+      ? { collectionWindow: listing.collectionWindow }
+      : {}),
+    ...(order.committedWindow !== undefined
+      ? { committedWindow: order.committedWindow }
       : {}),
     ...(order.dropOff !== undefined ? { dropOff: order.dropOff } : {}),
     /* Only when both ends are real. A distance measured from a district centre would be a precise

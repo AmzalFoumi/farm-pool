@@ -1,5 +1,7 @@
 import {
+  acceptJobSchema,
   confirmPickupSchema,
+  type AcceptJobData,
   type AssignedDriver,
   type ConfirmPickupData,
   type JobDetail,
@@ -35,7 +37,8 @@ import { ListOpenJobs } from './application/services/list-open-jobs';
  *
  * `mine` is declared before `:orderId` so the router does not read it as an id.
  *
- * Only the pickup takes a body — the weight actually loaded. Everything else is identified by the
+ * Accept takes an optional `committedWindow` — the slot the driver promises the farmer (FARM-61).
+ * Only it and the pickup take a body — the weight actually loaded. Everything else is identified by the
  * order it belongs to and acted on by the caller's own token, so there is nothing to send.
  */
 @Controller('logistics')
@@ -77,8 +80,9 @@ export class LogisticsController {
   accept(
     @CurrentUser() user: AuthenticatedUser,
     @Param('orderId') orderId: string,
+    @Body(new ZodValidationPipe(acceptJobSchema)) body: AcceptJobData,
   ): Promise<JobDetail> {
-    return this.acceptJob.execute(user.sub, orderId);
+    return this.acceptJob.execute(user.sub, orderId, body.committedWindow);
   }
 
   @Allow('delivery:confirm')

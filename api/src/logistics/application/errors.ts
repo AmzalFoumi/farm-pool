@@ -12,6 +12,8 @@ export type LogisticsErrorCode =
   | 'no_vehicle'
   | 'load_too_heavy'
   | 'vehicle_full'
+  | 'window_clash'
+  | 'window_outside_offer'
   | 'no_driver_assigned';
 
 export class LogisticsError extends DomainError<LogisticsErrorCode> {

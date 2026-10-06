@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { sriLankaPointSchema, type GeoPoint } from "../geo/point";
 import { cropIdSchema } from "./crops";
+import { collectionWindowSchema } from "../logistics/collection-window";
 
 /**
  * A farmer's produce listing as the buyer sees it (FARM-21 / FARM-22).
@@ -89,6 +90,9 @@ export const listingSchema = z.object({
   address: z.string().optional(),
   /** The farm gate, when the farmer dropped a pin (FARM-26). Absent on older listings. */
   pickupPoint: pickupPointSchema.optional(),
+  /** When the farmer can be ready (FARM-61). Absent on listings made before this existed, and a
+   *  driver then commits to whatever they and the farmer agree by phone. */
+  collectionWindow: collectionWindowSchema.optional(),
   fulfillmentOption: fulfillmentOptionSchema.optional(),
   farmgateNotes: z.string().optional(),
   /** The smallest quantity a buyer may order. Set by the farmer or the seed, never by the buyer. */
@@ -137,6 +141,7 @@ export const createListingSchema = z
     town: shortText(60).optional(),
     address: shortText(200).optional(),
     pickupPoint: pickupPointSchema.optional(),
+    collectionWindow: collectionWindowSchema.optional(),
     fulfillmentOption: fulfillmentOptionSchema.optional(),
     farmgateNotes: shortText(500).optional(),
     minOrderKg: kgSchema.optional()

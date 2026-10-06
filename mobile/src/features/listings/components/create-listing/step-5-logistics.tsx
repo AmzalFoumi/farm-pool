@@ -5,6 +5,7 @@ import {
   districtSchema,
   type CropId,
   type FulfillmentOption,
+  type CollectionWindow,
   type PickupPoint
 } from "@farm-pool/shared";
 
@@ -26,6 +27,8 @@ export type Step5LogisticsData = {
   district?: string;
   /** The farm gate, if the farmer dropped a pin (FARM-26). Optional by design. */
   pickupPoint?: PickupPoint;
+  /** When the farmer can be ready (FARM-61). A driver promises a slot inside this. */
+  collectionWindow?: CollectionWindow;
   notes?: string;
 };
 
@@ -61,6 +64,14 @@ function isoDateFromToday(days: number): string {
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+/** Parts of the day a farmer actually thinks in, as minutes from midnight (FARM-61). Wide on
+ *  purpose — the farmer says when they *can* be ready, and the driver narrows it. */
+const READY_PRESETS = [
+  { label: "Morning", from: 6 * 60, to: 12 * 60 },
+  { label: "Afternoon", from: 12 * 60, to: 17 * 60 },
+  { label: "All day", from: 6 * 60, to: 17 * 60 }
+];
+
 export default function Step5Logistics({
   cropId = "tomato",
   batchInfo = { quantity: 300, unit: "kg", grade: "A", variety: "Roma" },
@@ -80,6 +91,9 @@ export default function Step5Logistics({
   const [district, setDistrict] = useState<string>(initialData?.district ?? "");
   const [districtError, setDistrictError] = useState<string | undefined>();
   const [pickupPoint, setPickupPoint] = useState<PickupPoint | undefined>(initialData?.pickupPoint);
+  /* Defaults to a morning, which is when the research says produce actually moves — a farmer who
+     agrees can tap straight through, and one who cannot changes it. */
+  const [readyFrom, setReadyFrom] = useState(READY_PRESETS[0]);
   const [transportType, setTransportType] = useState<"shared" | "solo">(
     initialData?.fulfillmentOption === "solo" ? "solo" : "shared"
   );
@@ -108,7 +122,14 @@ export default function Step5Logistics({
       fulfillmentOption: transportType,
       harvestDate: finalDate,
       district: parsedDistrict.data,
-      ...(pickupPoint ? { pickupPoint } : {})
+      ...(pickupPoint ? { pickupPoint } : {}),
+      /* Anchored to the harvest date, so "ready in the morning" means the morning the produce is
+         actually picked rather than today. */
+      collectionWindow: {
+        date: finalDate,
+        from: readyFrom.from,
+        to: readyFrom.to
+      }
     });
   };
 
@@ -258,6 +279,41 @@ export default function Step5Logistics({
           autoCapitalize="words"
           error={districtError}
         />
+      </VStack>
+
+      {/* When the farmer can be ready (FARM-61). Whole parts of the day rather than a clock:
+          a farmer knows "morning", and a driver promises a narrower slot inside it. */}
+      <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
+        <VStack className="gap-0.5">
+          <Text className="type-h4 text-foreground">When can a lorry come?</Text>
+          <Text className="type-caption text-muted-foreground">
+            The driver promises a time inside this, and you will see it before they arrive.
+          </Text>
+        </VStack>
+        <HStack className="gap-2">
+          {READY_PRESETS.map((preset) => {
+            const selected = readyFrom.label === preset.label;
+            return (
+              <Pressable
+                key={preset.label}
+                onPress={() => setReadyFrom(preset)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected }}
+                className={`min-h-tap flex-1 items-center justify-center rounded-field border ${
+                  selected ? "border-primary bg-secondary" : "border-border bg-card"
+                }`}
+              >
+                <Text
+                  className={`type-body-sm-bold ${
+                    selected ? "text-secondary-foreground" : "text-foreground"
+                  }`}
+                >
+                  {preset.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </HStack>
       </VStack>
 
       {/* Shown once the district resolves, because that is what the map centres on. */}

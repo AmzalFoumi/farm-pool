@@ -4,6 +4,7 @@ import {
   jobListSchema,
   type AssignedDriver,
   type JobDetail,
+  type CollectionWindow as CommittedWindow,
   type JobSummary
 } from "@farm-pool/shared";
 
@@ -34,9 +35,13 @@ export const logisticsApi = {
   },
 
   /** Take the job. `job_taken` when another driver got there first. */
-  accept(token: string, orderId: string): Promise<JobDetail> {
+  /** Take the job, promising a slot the farmer can plan around (FARM-61). `job_taken` when
+   *  another driver got there first; `window_clash` when the slot collides with one already
+   *  promised. The window is omitted for listings that offer none. */
+  accept(token: string, orderId: string, committedWindow?: CommittedWindow): Promise<JobDetail> {
     return apiFetch(`/logistics/jobs/${orderId}/accept`, {
       method: "POST",
+      body: { ...(committedWindow ? { committedWindow } : {}) },
       token,
       schema: jobDetailSchema
     });

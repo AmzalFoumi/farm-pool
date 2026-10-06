@@ -1,4 +1,5 @@
 import type {
+  CollectionWindow,
   CropId,
   DropOff,
   Order as OrderDto,
@@ -33,6 +34,9 @@ export interface Order {
   /** Where the buyer wants it delivered (FARM-26). Snapshotted at placement, never a reference
    *  to the buyer's saved list — renaming a saved place must not rewrite a past delivery. */
   dropOff?: DropOff;
+  /** The slot the driver promised the farmer when accepting (FARM-61). A commitment, not an
+   *  estimate — nothing recomputes it and no later job may move it. */
+  committedWindow?: CollectionWindow;
   /** When the buyer confirmed the produce arrived (FARM-51). Set once; never overwritten. */
   receivedAt?: Date;
   /** A new price waiting for the other side's answer (FARM-53). At most one at a time. */
@@ -72,6 +76,9 @@ export function toOrderDto(order: Order): OrderDto {
       ? { collectedKg: order.collectedKg }
       : {}),
     ...(order.dropOff !== undefined ? { dropOff: order.dropOff } : {}),
+    ...(order.committedWindow !== undefined
+      ? { committedWindow: order.committedWindow }
+      : {}),
     ...(order.receivedAt !== undefined
       ? { receivedAt: order.receivedAt.toISOString() }
       : {}),

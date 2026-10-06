@@ -1,4 +1,9 @@
-import type { JobDetail } from '@farm-pool/shared';
+import {
+  formatMinutesOfDay,
+  windowContains,
+  type CollectionWindow,
+  type JobDetail,
+} from '@farm-pool/shared';
 import type { ListingRepository } from '../../../catalog/domain/repositories/listing.repository';
 import type { UserRepository } from '../../../identity/domain/repositories/user.repository';
 import type { OrderRepository } from '../../../orders/domain/repositories/order.repository';
@@ -6,6 +11,7 @@ import {
   committedKg,
   toJobDetail,
   toPickupContact,
+  windowIsFree,
 } from '../../domain/entities/job';
 import { LogisticsError } from '../errors';
 
@@ -30,7 +36,16 @@ export class AcceptJob {
     private readonly users: UserRepository,
   ) {}
 
-  async execute(driverId: string, orderId: string): Promise<JobDetail> {
+  /**
+   * @param committedWindow the slot the driver promises the farmer (FARM-61). Optional while
+   * listings made before windows existed are still live — those are agreed by phone, as they
+   * always were.
+   */
+  async execute(
+    driverId: string,
+    orderId: string,
+    committedWindow?: CollectionWindow,
+  ): Promise<JobDetail> {
     const driver = await this.users.findById(driverId);
     if (!driver?.driver) {
       throw new LogisticsError(
@@ -91,7 +106,39 @@ export class AcceptJob {
       );
     }
 
-    const claimed = await this.orders.assignDriver(orderId, driverId);
+    /* The time half of feasibility, beside the weight half above. Both refuse at accept time
+       rather than disappointing someone later, and that is the whole point of FARM-61: a window a
+       farmer was given is never recomputed, so the only moment to say no is now. */
+    if (committedWindow) {
+      /* The driver may only promise inside what the farmer offered. A slot outside it is a time
+         the farmer never said they could be ready for — the gate may be shut and the produce not
+         picked. */
+      if (
+        listing.collectionWindow &&
+        !windowContains(listing.collectionWindow, committedWindow)
+      ) {
+        const offered = listing.collectionWindow;
+        throw new LogisticsError(
+          'conflict',
+          'window_outside_offer',
+          `${formatWindow(offered)} is when this farmer can be ready. Promise a time inside that.`,
+        );
+      }
+
+      if (!windowIsFree(held, committedWindow)) {
+        throw new LogisticsError(
+          'conflict',
+          'window_clash',
+          'You have already promised another farmer that time. Pick a slot you are free for.',
+        );
+      }
+    }
+
+    const claimed = await this.orders.assignDriver(
+      orderId,
+      driverId,
+      committedWindow,
+    );
     if (!claimed) {
       throw new LogisticsError(
         'conflict',
@@ -106,4 +153,9 @@ export class AcceptJob {
       : undefined;
     return toJobDetail(claimed, listing, 'assigned', pickup);
   }
+}
+
+/** "6:00 am – 9:00 am", the one way a window is written to anyone. */
+function formatWindow(w: CollectionWindow): string {
+  return `${formatMinutesOfDay(w.from)} – ${formatMinutesOfDay(w.to)}`;
 }

@@ -142,6 +142,10 @@ export function CreateListingScreen({ initialData }: { initialData?: Listing }) 
       /* Omitted entirely when the farmer did not pin one, rather than sent as undefined: the
          field is optional on the api and an absent key is what "no gate" means there. */
       ...(listingData.step5?.pickupPoint ? { pickupPoint: listingData.step5.pickupPoint } : {}),
+      /* The window the farmer offered (FARM-61) — what a driver must promise inside. */
+      ...(listingData.step5?.collectionWindow
+        ? { collectionWindow: listingData.step5.collectionWindow }
+        : {}),
       fulfillmentOption: listingData.step5?.fulfillmentOption || "shared"
     };
 

@@ -1,0 +1,59 @@
+# FARM-61 — a driver promises a collection time, and the promise is what the farmer plans around.
+#
+# The regression this guards: the slot picker only appears when the farmer offered a window, and
+# "Take this job" must stay disabled until a slot is chosen — accepting without one would promise
+# the farmer nothing, which is the failure the whole story exists to prevent.
+#
+# PRECONDITION, and it is fiddly — read before blaming the flow:
+#
+#   1. node tests/e2e/maestro/seed-window-job.mjs
+#   2. **Fully reload the app** (press r in the Metro terminal, or shake > Reload).
+#
+# The seed is needed because the flow accepts a job and so consumes it; a second run would find an
+# empty board and fail for a reason that has nothing to do with windows. The reload is needed
+# because the Jobs tab refetches on *focus*, and re-opening the same deep link while the screen is
+# already mounted is not a focus change — the board keeps showing what it had, including jobs the
+# seed has since cleared. Worth fixing properly with a pull-to-refresh on that screen, which would
+# also help a real driver sitting at a junction wondering why nothing new has appeared.
+appId: host.exp.Exponent
+---
+- openLink: exp://127.0.0.1:8081/--/driver-jobs
+- extendedWaitUntil:
+    visible: "Jobs"
+    timeout: 30000
+
+# Find a job that is still *open*, not one the driver already holds. "My jobs" sits above
+# "Available near you" on this tab, so a plain index 0 lands on an accepted job and a Confirm
+# pickup screen — a failure that has nothing to do with windows.
+#
+# Anchored on the status pill rather than the section header: the headers are rendered by
+# SectionList and do not reach the accessibility hierarchy at all, so `below: "Available near you"`
+# has nothing to anchor to. "Open" is on the card itself and is exactly what distinguishes the two.
+- scrollUntilVisible:
+    element:
+      text: "Open"
+    direction: DOWN
+- tapOn: "Open"
+- extendedWaitUntil:
+    visible:
+      id: "job-take"
+    timeout: 15000
+
+# The picker is here because the farmer offered a window, and the button is refused until a slot
+# is picked. Tapping it first is the check: nothing should happen.
+- tapOn:
+    id: "job-take"
+- assertVisible:
+    id: "job-take"
+
+- tapOn:
+    id: "window-slot-360"
+- takeScreenshot: slot-chosen
+
+- tapOn:
+    id: "job-take"
+
+# Accepting unlocks the farmer's number and shows the promise back.
+- extendedWaitUntil:
+    visible: "You promised"
+    timeout: 20000

@@ -39,6 +39,7 @@ match users on `phone: /^\+94770/`.
 | `driver-registration.test.mjs` | FARM-45 — account, then vehicle on its own endpoint; plate normalisation; the board refusing until a vehicle exists |
 | `driver-lifecycle.test.mjs` | FARM-49/54 — board filters, the accept race, pickup and drop-off, and what the farmer sees at the gate |
 | `delivery-flow.test.mjs` | FARM-26 — farm gate, delivery point and the distance between them |
+| `collection-windows.test.mjs` | FARM-61 — the promised time, and that taking more work cannot move one already made |
 
 Both are marked `NUDGE:` in the source. They are the two places these tests lie about the system,
 so they are the first thing to delete when the real endpoints exist.

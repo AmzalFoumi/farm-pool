@@ -23,7 +23,9 @@
     "not_your_job": "This job is not yours any more.",
     "wrong_stage": "This job has already moved on.",
     "invalid_credentials": "Phone number or password is incorrect.",
-    "vehicle_full": "Your vehicle is full. Deliver what you are carrying, then take this job."
+    "vehicle_full": "Your vehicle is full. Deliver what you are carrying, then take this job.",
+    "window_clash": "You have already promised another farmer that time. Pick a slot you are free for.",
+    "window_outside_offer": "That is outside the time the farmer can be ready."
   },
   "orderStatus": {
     "requested": "Requested",
@@ -169,6 +171,13 @@
       "vehicle": "Vehicle",
       "driver": "Driver",
       "unverified": "This driver's vehicle has not been checked yet. Match the plate number above against the vehicle before you hand over produce."
+    },
+    "window": {
+      "title": "Promise a collection time",
+      "help": "The farmer can be ready {{window}}. Pick the slot you will be there.",
+      "promise": "The farmer harvests for this time. You cannot move it later without telling them.",
+      "committed": "You promised",
+      "farmerWindow": "Farmer is ready"
     }
   },
   "verification": {

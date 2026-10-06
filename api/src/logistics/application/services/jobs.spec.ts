@@ -633,3 +633,206 @@ describe('vehicle capacity across held jobs', () => {
     ).resolves.toMatchObject({ status: 'assigned' });
   });
 });
+
+/**
+ * Committed collection windows (FARM-61).
+ *
+ * The rule under test: a time a farmer was given is a promise, and nothing a driver does later
+ * may move it. So accepting is a feasibility check against promises already made — a new job fits
+ * in the gaps or it is refused, and no existing window is ever recomputed.
+ */
+describe('committed collection windows', () => {
+  const at = (h: number) => h * 60;
+  const DAY = '2026-10-07';
+  /** The farmer can be ready all morning. */
+  const OFFERED = { date: DAY, from: at(6), to: at(12) };
+
+  let listings: InMemoryListingRepository;
+  let orders: InMemoryOrderRepository;
+  let users: InMemoryUserRepository;
+  let accept: AcceptJob;
+  let driverId: string;
+
+  const openOrder = async (window = OFFERED) => {
+    const listing = await listings.seed({
+      ...listingFields,
+      quantityKg: 5000,
+      collectionWindow: window,
+    });
+    const order = await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg: 50,
+      pricePerKg: 180,
+      total: 9000,
+      status: 'open',
+    });
+    return order.id;
+  };
+
+  beforeEach(async () => {
+    listings = new InMemoryListingRepository();
+    orders = new InMemoryOrderRepository();
+    users = new InMemoryUserRepository();
+    accept = new AcceptJob(orders, listings, users);
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000600',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'small-lorry',
+      registration: 'NW WIN-0001',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+    driverId = driver.id;
+  });
+
+  it('stores the slot the driver promised, so the farmer has a time to plan around', async () => {
+    const job = await accept.execute(driverId, await openOrder(), {
+      date: DAY,
+      from: at(8),
+      to: at(9),
+    });
+
+    expect(job.committedWindow).toEqual({ date: DAY, from: at(8), to: at(9) });
+  });
+
+  /* The promise a farmer was given must survive the driver taking more work — that is the whole
+     story. A second job at a clashing time is refused rather than quietly shifting the first. */
+  it('refuses a second promise that overlaps one already made', async () => {
+    await accept.execute(driverId, await openOrder(), {
+      date: DAY,
+      from: at(8),
+      to: at(9),
+    });
+
+    await expect(
+      accept.execute(driverId, await openOrder(), {
+        date: DAY,
+        from: at(8) + 30,
+        to: at(10),
+      }),
+    ).rejects.toMatchObject({ code: 'window_clash' });
+  });
+
+  it('leaves the first promise exactly as it was after a refusal', async () => {
+    const first = await openOrder();
+    await accept.execute(driverId, first, {
+      date: DAY,
+      from: at(8),
+      to: at(9),
+    });
+
+    await accept
+      .execute(driverId, await openOrder(), {
+        date: DAY,
+        from: at(8),
+        to: at(9),
+      })
+      .catch(() => undefined);
+
+    await expect(orders.findById(first)).resolves.toMatchObject({
+      committedWindow: { date: DAY, from: at(8), to: at(9) },
+    });
+  });
+
+  it('allows a second job in the gap between promises', async () => {
+    await accept.execute(driverId, await openOrder(), {
+      date: DAY,
+      from: at(6),
+      to: at(7),
+    });
+
+    await expect(
+      accept.execute(driverId, await openOrder(), {
+        date: DAY,
+        from: at(9),
+        to: at(10),
+      }),
+    ).resolves.toMatchObject({ status: 'assigned' });
+  });
+
+  it('does not clash across different days', async () => {
+    await accept.execute(driverId, await openOrder(), {
+      date: DAY,
+      from: at(8),
+      to: at(9),
+    });
+
+    const nextDay = { date: '2026-10-08', from: at(8), to: at(9) };
+    await expect(
+      accept.execute(driverId, await openOrder(nextDay), nextDay),
+    ).resolves.toMatchObject({ status: 'assigned' });
+  });
+
+  /* A slot outside what the farmer offered is a time they never said they could be ready for —
+     the gate may be shut and the produce not picked. */
+  it('refuses a promise outside the window the farmer offered', async () => {
+    await expect(
+      accept.execute(driverId, await openOrder(), {
+        date: DAY,
+        from: at(14),
+        to: at(15),
+      }),
+    ).rejects.toMatchObject({ code: 'window_outside_offer' });
+  });
+
+  it('names the window the farmer actually offered, so the driver can pick again', async () => {
+    const refusal = await accept
+      .execute(driverId, await openOrder(), {
+        date: DAY,
+        from: at(14),
+        to: at(15),
+      })
+      .then(() => null)
+      .catch((e: Error) => e.message);
+
+    expect(refusal).toContain('6:00 am');
+    expect(refusal).toContain('12:00 pm');
+  });
+
+  /* Listings made before windows existed offer none, and a driver taking one agrees a time by
+     phone exactly as they always did. Requiring a window would make every old listing dead. */
+  it('still accepts a job on a listing that offers no window', async () => {
+    const listing = await listings.seed({ ...listingFields, quantityKg: 5000 });
+    const order = await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg: 50,
+      pricePerKg: 180,
+      total: 9000,
+      status: 'open',
+    });
+
+    await expect(accept.execute(driverId, order.id)).resolves.toMatchObject({
+      status: 'assigned',
+    });
+  });
+
+  /* Delivering frees the time as well as the space — the same rule capacity already follows. */
+  it('frees a promised slot once that job is delivered', async () => {
+    const first = await openOrder();
+    const slot = { date: DAY, from: at(8), to: at(9) };
+    await accept.execute(driverId, first, slot);
+
+    const pickup = new ConfirmPickup(orders, listings, users);
+    const deliver = new ConfirmDelivery(orders, listings, users);
+    await pickup.execute(driverId, first, 50);
+    await deliver.execute(driverId, first);
+
+    await expect(
+      accept.execute(driverId, await openOrder(), slot),
+    ).resolves.toMatchObject({ status: 'assigned' });
+  });
+});

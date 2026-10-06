@@ -1,4 +1,5 @@
 import type {
+  CollectionWindow,
   CropId,
   PickupPoint,
   FulfillmentOption,
@@ -39,6 +40,8 @@ export interface Listing {
   /** The farm gate, when the farmer dropped a pin (FARM-26). Absent on older listings, and on
    *  one posted where the GPS could not get a fix. */
   pickupPoint?: PickupPoint;
+  /** When the farmer can be ready (FARM-61). A driver commits to a slot inside this. */
+  collectionWindow?: CollectionWindow;
   fulfillmentOption?: FulfillmentOption;
   farmgateNotes?: string;
   minOrderKg: number;
@@ -71,6 +74,7 @@ export function toListingDto(listing: Listing): ListingDto {
     town: listing.town,
     address: listing.address,
     pickupPoint: listing.pickupPoint,
+    collectionWindow: listing.collectionWindow,
     fulfillmentOption: listing.fulfillmentOption,
     farmgateNotes: listing.farmgateNotes,
     minOrderKg: listing.minOrderKg,

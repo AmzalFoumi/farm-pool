@@ -163,6 +163,15 @@ function toListing(doc: ListingHydrated): Listing {
     district: doc.district,
     town: doc.town,
     address: doc.address,
+    ...(doc.collectionWindow
+      ? {
+          collectionWindow: {
+            date: doc.collectionWindow.date,
+            from: doc.collectionWindow.from,
+            to: doc.collectionWindow.to,
+          },
+        }
+      : {}),
     ...(doc.pickupPoint
       ? {
           pickupPoint: {

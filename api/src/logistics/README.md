@@ -80,6 +80,24 @@ Two codes, deliberately: `load_too_heavy` is a load the vehicle can never carry,
 one it cannot carry *yet*. A driver deciding what to do next needs to know which, and one code for
 both would leave the app unable to say.
 
+**A collection time given to a farmer is a promise, not a prediction (FARM-61).** The farmer
+offers a window on the listing; the driver commits to a slot inside it when accepting; and nothing
+afterwards recomputes it. That is the whole design: if the time were derived from the driver's
+current queue, every job they later accepted would silently push back every promise already made,
+and a farmer who harvested for 2 pm would be standing at a gate at 4 pm with produce in the sun.
+
+So accepting is a *feasibility check*, the same shape as the capacity check above — refuse now
+rather than disappoint later. `windowIsFree` in `domain/entities/job.ts` rejects a slot that
+overlaps one already promised; `windowContains` rejects one outside what the farmer offered. The
+window is written in the same Mongo operation as the claim, so a driver can never hold a job with
+no promised time.
+
+Known gap, commented at `windowIsFree`: overlap is the only test, so two non-overlapping windows
+50 km apart both pass and are impossible. Closing that needs a road-distance estimate the app does
+not have — `distanceKm` is straight-line haversine and a hill road runs 1.5–2× that — so it is the
+next layer rather than a missing piece of this one. Refusing the overlaps is strictly better than
+refusing nothing and never refuses something that was possible.
+
 **Verification is deliberately not checked on accept.** Nothing moves a driver past `pending`
 yet (`docs/logistics-driver-role.md`, open question 3), so gating on `verified` would mean no
 driver could accept anything at all. `AcceptJob` names the line that changes when that question is

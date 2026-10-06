@@ -32,6 +32,7 @@ export * from "./catalog/benchmark";
 export * from "./orders/order";
 export * from "./orders/offer";
 export * from "./payments/payment";
+export * from "./logistics/collection-window";
 export * from "./logistics/job";
 export * from "./calls/call";
 export * from "./coordination/cooperative";
