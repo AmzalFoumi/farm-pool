@@ -10,7 +10,8 @@ export type OrderErrorCode =
   | 'quantity_out_of_range'
   | 'order_not_found'
   | 'not_your_order'
-  | 'order_not_cancellable';
+  | 'order_not_cancellable'
+  | 'order_not_answerable';
 
 export class OrderError extends DomainError<OrderErrorCode> {
   constructor(kind: DomainErrorKind, code: OrderErrorCode, message: string) {

@@ -1,8 +1,8 @@
 /**
  * One order, for its buyer and its farmer.
  *
- * The footer holds the one thing the buyer can do at this stage: cancel while it is still
- * `requested`, pay once the farmer has accepted (FARM-41), and confirm it arrived once the driver
+ * While it is `requested` the farmer accepts or declines it (FARM-46). Otherwise the footer
+ * holds the one thing the buyer can do at this stage: cancel while it is still `requested`, pay once the farmer has accepted (FARM-41), and confirm it arrived once the driver
  * has delivered it (FARM-51). Either side can propose a new price until pickup (FARM-53).
  */
 
@@ -127,6 +127,19 @@ function OrderBody({
     }
   };
 
+  const respond = async (answer: "accept" | "decline") => {
+    setBusy(true);
+    setError(null);
+    try {
+      await ordersApi.respond(token, order.id, answer);
+      onChanged();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Could not do that");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const rows = [
     { label: "Quantity", value: `${order.quantityKg} kg` },
     /* What the driver actually loaded, once they have (LP-50). Shown beside the ordered quantity
@@ -181,7 +194,9 @@ function OrderBody({
 
         {order.status === "requested" ? (
           <Text className="type-caption text-muted-foreground">
-            Waiting for {order.farmerName} to accept. You can cancel until they do.
+            {viewer === "buyer"
+              ? `Waiting for ${order.farmerName} to accept. You can cancel until they do.`
+              : "A buyer wants this. Accept to let them pay, or decline."}
           </Text>
         ) : null}
         {user !== null && can(user.role, "order:renegotiate") ? (
@@ -207,7 +222,26 @@ function OrderBody({
         {error ? <Text className="type-caption text-destructive">{error}</Text> : null}
       </ScrollView>
 
-      {order.status === "requested" ? (
+      {order.status === "requested" && viewer === "farmer" ? (
+        <VStack
+          className="gap-3 border-t border-border bg-card px-gutter pt-3"
+          style={{ paddingBottom: Math.max(bottomInset, 23) }}
+        >
+          <AppButton
+            label={busy ? "Sending…" : "Accept order"}
+            onPress={() => void respond("accept")}
+            disabled={busy}
+          />
+          <AppButton
+            label="Decline"
+            variant="outline"
+            onPress={() => void respond("decline")}
+            disabled={busy}
+          />
+        </VStack>
+      ) : null}
+
+      {order.status === "requested" && viewer === "buyer" ? (
         <VStack
           className="border-t border-border bg-card px-gutter pt-3"
           style={{ paddingBottom: Math.max(bottomInset, 23) }}

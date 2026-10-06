@@ -53,6 +53,18 @@ export class InMemoryWantedRepository implements WantedRepository {
     return Promise.resolve(snapshot(updated));
   }
 
+  markClosedIfOpen(id: string): Promise<WantedListing | null> {
+    const row = this.rows.get(id);
+    if (!row || row.status !== 'open') return Promise.resolve(null);
+    const updated = {
+      ...row,
+      status: 'closed' as const,
+      updatedAt: new Date(),
+    };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
   private newestFirst(): WantedListing[] {
     return [...this.rows.values()].sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),

@@ -38,6 +38,24 @@ export class InMemoryOrderRepository implements OrderRepository {
     );
   }
 
+  findByFarmer(farmerId: string): Promise<Order[]> {
+    return Promise.resolve(this.newestFirst((o) => o.farmerId === farmerId));
+  }
+
+  answerRequest(
+    id: string,
+    farmerId: string,
+    answer: 'accepted' | 'declined',
+  ): Promise<Order | null> {
+    const row = this.rows.get(id);
+    if (!row || row.farmerId !== farmerId || row.status !== 'requested') {
+      return Promise.resolve(null);
+    }
+    const updated: Order = { ...row, status: answer, updatedAt: new Date() };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
   findByStatus(status: OrderStatus): Promise<Order[]> {
     return Promise.resolve(this.newestFirst((o) => o.status === status));
   }

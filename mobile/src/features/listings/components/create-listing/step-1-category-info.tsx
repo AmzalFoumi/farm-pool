@@ -23,6 +23,7 @@ import { CropTile } from "@/features/listings/crop-tile";
 import { WizardShell } from "./wizard-shell";
 
 type Step1CategoryInfoProps = {
+  initialData?: { category?: CropCategory; cropId?: CropId };
   onNext?: (data: { category: CropCategory; cropId: CropId }) => void;
   onBack?: () => void;
 };
@@ -32,9 +33,13 @@ const RECENT_CROP_IDS: CropId[] = ["beans", "carrot", "leeks"];
 /* "All" is a filter choice on this screen, not a category a crop can have. */
 type CategoryFilter = CropCategory | "All";
 
-export default function Step1CategoryInfo({ onNext, onBack }: Step1CategoryInfoProps) {
-  const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("Vegetables");
-  const [selectedCropId, setSelectedCropId] = useState<CropId | null>("onion");
+export default function Step1CategoryInfo({ initialData, onNext, onBack }: Step1CategoryInfoProps) {
+  const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>(
+    initialData?.category ?? "Vegetables"
+  );
+  const [selectedCropId, setSelectedCropId] = useState<CropId | null>(
+    initialData?.cropId ?? "onion"
+  );
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredCrops = CROPS.filter((crop) => {

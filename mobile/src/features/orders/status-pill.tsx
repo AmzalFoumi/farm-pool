@@ -37,6 +37,7 @@ const LISTING: Record<ListingStatus, { label: string; tone: string }> = {
   draft: { label: "Draft", tone: "muted" },
   pending_approval: { label: "Awaiting approval", tone: "warning" },
   verified: { label: "Live", tone: "success" },
+  paused: { label: "Paused", tone: "muted" },
   rejected: { label: "Rejected", tone: "destructive" },
   sold: { label: "Sold", tone: "muted" }
 };

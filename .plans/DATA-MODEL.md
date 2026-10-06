@@ -46,13 +46,13 @@ Owner: `catalog`. Storage: `catalog/infrastructure/persistence/listing.schema.ts
 | `farmerId` | string → `users._id` | yes | yes | Who is selling. | yes |
 | `farmerName` | string | yes | | **Snapshot** of the farmer's `displayName` at creation, so browsing is one query. A rename does not rewrite old listings. | yes |
 | `cropId` | enum `CropId` | yes | yes | One of the twelve ids in `CROPS` (below). | yes |
-| `quantityKg` | integer ≥ 1 | yes | | What is on offer. **Not reduced when an order is placed**; farmer acceptance (unbuilt) will do that. | yes |
+| `quantityKg` | integer ≥ 1 | yes | | What is on offer. **Not reduced when an order is placed or accepted.** Reduced only when an offer is accepted (FARM-46), in one operation; a listing left below `minOrderKg` becomes `sold`. | yes |
 | `pricePerKg` | number ≥ 0 | yes | | Rupees. | yes |
 | `harvestDate` | string `YYYY-MM-DD` | yes | | A calendar date stored as text so it does not shift a day between Sri Lanka and UTC. | yes |
 | `district` | string, trimmed, 2–40 | yes | | As typed, for display. | yes |
 | `districtKey` | string | yes | yes | Lower-cased copy of `district`, written by the repository, for a case-insensitive filter. | **no** |
 | `minOrderKg` | integer ≥ 1 | yes | | Smallest quantity a buyer may order. Optional on create; 1 (no minimum) when the farmer sets none. | yes |
-| `status` | enum `ListingStatus` | yes | yes | `draft`, `pending_approval`, `verified`, `rejected`, `sold`. Buyers are served `verified` only. | yes |
+| `status` | enum `ListingStatus` | yes | yes | `draft`, `pending_approval`, `verified`, `paused`, `rejected`, `sold`. Buyers are served `verified` only. | yes |
 | `seedKey` | string | no | unique, sparse | Set only by `npm run seed:listings -w api` so a re-run updates the same rows. Real listings never have one. | **no** |
 
 Today only the dev seed writes listings; farmer listing creation (FARM-21) will add the endpoint.
@@ -92,6 +92,7 @@ one order; `items[]` is added beside these fields only if multi-item orders are 
 | `farmerId` | string → `users._id` | yes | yes | **Copied from the listing** on the server. | yes |
 | `farmerName` | string | yes | | **Snapshot** from the listing. | yes |
 | `listingId` | string → `listings._id` | yes | yes | | yes |
+| `offerId` | string → `offers._id` | no | yes | Set only on an order created from an accepted offer (FARM-46). | yes (optional) |
 | `cropId` | enum `CropId` | yes | | **Copied from the listing.** | yes |
 | `quantityKg` | integer ≥ 1 | yes | | Must sit between the listing's `minOrderKg` and `quantityKg` at placement. | yes |
 | `pricePerKg` | number ≥ 0 | yes | | **Snapshot** of the listing price at placement; a later price change does not alter an existing order. | yes |
@@ -118,9 +119,31 @@ requested ──farmer──▶ accepted ──▶ open ──▶ assigned ─�
 
 Written today: `requested` (on place), `cancelled` (buyer cancel), `open` (the buyer paying an
 `accepted` order, FARM-41), and `assigned` / `in_transit` / `delivered` (the driver). `accepted`
-and `declined` wait on farmer acceptance (FARM-46).
+and `declined` are the farmer answering a `requested` order (FARM-46); an order created from an
+accepted offer also starts at `accepted`.
 `ACTIVE_ORDER_STATUSES` (`requested`, `accepted`, `open`, `assigned`, `in_transit`) is what the Home
 screen counts as "active".
+
+## `offers`
+
+Owner: `offers`. Storage: `offers/infrastructure/persistence/offer.schema.ts`. Wire: `offerSchema`
+in `packages/shared/src/orders/offer.ts`. Detail: `api/src/offers/README.md`.
+
+A negotiation that comes before an order (FARM-46). One document per offer.
+
+| Field | Type | Required | Index | Meaning | On the wire? |
+| ----- | ---- | -------- | ----- | ------- | ------------ |
+| `buyerId` / `farmerId` | string → `users._id` | yes | yes | The two sides. | yes |
+| `listingId` | string | yes | yes | The listing, or the wanted request, the offer is about. | yes |
+| `listingType` | `STANDARD` / `WANTED` | yes | | Which of the two `listingId` points at. | yes |
+| `cropId` | enum `CropId` | yes | | Copied from the listing. | yes |
+| `initiatedBy` | `FARMER` / `BUYER` | yes | | Who opened it. | yes |
+| `pricePerKg`, `quantityKg`, `total`, `note` | numbers, string | yes (note optional) | | What is on the table now. Overwritten by each counter. | yes |
+| `status` | enum `OfferStatus` | yes | yes (with each id) | `PENDING`, `NEGOTIATING`, `ACCEPTED`, `DECLINED`, `EXPIRED`. | yes |
+| `actionRequiredBy` | `FARMER` / `BUYER` | yes | | Whose turn it is. | yes |
+| `negotiationHistory` | embedded array | yes | | Every proposal so far: who, price, quantity, note, when. Only appended to. | yes |
+| `version` | integer | yes | | Goes up by one on every write; a write with a stale version is refused. | **no** |
+| `orderId` | string → `orders._id` | no | | The order created when the offer was accepted. | yes (optional) |
 
 ## `payments`
 
@@ -172,7 +195,8 @@ The Agora channel is not stored: it is always `call_<_id>`, derived on the serve
 | `AccountStatus` | `shared/src/identity/role.ts` | `active`, `pending_review`, `suspended` |
 | `Action` (permissions) | `shared/src/identity/permissions.ts` | `<resource>:<verb>` strings; matrix in `.plans/auth/README.md` |
 | `CropId` | `shared/src/catalog/crops.ts` | `tomato`, `green-chilli`, `brinjal`, `mango`, `pumpkin`, `carrot`, `banana`, `papaya`, `onion`, `potato`, `rice`, `coconut` |
-| `ListingStatus` | `shared/src/catalog/listing.ts` | `draft`, `pending_approval`, `verified`, `rejected`, `sold` |
+| `ListingStatus` | `shared/src/catalog/listing.ts` | `draft`, `pending_approval`, `verified`, `paused`, `rejected`, `sold` |
+| `OfferStatus` | `shared/src/orders/offer.ts` | `PENDING`, `NEGOTIATING`, `ACCEPTED`, `DECLINED`, `EXPIRED` |
 | `WantedStatus` | `shared/src/catalog/wanted.ts` | `open`, `closed` |
 | `OrderStatus` | `shared/src/orders/order.ts` | `requested`, `accepted`, `declined`, `cancelled`, `open`, `assigned`, `in_transit`, `delivered` |
 | `PaymentStatus` | `shared/src/payments/payment.ts` | `in_escrow`, `released` |
@@ -194,6 +218,8 @@ users ──< listings          listings.farmerId
 users ──< wanted_listings   wanted_listings.buyerId
 users ──< orders            orders.buyerId, orders.farmerId
 listings ──< orders         orders.listingId
+listings ──< offers         offers.listingId
+offers ──1 orders           orders.offerId
 orders ──1 payments         payments.orderId (unique)
 users ──< payments          payments.buyerId, payments.farmerId
 users ──< calls             calls.callerId, calls.calleeId

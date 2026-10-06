@@ -63,6 +63,63 @@ export class MongooseListingRepository implements ListingRepository {
     return docs.map(toListing);
   }
 
+  async update(id: string, updates: Partial<Listing>): Promise<Listing> {
+    const doc = await this.listings
+      .findOneAndUpdate(
+        { _id: id },
+        { $set: updates },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    if (!doc) throw new Error('Not found');
+    return toListing(doc);
+  }
+
+  async deductQuantity(id: string, quantity: number): Promise<Listing | null> {
+    const doc = await this.listings
+      .findOneAndUpdate(
+        { _id: id, status: 'verified', quantityKg: { $gte: quantity } },
+        [
+          { $set: { quantityKg: { $subtract: ['$quantityKg', quantity] } } },
+          {
+            $set: {
+              status: {
+                // TODO: distinguish 'sold' vs 'depleted-below-minimum' once dashboard/reporting needs it
+                $cond: [
+                  { $lt: ['$quantityKg', '$minOrderKg'] },
+                  'sold',
+                  '$status',
+                ],
+              },
+            },
+          },
+        ],
+        { returnDocument: 'after', updatePipeline: true },
+      )
+      .exec();
+    return doc ? toListing(doc) : null;
+  }
+
+  async refundQuantity(id: string, quantity: number): Promise<Listing | null> {
+    const doc = await this.listings
+      .findOneAndUpdate(
+        { _id: id },
+        [
+          { $set: { quantityKg: { $add: ['$quantityKg', quantity] } } },
+          {
+            $set: {
+              status: {
+                $cond: [{ $eq: ['$status', 'sold'] }, 'verified', '$status'],
+              },
+            },
+          },
+        ],
+        { returnDocument: 'after', updatePipeline: true },
+      )
+      .exec();
+    return doc ? toListing(doc) : null;
+  }
+
   async create(listing: NewListing): Promise<Listing> {
     const created = await this.listings.create({
       ...listing,

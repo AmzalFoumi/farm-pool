@@ -24,6 +24,11 @@ export interface ListingRepository {
   findByFarmerId(farmerId: string): Promise<Listing[]>;
   /** Farmer listing creation (FARM-21). */
   create(listing: NewListing): Promise<Listing>;
+  update(id: string, listing: Partial<Listing>): Promise<Listing>;
+  /** Atomically deducts quantity from a verified listing. Returns null if insufficient stock. Auto-closes listing if stock drops below minOrderKg. */
+  deductQuantity(id: string, quantity: number): Promise<Listing | null>;
+  /** Restores deducted quantity and flips status back to verified if it was sold. */
+  refundQuantity(id: string, quantity: number): Promise<Listing | null>;
   upsertBySeedKey(seedKey: string, listing: NewListing): Promise<Listing>;
 }
 

@@ -12,6 +12,7 @@ export interface WantedRepository {
   /** Every request with this status, newest first, at most `limit`. */
   findByStatus(status: WantedStatus, limit: number): Promise<WantedListing[]>;
   updateStatus(id: string, status: WantedStatus): Promise<WantedListing>;
+  markClosedIfOpen(id: string): Promise<WantedListing | null>;
 }
 
 export const WANTED_REPOSITORY = Symbol('WantedRepository');

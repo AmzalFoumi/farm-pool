@@ -3,6 +3,7 @@ import type { ListingRepository } from '../../../catalog/domain/repositories/lis
 import { toOrderDto } from '../../domain/entities/order';
 import type { OrderRepository } from '../../domain/repositories/order.repository';
 import { OrderError } from '../errors';
+import type { Offer } from '../../../offers/domain/entities/offer';
 
 /**
  * A buyer asks to buy `quantityKg` from one listing. The order is created as `requested`; the
@@ -64,6 +65,39 @@ export class PlaceOrder {
          `pricePerKg` and `farmerName` are snapshots a few lines up. */
       ...(data.dropOff ? { dropOff: data.dropOff } : {}),
       status: 'requested',
+    });
+    return toOrderDto(created);
+  }
+
+  /**
+   * Creates an Order directly from an already-negotiated and accepted Offer (FARM-46).
+   * Bypasses PlaceOrderData validation deliberately — price and quantity are the final
+   * negotiated terms, not the listing's original asking price.
+   *
+   * The order starts at `accepted`, which is "agreed, waiting for the buyer to pay". Paying is
+   * what moves it to `open` and onto the driver job board (FARM-41).
+   */
+  async executeFromOffer(offer: Offer): Promise<Order> {
+    const listing = await this.listings.findById(offer.listingId);
+    if (!listing) {
+      throw new OrderError(
+        'not_found',
+        'listing_not_found',
+        'This listing no longer exists',
+      );
+    }
+    const created = await this.orders.create({
+      buyerId: offer.buyerId,
+      farmerId: offer.farmerId,
+      farmerName: listing.farmerName,
+      listingId: offer.listingId,
+      offerId: offer.id,
+      cropId: offer.cropId,
+      quantityKg: offer.quantityKg,
+      pricePerKg: offer.pricePerKg,
+      total: toCents(offer.quantityKg * offer.pricePerKg),
+      ...(offer.note ? { note: offer.note } : {}),
+      status: 'accepted',
     });
     return toOrderDto(created);
   }

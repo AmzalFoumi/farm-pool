@@ -16,6 +16,7 @@ export const listingStatusSchema = z.enum([
   "draft",
   "pending_approval",
   "verified",
+  "paused",
   "rejected",
   "sold"
 ]);

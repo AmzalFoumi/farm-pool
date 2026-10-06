@@ -12,6 +12,7 @@
 import { loginSchema, type LoginInput } from "@farm-pool/shared";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -30,6 +31,7 @@ export default function LogInScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const auth = useAuth();
+  const { t } = useTranslation();
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -58,11 +60,11 @@ export default function LogInScreen() {
       await auth.signIn(parsed.data);
     } catch (error) {
       if (error instanceof ApiError && error.code === "invalid_credentials") {
-        setFormError("Phone number or password is incorrect.");
+        setFormError(t("errors.invalid_credentials"));
       } else if (error instanceof ApiError && error.code === "network_error") {
-        setFormError("Can't reach the server. Check your connection and try again.");
+        setFormError(t("errors.network"));
       } else {
-        setFormError("Something went wrong. Please try again.");
+        setFormError(t("errors.generic"));
       }
     } finally {
       setSubmitting(false);
@@ -71,7 +73,7 @@ export default function LogInScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Log in" />
+      <AppBar title={t("logIn.title")} />
 
       <KeyboardAvoidingView
         className="flex-1"
@@ -84,11 +86,11 @@ export default function LogInScreen() {
         >
           <VStack className="gap-4">
             <AppTextField
-              label="Phone number"
+              label={t("logIn.phoneLabel")}
               value={identifier}
               onChangeText={setIdentifier}
               error={errors.identifier}
-              placeholder="077 123 4567"
+              placeholder={t("logIn.phonePlaceholder")}
               keyboardType="phone-pad"
               autoComplete="tel"
               textContentType="telephoneNumber"
@@ -96,7 +98,7 @@ export default function LogInScreen() {
             />
 
             <AppTextField
-              label="Password"
+              label={t("logIn.passwordLabel")}
               value={password}
               onChangeText={setPassword}
               error={errors.password}
@@ -120,7 +122,8 @@ export default function LogInScreen() {
               className="min-h-tap justify-center"
             >
               <Text className="type-body text-muted-foreground">
-                New to FarmPool? <Text className="type-body-bold text-primary">Sign up</Text>
+                {t("logIn.newHere")}{" "}
+                <Text className="type-body-bold text-primary">{t("common.signUp")}</Text>
               </Text>
             </Pressable>
           </VStack>
@@ -132,7 +135,7 @@ export default function LogInScreen() {
         style={{ paddingBottom: Math.max(insets.bottom, 23) }}
       >
         <AppButton
-          label={submitting ? "Logging in…" : "Log in"}
+          label={submitting ? t("logIn.actionBusy") : t("logIn.action")}
           disabled={submitting}
           onPress={submit}
         />

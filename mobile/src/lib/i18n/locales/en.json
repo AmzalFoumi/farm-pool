@@ -7,7 +7,10 @@
     "tryAgain": "Try again",
     "couldNotLoad": "Could not load",
     "kg": "{{count, number}} kg",
-    "phone": "Phone"
+    "phone": "Phone",
+    "loading": "Loading",
+    "signUp": "Sign up",
+    "logIn": "Log in"
   },
   "errors": {
     "network": "Can't reach the server. Check your connection and try again.",
@@ -19,6 +22,7 @@
     "job_not_found": "This job is no longer available.",
     "not_your_job": "This job is not yours any more.",
     "wrong_stage": "This job has already moved on.",
+    "invalid_credentials": "Phone number or password is incorrect.",
     "vehicle_full": "Your vehicle is full. Deliver what you are carrying, then take this job."
   },
   "orderStatus": {
@@ -171,5 +175,55 @@
     "pending": "Awaiting check",
     "verified": "Verified",
     "rejected": "Not approved"
+  },
+  "roles": {
+    "farmer": "Farmer",
+    "buyer": "Wholesale buyer",
+    "coordinator": "Area coordinator",
+    "logistics": "Delivery partner"
+  },
+  "welcome": {
+    "tagline": "Farm produce, straight from the field to wholesale buyers.",
+    "help": "Need help? Call your area coordinator"
+  },
+  "rolePicker": {
+    "title": "Sign up as",
+    "note": "Pick what you do. You can change it later with your coordinator.",
+    "continueAs": "Continue as {{role}}",
+    "cardLabel": "{{title}}. {{description}}",
+    "farmer": {
+      "description": "I grow produce and want to sell it"
+    },
+    "buyer": {
+      "description": "I buy produce in bulk from farmers"
+    },
+    "coordinator": {
+      "description": "I organise farmers in my area and check their produce"
+    },
+    "logistics": {
+      "description": "I collect produce and drive it to buyers"
+    }
+  },
+  "signUp": {
+    "title": "Sign up as {{role}}",
+    "note": "Your phone number is your account. You will use it to log in.",
+    "nameLabel": "Your name",
+    "namePlaceholder": "As people know you",
+    "phoneLabel": "Phone number",
+    "phonePlaceholder": "077 123 4567",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "logInInstead": "Log in instead",
+    "action": "Create account",
+    "actionBusy": "Creating your account…"
+  },
+  "logIn": {
+    "title": "Log in",
+    "phoneLabel": "Phone number",
+    "phonePlaceholder": "077 123 4567",
+    "passwordLabel": "Password",
+    "newHere": "New to FarmPool?",
+    "action": "Log in",
+    "actionBusy": "Logging in…"
   }
 }

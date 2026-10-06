@@ -59,6 +59,17 @@ export class MongooseWantedRepository implements WantedRepository {
     if (!doc) throw new Error(`Wanted listing ${id} vanished during update`);
     return toWanted(doc);
   }
+
+  async markClosedIfOpen(id: string): Promise<WantedListing | null> {
+    const doc = await this.wanted
+      .findOneAndUpdate(
+        { _id: id, status: 'open' },
+        { $set: { status: 'closed' } },
+        { new: true },
+      )
+      .exec();
+    return doc ? toWanted(doc) : null;
+  }
 }
 
 function toWanted(doc: WantedHydrated): WantedListing {
