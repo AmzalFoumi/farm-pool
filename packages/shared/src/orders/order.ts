@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { cropIdSchema } from "../catalog/crops";
+import { sriLankaPointSchema } from "../geo/point";
 import { kgSchema, pricePerKgSchema } from "../catalog/listing";
 
 /**
@@ -43,10 +44,30 @@ export const ACTIVE_ORDER_STATUSES: readonly OrderStatus[] = [
 ];
 
 /** What the buyer sends. Price and farmer come from the listing on the server, never the client. */
+/**
+ * Where a buyer wants the load delivered (FARM-26). The farm gate is on the listing; this is the
+ * other end, and the pair is what makes a distance or a route possible at all.
+ *
+ * **Copied onto the order, never referenced.** A buyer may have saved this place on their
+ * account, but renaming or deleting it later must not rewrite where a past delivery went — so the
+ * label and the point are snapshotted here, exactly as a listing's price is snapshotted.
+ *
+ * Optional, like the farm gate: a buyer with no signal must still be able to place an order, and
+ * a driver falls back to the district. An order without one is less useful, never broken.
+ */
+export const dropOffSchema = z.object({
+  /** What the buyer calls the place, when it came from a saved one. */
+  label: z.string().trim().max(60).optional(),
+  point: sriLankaPointSchema
+});
+
+export type DropOff = z.infer<typeof dropOffSchema>;
+
 export const placeOrderSchema = z.object({
   listingId: z.string().min(1),
   quantityKg: kgSchema,
-  note: z.string().trim().max(280, "Keep the note under 280 characters").optional()
+  note: z.string().trim().max(280, "Keep the note under 280 characters").optional(),
+  dropOff: dropOffSchema.optional()
 });
 
 export type PlaceOrderInput = z.input<typeof placeOrderSchema>;
@@ -107,6 +128,8 @@ export const orderSchema = z.object({
    * what moved.
    */
   collectedKg: kgSchema.optional(),
+  /** Where the buyer wants it delivered (FARM-26). Snapshotted at placement. */
+  dropOff: dropOffSchema.optional(),
   /**
    * When the buyer confirmed the produce arrived (FARM-51). Deliberately a timestamp beside
    * `delivered` rather than a status after it: the driver's half of the lifecycle ends at

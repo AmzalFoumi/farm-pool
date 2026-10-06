@@ -11,6 +11,7 @@ export type LogisticsErrorCode =
   | 'wrong_stage'
   | 'no_vehicle'
   | 'load_too_heavy'
+  | 'vehicle_full'
   | 'no_driver_assigned';
 
 export class LogisticsError extends DomainError<LogisticsErrorCode> {

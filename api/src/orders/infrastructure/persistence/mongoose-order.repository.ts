@@ -227,6 +227,19 @@ function toOrder(doc: OrderHydrated): Order {
     ...(typeof doc.collectedKg === 'number'
       ? { collectedKg: doc.collectedKg }
       : {}),
+    ...(doc.dropOff
+      ? {
+          dropOff: {
+            ...(doc.dropOff.label !== undefined
+              ? { label: doc.dropOff.label }
+              : {}),
+            point: {
+              latitude: doc.dropOff.point.latitude,
+              longitude: doc.dropOff.point.longitude,
+            },
+          },
+        }
+      : {}),
     ...(doc.receivedAt instanceof Date ? { receivedAt: doc.receivedAt } : {}),
     ...(doc.priceProposal
       ? {

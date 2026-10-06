@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { sriLankaPointSchema, type GeoPoint } from "../geo/point";
 import { cropIdSchema } from "./crops";
 
 /**
@@ -50,6 +51,22 @@ export const kgSchema = z.number().int("Whole kilograms only").positive("Must be
 
 export const pricePerKgSchema = z.number().positive("Must be more than Rs 0");
 
+/**
+ * Where the produce is actually collected — the farm gate, not the district (FARM-26).
+ *
+ * On the **listing**, not the farmer's account, because a farmer may harvest from more than one
+ * plot and the place belongs to the batch being sold. A driver navigating to a 2 ha field needs
+ * the gate they can reach a lorry to, which is a per-listing answer.
+ *
+ * Optional throughout. Listings created before this existed have none, and a farmer with no
+ * signal when the GPS fails must still be able to post produce — so every reader falls back to
+ * the district centre in `DISTRICT_POINTS`. A listing without a point is less useful, never
+ * broken.
+ */
+export const pickupPointSchema = sriLankaPointSchema;
+
+export type PickupPoint = GeoPoint;
+
 export const listingSchema = z.object({
   id: z.string(),
   farmerId: z.string(),
@@ -70,6 +87,8 @@ export const listingSchema = z.object({
   district: districtSchema,
   town: z.string().optional(),
   address: z.string().optional(),
+  /** The farm gate, when the farmer dropped a pin (FARM-26). Absent on older listings. */
+  pickupPoint: pickupPointSchema.optional(),
   fulfillmentOption: fulfillmentOptionSchema.optional(),
   farmgateNotes: z.string().optional(),
   /** The smallest quantity a buyer may order. Set by the farmer or the seed, never by the buyer. */
@@ -117,6 +136,7 @@ export const createListingSchema = z
     district: districtSchema,
     town: shortText(60).optional(),
     address: shortText(200).optional(),
+    pickupPoint: pickupPointSchema.optional(),
     fulfillmentOption: fulfillmentOptionSchema.optional(),
     farmgateNotes: shortText(500).optional(),
     minOrderKg: kgSchema.optional()

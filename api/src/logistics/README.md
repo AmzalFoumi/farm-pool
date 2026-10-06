@@ -67,6 +67,19 @@ cannot drift away from the write it guards. The price is that a refusal does not
 three things was wrong; `ConfirmDeliveryStep.explain` reads the order back on the failing path to
 tell a driver at a farm gate whether they are at the wrong job or the wrong step.
 
+**Capacity is checked across every job a driver holds, not just the one being accepted.** It was
+once per-order, which meant three 600 kg jobs each passed against a 900 kg van and three farmers
+were each promised a collection one vehicle could not make. `committedKg` in
+`domain/entities/job.ts` sums the jobs that are `assigned` or `in_transit`; `delivered` frees the
+space again, which is what lets a driver run a second trip without the app having any concept of a
+trip. Once a job is picked up its `collectedKg` is used in place of `quantityKg`, because a short
+harvest is real room and refusing work for kilograms that were never on the lorry costs the driver
+a job and a farmer a collection.
+
+Two codes, deliberately: `load_too_heavy` is a load the vehicle can never carry, `vehicle_full` is
+one it cannot carry *yet*. A driver deciding what to do next needs to know which, and one code for
+both would leave the app unable to say.
+
 **Verification is deliberately not checked on accept.** Nothing moves a driver past `pending`
 yet (`docs/logistics-driver-role.md`, open question 3), so gating on `verified` would mean no
 driver could accept anything at all. `AcceptJob` names the line that changes when that question is

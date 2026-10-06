@@ -1,9 +1,10 @@
-import { districtPoint } from "@farm-pool/shared";
+import { districtPoint, type PickupPoint } from "@farm-pool/shared";
 import { useTranslation } from "react-i18next";
 import { Linking, Platform } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 
 import { Box } from "@/components/ui/box";
+import { MAP_PROVIDER } from "@/features/geo/map-provider";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -29,40 +30,57 @@ import { VStack } from "@/components/ui/vstack";
 export function JobMap({
   district,
   town,
+  pickupPoint,
   label
 }: {
   district: string;
   town?: string;
+  /** The farm gate the farmer pinned (FARM-26). When present this is what is shown. */
+  pickupPoint?: PickupPoint;
   /** What the pin is — the farmer's name, usually. */
   label: string;
 }) {
   const { t } = useTranslation();
-  const point = districtPoint(district);
+
+  /* The farmer's own pin beats the district centre whenever there is one. The two are not the
+     same claim and must not look the same: an exact gate zooms in and promises a destination,
+     a centroid stays wide and says so in the caption below.
+
+     The fallback is kept as its own binding rather than merged into `point`, so the caption can
+     name the district without a cast — the two branches really do carry different information,
+     and collapsing them into one union only hid that. */
+  const fallback = districtPoint(district);
+  const point = pickupPoint ?? fallback;
   if (!point) return null;
+  const exact = pickupPoint !== undefined;
 
   const place = town ? `${town}, ${district}` : district;
 
-  /* A query by place name, not by the centroid: the maps app's own search knows the town far
-     better than a district centre does, so the driver lands closer than this preview can show. */
   const openDirections = () => {
-    const query = encodeURIComponent(`${place}, Sri Lanka`);
-    /* The universal cross-platform URL: the Google Maps app takes it when installed, and the
-       browser falls back to Maps on the web when it is not. No per-platform scheme needed. */
-    void Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${query}`);
+    /* With a real gate, hand the maps app the coordinates and ask for navigation — it is the
+       farm, not a town, and no search string would find it. Without one, search by place name
+       instead: the maps app's own index knows the town far better than a district centre does,
+       so the driver still lands closer than this preview can show. */
+    const url = exact
+      ? `https://www.google.com/maps/dir/?api=1&destination=${point.latitude},${point.longitude}`
+      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${place}, Sri Lanka`)}`;
+    void Linking.openURL(url);
   };
 
   return (
     <VStack className="gap-2">
       <Box className="h-44 overflow-hidden rounded-card border border-border">
         <MapView
-          provider={PROVIDER_GOOGLE}
+          provider={MAP_PROVIDER}
           style={{ flex: 1 }}
           initialRegion={{
             latitude: point.latitude,
             longitude: point.longitude,
-            /* ~30 km across: the district reads as a place, without implying a street. */
-            latitudeDelta: 0.3,
-            longitudeDelta: 0.3
+            /* An exact gate is worth ~1.5 km of context so the driver sees the approach road;
+               a district centre stays at ~30 km, which reads as a place without implying a
+               street the pin cannot actually promise. */
+            latitudeDelta: exact ? 0.015 : 0.3,
+            longitudeDelta: exact ? 0.015 : 0.3
           }}
           /* A preview, not a map to pan: every gesture is off so a scroll through the job screen
              cannot be swallowed by the map. `liteMode` is Android-only and renders a static
@@ -81,8 +99,12 @@ export function JobMap({
         </MapView>
       </Box>
 
+      {/* The caption carries the precision, and is the reason both cases are allowed to look
+          similar: a driver must never have to guess whether a pin is a gate or a district. */}
       <Text className="type-body-sm text-muted-foreground">
-        {t("jobs.detail.approximate", { district: point.name })}
+        {exact || !fallback
+          ? t("jobs.detail.exactPin")
+          : t("jobs.detail.approximate", { district: fallback.name })}
       </Text>
 
       <Pressable

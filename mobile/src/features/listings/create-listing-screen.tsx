@@ -139,6 +139,9 @@ export function CreateListingScreen({ initialData }: { initialData?: Listing }) 
       photos: initialData?.photos ?? [],
       // Step 5 will not continue without a district, so this is always the farmer's answer.
       district: listingData.step5?.district ?? "",
+      /* Omitted entirely when the farmer did not pin one, rather than sent as undefined: the
+         field is optional on the api and an absent key is what "no gate" means there. */
+      ...(listingData.step5?.pickupPoint ? { pickupPoint: listingData.step5.pickupPoint } : {}),
       fulfillmentOption: listingData.step5?.fulfillmentOption || "shared"
     };
 

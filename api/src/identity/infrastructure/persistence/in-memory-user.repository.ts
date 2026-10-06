@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import type { SavedLocation } from '@farm-pool/shared';
 import type { DriverProfile, NewUser, User } from '../../domain/entities/user';
 import {
   DuplicatePhoneError,
@@ -60,6 +61,18 @@ export class InMemoryUserRepository implements UserRepository {
     return Promise.resolve(this.all().map(snapshot));
   }
 
+  saveLocations(id: string, locations: SavedLocation[]): Promise<User | null> {
+    const user = this.users.get(id);
+    if (!user) return Promise.resolve(null);
+    const updated: User = {
+      ...user,
+      savedLocations: locations.map((l) => ({ ...l, point: { ...l.point } })),
+      updatedAt: new Date(),
+    };
+    this.users.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
   saveDriverProfile(id: string, driver: DriverProfile): Promise<User | null> {
     const user = this.users.get(id);
     if (!user) return Promise.resolve(null);
@@ -91,6 +104,17 @@ function snapshot(user: User): User {
             ...user.driver,
             updatedAt: new Date(user.driver.updatedAt),
           },
+        }
+      : {}),
+    /* Copied element by element, not by spreading the array: a shallow array copy still shares
+       every `point` object, and a test mutating one would reach back into the store — the exact
+       thing this whole function exists to prevent. */
+    ...(user.savedLocations
+      ? {
+          savedLocations: user.savedLocations.map((l) => ({
+            ...l,
+            point: { ...l.point },
+          })),
         }
       : {}),
     createdAt: new Date(user.createdAt),

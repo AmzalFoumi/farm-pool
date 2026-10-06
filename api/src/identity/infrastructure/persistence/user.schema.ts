@@ -20,6 +20,18 @@ import type { HydratedDocument } from 'mongoose';
  * The role and status enums are read from the shared zod schemas so the database can never
  * accept a value the app and the api do not know about.
  */
+/** A place on the island. Shared by a saved location here and a listing's farm gate. */
+@Schema({ _id: false })
+export class GeoPointDocument {
+  @Prop({ required: true })
+  latitude: number;
+
+  @Prop({ required: true })
+  longitude: number;
+}
+
+const GeoPointSchema = SchemaFactory.createForClass(GeoPointDocument);
+
 /**
  * A driver's vehicle, embedded in their user document rather than kept in a collection of its
  * own: there is exactly one per driver, it is always read with the account (`/identity/me`), and
@@ -53,6 +65,24 @@ export class DriverProfileDocument {
 }
 
 const DriverProfileSchema = SchemaFactory.createForClass(DriverProfileDocument);
+
+/**
+ * A place a buyer delivers to often (FARM-26). Embedded, like the driver's vehicle: there are a
+ * handful per buyer, they are always read with the account, and nothing queries across them.
+ */
+@Schema({ _id: false })
+export class SavedLocationDocument {
+  @Prop({ required: true })
+  id: string;
+
+  @Prop({ required: true, trim: true })
+  label: string;
+
+  @Prop({ type: GeoPointSchema, required: true })
+  point: GeoPointDocument;
+}
+
+const SavedLocationSchema = SchemaFactory.createForClass(SavedLocationDocument);
 
 @Schema({ collection: 'users', timestamps: true })
 export class UserDocument {
@@ -94,6 +124,10 @@ export class UserDocument {
   /** Only a `logistics` user who has submitted a vehicle has one (FARM-45). */
   @Prop({ type: DriverProfileSchema, required: false })
   driver?: DriverProfileDocument;
+
+  /** A buyer's saved delivery places (FARM-26). */
+  @Prop({ type: [SavedLocationSchema], required: false })
+  savedLocations?: SavedLocationDocument[];
 
   // Written by `timestamps: true`; declared so the mapper can read them with types.
   createdAt: Date;

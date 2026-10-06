@@ -22,7 +22,8 @@
     "job_not_found": "This job is no longer available.",
     "not_your_job": "This job is not yours any more.",
     "wrong_stage": "This job has already moved on.",
-    "invalid_credentials": "Phone number or password is incorrect."
+    "invalid_credentials": "Phone number or password is incorrect.",
+    "vehicle_full": "Your vehicle is full. Deliver what you are carrying, then take this job."
   },
   "orderStatus": {
     "requested": "Requested",
@@ -144,7 +145,13 @@
       "finding": "Finding the place",
       "approximate": "Approximate — this is {{district}} district, not the farm gate. Call the farmer for directions.",
       "directions": "Directions in Google Maps",
-      "directionsLabel": "Open directions to {{place}} in Google Maps"
+      "directionsLabel": "Open directions to {{place}} in Google Maps",
+      "exactPin": "The farmer pinned this gate. Tap for directions.",
+      "pinLabel": "Farm gate",
+      "distance": "{{km}} km straight line",
+      "dropOff": "Deliver to",
+      "dropOffUnset": "No delivery point set",
+      "tripLength": "Trip length"
     },
     "actions": {
       "take": "Take this job",

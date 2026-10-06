@@ -19,6 +19,9 @@ type AppTextFieldProps = {
   error?: string;
   /** Password fields: masked, with a show/hide toggle in the trailing slot. */
   secure?: boolean;
+  /** Stable handle for end-to-end tests. Lands on the `InputField` itself, so Maestro targets
+   *  the thing that takes the text rather than the wrapper around it. */
+  testID?: string;
 } & Pick<
   TextInputProps,
   | "placeholder"
@@ -45,6 +48,7 @@ export function AppTextField({
   error,
   secure = false,
   editable = true,
+  testID,
   ...inputProps
 }: AppTextFieldProps) {
   const [revealed, setRevealed] = useState(false);
@@ -64,6 +68,7 @@ export function AppTextField({
         className="h-control rounded-field border-border bg-card px-4"
       >
         <InputField
+          testID={testID}
           value={value}
           onChangeText={onChangeText}
           editable={editable}

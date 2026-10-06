@@ -35,6 +35,7 @@ export const actionSchema = z.enum([
   "delivery:confirm",
   "delivery:read-driver",
   "driver:update-vehicle",
+  "location:save",
   "users:list",
   "farmers:approve",
   "cooperative:read-dashboard",
@@ -78,6 +79,10 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   "delivery:read-driver": ROLES,
   // A driver's own vehicle, on their own account; the use-case writes only to the caller.
   "driver:update-vehicle": ["logistics"],
+  /* A buyer saves the markets they deliver to, but the use-case writes only to the caller's own
+     account, so there is nothing role-specific to protect — every role gets it, and a farmer
+     saving a collection point costs nothing to allow. */
+  "location:save": ROLES,
   // The coordinator is the trust checkpoint (`.plans/PRODUCT.md`); only they see everyone.
   "users:list": ["coordinator"],
   "farmers:approve": ["coordinator"],

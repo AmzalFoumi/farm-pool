@@ -16,6 +16,10 @@ import { ListUsers } from './application/services/list-users';
 import { LoginUser } from './application/services/login-user';
 import { RegisterUser } from './application/services/register-user';
 import { SaveDriverVehicle } from './application/services/save-driver-vehicle';
+import {
+  ForgetLocation,
+  SaveLocation,
+} from './application/services/save-location';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { RolesGuard } from './auth/roles.guard';
 import {
@@ -90,6 +94,16 @@ import { ScryptPasswordHasher } from './infrastructure/security/scrypt-password-
       provide: ListUsers,
       inject: [USER_REPOSITORY],
       useFactory: (users: UserRepository) => new ListUsers(users),
+    },
+    {
+      provide: SaveLocation,
+      inject: [USER_REPOSITORY],
+      useFactory: (users: UserRepository) => new SaveLocation(users),
+    },
+    {
+      provide: ForgetLocation,
+      inject: [USER_REPOSITORY],
+      useFactory: (users: UserRepository) => new ForgetLocation(users),
     },
     {
       provide: SaveDriverVehicle,

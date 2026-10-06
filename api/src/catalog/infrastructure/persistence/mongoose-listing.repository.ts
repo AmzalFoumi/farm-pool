@@ -163,6 +163,14 @@ function toListing(doc: ListingHydrated): Listing {
     district: doc.district,
     town: doc.town,
     address: doc.address,
+    ...(doc.pickupPoint
+      ? {
+          pickupPoint: {
+            latitude: doc.pickupPoint.latitude,
+            longitude: doc.pickupPoint.longitude,
+          },
+        }
+      : {}),
     fulfillmentOption: doc.fulfillmentOption,
     farmgateNotes: doc.farmgateNotes,
     minOrderKg: doc.minOrderKg,

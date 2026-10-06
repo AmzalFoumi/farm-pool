@@ -60,6 +60,10 @@ export class PlaceOrder {
       pricePerKg: listing.pricePerKg,
       total: toCents(data.quantityKg * listing.pricePerKg),
       ...(data.note ? { note: data.note } : {}),
+      /* Copied, not referenced (FARM-26). If the buyer later renames or deletes the saved place
+         this came from, where this delivery was going must not change under it — the same reason
+         `pricePerKg` and `farmerName` are snapshots a few lines up. */
+      ...(data.dropOff ? { dropOff: data.dropOff } : {}),
       status: 'requested',
     });
     return toOrderDto(created);

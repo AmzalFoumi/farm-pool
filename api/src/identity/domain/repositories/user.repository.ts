@@ -1,3 +1,4 @@
+import type { SavedLocation } from '@farm-pool/shared';
 import type { DriverProfile, NewUser, User } from '../entities/user';
 
 /**
@@ -14,6 +15,9 @@ export interface UserRepository {
   findAll(): Promise<User[]>;
   /** Replaces the user's `driver` object. Resolves `null` when no such user exists. */
   saveDriverProfile(id: string, driver: DriverProfile): Promise<User | null>;
+  /** Replace the whole saved-location list. The use-case owns the add/remove rules and the cap,
+   *  so the store only ever writes the list it is given. Resolves `null` when no such user. */
+  saveLocations(id: string, locations: SavedLocation[]): Promise<User | null>;
 }
 
 /**

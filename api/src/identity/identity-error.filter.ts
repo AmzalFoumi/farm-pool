@@ -17,6 +17,7 @@ const STATUS: Record<IdentityErrorCode, HttpStatus> = {
   invalid_credentials: HttpStatus.UNAUTHORIZED,
   invalid_token: HttpStatus.UNAUTHORIZED,
   not_found: HttpStatus.NOT_FOUND,
+  too_many_locations: HttpStatus.CONFLICT,
 };
 
 @Catch(IdentityError)

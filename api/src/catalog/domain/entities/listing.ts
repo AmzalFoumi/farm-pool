@@ -1,5 +1,6 @@
 import type {
   CropId,
+  PickupPoint,
   FulfillmentOption,
   Listing as ListingDto,
   ListingGrade,
@@ -35,6 +36,9 @@ export interface Listing {
   district: string;
   town?: string;
   address?: string;
+  /** The farm gate, when the farmer dropped a pin (FARM-26). Absent on older listings, and on
+   *  one posted where the GPS could not get a fix. */
+  pickupPoint?: PickupPoint;
   fulfillmentOption?: FulfillmentOption;
   farmgateNotes?: string;
   minOrderKg: number;
@@ -66,6 +70,7 @@ export function toListingDto(listing: Listing): ListingDto {
     district: listing.district,
     town: listing.town,
     address: listing.address,
+    pickupPoint: listing.pickupPoint,
     fulfillmentOption: listing.fulfillmentOption,
     farmgateNotes: listing.farmgateNotes,
     minOrderKg: listing.minOrderKg,
