@@ -32,6 +32,25 @@ Under Expo Go the app has no bundle id of its own — it runs inside Expo's cont
 link instead, which is what every flow here does. Against a development build or an EAS build,
 `launchApp: com.farmpool.app` would be correct.
 
+## Gotchas these flows were written around
+
+Each of these cost a failing run to find, and none is obvious from the docs:
+
+- **`timeout` is not a property of `assertVisible`.** Maestro rejects the whole flow with
+  `Unknown Property: timeout` before running a step. Use `extendedWaitUntil` with `visible:` and
+  `timeout:`.
+- **An `accessibilityLabel` replaces the visible text.** The Place order button reads "Place
+  order" on screen and `Place an order for this listing` in the hierarchy; only the latter matches.
+  Another reason to use `testID`.
+- **The iOS number pad swallows taps and Maestro still reports them COMPLETED.** Focusing the
+  quantity field raises a pad that covers the sheet footer, so a tap aimed at a button below it
+  lands on a key — one such tap typed a `5` into the quantity. `hideKeyboard` is unsupported on
+  iOS, and the pad's own "Done" fires `onSubmitEditing`, which submits. The flows avoid the
+  keyboard entirely where they can.
+- **`inputText` appends, it does not replace.** Use `eraseText` first on any pre-filled field.
+- **`tapOn` with no `id` matches a regex against text**, so a crop name from the seed data is a
+  dependency on the database. Tap `listing-card` by index instead.
+
 ## Selectors
 
 **Target `testID`, never visible text.** The app ships in English, Sinhala and Tamil, so a flow

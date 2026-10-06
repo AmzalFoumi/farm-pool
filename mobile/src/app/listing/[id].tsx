@@ -25,7 +25,7 @@ import {
 } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Dimensions, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/app/app-button";
@@ -272,6 +272,7 @@ function ListingBody({
 
         {canOrder ? (
           <Pressable
+            testID="open-place-order"
             onPress={() => setSheetOpen(true)}
             accessibilityRole="button"
             accessibilityLabel="Place an order for this listing"
@@ -382,45 +383,57 @@ function PlaceOrderSheet({
         <ActionsheetDragIndicatorWrapper>
           <ActionsheetDragIndicator />
         </ActionsheetDragIndicatorWrapper>
-        <VStack className="w-full gap-4 pt-2">
-          <Text className="type-h3 text-foreground">Place order</Text>
-          <AppTextField
-            testID="order-quantity"
-            label="Quantity (kg)"
-            value={quantity}
-            onChangeText={setQuantity}
-            keyboardType="number-pad"
-            returnKeyType="done"
-            onSubmitEditing={() => void submit()}
-            error={error ?? undefined}
-          />
-          <HStack className="items-center justify-between">
-            <Text className="type-caption text-muted-foreground">{rangeHint}</Text>
-            <Text className="type-body-bold text-foreground">
-              {inRange ? formatPrice(kg * listing.pricePerKg) : "—"}
-            </Text>
-          </HStack>
+        {/* Scrollable, because the sheet is no longer a fixed height: opening the delivery-point
+            map pushes Send past the bottom of the screen, and an unreachable submit button is a
+            buyer who pinned a location and then could not order. Capped at 80% of the window so
+            the backdrop stays tappable to dismiss. */}
+        <ScrollView
+          className="w-full"
+          style={{ maxHeight: Dimensions.get("window").height * 0.8 }}
+          contentContainerClassName="pb-2"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <VStack className="w-full gap-4 pt-2">
+            <Text className="type-h3 text-foreground">Place order</Text>
+            <AppTextField
+              testID="order-quantity"
+              label="Quantity (kg)"
+              value={quantity}
+              onChangeText={setQuantity}
+              keyboardType="number-pad"
+              returnKeyType="done"
+              onSubmitEditing={() => void submit()}
+              error={error ?? undefined}
+            />
+            <HStack className="items-center justify-between">
+              <Text className="type-caption text-muted-foreground">{rangeHint}</Text>
+              <Text className="type-body-bold text-foreground">
+                {inRange ? formatPrice(kg * listing.pricePerKg) : "—"}
+              </Text>
+            </HStack>
 
-          {/* Centred on the listing's district so a new pin opens near the farm, which is the
+            {/* Centred on the listing's district so a new pin opens near the farm, which is the
               likeliest neighbourhood for a first drag. */}
-          <DeliveryLocationField
-            district={listing.district}
-            value={dropOff}
-            onChange={setDropOff}
-            token={token}
-            savedLocations={savedLocations}
-            onUserChanged={onUserChanged}
-          />
-          <AppButton
-            testID="order-send"
-            label={submitting ? "Sending…" : "Send request"}
-            onPress={() => void submit()}
-            disabled={submitting}
-          />
-          <Text className="type-caption text-center text-muted-foreground">
-            {listing.farmerName} will accept or decline. Nothing is paid now.
-          </Text>
-        </VStack>
+            <DeliveryLocationField
+              district={listing.district}
+              value={dropOff}
+              onChange={setDropOff}
+              token={token}
+              savedLocations={savedLocations}
+              onUserChanged={onUserChanged}
+            />
+            <AppButton
+              testID="order-send"
+              label={submitting ? "Sending…" : "Send request"}
+              onPress={() => void submit()}
+              disabled={submitting}
+            />
+            <Text className="type-caption text-center text-muted-foreground">
+              {listing.farmerName} will accept or decline. Nothing is paid now.
+            </Text>
+          </VStack>
+        </ScrollView>
       </ActionsheetContent>
     </Actionsheet>
   );
