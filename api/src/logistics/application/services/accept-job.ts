@@ -2,7 +2,11 @@ import type { JobDetail } from '@farm-pool/shared';
 import type { ListingRepository } from '../../../catalog/domain/repositories/listing.repository';
 import type { UserRepository } from '../../../identity/domain/repositories/user.repository';
 import type { OrderRepository } from '../../../orders/domain/repositories/order.repository';
-import { toJobDetail, toPickupContact } from '../../domain/entities/job';
+import {
+  committedKg,
+  toJobDetail,
+  toPickupContact,
+} from '../../domain/entities/job';
 import { LogisticsError } from '../errors';
 
 /**
@@ -53,11 +57,37 @@ export class AcceptJob {
         'This job does not exist',
       );
     }
-    if (order.quantityKg > driver.driver.capacityKg) {
+    const { capacityKg } = driver.driver;
+
+    /* Two different refusals, because they mean different things to a driver standing at a
+       junction deciding what to do next. A load bigger than the whole vehicle can never be taken;
+       a load that merely does not fit *today* can be taken after the current run is delivered. One
+       code for both would leave the app unable to say which. */
+    if (order.quantityKg > capacityKg) {
       throw new LogisticsError(
         'conflict',
         'load_too_heavy',
         'This load is heavier than your vehicle can carry',
+      );
+    }
+
+    /* The capacity check that was missing: it was per-order, so nothing stopped a driver
+       collecting promises that together exceed the lorry — three 600 kg jobs in a 900 kg van is
+       three farmers each expecting a collection one vehicle cannot make.
+
+       Known limit: this is read-then-write, unlike the atomic claim below. A driver tapping Accept
+       on two jobs in the same instant could still slip past it. That needs a transaction or a
+       counter on the account, and it is a far smaller risk than the two-drivers-one-job race —
+       that one is several people watching a short board, this one is one person double-tapping a
+       phone. Worth fixing when it is seen, not before. */
+    const held = await this.orders.findByAssignedDriver(driverId);
+    const alreadyCommitted = committedKg(held);
+    if (alreadyCommitted + order.quantityKg > capacityKg) {
+      const spare = Math.max(0, capacityKg - alreadyCommitted);
+      throw new LogisticsError(
+        'conflict',
+        'vehicle_full',
+        `You have ${alreadyCommitted} kg on this trip and room for ${spare} kg more. Deliver what you are carrying, then take this job.`,
       );
     }
 

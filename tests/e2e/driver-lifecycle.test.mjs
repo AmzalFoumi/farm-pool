@@ -225,6 +225,54 @@ describe("FARM-49/54 driver lifecycle", () => {
       assert.equal(status, 403);
       assert.equal(body.code, "not_your_job");
     });
+
+    /**
+     * Capacity across every job held, not just the one being accepted.
+     *
+     * The bug: the check was per-order, so three 600 kg jobs each passed against a 900 kg van and
+     * three farmers were each promised a collection one vehicle could not make. Over HTTP because
+     * it spans several orders and a repository query — a unit test proves the rule, this proves
+     * the rule survives the controller and Mongo.
+     */
+    it("refuses a job the driver has no room left for, and says so distinctly", async () => {
+      const small = await driverWith({ capacityKg: 900, plate: "NW FULL-01" });
+
+      const first = await openJob({ quantityKg: 600 });
+      const took = await api.post(`/logistics/jobs/${first}/accept`, undefined, small.token);
+      assert.equal(took.status, 200, JSON.stringify(took.body));
+
+      const second = await openJob({ quantityKg: 600 });
+      const refused = await api.post(`/logistics/jobs/${second}/accept`, undefined, small.token);
+
+      assert.equal(refused.status, 409);
+      assert.equal(refused.body.code, "vehicle_full");
+      // Distinct from load_too_heavy: that one can never be taken, this one can, after delivering.
+      assert.match(refused.body.message, /200 kg|300 kg/);
+
+      // And the second job is still open for someone who can carry it.
+      const roomy = await driverWith({ capacityKg: 1500, plate: "NW ROOM-01" });
+      const board = await api.get("/logistics/jobs", roomy.token);
+      assert.ok(
+        board.body.find((j) => j.id === second),
+        "the refused job left the board"
+      );
+    });
+
+    it("frees the room again once the load is delivered", async () => {
+      const driver = await driverWith({ capacityKg: 900, plate: "NW FREE-01" });
+      const first = await openJob({ quantityKg: 800 });
+      await api.post(`/logistics/jobs/${first}/accept`, undefined, driver.token);
+
+      const second = await openJob({ quantityKg: 300 });
+      const tooSoon = await api.post(`/logistics/jobs/${second}/accept`, undefined, driver.token);
+      assert.equal(tooSoon.body.code, "vehicle_full");
+
+      await api.post(`/logistics/jobs/${first}/pickup`, { collectedKg: 800 }, driver.token);
+      await api.post(`/logistics/jobs/${first}/deliver`, undefined, driver.token);
+
+      const now = await api.post(`/logistics/jobs/${second}/accept`, undefined, driver.token);
+      assert.equal(now.status, 200, JSON.stringify(now.body));
+    });
   });
 
   describe("fulfilment", () => {

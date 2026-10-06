@@ -30,6 +30,28 @@ export function isJobStatus(status: Order['status']): status is JobStatus {
 }
 
 /**
+ * How much of a vehicle is already spoken for.
+ *
+ * A job occupies the lorry from the moment it is accepted, not from the moment it is loaded: a
+ * driver who has promised a farmer a collection has committed that space, and a second promise
+ * made against the same space is one of the two farmers being let down. So `assigned` counts as
+ * much as `in_transit`.
+ *
+ * `delivered` does not count. The load is off the vehicle and the space is real again, which is
+ * what makes a driver's second trip of the day possible without any trip or route concept.
+ *
+ * Once a job is picked up, `collectedKg` is what is actually on the lorry and `quantityKg` is only
+ * what was ordered — so the real weight wins where we have it. A driver who collected 400 kg
+ * against a 600 kg order genuinely has 200 kg more room, and should not be refused work for
+ * kilograms that were never harvested.
+ */
+export function committedKg(jobs: readonly Order[]): number {
+  return jobs
+    .filter((o) => o.status === 'assigned' || o.status === 'in_transit')
+    .reduce((total, o) => total + (o.collectedKg ?? o.quantityKg), 0);
+}
+
+/**
  * The board row. Deliberately carries no phone number: a driver browsing open work has no
  * business holding a farmer's contact details for a job they have not taken.
  */

@@ -18,7 +18,8 @@
     "no_vehicle": "Add your vehicle before accepting a job.",
     "job_not_found": "This job is no longer available.",
     "not_your_job": "This job is not yours any more.",
-    "wrong_stage": "This job has already moved on."
+    "wrong_stage": "This job has already moved on.",
+    "vehicle_full": "Your vehicle is full. Deliver what you are carrying, then take this job."
   },
   "orderStatus": {
     "requested": "Requested",
