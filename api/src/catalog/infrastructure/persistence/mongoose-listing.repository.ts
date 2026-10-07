@@ -27,6 +27,15 @@ export class MongooseListingRepository implements ListingRepository {
     return doc ? toListing(doc) : null;
   }
 
+  async findByIds(ids: readonly string[]): Promise<Listing[]> {
+    /* Malformed ids are dropped rather than rejected: one bad row must not empty the board, which
+       is the same reason the caller skips an order whose listing has vanished. */
+    const valid = ids.filter((id) => OBJECT_ID.test(id));
+    if (valid.length === 0) return [];
+    const docs = await this.listings.find({ _id: { $in: valid } }).exec();
+    return docs.map(toListing);
+  }
+
   findVerified(filter: ListingFilter, limit: number): Promise<Listing[]> {
     return this.findByStatus('verified', filter, limit);
   }

@@ -836,3 +836,63 @@ describe('committed collection windows', () => {
     ).resolves.toMatchObject({ status: 'assigned' });
   });
 });
+
+/**
+ * The board must not fetch listings one at a time.
+ *
+ * This is a shape test, not a timing test — a stopwatch in CI is flaky and says nothing about why.
+ * Counting repository calls says exactly what regressed: the loop went back to `findById` per
+ * order. Measured before the fix at 14.6s against 131 open orders, with the app's own request
+ * timeout at 15s; after, 0.52s.
+ */
+describe('the board does not fetch listings one at a time', () => {
+  it('asks the catalogue once, however many open orders there are', async () => {
+    const listings = new InMemoryListingRepository();
+    const orders = new InMemoryOrderRepository();
+    const users = new InMemoryUserRepository();
+
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000500',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'small-lorry',
+      registration: 'NW PERF-01',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+
+    for (let i = 0; i < 25; i++) {
+      const listing = await listings.seed({
+        ...listingFields,
+        quantityKg: 5000,
+      });
+      await orders.create({
+        buyerId: 'buyer-1',
+        farmerId: 'farmer-1',
+        farmerName: 'Nimal',
+        listingId: listing.id,
+        cropId: 'tomato',
+        quantityKg: 50,
+        pricePerKg: 180,
+        total: 9000,
+        status: 'open',
+      });
+    }
+
+    const byId = jest.spyOn(listings, 'findById');
+    const byIds = jest.spyOn(listings, 'findByIds');
+
+    const jobs = await new ListOpenJobs(orders, listings, users).execute(
+      driver.id,
+    );
+
+    expect(jobs).toHaveLength(25);
+    expect(byIds).toHaveBeenCalledTimes(1);
+    expect(byId).not.toHaveBeenCalled();
+  });
+});

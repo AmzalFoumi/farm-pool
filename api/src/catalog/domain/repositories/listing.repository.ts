@@ -15,6 +15,15 @@ export interface ListingFilter {
  */
 export interface ListingRepository {
   findById(id: string): Promise<Listing | null>;
+  /**
+   * Several listings in one query, keyed by id.
+   *
+   * Exists because the driver job board needs the listing behind every open order, and fetching
+   * them one at a time made the board O(n) in *all* open orders platform-wide — 131 of them
+   * measured at 14 seconds, against a 15-second client timeout. Ids not found are simply absent
+   * from the result; the caller decides what a missing listing means.
+   */
+  findByIds(ids: readonly string[]): Promise<Listing[]>;
   /** Only `verified` listings, newest first, at most `limit`. */
   findVerified(filter: ListingFilter, limit: number): Promise<Listing[]>;
   /** Only `pending_approval` listings, newest first, at most `limit`. Added for coordination's

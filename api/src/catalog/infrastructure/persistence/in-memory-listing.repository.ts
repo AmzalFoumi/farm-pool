@@ -10,6 +10,13 @@ import type {
 export class InMemoryListingRepository implements ListingRepository {
   private readonly rows = new Map<string, Listing & { seedKey?: string }>();
 
+  findByIds(ids: readonly string[]): Promise<Listing[]> {
+    const wanted = new Set(ids);
+    return Promise.resolve(
+      [...this.rows.values()].filter((l) => wanted.has(l.id)).map(snapshot),
+    );
+  }
+
   findById(id: string): Promise<Listing | null> {
     const row = this.rows.get(id);
     return Promise.resolve(row ? snapshot(row) : null);

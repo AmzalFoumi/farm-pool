@@ -36,8 +36,12 @@ export default function DriverJobsScreen() {
     token ?? ""
   );
 
-  // Coming back from accepting a job moves it from the board into My jobs.
-  useFocusEffect(useReloadOnRefocus(jobs.reload));
+  /* Coming back from accepting a job moves it from the board into My jobs, so the list has to
+     refetch on focus — but `reload` would discard what is on screen first, and `RequestView`
+     renders a spinner in its place. A driver who opens a job and comes straight back watched the
+     whole board blank and rebuild for data that is almost always identical.
+     `silentRefresh` fetches underneath instead, leaving the list up. */
+  useFocusEffect(useReloadOnRefocus(jobs.silentRefresh));
 
   const open = (job: JobSummary) =>
     router.push({ pathname: "/(driver)/job/[id]", params: { id: job.id } });
