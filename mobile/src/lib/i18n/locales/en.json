@@ -248,5 +248,23 @@
     "late": "{{minutes}} min late",
     "collected": "Collected",
     "stopLabel": "Stop {{position}}, {{name}}, {{place}}"
+  },
+  "profile": {
+    "deliveries": "Deliveries",
+    "deliveriesCount": "{{count}} carried",
+    "vehicle": "Vehicle",
+    "language": "Language",
+    "logOut": "Log out",
+    "loggingOut": "Logging out…",
+    "verification": {
+      "pending": "Your vehicle is waiting to be checked. Farmers see it as not yet verified.",
+      "verified": "Farmers see your vehicle as verified when you come to collect.",
+      "rejected": "Your vehicle was not approved. Check the plate number and save it again."
+    }
+  },
+  "deliveries": {
+    "title": "Deliveries",
+    "emptyTitle": "Nothing carried yet",
+    "emptyBody": "Loads you have delivered appear here, newest first."
   }
 }

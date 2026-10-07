@@ -3,11 +3,20 @@ import {
   confirmPickupSchema,
   type AcceptJobData,
   type AssignedDriver,
+  type DriverRoute,
   type ConfirmPickupData,
   type JobDetail,
   type JobSummary,
 } from '@farm-pool/shared';
-import { Body, Controller, Get, HttpCode, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  UseInterceptors,
+} from '@nestjs/common';
 import type { AuthenticatedUser } from '../identity/auth/authenticated-request';
 import { CurrentUser } from '../identity/auth/current-user.decorator';
 import { Allow } from '../identity/auth/roles.decorator';
@@ -18,9 +27,14 @@ import {
   ConfirmPickup,
 } from './application/services/confirm-delivery-step';
 import { GetAssignedDriver } from './application/services/get-assigned-driver';
+import { GetDriverRoute } from './application/services/get-driver-route';
 import { GetJob } from './application/services/get-job';
-import { ListMyJobs } from './application/services/list-my-jobs';
+import {
+  FINISHED_JOB_STATUSES,
+  ListMyJobs,
+} from './application/services/list-my-jobs';
 import { ListOpenJobs } from './application/services/list-open-jobs';
+import { LogisticsAuditInterceptor } from './logistics-audit.interceptor';
 
 /**
  * HTTP entry points for the logistics domain. Thin: validate, call one use-case, return.
@@ -28,7 +42,9 @@ import { ListOpenJobs } from './application/services/list-open-jobs';
  * | Method | Path                          | Allow                  | Result                          |
  * | ------ | ----------------------------- | ---------------------- | ------------------------------- |
  * | GET    | /logistics/jobs               | `delivery:read-jobs`   | 200 `JobSummary[]` · 409 no vehicle |
- * | GET    | /logistics/jobs/mine          | `delivery:read-jobs`   | 200 `JobSummary[]`              |
+ * | GET    | /logistics/jobs/mine          | `delivery:read-jobs`   | 200 `JobSummary[]` — live work  |
+ * | GET    | /logistics/jobs/history       | `delivery:read-jobs`   | 200 `JobSummary[]` — delivered  |
+ * | GET    | /logistics/route              | `delivery:read-jobs`   | 200 `DriverRoute` — the run, in order |
  * | GET    | /logistics/jobs/:orderId      | `delivery:read-jobs`   | 200 `JobDetail` · 403 · 404     |
  * | POST   | /logistics/jobs/:orderId/accept | `delivery:accept`    | 200 `JobDetail` · 409 · 404     |
  * | POST   | /logistics/jobs/:orderId/pickup | `delivery:confirm`   | 200 `JobDetail` · 403 · 409     |
@@ -40,8 +56,12 @@ import { ListOpenJobs } from './application/services/list-open-jobs';
  * Accept takes an optional `committedWindow` — the slot the driver promises the farmer (FARM-61).
  * Only it and the pickup take a body — the weight actually loaded. Everything else is identified by the
  * order it belongs to and acted on by the caller's own token, so there is nothing to send.
+ *
+ * Every handler below is logged by `LogisticsAuditInterceptor` — who acted, on which order, and
+ * whether it succeeded or was refused. Adding an endpoint here needs nothing to keep that true.
  */
 @Controller('logistics')
+@UseInterceptors(LogisticsAuditInterceptor)
 export class LogisticsController {
   constructor(
     private readonly listOpenJobs: ListOpenJobs,
@@ -51,6 +71,7 @@ export class LogisticsController {
     private readonly getAssignedDriver: GetAssignedDriver,
     private readonly confirmPickup: ConfirmPickup,
     private readonly confirmDelivery: ConfirmDelivery,
+    private readonly getDriverRoute: GetDriverRoute,
   ) {}
 
   @Allow('delivery:read-jobs')
@@ -63,6 +84,22 @@ export class LogisticsController {
   @Get('jobs/mine')
   mine(@CurrentUser() user: AuthenticatedUser): Promise<JobSummary[]> {
     return this.listMyJobs.execute(user.sub);
+  }
+
+  /** The day's run, ordered and with arrival estimates (FARM-61). Declared before `jobs/:orderId`
+   *  for the same reason `mine` is — so the router does not read it as an id. */
+  /** What the driver has already delivered. History, so it lives under the profile rather than
+   *  pushing today's work down the Jobs tab. Declared before `jobs/:orderId`, like `mine`. */
+  @Allow('delivery:read-jobs')
+  @Get('jobs/history')
+  history(@CurrentUser() user: AuthenticatedUser): Promise<JobSummary[]> {
+    return this.listMyJobs.execute(user.sub, FINISHED_JOB_STATUSES);
+  }
+
+  @Allow('delivery:read-jobs')
+  @Get('route')
+  route(@CurrentUser() user: AuthenticatedUser): Promise<DriverRoute> {
+    return this.getDriverRoute.execute(user.sub);
   }
 
   @Allow('delivery:read-jobs')

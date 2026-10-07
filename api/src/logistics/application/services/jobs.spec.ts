@@ -7,7 +7,11 @@ import { ConfirmDelivery, ConfirmPickup } from './confirm-delivery-step';
 import { GetAssignedDriver } from './get-assigned-driver';
 import { GetDriverRoute } from './get-driver-route';
 import { GetJob } from './get-job';
-import { ListMyJobs } from './list-my-jobs';
+import {
+  FINISHED_JOB_STATUSES,
+  LIVE_JOB_STATUSES,
+  ListMyJobs,
+} from './list-my-jobs';
 import { ListOpenJobs } from './list-open-jobs';
 
 const listingFields: NewListing = {
@@ -1215,5 +1219,112 @@ describe("the driver's route", () => {
     await new ConfirmDelivery(orders, listings, users).execute(driverId, job);
 
     await expect(route.execute(driverId)).resolves.toMatchObject({ stops: [] });
+  });
+});
+
+/**
+ * Live work and finished work are different screens.
+ *
+ * A delivered load answers nothing about what the driver is doing now, and leaving it in the Jobs
+ * tab pushed today's work down the screen behind a growing history.
+ */
+describe('live jobs and history are separate', () => {
+  let listings: InMemoryListingRepository;
+  let orders: InMemoryOrderRepository;
+  let users: InMemoryUserRepository;
+  let accept: AcceptJob;
+  let mine: ListMyJobs;
+  let driverId: string;
+
+  const openJob = async () => {
+    const listing = await listings.seed({ ...listingFields, quantityKg: 5000 });
+    const order = await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg: 100,
+      pricePerKg: 180,
+      total: 18000,
+      status: 'open',
+    });
+    return order.id;
+  };
+
+  beforeEach(async () => {
+    listings = new InMemoryListingRepository();
+    orders = new InMemoryOrderRepository();
+    users = new InMemoryUserRepository();
+    accept = new AcceptJob(orders, listings, users);
+    mine = new ListMyJobs(orders, listings);
+
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000200',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'small-lorry',
+      registration: 'NW SPLIT-01',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+    driverId = driver.id;
+  });
+
+  it('keeps a delivered job out of the live list and puts it in history', async () => {
+    const job = await openJob();
+    await accept.execute(driverId, job);
+    await new ConfirmPickup(orders, listings, users).execute(
+      driverId,
+      job,
+      100,
+    );
+    await new ConfirmDelivery(orders, listings, users).execute(driverId, job);
+
+    await expect(mine.execute(driverId, LIVE_JOB_STATUSES)).resolves.toEqual(
+      [],
+    );
+    await expect(
+      mine.execute(driverId, FINISHED_JOB_STATUSES),
+    ).resolves.toMatchObject([{ id: job, status: 'delivered' }]);
+  });
+
+  it('keeps work still owed in the live list, and out of history', async () => {
+    const job = await openJob();
+    await accept.execute(driverId, job);
+
+    await expect(
+      mine.execute(driverId, LIVE_JOB_STATUSES),
+    ).resolves.toMatchObject([{ id: job, status: 'assigned' }]);
+    await expect(
+      mine.execute(driverId, FINISHED_JOB_STATUSES),
+    ).resolves.toEqual([]);
+  });
+
+  /* The same N+1 the board had. A driver with a long history is exactly who would have paid it. */
+  it('asks the catalogue once however long the history is', async () => {
+    for (let i = 0; i < 12; i++) {
+      const job = await openJob();
+      await accept.execute(driverId, job);
+      await new ConfirmPickup(orders, listings, users).execute(
+        driverId,
+        job,
+        100,
+      );
+      await new ConfirmDelivery(orders, listings, users).execute(driverId, job);
+    }
+    const byId = jest.spyOn(listings, 'findById');
+    const byIds = jest.spyOn(listings, 'findByIds');
+
+    const history = await mine.execute(driverId, FINISHED_JOB_STATUSES);
+
+    expect(history).toHaveLength(12);
+    expect(byIds).toHaveBeenCalledTimes(1);
+    expect(byId).not.toHaveBeenCalled();
   });
 });

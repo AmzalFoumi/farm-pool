@@ -31,9 +31,14 @@ export const logisticsApi = {
     return apiFetch("/logistics/route", { token, schema: driverRouteSchema });
   },
 
-  /** Jobs this driver has accepted, `assigned` through `delivered`. */
+  /** Work the driver still owes someone — `assigned` and `in_transit`. */
   mine(token: string): Promise<JobSummary[]> {
     return apiFetch("/logistics/jobs/mine", { token, schema: jobListSchema });
+  },
+
+  /** What they have already delivered. History, so it lives under the profile. */
+  history(token: string): Promise<JobSummary[]> {
+    return apiFetch("/logistics/jobs/history", { token, schema: jobListSchema });
   },
 
   /** One job. `pickup` — the farmer's number — is present only once this driver holds it. */
