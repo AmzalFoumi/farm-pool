@@ -10,11 +10,14 @@ import {
   USER_REPOSITORY,
   type UserRepository,
 } from '../identity/domain/repositories/user.repository';
+import { ApproveFarmer } from './application/services/approve-farmer';
 import { GetBenchmarkPriceHistory } from './application/services/get-benchmark-price-history';
 import { GetBenchmarkPrices } from './application/services/get-benchmark-prices';
 import { GetCoordinatorDashboard } from './application/services/get-coordinator-dashboard';
 import { GetCoordinatorTasks } from './application/services/get-coordinator-tasks';
+import { JoinCooperative } from './application/services/join-cooperative';
 import { ListCooperativeFarmers } from './application/services/list-cooperative-farmers';
+import { RejectFarmer } from './application/services/reject-farmer';
 import { SetBenchmarkPrice } from './application/services/set-benchmark-price';
 import { CoordinationController } from './coordination.controller';
 import {
@@ -121,6 +124,30 @@ import { MongooseCooperativeRepository } from './infrastructure/persistence/mong
         cooperatives: CooperativeRepository,
         benchmarkPrices: BenchmarkPriceRepository,
       ) => new GetBenchmarkPriceHistory(cooperatives, benchmarkPrices),
+    },
+    {
+      provide: JoinCooperative,
+      inject: [COOPERATIVE_REPOSITORY, USER_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        users: UserRepository,
+      ) => new JoinCooperative(cooperatives, users),
+    },
+    {
+      provide: ApproveFarmer,
+      inject: [COOPERATIVE_REPOSITORY, USER_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        users: UserRepository,
+      ) => new ApproveFarmer(cooperatives, users),
+    },
+    {
+      provide: RejectFarmer,
+      inject: [COOPERATIVE_REPOSITORY, USER_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        users: UserRepository,
+      ) => new RejectFarmer(cooperatives, users),
     },
   ],
   exports: [],

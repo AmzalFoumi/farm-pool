@@ -20,6 +20,11 @@ export class CooperativeDocument {
   @Prop({ required: true, trim: true })
   district: string;
 
+  /** Lower-cased copy of `district` for a case-insensitive lookup without a collation — same
+   *  pattern as `catalog`'s `listing.schema.ts`. */
+  @Prop({ required: true, index: true })
+  districtKey: string;
+
   @Prop({ type: [String], required: true, default: [] })
   memberFarmerIds: string[];
 

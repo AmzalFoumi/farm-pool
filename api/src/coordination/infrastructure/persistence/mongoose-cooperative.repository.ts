@@ -35,6 +35,13 @@ export class MongooseCooperativeRepository implements CooperativeRepository {
     return docs.map(toCooperative);
   }
 
+  async findByDistrict(district: string): Promise<Cooperative | null> {
+    const doc = await this.cooperatives
+      .findOne({ districtKey: district.toLowerCase() })
+      .exec();
+    return doc ? toCooperative(doc) : null;
+  }
+
   async upsertBySeedKey(
     seedKey: string,
     cooperative: NewCooperative,
@@ -42,11 +49,45 @@ export class MongooseCooperativeRepository implements CooperativeRepository {
     const doc = await this.cooperatives
       .findOneAndUpdate(
         { seedKey },
-        { ...cooperative, seedKey },
+        {
+          ...cooperative,
+          districtKey: cooperative.district.toLowerCase(),
+          seedKey,
+        },
         { upsert: true, returnDocument: 'after' },
       )
       .exec();
     return toCooperative(doc);
+  }
+
+  async addMember(
+    cooperativeId: string,
+    farmerId: string,
+  ): Promise<Cooperative | null> {
+    if (!OBJECT_ID.test(cooperativeId)) return null;
+    const doc = await this.cooperatives
+      .findByIdAndUpdate(
+        cooperativeId,
+        { $addToSet: { memberFarmerIds: farmerId } },
+        { new: true },
+      )
+      .exec();
+    return doc ? toCooperative(doc) : null;
+  }
+
+  async removeMember(
+    cooperativeId: string,
+    farmerId: string,
+  ): Promise<Cooperative | null> {
+    if (!OBJECT_ID.test(cooperativeId)) return null;
+    const doc = await this.cooperatives
+      .findByIdAndUpdate(
+        cooperativeId,
+        { $pull: { memberFarmerIds: farmerId } },
+        { new: true },
+      )
+      .exec();
+    return doc ? toCooperative(doc) : null;
   }
 }
 

@@ -4,7 +4,11 @@ import {
 } from '../../shared/kernel/domain-error';
 
 /** Stable codes the app switches on. Public API: add, do not rename. */
-export type CoordinationErrorCode = 'cooperative_not_found';
+export type CoordinationErrorCode =
+  | 'cooperative_not_found'
+  | 'no_cooperative_for_district'
+  | 'farmer_not_found'
+  | 'farmer_not_pending';
 
 export class CoordinationError extends DomainError<CoordinationErrorCode> {
   constructor(
