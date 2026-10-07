@@ -5,8 +5,9 @@
  * api deliberately does not say which (`.plans/auth/README.md`). The error is
  * shown once, above the button, rather than under a field for that reason.
  *
- * On success nothing here navigates: `AuthProvider` flips to `signed-in` and
- * the root `Stack.Protected` swaps onboarding out for the tab shell.
+ * On success nothing here navigates: `AuthProvider` flips to `signed-in` and the root
+ * `Stack.Protected` swaps onboarding out for the right shell — a pending or suspended account
+ * (FARM-44) lands on `/account-status` instead of a tab shell, same guard that handles role.
  */
 
 import { loginSchema, type LoginInput } from "@farm-pool/shared";
