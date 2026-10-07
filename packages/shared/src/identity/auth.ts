@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { districtSchema } from "../catalog/listing";
 import { driverProfileSchema } from "./driver";
 import { phoneSchema } from "./phone";
 import { accountStatusSchema, roleSchema } from "./role";
@@ -63,7 +64,13 @@ export const publicUserSchema = z.object({
   createdAt: z.iso.datetime(),
   /** A delivery partner's vehicle and its verification state; absent for every other role, and
    *  for a driver who has not submitted one yet (FARM-45, `./driver.ts`). */
-  driver: driverProfileSchema.optional()
+  driver: driverProfileSchema.optional(),
+  /** The district a farmer named when applying to a cooperative (FARM-44). Absent for every
+   *  other role, and for a farmer who registered before this existed. */
+  district: districtSchema.optional(),
+  /** Set by the coordinator who rejected this farmer (FARM-44). Shown back to the farmer on
+   *  their own account-status screen — the whole reason it is collected. */
+  rejectionReason: z.string().optional()
 });
 
 export type PublicUser = z.infer<typeof publicUserSchema>;

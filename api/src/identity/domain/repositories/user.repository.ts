@@ -14,6 +14,16 @@ export interface UserRepository {
   findAll(): Promise<User[]>;
   /** Replaces the user's `driver` object. Resolves `null` when no such user exists. */
   saveDriverProfile(id: string, driver: DriverProfile): Promise<User | null>;
+  /** Sets the district a farmer named applying to a cooperative (FARM-44). Resolves `null` when
+   *  no such user exists. */
+  saveFarmerDistrict(id: string, district: string): Promise<User | null>;
+  /** `pending_review` → `active` (FARM-44, a coordinator approving a farmer). Filtered on the
+   *  current status, same as `OrderRepository.assignDriver`: resolves `null` if the account is
+   *  not currently `pending_review` (already active, suspended, or gone), never partially. */
+  activate(id: string): Promise<User | null>;
+  /** `pending_review` → `suspended`, recording why (FARM-44, a coordinator rejecting a farmer).
+   *  Same filtered shape as `activate`. */
+  reject(id: string, reason: string): Promise<User | null>;
 }
 
 /**

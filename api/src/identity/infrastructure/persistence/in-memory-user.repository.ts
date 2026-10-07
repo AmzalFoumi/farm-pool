@@ -72,6 +72,39 @@ export class InMemoryUserRepository implements UserRepository {
     return Promise.resolve(snapshot(updated));
   }
 
+  saveFarmerDistrict(id: string, district: string): Promise<User | null> {
+    const user = this.users.get(id);
+    if (!user) return Promise.resolve(null);
+    const updated: User = { ...user, district, updatedAt: new Date() };
+    this.users.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
+  activate(id: string): Promise<User | null> {
+    return this.transitionFromPending(id, 'active');
+  }
+
+  reject(id: string, reason: string): Promise<User | null> {
+    return this.transitionFromPending(id, 'suspended', reason);
+  }
+
+  private transitionFromPending(
+    id: string,
+    status: 'active' | 'suspended',
+    reason?: string,
+  ): Promise<User | null> {
+    const user = this.users.get(id);
+    if (!user || user.status !== 'pending_review') return Promise.resolve(null);
+    const updated: User = {
+      ...user,
+      status,
+      ...(reason !== undefined ? { rejectionReason: reason } : {}),
+      updatedAt: new Date(),
+    };
+    this.users.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
   private all(): User[] {
     return [...this.users.values()];
   }

@@ -95,6 +95,14 @@ export class UserDocument {
   @Prop({ type: DriverProfileSchema, required: false })
   driver?: DriverProfileDocument;
 
+  /** The district a farmer named applying to a cooperative (FARM-44). */
+  @Prop({ required: false, trim: true })
+  district?: string;
+
+  /** Set by the coordinator who rejected this farmer (FARM-44). */
+  @Prop({ required: false })
+  rejectionReason?: string;
+
   // Written by `timestamps: true`; declared so the mapper can read them with types.
   createdAt: Date;
   updatedAt: Date;

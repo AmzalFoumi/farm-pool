@@ -26,6 +26,11 @@ export interface User {
   status: AccountStatus;
   /** A delivery partner's vehicle (FARM-45). Absent for other roles and before it is submitted. */
   driver?: DriverProfile;
+  /** The district a farmer named applying to a cooperative (FARM-44). Absent for every other
+   *  role, and for a farmer who registered before this existed. */
+  district?: string;
+  /** Set by the coordinator who rejected this farmer (FARM-44). */
+  rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -77,6 +82,10 @@ export function toPublicUser(user: User): PublicUser {
     createdAt: user.createdAt.toISOString(),
     ...(user.driver !== undefined
       ? { driver: toDriverProfileDto(user.driver) }
+      : {}),
+    ...(user.district !== undefined ? { district: user.district } : {}),
+    ...(user.rejectionReason !== undefined
+      ? { rejectionReason: user.rejectionReason }
       : {}),
   };
 }
