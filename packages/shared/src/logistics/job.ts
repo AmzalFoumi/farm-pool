@@ -10,7 +10,11 @@ import {
 } from "../catalog/listing";
 import { vehicleTypeSchema, driverVerificationSchema } from "../identity/driver";
 import { dropOffSchema } from "../orders/order";
-import { collectionWindowSchema, committedWindowSchema } from "./collection-window";
+import {
+  collectionWindowSchema,
+  committedWindowSchema,
+  minutesOfDaySchema
+} from "./collection-window";
 
 /**
  * A delivery job, as a driver sees it (LP-20 … LP-24).
@@ -161,3 +165,44 @@ export const acceptJobSchema = z
 
 export type AcceptJobInput = z.input<typeof acceptJobSchema>;
 export type AcceptJobData = z.output<typeof acceptJobSchema>;
+
+/**
+ * One stop on the driver's run, as the Route screen draws it (FARM-61).
+ *
+ * The planner in `route-plan.ts` decides the order and the arrival; this is that answer plus the
+ * few things a driver needs to recognise the stop — whose farm, what crop, how much.
+ */
+export const routeStopSchema = jobSummarySchema.extend({
+  /** 1-based, matching the number on the map pin. */
+  position: z.number().int().positive(),
+  /** Where the lorry is going: the pinned gate, or the district centre when none was pinned. */
+  point: pickupPointSchema,
+  /** Estimated arrival, minutes from midnight. */
+  arrivalMinutes: minutesOfDaySchema,
+  /**
+   * Minutes to spare against the promised window. Negative means the promise is already broken on
+   * paper — the driver should be telling that farmer, not discovering it at the gate.
+   */
+  slackMinutes: z.number().int().optional(),
+  /** Driving minutes from the previous stop; 0 for the first. */
+  legMinutes: z.number().int().nonnegative()
+});
+
+export type RouteStopView = z.infer<typeof routeStopSchema>;
+
+/**
+ * The whole run. Totals are straight-line distance scaled by `ROAD_FACTOR` and an assumed speed —
+ * an estimate the screen labels as one, never a quoted arrival.
+ */
+export const driverRouteSchema = z.object({
+  stops: z.array(routeStopSchema),
+  /** False when some promise cannot be kept as planned. */
+  feasible: z.boolean(),
+  totalKm: z.number().nonnegative(),
+  totalMinutes: z.number().int().nonnegative(),
+  totalKg: z.number().int().nonnegative(),
+  /** The tightest moment on the run — what breaks first if anything slips. */
+  tightestSlackMinutes: z.number().int().optional()
+});
+
+export type DriverRoute = z.infer<typeof driverRouteSchema>;

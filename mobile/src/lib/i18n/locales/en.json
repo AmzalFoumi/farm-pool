@@ -234,5 +234,19 @@
     "newHere": "New to FarmPool?",
     "action": "Log in",
     "actionBusy": "Logging in…"
+  },
+  "route": {
+    "title": "Route",
+    "emptyTitle": "Nothing on today's run",
+    "emptyBody": "Take a job from the Jobs tab and it appears here, in the order you promised.",
+    "summary": "{{km}} km · {{kg}} kg",
+    "estimateNote": "Times are estimated from straight-line distance, so allow for the road.",
+    "fits": "Every promise fits · {{minutes}} min spare",
+    "tight": "Tight · only {{minutes}} min spare",
+    "willNotFit": "This run does not fit — tell a farmer before they harvest",
+    "leg": "{{minutes}} min from the last stop",
+    "late": "{{minutes}} min late",
+    "collected": "Collected",
+    "stopLabel": "Stop {{position}}, {{name}}, {{place}}"
   }
 }

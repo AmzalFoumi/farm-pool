@@ -3,8 +3,10 @@ import { useColorScheme } from "react-native";
 
 import { Colors } from "@/constants/theme";
 
-/* The delivery partner tabs (FARM-45). Two for now: Jobs, which the job-board stories fill
-   (FARM-49, FARM-54), and Profile, where the vehicle and its verification live. Same NativeTabs
+/* The delivery partner tabs. Jobs is the board and what they hold (FARM-49, FARM-54); Route is
+   the day in the order they promised it (FARM-61); Profile holds the vehicle and its check
+   (FARM-45). Jobs and Route are deliberately separate: one answers "what work is there", the
+   other "what am I doing next", and the second is the one open while driving. Same NativeTabs
    mechanism as the other shells — platform symbol sets, theme colours. */
 export default function DriverTabs() {
   const scheme = useColorScheme();
@@ -22,6 +24,11 @@ export default function DriverTabs() {
           sf={{ default: "box.truck", selected: "box.truck.fill" }}
           md="local_shipping"
         />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="driver-route">
+        <NativeTabs.Trigger.Label>Route</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: "map", selected: "map.fill" }} md="route" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="driver-profile">

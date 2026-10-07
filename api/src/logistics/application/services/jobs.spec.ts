@@ -5,6 +5,7 @@ import { InMemoryOrderRepository } from '../../../orders/infrastructure/persiste
 import { AcceptJob } from './accept-job';
 import { ConfirmDelivery, ConfirmPickup } from './confirm-delivery-step';
 import { GetAssignedDriver } from './get-assigned-driver';
+import { GetDriverRoute } from './get-driver-route';
 import { GetJob } from './get-job';
 import { ListMyJobs } from './list-my-jobs';
 import { ListOpenJobs } from './list-open-jobs';
@@ -894,5 +895,325 @@ describe('the board does not fetch listings one at a time', () => {
     expect(jobs).toHaveLength(25);
     expect(byIds).toHaveBeenCalledTimes(1);
     expect(byId).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * The board only offers work the driver could actually take (FARM-61).
+ *
+ * The point of checking here rather than at the Accept button: a driver should not learn what
+ * fits their day by tapping jobs one at a time and being refused. The information is identical
+ * either way, so it belongs where the list is built.
+ */
+describe('the board filters by whether the day still works', () => {
+  const DAY = '2026-11-12';
+  const at = (h: number) => h * 60;
+  const KURUNEGALA = { latitude: 7.4863, longitude: 80.3647 };
+  const JAFFNA = { latitude: 9.6615, longitude: 80.0255 };
+
+  let listings: InMemoryListingRepository;
+  let orders: InMemoryOrderRepository;
+  let users: InMemoryUserRepository;
+  let board: ListOpenJobs;
+  let accept: AcceptJob;
+  let driverId: string;
+
+  /** An open job at `point`, whose farmer can be ready inside `window`. */
+  const openJob = async (
+    point: { latitude: number; longitude: number },
+    window?: { date: string; from: number; to: number },
+  ) => {
+    const listing = await listings.seed({
+      ...listingFields,
+      quantityKg: 5000,
+      district: 'Kurunegala',
+      pickupPoint: point,
+      ...(window ? { collectionWindow: window } : {}),
+    });
+    const order = await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg: 100,
+      pricePerKg: 180,
+      total: 18000,
+      status: 'open',
+    });
+    return order.id;
+  };
+
+  beforeEach(async () => {
+    listings = new InMemoryListingRepository();
+    orders = new InMemoryOrderRepository();
+    users = new InMemoryUserRepository();
+    board = new ListOpenJobs(orders, listings, users);
+    accept = new AcceptJob(orders, listings, users);
+
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000400',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'small-lorry',
+      registration: 'NW ROUTE-01',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+    driverId = driver.id;
+  });
+
+  it('offers a job the driver could still fit around what they hold', async () => {
+    const held = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+    await accept.execute(driverId, held, { date: DAY, from: at(6), to: at(8) });
+
+    const later = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(14),
+      to: at(16),
+    });
+
+    const offered = await board.execute(driverId);
+    expect(offered.map((j) => j.id)).toContain(later);
+  });
+
+  /**
+   * The failure the overlap rule could never see: two windows that do not overlap and are still
+   * impossible, because 340 km of driving does not fit in the hour between them. Before this, the
+   * board offered it and the driver found out by tapping.
+   */
+  it('hides a job the driving cannot reach in time, even with no window overlap', async () => {
+    const held = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+    await accept.execute(driverId, held, { date: DAY, from: at(6), to: at(8) });
+
+    const unreachable = await openJob(JAFFNA, {
+      date: DAY,
+      from: at(8),
+      to: at(9),
+    });
+
+    const offered = await board.execute(driverId);
+    expect(offered.map((j) => j.id)).not.toContain(unreachable);
+  });
+
+  it('offers that same far job when the day has room for the drive', async () => {
+    const held = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(6),
+      to: at(7),
+    });
+    await accept.execute(driverId, held, { date: DAY, from: at(6), to: at(7) });
+
+    const reachable = await openJob(JAFFNA, {
+      date: DAY,
+      from: at(16),
+      to: at(18),
+    });
+
+    const offered = await board.execute(driverId);
+    expect(offered.map((j) => j.id)).toContain(reachable);
+  });
+
+  /* Older listings carry no window. There is no promise to test, so the job is always offered and
+     the time is agreed by phone as it always was. */
+  it('always offers a job whose listing promises no window', async () => {
+    const held = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+    await accept.execute(driverId, held, { date: DAY, from: at(6), to: at(8) });
+
+    const legacy = await openJob(JAFFNA);
+
+    const offered = await board.execute(driverId);
+    expect(offered.map((j) => j.id)).toContain(legacy);
+  });
+
+  it('shows everything to a driver who holds nothing yet', async () => {
+    const a = await openJob(KURUNEGALA, { date: DAY, from: at(6), to: at(8) });
+    const b = await openJob(JAFFNA, { date: DAY, from: at(7), to: at(9) });
+
+    const offered = await board.execute(driverId);
+    expect(offered.map((j) => j.id).sort()).toEqual([a, b].sort());
+  });
+});
+
+/**
+ * The day's run (FARM-61). Planned on the api so the route screen and the board cannot disagree
+ * about the same day.
+ */
+describe("the driver's route", () => {
+  const DAY = '2026-11-12';
+  const at = (h: number) => h * 60;
+  const KURUNEGALA = { latitude: 7.4863, longitude: 80.3647 };
+  const COLOMBO = { latitude: 6.9271, longitude: 79.8612 };
+
+  let listings: InMemoryListingRepository;
+  let orders: InMemoryOrderRepository;
+  let users: InMemoryUserRepository;
+  let accept: AcceptJob;
+  let route: GetDriverRoute;
+  let driverId: string;
+
+  const openJob = async (
+    point: { latitude: number; longitude: number },
+    window: { date: string; from: number; to: number },
+    quantityKg = 100,
+  ) => {
+    const listing = await listings.seed({
+      ...listingFields,
+      quantityKg: 5000,
+      pickupPoint: point,
+      collectionWindow: window,
+    });
+    const order = await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg,
+      pricePerKg: 180,
+      total: quantityKg * 180,
+      status: 'open',
+    });
+    return order.id;
+  };
+
+  beforeEach(async () => {
+    listings = new InMemoryListingRepository();
+    orders = new InMemoryOrderRepository();
+    users = new InMemoryUserRepository();
+    accept = new AcceptJob(orders, listings, users);
+    route = new GetDriverRoute(orders, listings);
+
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000300',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'small-lorry',
+      registration: 'NW RUN-01',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+    driverId = driver.id;
+  });
+
+  it('is empty, and feasible, for a driver holding nothing', async () => {
+    await expect(route.execute(driverId)).resolves.toMatchObject({
+      stops: [],
+      feasible: true,
+      totalKg: 0,
+    });
+  });
+
+  it('numbers the stops in the order the promises were made, not the order taken', async () => {
+    const afternoon = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(14),
+      to: at(16),
+    });
+    await accept.execute(driverId, afternoon, {
+      date: DAY,
+      from: at(14),
+      to: at(16),
+    });
+    const morning = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+    await accept.execute(driverId, morning, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+
+    const plan = await route.execute(driverId);
+
+    expect(plan.stops.map((s) => s.id)).toEqual([morning, afternoon]);
+    expect(plan.stops.map((s) => s.position)).toEqual([1, 2]);
+  });
+
+  it('says when each stop is reached and how much room is left against the promise', async () => {
+    const job = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(9),
+      to: at(11),
+    });
+    await accept.execute(driverId, job, { date: DAY, from: at(9), to: at(11) });
+
+    const [stop] = (await route.execute(driverId)).stops;
+
+    expect(stop.arrivalMinutes).toBe(at(9));
+    expect(stop.slackMinutes).toBe(120);
+    expect(stop.legMinutes).toBe(0);
+  });
+
+  it('totals the load and the driving across the run', async () => {
+    const first = await openJob(
+      KURUNEGALA,
+      { date: DAY, from: at(6), to: at(8) },
+      300,
+    );
+    await accept.execute(driverId, first, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+    const second = await openJob(
+      COLOMBO,
+      { date: DAY, from: at(14), to: at(17) },
+      200,
+    );
+    await accept.execute(driverId, second, {
+      date: DAY,
+      from: at(14),
+      to: at(17),
+    });
+
+    const plan = await route.execute(driverId);
+
+    expect(plan.totalKg).toBe(500);
+    // Kurunegala to Colombo is ~95 km by road; the estimate should be in that country.
+    expect(plan.totalKm).toBeGreaterThan(80);
+    expect(plan.stops[1].legMinutes).toBeGreaterThan(60);
+  });
+
+  /* A delivered load is off the lorry, so it is out of the day — the same rule capacity follows. */
+  it('drops a delivered job out of the run', async () => {
+    const job = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+    await accept.execute(driverId, job, { date: DAY, from: at(6), to: at(8) });
+    await new ConfirmPickup(orders, listings, users).execute(
+      driverId,
+      job,
+      100,
+    );
+    await new ConfirmDelivery(orders, listings, users).execute(driverId, job);
+
+    await expect(route.execute(driverId)).resolves.toMatchObject({ stops: [] });
   });
 });

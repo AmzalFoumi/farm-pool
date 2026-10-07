@@ -1,10 +1,12 @@
 import {
   assignedDriverSchema,
+  driverRouteSchema,
   jobDetailSchema,
   jobListSchema,
   type AssignedDriver,
   type JobDetail,
   type CollectionWindow as CommittedWindow,
+  type DriverRoute,
   type JobSummary
 } from "@farm-pool/shared";
 
@@ -22,6 +24,11 @@ export const logisticsApi = {
   /** Open jobs in this driver's district that their vehicle can carry. */
   board(token: string): Promise<JobSummary[]> {
     return apiFetch("/logistics/jobs", { token, schema: jobListSchema });
+  },
+
+  /** The day's run: the stops in order, with arrival estimates and slack (FARM-61). */
+  route(token: string): Promise<DriverRoute> {
+    return apiFetch("/logistics/route", { token, schema: driverRouteSchema });
   },
 
   /** Jobs this driver has accepted, `assigned` through `delivered`. */
