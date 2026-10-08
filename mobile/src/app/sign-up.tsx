@@ -26,6 +26,7 @@
 import { DISTRICT_NAMES, registerSchema, roleSchema, type RegisterInput } from "@farm-pool/shared";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -41,13 +42,6 @@ import { DistrictChip } from "@/features/driver/components/vehicle-wizard/distri
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
 
-const ROLE_LABEL = {
-  farmer: "farmer",
-  buyer: "wholesale buyer",
-  coordinator: "area coordinator",
-  logistics: "delivery partner"
-} as const;
-
 type Field = "displayName" | "phone" | "password" | "district";
 type FieldErrors = Partial<Record<Field, string>>;
 
@@ -56,6 +50,7 @@ export default function SignUpScreen() {
   const insets = useSafeAreaInsets();
   const auth = useAuth();
   const params = useLocalSearchParams<{ role?: string }>();
+  const { t } = useTranslation();
 
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState("");
@@ -115,16 +110,16 @@ export default function SignUpScreen() {
             // Not them, or a different password — fall through to the normal message.
           }
           setPhoneTaken(true);
-          setErrors({ phone: "An account with this number already exists" });
+          setErrors({ phone: t("errors.phone_taken") });
         } else if (error.code === "validation_error") {
           setErrors(issuesToFields(error.issues));
         } else if (error.code === "network_error") {
-          setFormError("Can't reach the server. Check your connection and try again.");
+          setFormError(t("errors.network"));
         } else {
-          setFormError("Something went wrong. Please try again.");
+          setFormError(t("errors.generic"));
         }
       } else {
-        setFormError("Something went wrong. Please try again.");
+        setFormError(t("errors.generic"));
       }
     } finally {
       setSubmitting(false);
@@ -133,7 +128,7 @@ export default function SignUpScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title={`Sign up as ${ROLE_LABEL[role.data]}`} />
+      <AppBar title={t("signUp.title", { role: t(`roles.${role.data}`) })} />
 
       <KeyboardAvoidingView
         className="flex-1"
@@ -145,16 +140,14 @@ export default function SignUpScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <VStack className="gap-4">
-            <Text className="type-body text-muted-foreground">
-              Your phone number is your account. You will use it to log in.
-            </Text>
+            <Text className="type-body text-muted-foreground">{t("signUp.note")}</Text>
 
             <AppTextField
-              label="Your name"
+              label={t("signUp.nameLabel")}
               value={displayName}
               onChangeText={setDisplayName}
               error={errors.displayName}
-              placeholder="As people know you"
+              placeholder={t("signUp.namePlaceholder")}
               autoCapitalize="words"
               autoComplete="name"
               textContentType="name"
@@ -162,11 +155,11 @@ export default function SignUpScreen() {
             />
 
             <AppTextField
-              label="Phone number"
+              label={t("signUp.phoneLabel")}
               value={phone}
               onChangeText={setPhone}
               error={errors.phone}
-              placeholder="077 123 4567"
+              placeholder={t("signUp.phonePlaceholder")}
               keyboardType="phone-pad"
               autoComplete="tel"
               textContentType="telephoneNumber"
@@ -174,11 +167,11 @@ export default function SignUpScreen() {
             />
 
             <AppTextField
-              label="Password"
+              label={t("signUp.passwordLabel")}
               value={password}
               onChangeText={setPassword}
               error={errors.password}
-              placeholder="At least 8 characters"
+              placeholder={t("signUp.passwordPlaceholder")}
               secure
               autoCapitalize="none"
               autoComplete="new-password"
@@ -217,7 +210,7 @@ export default function SignUpScreen() {
                 accessibilityRole="link"
                 className="min-h-tap justify-center"
               >
-                <Text className="type-body-bold text-primary">Log in instead</Text>
+                <Text className="type-body-bold text-primary">{t("signUp.logInInstead")}</Text>
               </Pressable>
             ) : null}
 
@@ -235,7 +228,7 @@ export default function SignUpScreen() {
         style={{ paddingBottom: Math.max(insets.bottom, 23) }}
       >
         <AppButton
-          label={submitting ? "Creating your account…" : "Create account"}
+          label={submitting ? t("signUp.actionBusy") : t("signUp.action")}
           disabled={submitting}
           onPress={submit}
         />

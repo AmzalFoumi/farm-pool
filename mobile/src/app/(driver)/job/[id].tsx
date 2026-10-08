@@ -68,6 +68,31 @@ export default function JobDetailScreen() {
                 ) : null}
                 <Box className="h-px bg-border" />
                 <DetailRow label={t("jobs.detail.orderValue")} value={formatPrice(detail.total)} />
+                {detail.dropOff ? (
+                  <>
+                    <Box className="h-px bg-border" />
+                    <DetailRow
+                      label={t("jobs.detail.dropOff")}
+                      /* A buyer who pinned a one-off place gave it no name, so the distance is
+                         the only useful thing to show in its place. */
+                      value={
+                        detail.dropOff.label ??
+                        (detail.distanceKm !== undefined
+                          ? t("jobs.detail.distance", { km: detail.distanceKm })
+                          : t("jobs.detail.dropOffUnset"))
+                      }
+                    />
+                  </>
+                ) : null}
+                {detail.dropOff?.label && detail.distanceKm !== undefined ? (
+                  <>
+                    <Box className="h-px bg-border" />
+                    <DetailRow
+                      label={t("jobs.detail.tripLength")}
+                      value={t("jobs.detail.distance", { km: detail.distanceKm })}
+                    />
+                  </>
+                ) : null}
                 <Box className="h-px bg-border" />
                 <DetailRow
                   label={t("jobs.detail.trip")}
@@ -82,7 +107,12 @@ export default function JobDetailScreen() {
               {/* Where it is, before who to call about it: a driver deciding whether to take a
                   job looks at the place first. Renders nothing for a district the table does not
                   know, so this is not conditional on having accepted. */}
-              <JobMap district={detail.district} town={detail.town} label={detail.farmerName} />
+              <JobMap
+                district={detail.district}
+                town={detail.town}
+                pickupPoint={detail.pickupPoint}
+                label={detail.farmerName}
+              />
 
               {detail.pickup ? (
                 <ContactCard

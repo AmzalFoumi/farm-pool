@@ -27,6 +27,7 @@ export function useRequest<T>(
   key: string
 ): RequestState<T> & {
   reload: () => void;
+  silentRefresh: () => void;
 } {
   const [tick, setTick] = useState(0);
   const [settled, setSettled] = useState<Settled<T> | null>(null);
@@ -60,14 +61,30 @@ export function useRequest<T>(
     };
   }, [attempt]);
 
+  const inFlightRef = useRef(false);
+  const silentRefresh = useCallback(() => {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
+    runRef.current().then(
+      (data) => {
+        inFlightRef.current = false;
+        setSettled((prev) => (prev ? { attempt: prev.attempt, ok: true, data } : null));
+      },
+      (err) => {
+        inFlightRef.current = false;
+        console.warn("Background silentRefresh failed", err);
+      }
+    );
+  }, []);
+
   const reload = useCallback(() => setTick((t) => t + 1), []);
 
   if (!settled || settled.attempt !== attempt) {
-    return { status: "loading", data: undefined, error: undefined, reload };
+    return { status: "loading", data: undefined, error: undefined, reload, silentRefresh };
   }
   return settled.ok
-    ? { status: "ready", data: settled.data, error: undefined, reload }
-    : { status: "error", data: undefined, error: settled.error, reload };
+    ? { status: "ready", data: settled.data, error: undefined, reload, silentRefresh }
+    : { status: "error", data: undefined, error: settled.error, reload, silentRefresh };
 }
 
 /** Re-run `reload` each time the screen regains focus, except the first time (the effect above

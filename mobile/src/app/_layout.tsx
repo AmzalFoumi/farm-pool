@@ -149,6 +149,7 @@ function RootNavigator() {
         <Stack.Protected guard={isActive && !isCoordinator}>
           <Stack.Screen name="orders/index" />
           <Stack.Screen name="orders/[id]" />
+          <Stack.Screen name="receipt/[orderId]" />
           <Stack.Screen name="wanted/index" />
           <Stack.Screen name="wanted/new" />
         </Stack.Protected>

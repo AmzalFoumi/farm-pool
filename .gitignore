@@ -71,3 +71,6 @@ coverage/
 # Agent worktrees: each is a second checkout of this repo, with its own .git file, so a broad
 # `git add` from the main checkout would record a broken nested-repo pointer. Never committed.
 .claude/worktrees/
+
+# Antigravity agents customizations
+.agents/

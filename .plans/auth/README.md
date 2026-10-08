@@ -116,6 +116,10 @@ name should appear in an access rule:
 | `order:accept` | ✓ | | | |
 | `order:read-own` | ✓ | ✓ | ✓ | ✓ |
 | `order:cancel` | | ✓ | | |
+| `order:confirm-receipt` | | ✓ | | |
+| `order:renegotiate` | ✓ | ✓ | | |
+| `payment:pay` | | ✓ | | |
+| `payment:read-own` | ✓ | ✓ | ✓ | ✓ |
 | `call:request` | | ✓ | | |
 | `call:answer` | ✓ | | | |
 | `call:join` | ✓ | ✓ | ✓ | ✓ |

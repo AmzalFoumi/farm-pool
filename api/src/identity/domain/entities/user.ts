@@ -5,6 +5,7 @@ import type {
   DriverVerification,
   PublicUser,
   Role,
+  SavedLocation,
 } from '@farm-pool/shared';
 
 /**
@@ -26,6 +27,8 @@ export interface User {
   status: AccountStatus;
   /** A delivery partner's vehicle (FARM-45). Absent for other roles and before it is submitted. */
   driver?: DriverProfile;
+  /** Places this buyer delivers to often (FARM-26). Absent, never empty, when none are saved. */
+  savedLocations?: SavedLocation[];
   /** The district a farmer named applying to a cooperative (FARM-44). Absent for every other
    *  role, and for a farmer who registered before this existed. */
   district?: string;
@@ -82,6 +85,14 @@ export function toPublicUser(user: User): PublicUser {
     createdAt: user.createdAt.toISOString(),
     ...(user.driver !== undefined
       ? { driver: toDriverProfileDto(user.driver) }
+      : {}),
+    ...(user.savedLocations?.length
+      ? {
+          savedLocations: user.savedLocations.map((l) => ({
+            ...l,
+            point: { ...l.point },
+          })),
+        }
       : {}),
     ...(user.district !== undefined ? { district: user.district } : {}),
     ...(user.rejectionReason !== undefined

@@ -17,12 +17,15 @@ import {
   cropById,
   placeOrderSchema,
   type FulfillmentOption,
+  type DropOff,
   type Listing,
-  type ListingPackaging
+  type ListingPackaging,
+  type PublicUser,
+  type SavedLocation
 } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Dimensions, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/app/app-button";
@@ -46,6 +49,7 @@ import { VStack } from "@/components/ui/vstack";
 import { callsApi } from "@/features/calls/api";
 import { listingsApi } from "@/features/listings/api";
 import { CropTile } from "@/features/listings/crop-tile";
+import { DeliveryLocationField } from "@/features/geo/delivery-location-field";
 import { ordersApi } from "@/features/orders/api";
 import { ApiError } from "@/lib/api";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -86,6 +90,8 @@ export default function ListingDetailScreen() {
             canCall={auth.user ? can(auth.user.role, "call:request") : false}
             onCallRequested={() => router.push("/calls")}
             token={token}
+            savedLocations={auth.user?.savedLocations ?? []}
+            onUserChanged={auth.updateUser}
             onBack={() => router.back()}
             onPlaced={(orderId) =>
               router.replace({ pathname: "/orders/[id]", params: { id: orderId } })
@@ -105,6 +111,8 @@ function ListingBody({
   canCall,
   onCallRequested,
   token,
+  savedLocations,
+  onUserChanged,
   onBack,
   onPlaced,
   topInset,
@@ -116,6 +124,10 @@ function ListingBody({
   /** After a call request is sent (or one was already open): go to the Calls tab. */
   onCallRequested: () => void;
   token: string;
+  /* Threaded down rather than read from context: the Place order sheet renders through a portal,
+     outside the AuthProvider subtree, so `useAuth()` throws in anything it contains. */
+  savedLocations: readonly SavedLocation[];
+  onUserChanged: (user: PublicUser) => void;
   onBack: () => void;
   onPlaced: (orderId: string) => void;
   topInset: number;
@@ -260,6 +272,7 @@ function ListingBody({
 
         {canOrder ? (
           <Pressable
+            testID="open-place-order"
             onPress={() => setSheetOpen(true)}
             accessibilityRole="button"
             accessibilityLabel="Place an order for this listing"
@@ -275,6 +288,8 @@ function ListingBody({
         onClose={() => setSheetOpen(false)}
         listing={listing}
         token={token}
+        savedLocations={savedLocations}
+        onUserChanged={onUserChanged}
         onPlaced={onPlaced}
         bottomInset={bottomInset}
       />
@@ -306,6 +321,8 @@ function PlaceOrderSheet({
   onClose,
   listing,
   token,
+  savedLocations,
+  onUserChanged,
   onPlaced,
   bottomInset
 }: {
@@ -313,10 +330,13 @@ function PlaceOrderSheet({
   onClose: () => void;
   listing: Listing;
   token: string;
+  savedLocations: readonly SavedLocation[];
+  onUserChanged: (user: PublicUser) => void;
   onPlaced: (orderId: string) => void;
   bottomInset: number;
 }) {
   const [quantity, setQuantity] = useState(String(listing.minOrderKg));
+  const [dropOff, setDropOff] = useState<DropOff | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -326,7 +346,13 @@ function PlaceOrderSheet({
 
   const submit = async () => {
     setError(null);
-    const parsed = placeOrderSchema.safeParse({ listingId: listing.id, quantityKg: kg });
+    const parsed = placeOrderSchema.safeParse({
+      listingId: listing.id,
+      quantityKg: kg,
+      /* Omitted entirely when the buyer did not set one — an absent key is what "no delivery
+         point" means on the api, and the driver falls back to the district. */
+      ...(dropOff ? { dropOff } : {})
+    });
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Enter a quantity");
       return;
@@ -357,32 +383,57 @@ function PlaceOrderSheet({
         <ActionsheetDragIndicatorWrapper>
           <ActionsheetDragIndicator />
         </ActionsheetDragIndicatorWrapper>
-        <VStack className="w-full gap-4 pt-2">
-          <Text className="type-h3 text-foreground">Place order</Text>
-          <AppTextField
-            label="Quantity (kg)"
-            value={quantity}
-            onChangeText={setQuantity}
-            keyboardType="number-pad"
-            returnKeyType="done"
-            onSubmitEditing={() => void submit()}
-            error={error ?? undefined}
-          />
-          <HStack className="items-center justify-between">
-            <Text className="type-caption text-muted-foreground">{rangeHint}</Text>
-            <Text className="type-body-bold text-foreground">
-              {inRange ? formatPrice(kg * listing.pricePerKg) : "—"}
+        {/* Scrollable, because the sheet is no longer a fixed height: opening the delivery-point
+            map pushes Send past the bottom of the screen, and an unreachable submit button is a
+            buyer who pinned a location and then could not order. Capped at 80% of the window so
+            the backdrop stays tappable to dismiss. */}
+        <ScrollView
+          className="w-full"
+          style={{ maxHeight: Dimensions.get("window").height * 0.8 }}
+          contentContainerClassName="pb-2"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <VStack className="w-full gap-4 pt-2">
+            <Text className="type-h3 text-foreground">Place order</Text>
+            <AppTextField
+              testID="order-quantity"
+              label="Quantity (kg)"
+              value={quantity}
+              onChangeText={setQuantity}
+              keyboardType="number-pad"
+              returnKeyType="done"
+              onSubmitEditing={() => void submit()}
+              error={error ?? undefined}
+            />
+            <HStack className="items-center justify-between">
+              <Text className="type-caption text-muted-foreground">{rangeHint}</Text>
+              <Text className="type-body-bold text-foreground">
+                {inRange ? formatPrice(kg * listing.pricePerKg) : "—"}
+              </Text>
+            </HStack>
+
+            {/* Centred on the listing's district so a new pin opens near the farm, which is the
+              likeliest neighbourhood for a first drag. */}
+            <DeliveryLocationField
+              district={listing.district}
+              value={dropOff}
+              onChange={setDropOff}
+              token={token}
+              savedLocations={savedLocations}
+              onUserChanged={onUserChanged}
+            />
+            <AppButton
+              testID="order-send"
+              label={submitting ? "Sending…" : "Send request"}
+              onPress={() => void submit()}
+              disabled={submitting}
+            />
+            <Text className="type-caption text-center text-muted-foreground">
+              {listing.farmerName} will accept or decline. Nothing is paid now.
             </Text>
-          </HStack>
-          <AppButton
-            label={submitting ? "Sending…" : "Send request"}
-            onPress={() => void submit()}
-            disabled={submitting}
-          />
-          <Text className="type-caption text-center text-muted-foreground">
-            {listing.farmerName} will accept or decline. Nothing is paid now.
-          </Text>
-        </VStack>
+          </VStack>
+        </ScrollView>
       </ActionsheetContent>
     </Actionsheet>
   );

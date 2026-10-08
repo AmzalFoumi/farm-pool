@@ -28,6 +28,9 @@ type AppButtonProps = {
   /** Rendered to the left of the label at its exported size. */
   icon?: ReactNode;
   disabled?: boolean;
+  /** Stable handle for end-to-end tests (`tests/e2e/maestro`). Maestro matches on this rather
+   *  than the label, which moves with the language — the app ships in three. */
+  testID?: string;
 };
 
 export function AppButton({
@@ -35,12 +38,14 @@ export function AppButton({
   onPress,
   variant = "solid",
   icon,
-  disabled = false
+  disabled = false,
+  testID
 }: AppButtonProps) {
   const solid = variant === "solid";
 
   return (
     <Pressable
+      testID={testID}
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"

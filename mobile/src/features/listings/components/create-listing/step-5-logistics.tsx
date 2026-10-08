@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Alert } from "react-native";
-import { cropById, districtSchema, type CropId, type FulfillmentOption } from "@farm-pool/shared";
+import {
+  cropById,
+  districtSchema,
+  type CropId,
+  type FulfillmentOption,
+  type PickupPoint
+} from "@farm-pool/shared";
 
 import { AppTextField } from "@/components/app/app-text-field";
 import { Box } from "@/components/ui/box";
@@ -8,6 +14,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { PointPicker } from "@/features/geo/point-picker";
 import { CropTile } from "@/features/listings/crop-tile";
 
 import { WizardActions, WizardShell } from "./wizard-shell";
@@ -17,6 +24,8 @@ export type Step5LogisticsData = {
   harvestDate: string;
   validityDays?: number;
   district?: string;
+  /** The farm gate, if the farmer dropped a pin (FARM-26). Optional by design. */
+  pickupPoint?: PickupPoint;
   notes?: string;
 };
 
@@ -70,6 +79,7 @@ export default function Step5Logistics({
   const [customDate, setCustomDate] = useState<string>(initialData?.harvestDate ?? "");
   const [district, setDistrict] = useState<string>(initialData?.district ?? "");
   const [districtError, setDistrictError] = useState<string | undefined>();
+  const [pickupPoint, setPickupPoint] = useState<PickupPoint | undefined>(initialData?.pickupPoint);
   const [transportType, setTransportType] = useState<"shared" | "solo">(
     initialData?.fulfillmentOption === "solo" ? "solo" : "shared"
   );
@@ -97,7 +107,8 @@ export default function Step5Logistics({
     onNext?.({
       fulfillmentOption: transportType,
       harvestDate: finalDate,
-      district: parsedDistrict.data
+      district: parsedDistrict.data,
+      ...(pickupPoint ? { pickupPoint } : {})
     });
   };
 
@@ -248,6 +259,16 @@ export default function Step5Logistics({
           error={districtError}
         />
       </VStack>
+
+      {/* Shown once the district resolves, because that is what the map centres on. */}
+      <PointPicker
+        district={district}
+        title="Farm gate"
+        help="Tap the map where a lorry should come. Optional — without it the driver sees the district only."
+        unsetNote={`Not set — drivers will see ${district} district`}
+        value={pickupPoint}
+        onChange={setPickupPoint}
+      />
 
       {/* Transport Method Section */}
       <VStack className="gap-3">

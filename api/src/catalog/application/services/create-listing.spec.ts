@@ -1,3 +1,4 @@
+import { pickupPointSchema } from '@farm-pool/shared';
 import type { CreateListingData } from '@farm-pool/shared';
 import { InMemoryUserRepository } from '../../../identity/infrastructure/persistence/in-memory-user.repository';
 import { InMemoryListingRepository } from '../../infrastructure/persistence/in-memory-listing.repository';
@@ -98,5 +99,63 @@ describe('ListMyListings', () => {
     const mine = await new ListMyListings(listings).execute('farmer-1');
 
     expect(mine.map((l) => l.status)).toEqual(['pending_approval', 'verified']);
+  });
+});
+
+/**
+ * The farm gate (FARM-26). A driver navigates by this, so the two failures worth testing are a
+ * coordinate that survives the round trip unchanged, and a transposed pair being refused rather
+ * than stored — latitude 80 / longitude 7 is a valid-looking point in Kazakhstan.
+ */
+describe('CreateListing pickup point', () => {
+  let listings: InMemoryListingRepository;
+  let users: InMemoryUserRepository;
+  let create: CreateListing;
+  let farmerId: string;
+
+  beforeEach(async () => {
+    listings = new InMemoryListingRepository();
+    users = new InMemoryUserRepository();
+    create = new CreateListing(listings, users);
+    const farmer = await users.create({
+      displayName: 'Nimal Perera',
+      phone: '+94771000002',
+      passwordHash: 'hash',
+      role: 'farmer',
+    });
+    farmerId = farmer.id;
+  });
+
+  it('stores the gate the farmer pinned, unchanged', async () => {
+    const pickupPoint = { latitude: 7.6281, longitude: 80.2447 };
+
+    const listing = await create.execute(farmerId, { ...data, pickupPoint });
+
+    expect(listing.pickupPoint).toEqual(pickupPoint);
+  });
+
+  it('leaves it absent when the farmer did not pin one', async () => {
+    const listing = await create.execute(farmerId, data);
+
+    expect(listing.pickupPoint).toBeUndefined();
+  });
+
+  it('refuses a transposed pair rather than sending a driver to Kazakhstan', () => {
+    const transposed = pickupPointSchema.safeParse({
+      latitude: 80.2447,
+      longitude: 7.6281,
+    });
+
+    expect(transposed.success).toBe(false);
+  });
+
+  it('accepts points across the island, from Jaffna to Hambantota', () => {
+    for (const point of [
+      { latitude: 9.6615, longitude: 80.0255 },
+      { latitude: 6.1429, longitude: 81.1212 },
+      { latitude: 6.9271, longitude: 79.8612 },
+    ]) {
+      expect(pickupPointSchema.safeParse(point).success).toBe(true);
+    }
   });
 });

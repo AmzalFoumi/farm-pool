@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import type { SavedLocation } from '@farm-pool/shared';
 import type { DriverProfile, NewUser, User } from '../../domain/entities/user';
 import {
   DuplicatePhoneError,
@@ -62,6 +63,21 @@ export class MongooseUserRepository implements UserRepository {
     return docs.map(toUser);
   }
 
+  async saveLocations(
+    id: string,
+    locations: SavedLocation[],
+  ): Promise<User | null> {
+    if (!/^[0-9a-f]{24}$/i.test(id)) return null;
+    const doc = await this.users
+      .findByIdAndUpdate(
+        id,
+        { savedLocations: locations },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toUser(doc) : null;
+  }
+
   async saveDriverProfile(
     id: string,
     driver: DriverProfile,
@@ -116,6 +132,15 @@ function toUser(doc: UserHydrated): User {
     role: doc.role,
     status: doc.status,
     ...(doc.driver ? { driver: toDriverProfile(doc.driver) } : {}),
+    ...(doc.savedLocations?.length
+      ? {
+          savedLocations: doc.savedLocations.map((l) => ({
+            id: l.id,
+            label: l.label,
+            point: { latitude: l.point.latitude, longitude: l.point.longitude },
+          })),
+        }
+      : {}),
     ...(typeof doc.district === 'string' ? { district: doc.district } : {}),
     ...(typeof doc.rejectionReason === 'string'
       ? { rejectionReason: doc.rejectionReason }

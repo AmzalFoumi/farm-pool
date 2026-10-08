@@ -472,6 +472,60 @@ video call; the farmer accepts or declines on their call list; both then join.
 
 Details: `api/src/calls/README.md`.
 
+### Payments: simulated escrow, paid in full up front, in its own domain
+
+Decided 4 October 2026 (FARM-41, FARM-51, FARM-48, FARM-53). Was an open gap in
+`.plans/PRODUCT.md`: escrow was described, and no payment rail was ever named. Plan and checklist:
+`.plans/payments/PLAN.md`. Mechanics: `api/src/payments/README.md`.
+
+**No real money moves.** `PaymentGateway` is a port in the `payments` domain and its only
+implementation, `SimulatedPaymentGateway`, approves every charge. A real provider (PayHere is the
+Sri Lankan candidate) needs a merchant account, secret keys and a native SDK — which means a
+rebuild and one more screen that Expo Go cannot open — and it has no hold-and-release, so the
+escrow would still be ours to simulate. Everything around the gateway is real: who may pay, when,
+the split, the release. The app says "demo payment" on the pay sheet and on the receipt, because
+a simulation that looked like a charge would be the one screen that lies. Swapping in a provider
+is one class and one line in `payments.module.ts`.
+
+The pay flow is already ordered for a real provider, so that swap does not need a rewrite: the
+payment record is written as `pending` before the charge, the charge carries an idempotency key,
+and a charge whose order turns out not to be payable is refunded
+(`api/src/payments/README.md`, "The record is written before the charge"). One thing is left for
+whoever adds the provider: a reconciliation job for a charge whose request died and was never
+retried.
+
+**The buyer pays the whole total once; 30% is released at once, 70% is held.** The alternative —
+pay the advance now and the balance at receipt — gives the buyer two payment steps and the farmer
+no guarantee the balance exists, which is the opposite of what escrow is for. `ADVANCE_RATE` is a
+constant in `packages/shared`, so the app shows the split the api computes. 30% is a placeholder
+the group has not argued for; changing it is one number.
+
+**Paying is what moves an order from `accepted` to `open`.** Nothing wrote `open` before this, and
+the driver job board reads `open` only, so "a driver is never offered stock nobody has paid for"
+(`.plans/PRODUCT.md`) is now true by construction. **Farmer acceptance (FARM-46) must therefore
+stop at `accepted`**; moving an order straight to `open` would skip payment.
+
+**A new domain, `payments`, not more of `orders`.** Money is a capability of its own, and it
+depends on `orders` one way through `ORDER_REPOSITORY`. That is a seventh domain beside the five
+in "Backend architecture" and `calls`.
+
+**No new order status for "received".** Buyer confirmation is `receivedAt` on the order, beside
+`delivered`, and whether the balance was released is the payment's `status`. A `completed` status
+would have meant edits to the logistics mappers and the status pill for no behaviour either needs.
+
+**A receipt is not stored.** It is the payment's entries read back as sentences, each with its
+own receipt number. A second stored document could disagree with the ledger; this cannot.
+
+**Renegotiation lives in `payments`, and the proposal is stored on the order.** Accepting a new
+price moves held money, and `orders` must not depend on `payments`, so the three endpoints sit
+under `/payments/orders/:orderId/price-proposal`. One proposal at a time, only until pickup. The
+advance already with the farmer is never taken back, so a new total below it is refused.
+
+**Not done, deliberately.** The balance released is the agreed one: it is not reduced when the
+driver collected less than was ordered (`collectedKg`). That is a dispute (FARM-42, FARM-56).
+Refunding a cancelled paid order does not exist because a paid order cannot be cancelled. And
+there is no payout to a real account — "released to the farmer" is a ledger entry.
+
 ### Driver vehicle: captured after sign-up, embedded in the user
 
 Decided 30 September 2026 (FARM-45). A delivery partner signs up like everyone else, then fills in

@@ -1,0 +1,47 @@
+# FARM-26 — the delivery point is optional, and the order goes through without one.
+#
+# Worth its own flow rather than a branch in the other: "a buyer with no signal can still order"
+# is the promise the optional field makes, and a flow that always pins would never check it.
+#
+# The quantity field is left alone on purpose. It pre-fills with the listing's minimum order,
+# which is always valid, and not focusing it keeps the number pad down — the pad covers the footer
+# and swallows the tap on Send, which Maestro still reports as COMPLETED. This is the path that
+# actually exercises the Send button.
+appId: host.exp.Exponent
+---
+- openLink: exp://127.0.0.1:8081/--/listings
+- extendedWaitUntil:
+    visible: "Listings"
+    timeout: 30000
+
+# Open whichever listing is first. Deliberately not a crop name: the catalogue is shared and its
+# contents change — the HTTP e2e tests alone add listings on every run — so a flow pinned to
+# "Pumpkin" fails for reasons that have nothing to do with placing an order.
+- tapOn:
+    id: "listing-card"
+    index: 0
+
+# By id, not by the words on the button: this one carries an accessibilityLabel ("Place an order
+# for this listing"), and that label is what Maestro matches — the visible text is invisible to it.
+- extendedWaitUntil:
+    visible:
+      id: "open-place-order"
+    timeout: 15000
+- tapOn:
+    id: "open-place-order"
+
+# The sheet renders at all — this assertion is what the portal crash broke.
+- extendedWaitUntil:
+    visible:
+      id: "order-quantity"
+    timeout: 10000
+- assertVisible:
+    id: "delivery-pin"
+
+- tapOn:
+    id: "order-send"
+
+# Placing an order lands on its detail screen, waiting on the farmer.
+- extendedWaitUntil:
+    visible: "Requested"
+    timeout: 20000

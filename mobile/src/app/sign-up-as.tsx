@@ -18,6 +18,7 @@
 import type { Role } from "@farm-pool/shared";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -36,14 +37,17 @@ import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 
+/**
+ * A role card's look, not its words. Title and description are looked up per render from
+ * `roles.<id>` and `rolePicker.<id>.description` (LP-91) — holding them in this module-level
+ * constant would freeze them in whatever language the app started in, because the array is built
+ * once at import and `setLanguage` does not re-run it.
+ */
 type RoleOption = {
-  /** The shared `Role` this card creates. The label is what people call it. */
+  /** The shared `Role` this card creates. */
   id: Role;
-  title: string;
-  description: string;
   /** Tile colour per persona. See `src/styles/colors.css`. */
   tile: string;
-  selectedLabel: string;
   Icon: (props: { size?: number }) => React.JSX.Element;
 };
 
@@ -55,67 +59,40 @@ const CoordinatorIcon = () => (
 );
 
 const ROLES: readonly RoleOption[] = [
-  {
-    id: "farmer",
-    title: "Farmer",
-    description: "I grow produce and want to sell it",
-    tile: "bg-secondary",
-    selectedLabel: "farmer",
-    Icon: FarmerIcon
-  },
-  {
-    id: "buyer",
-    title: "Wholesale buyer",
-    description: "I buy produce in bulk from farmers",
-    tile: "bg-persona-buyer",
-    selectedLabel: "wholesale buyer",
-    Icon: BuyerIcon
-  },
-  {
-    id: "coordinator",
-    title: "Area coordinator",
-    description: "I organise farmers in my area and check their produce",
-    tile: "bg-persona-coordinator",
-    selectedLabel: "coordinator",
-    Icon: CoordinatorIcon
-  },
-  {
-    id: "logistics",
-    title: "Delivery partner",
-    description: "I collect produce and drive it to buyers",
-    tile: "bg-brand-deep",
-    selectedLabel: "delivery partner",
-    Icon: DeliveryIcon
-  }
+  { id: "farmer", tile: "bg-secondary", Icon: FarmerIcon },
+  { id: "buyer", tile: "bg-persona-buyer", Icon: BuyerIcon },
+  { id: "coordinator", tile: "bg-persona-coordinator", Icon: CoordinatorIcon },
+  { id: "logistics", tile: "bg-brand-deep", Icon: DeliveryIcon }
 ];
 
 export default function SignUpAsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState<Role | null>(null);
+  const { t } = useTranslation();
 
   const selectedRole = ROLES.find((role) => role.id === selected);
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Sign up as" />
+      <AppBar title={t("rolePicker.title")} />
 
       {/* ── Roles ────────────────────────────────────────────────────── */}
       <VStack className="flex-1 px-4">
-        <Text className="type-body mt-5 text-muted-foreground">
-          Pick what you do. You can change it later with your coordinator.
-        </Text>
+        <Text className="type-body mt-5 text-muted-foreground">{t("rolePicker.note")}</Text>
 
         <VStack className="mt-4 gap-3" accessibilityRole="radiogroup">
-          {ROLES.map(({ id, title, description, tile, Icon: RoleIcon }) => {
+          {ROLES.map(({ id, tile, Icon: RoleIcon }) => {
             const isSelected = selected === id;
+            const title = t(`roles.${id}`);
+            const description = t(`rolePicker.${id}.description`);
             return (
               <Pressable
                 key={id}
                 onPress={() => setSelected(id)}
                 accessibilityRole="radio"
                 accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={`${title}. ${description}`}
+                accessibilityLabel={t("rolePicker.cardLabel", { title, description })}
                 className={[
                   // py-4.5 rather than p-4: with the 52px tile that lands the
                   // card at exactly the 88px Figma draws.
@@ -160,7 +137,11 @@ export default function SignUpAsScreen() {
         style={{ paddingBottom: Math.max(insets.bottom, 23) }}
       >
         <AppButton
-          label={selectedRole ? `Continue as ${selectedRole.selectedLabel}` : "Continue"}
+          label={
+            selectedRole
+              ? t("rolePicker.continueAs", { role: t(`roles.${selectedRole.id}`) })
+              : t("common.continue")
+          }
           disabled={!selectedRole}
           /* push, not replace: the back button on the form should return
              here so a wrong tap on a role is one step to undo.

@@ -422,3 +422,214 @@ describe('logistics jobs', () => {
     });
   });
 });
+
+/**
+ * Both ends of the trip (FARM-26). The farm gate comes from the listing, the drop-off from the
+ * order, and the distance exists only when both are real — see `toJobSummary`.
+ */
+describe('job distance', () => {
+  const GATE = { latitude: 7.6281, longitude: 80.2447 }; // near Wariyapola
+  const DAMBULLA = { latitude: 7.8742, longitude: 80.6511 };
+
+  let listings: InMemoryListingRepository;
+  let orders: InMemoryOrderRepository;
+  let users: InMemoryUserRepository;
+  let board: ListOpenJobs;
+  let driverId: string;
+
+  const seed = async (opts: {
+    pickupPoint?: typeof GATE;
+    dropOff?: { point: typeof DAMBULLA };
+  }) => {
+    const listing = await listings.seed({
+      ...listingFields,
+      ...(opts.pickupPoint ? { pickupPoint: opts.pickupPoint } : {}),
+    });
+    await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg: 120,
+      pricePerKg: 180,
+      total: 21600,
+      status: 'open',
+      ...(opts.dropOff ? { dropOff: opts.dropOff } : {}),
+    });
+  };
+
+  beforeEach(async () => {
+    listings = new InMemoryListingRepository();
+    orders = new InMemoryOrderRepository();
+    users = new InMemoryUserRepository();
+    board = new ListOpenJobs(orders, listings, users);
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000800',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'small-lorry',
+      registration: 'NW CAB-1111',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+    driverId = driver.id;
+  });
+
+  it('measures gate to drop-off when both are known', async () => {
+    await seed({ pickupPoint: GATE, dropOff: { point: DAMBULLA } });
+
+    const [job] = await board.execute(driverId);
+
+    // ~48 km straight line between Wariyapola and Dambulla.
+    expect(job.distanceKm).toBeGreaterThan(40);
+    expect(job.distanceKm).toBeLessThan(55);
+  });
+
+  /* A distance from a district centre would be precise enough to be believed and wrong enough to
+     matter on a quote, so there is no distance at all until both ends are real. */
+  it('gives no distance when either end is missing', async () => {
+    await seed({ dropOff: { point: DAMBULLA } });
+    expect((await board.execute(driverId))[0].distanceKm).toBeUndefined();
+
+    orders = new InMemoryOrderRepository();
+    listings = new InMemoryListingRepository();
+    board = new ListOpenJobs(orders, listings, users);
+    await seed({ pickupPoint: GATE });
+    expect((await board.execute(driverId))[0].distanceKm).toBeUndefined();
+  });
+});
+
+/**
+ * Capacity across every job a driver holds, not just the one in front of them.
+ *
+ * The bug this covers: the check was per-order, so three 600 kg jobs each passed against a 900 kg
+ * van and three farmers were each promised a collection one vehicle could not make.
+ */
+describe('vehicle capacity across held jobs', () => {
+  let listings: InMemoryListingRepository;
+  let orders: InMemoryOrderRepository;
+  let users: InMemoryUserRepository;
+  let accept: AcceptJob;
+  let pickup: ConfirmPickup;
+  let deliver: ConfirmDelivery;
+  let driverId: string;
+
+  /** An open order of `quantityKg`, against its own listing. */
+  const openOrder = async (quantityKg: number) => {
+    const listing = await listings.seed({ ...listingFields, quantityKg: 5000 });
+    const order = await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg,
+      pricePerKg: 180,
+      total: quantityKg * 180,
+      status: 'open',
+    });
+    return order.id;
+  };
+
+  beforeEach(async () => {
+    listings = new InMemoryListingRepository();
+    orders = new InMemoryOrderRepository();
+    users = new InMemoryUserRepository();
+    accept = new AcceptJob(orders, listings, users);
+    pickup = new ConfirmPickup(orders, listings, users);
+    deliver = new ConfirmDelivery(orders, listings, users);
+
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000700',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'van',
+      registration: 'WP CAP-0900',
+      capacityKg: 900,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+    driverId = driver.id;
+  });
+
+  it('refuses the job that would take the driver past their capacity', async () => {
+    await accept.execute(driverId, await openOrder(600));
+
+    await expect(
+      accept.execute(driverId, await openOrder(600)),
+    ).rejects.toMatchObject({ code: 'vehicle_full' });
+  });
+
+  it('allows jobs that fit together exactly', async () => {
+    await accept.execute(driverId, await openOrder(600));
+
+    await expect(
+      accept.execute(driverId, await openOrder(300)),
+    ).resolves.toMatchObject({ status: 'assigned' });
+  });
+
+  /* The two refusals mean different things: one can never be taken, the other can be taken after
+     the current run. A driver deciding what to do next needs to know which. */
+  it('tells a too-big load apart from a full vehicle', async () => {
+    await expect(
+      accept.execute(driverId, await openOrder(2000)),
+    ).rejects.toMatchObject({ code: 'load_too_heavy' });
+
+    await accept.execute(driverId, await openOrder(800));
+    await expect(
+      accept.execute(driverId, await openOrder(200)),
+    ).rejects.toMatchObject({ code: 'vehicle_full' });
+  });
+
+  it('says how much room is left, so the driver knows what they can still take', async () => {
+    await accept.execute(driverId, await openOrder(700));
+
+    /* Caught rather than matched with `expect.stringContaining`, which is typed `any` and trips
+       the no-unsafe-assignment rule this project lints with. */
+    const refusal = await accept
+      .execute(driverId, await openOrder(500))
+      .then(() => null)
+      .catch((e: Error) => e.message);
+
+    expect(refusal).toContain('200 kg');
+  });
+
+  /* Delivering frees the space again — which is what lets a driver run a second trip without the
+     app needing any concept of a trip. */
+  it('frees the capacity once a load is delivered', async () => {
+    const first = await openOrder(800);
+    await accept.execute(driverId, first);
+    await expect(
+      accept.execute(driverId, await openOrder(300)),
+    ).rejects.toMatchObject({ code: 'vehicle_full' });
+
+    await pickup.execute(driverId, first, 800);
+    await deliver.execute(driverId, first);
+
+    await expect(
+      accept.execute(driverId, await openOrder(300)),
+    ).resolves.toMatchObject({ status: 'assigned' });
+  });
+
+  /* A short harvest is real room. Refusing work for kilograms that were never on the lorry would
+     cost the driver a job and the farmer a collection, for nothing. */
+  it('counts what was actually collected, not what was ordered', async () => {
+    const first = await openOrder(800);
+    await accept.execute(driverId, first);
+    await pickup.execute(driverId, first, 300);
+
+    await expect(
+      accept.execute(driverId, await openOrder(600)),
+    ).resolves.toMatchObject({ status: 'assigned' });
+  });
+});

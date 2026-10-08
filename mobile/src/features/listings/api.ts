@@ -34,6 +34,16 @@ export const listingsApi = {
     return apiFetch("/catalog/listings/mine", { token, schema: listingListSchema });
   },
 
+  /** Update an existing listing. */
+  update(token: string, id: string, data: CreateListingInput): Promise<Listing> {
+    return apiFetch(`/catalog/listings/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      token,
+      body: data,
+      schema: listingSchema
+    });
+  },
+
   /** Post a new listing. It comes back `pending_approval`. */
   create(token: string, data: CreateListingInput): Promise<Listing> {
     return apiFetch("/catalog/listings", {

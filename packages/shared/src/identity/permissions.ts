@@ -21,6 +21,10 @@ export const actionSchema = z.enum([
   "order:read-own",
   "order:cancel",
   "order:accept",
+  "order:confirm-receipt",
+  "order:renegotiate",
+  "payment:pay",
+  "payment:read-own",
   "call:join",
   "call:request",
   "call:answer",
@@ -31,6 +35,7 @@ export const actionSchema = z.enum([
   "delivery:confirm",
   "delivery:read-driver",
   "driver:update-vehicle",
+  "location:save",
   "users:list",
   "farmers:approve",
   "farmers:reject",
@@ -53,6 +58,12 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   "order:read-own": ROLES,
   "order:cancel": ["buyer"],
   "order:accept": ["farmer"],
+  "order:confirm-receipt": ["buyer"],
+  // Either side of a deal may propose a new price; the use-case checks the caller is on the order.
+  "order:renegotiate": ["buyer", "farmer"],
+  "payment:pay": ["buyer"],
+  // Any role may ask for a payment; the use-case then checks the caller is its buyer or farmer.
+  "payment:read-own": ROLES,
   // Any role may ask to join or end a call; the use-case then checks the caller is a participant.
   "call:join": ROLES,
   "call:request": ["buyer"],
@@ -70,6 +81,10 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   "delivery:read-driver": ROLES,
   // A driver's own vehicle, on their own account; the use-case writes only to the caller.
   "driver:update-vehicle": ["logistics"],
+  /* A buyer saves the markets they deliver to, but the use-case writes only to the caller's own
+     account, so there is nothing role-specific to protect — every role gets it, and a farmer
+     saving a collection point costs nothing to allow. */
+  "location:save": ROLES,
   // The coordinator is the trust checkpoint (`.plans/PRODUCT.md`); only they see everyone.
   "users:list": ["coordinator"],
   "farmers:approve": ["coordinator"],

@@ -26,6 +26,7 @@ import { ApiError } from "@/lib/api";
 const KNOWN_CODES = [
   "job_taken",
   "load_too_heavy",
+  "vehicle_full",
   "no_vehicle",
   "job_not_found",
   "not_your_job",

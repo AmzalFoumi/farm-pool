@@ -7,6 +7,7 @@ import {
 } from '../identity/domain/repositories/user.repository';
 import { CloseWanted } from './application/services/close-wanted';
 import { CreateListing } from './application/services/create-listing';
+import { UpdateListing } from './application/services/update-listing';
 import { CreateWanted } from './application/services/create-wanted';
 import { GetListing } from './application/services/get-listing';
 import { ListListings } from './application/services/list-listings';
@@ -62,6 +63,7 @@ import {
       inject: [LISTING_REPOSITORY],
       useFactory: (listings: ListingRepository) => new GetListing(listings),
     },
+    UpdateListing,
     {
       provide: CreateListing,
       inject: [LISTING_REPOSITORY, USER_REPOSITORY],
@@ -89,6 +91,6 @@ import {
       useFactory: (wanted: WantedRepository) => new CloseWanted(wanted),
     },
   ],
-  exports: [LISTING_REPOSITORY],
+  exports: [LISTING_REPOSITORY, WANTED_REPOSITORY],
 })
 export class CatalogModule {}

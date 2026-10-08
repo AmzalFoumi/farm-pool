@@ -24,6 +24,7 @@ export function ListingGridCard({ listing, onPress }: { listing: Listing; onPres
   const crop = cropById(listing.cropId);
   return (
     <Pressable
+      testID="listing-card"
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label(listing)}
@@ -49,6 +50,7 @@ export function ListingListRow({ listing, onPress }: { listing: Listing; onPress
   const crop = cropById(listing.cropId);
   return (
     <Pressable
+      testID="listing-card"
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label(listing)}

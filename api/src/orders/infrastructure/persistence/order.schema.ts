@@ -3,7 +3,37 @@ import type { CropId, OrderStatus } from '@farm-pool/shared';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import type { HydratedDocument } from 'mongoose';
 
+/** A price waiting for an answer (FARM-53). Embedded: it is never read without its order. */
+@Schema({ _id: false })
+export class PriceProposalDocument {
+  @Prop({ type: String, required: true, enum: ['buyer', 'farmer'] })
+  proposedBy: 'buyer' | 'farmer';
+
+  @Prop({ required: true, min: 0 })
+  pricePerKg: number;
+
+  @Prop({ required: false, trim: true })
+  reason?: string;
+
+  @Prop({ required: true })
+  proposedAt: Date;
+}
+
+const PriceProposalSchema = SchemaFactory.createForClass(PriceProposalDocument);
+
 /** Storage shape of an order in the `orders` collection. One line per order. */
+/** Where the buyer wants it delivered (FARM-26). Embedded value, no `_id`. */
+@Schema({ _id: false })
+export class DropOffDocument {
+  @Prop({ required: false, trim: true })
+  label?: string;
+
+  @Prop({ type: Object, required: true })
+  point: { latitude: number; longitude: number };
+}
+
+const DropOffSchema = SchemaFactory.createForClass(DropOffDocument);
+
 @Schema({ collection: 'orders', timestamps: true })
 export class OrderDocument {
   @Prop({ required: true, index: true })
@@ -17,6 +47,9 @@ export class OrderDocument {
 
   @Prop({ required: true, index: true })
   listingId: string;
+
+  @Prop({ type: String, required: false, index: true })
+  offerId?: string;
 
   @Prop({ type: String, required: true, enum: CROP_IDS })
   cropId: CropId;
@@ -50,6 +83,17 @@ export class OrderDocument {
   /** What the driver actually loaded at the gate (LP-50); may differ from `quantityKg`. */
   @Prop({ required: false, min: 1 })
   collectedKg?: number;
+
+  @Prop({ type: DropOffSchema, required: false })
+  dropOff?: DropOffDocument;
+
+  /** When the buyer confirmed receipt (FARM-51). Absent until they do. */
+  @Prop({ required: false })
+  receivedAt?: Date;
+
+  /** Absent unless a new price is waiting for an answer. */
+  @Prop({ type: PriceProposalSchema, required: false })
+  priceProposal?: PriceProposalDocument;
 
   createdAt: Date;
   updatedAt: Date;

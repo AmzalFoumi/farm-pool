@@ -1,4 +1,9 @@
-import type { CropId, Order as OrderDto, OrderStatus } from '@farm-pool/shared';
+import type {
+  CropId,
+  DropOff,
+  Order as OrderDto,
+  OrderStatus,
+} from '@farm-pool/shared';
 
 /**
  * A buyer's purchase request against one listing. See the lifecycle in
@@ -13,6 +18,7 @@ export interface Order {
   farmerId: string;
   farmerName: string;
   listingId: string;
+  offerId?: string;
   cropId: CropId;
   quantityKg: number;
   pricePerKg: number;
@@ -24,8 +30,23 @@ export interface Order {
   assignedDriverId?: string;
   /** What the driver actually loaded (LP-50). Set at pickup; never overwritten. */
   collectedKg?: number;
+  /** Where the buyer wants it delivered (FARM-26). Snapshotted at placement, never a reference
+   *  to the buyer's saved list — renaming a saved place must not rewrite a past delivery. */
+  dropOff?: DropOff;
+  /** When the buyer confirmed the produce arrived (FARM-51). Set once; never overwritten. */
+  receivedAt?: Date;
+  /** A new price waiting for the other side's answer (FARM-53). At most one at a time. */
+  priceProposal?: PriceProposal;
   createdAt: Date;
   updatedAt: Date;
+}
+
+/** `PriceProposal` from shared, with its date as a `Date`. */
+export interface PriceProposal {
+  proposedBy: 'buyer' | 'farmer';
+  pricePerKg: number;
+  reason?: string;
+  proposedAt: Date;
 }
 
 export type NewOrder = Omit<Order, 'id' | 'createdAt' | 'updatedAt'>;
@@ -37,6 +58,7 @@ export function toOrderDto(order: Order): OrderDto {
     farmerId: order.farmerId,
     farmerName: order.farmerName,
     listingId: order.listingId,
+    ...(order.offerId ? { offerId: order.offerId } : {}),
     cropId: order.cropId,
     quantityKg: order.quantityKg,
     pricePerKg: order.pricePerKg,
@@ -48,6 +70,22 @@ export function toOrderDto(order: Order): OrderDto {
       : {}),
     ...(order.collectedKg !== undefined
       ? { collectedKg: order.collectedKg }
+      : {}),
+    ...(order.dropOff !== undefined ? { dropOff: order.dropOff } : {}),
+    ...(order.receivedAt !== undefined
+      ? { receivedAt: order.receivedAt.toISOString() }
+      : {}),
+    ...(order.priceProposal !== undefined
+      ? {
+          priceProposal: {
+            proposedBy: order.priceProposal.proposedBy,
+            pricePerKg: order.priceProposal.pricePerKg,
+            ...(order.priceProposal.reason !== undefined
+              ? { reason: order.priceProposal.reason }
+              : {}),
+            proposedAt: order.priceProposal.proposedAt.toISOString(),
+          },
+        }
       : {}),
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),

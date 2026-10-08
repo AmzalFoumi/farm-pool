@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { cropIdSchema } from "../catalog/crops";
+import { sriLankaPointSchema } from "../geo/point";
 import { kgSchema, pricePerKgSchema } from "../catalog/listing";
 
 /**
@@ -43,14 +44,60 @@ export const ACTIVE_ORDER_STATUSES: readonly OrderStatus[] = [
 ];
 
 /** What the buyer sends. Price and farmer come from the listing on the server, never the client. */
+/**
+ * Where a buyer wants the load delivered (FARM-26). The farm gate is on the listing; this is the
+ * other end, and the pair is what makes a distance or a route possible at all.
+ *
+ * **Copied onto the order, never referenced.** A buyer may have saved this place on their
+ * account, but renaming or deleting it later must not rewrite where a past delivery went — so the
+ * label and the point are snapshotted here, exactly as a listing's price is snapshotted.
+ *
+ * Optional, like the farm gate: a buyer with no signal must still be able to place an order, and
+ * a driver falls back to the district. An order without one is less useful, never broken.
+ */
+export const dropOffSchema = z.object({
+  /** What the buyer calls the place, when it came from a saved one. */
+  label: z.string().trim().max(60).optional(),
+  point: sriLankaPointSchema
+});
+
+export type DropOff = z.infer<typeof dropOffSchema>;
+
 export const placeOrderSchema = z.object({
   listingId: z.string().min(1),
   quantityKg: kgSchema,
-  note: z.string().trim().max(280, "Keep the note under 280 characters").optional()
+  note: z.string().trim().max(280, "Keep the note under 280 characters").optional(),
+  dropOff: dropOffSchema.optional()
 });
 
 export type PlaceOrderInput = z.input<typeof placeOrderSchema>;
 export type PlaceOrderData = z.output<typeof placeOrderSchema>;
+
+/**
+ * A new price one side has put to the other before pickup (FARM-53). At most one is open on an
+ * order at a time; the side that did not propose it accepts or declines, and either answer
+ * removes it. Accepting rewrites `pricePerKg` and `total`.
+ */
+export const priceProposalSchema = z.object({
+  proposedBy: z.enum(["buyer", "farmer"]),
+  pricePerKg: pricePerKgSchema,
+  reason: z.string().optional(),
+  proposedAt: z.iso.datetime()
+});
+
+export type PriceProposal = z.infer<typeof priceProposalSchema>;
+
+/** What either side sends to propose a new price. Who is proposing comes from the token. */
+export const proposePriceSchema = z.object({
+  pricePerKg: pricePerKgSchema,
+  reason: z.string().trim().max(280, "Keep the reason under 280 characters").optional()
+});
+
+export type ProposePriceInput = z.input<typeof proposePriceSchema>;
+export type ProposePriceData = z.output<typeof proposePriceSchema>;
+
+/** A price can be renegotiated until the produce is on the vehicle. */
+export const RENEGOTIABLE_ORDER_STATUSES: readonly OrderStatus[] = ["accepted", "open", "assigned"];
 
 export const orderSchema = z.object({
   id: z.string(),
@@ -58,9 +105,11 @@ export const orderSchema = z.object({
   farmerId: z.string(),
   farmerName: z.string(),
   listingId: z.string(),
+  /** The Offer that was negotiated and accepted to produce this order (FARM-46). */
+  offerId: z.string().optional(),
   cropId: cropIdSchema,
   quantityKg: kgSchema,
-  /** Snapshot of the listing price when the order was placed. */
+  /** Snapshot of the listing price at placement, or the accepted Offer's final negotiated price. */
   pricePerKg: pricePerKgSchema,
   total: z.number().nonnegative(),
   note: z.string().optional(),
@@ -79,6 +128,15 @@ export const orderSchema = z.object({
    * what moved.
    */
   collectedKg: kgSchema.optional(),
+  /** Where the buyer wants it delivered (FARM-26). Snapshotted at placement. */
+  dropOff: dropOffSchema.optional(),
+  /**
+   * When the buyer confirmed the produce arrived (FARM-51). Deliberately a timestamp beside
+   * `delivered` rather than a status after it: the driver's half of the lifecycle ends at
+   * `delivered`, and whether the held money was released is the payment's to say.
+   */
+  receivedAt: z.iso.datetime().optional(),
+  priceProposal: priceProposalSchema.optional(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime()
 });

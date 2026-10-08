@@ -3,17 +3,29 @@
 **Owns:** a deal between one buyer and one farmer about one listing: quantity, the price at the
 moment it was placed, and where it is in its life.
 
-Built in FARM-35 from the buyer's side: place, list, view, cancel. Farmer acceptance, delivery
-and payment are later stories that add statuses and use-cases here.
+Built in FARM-35 from the buyer's side: place, list, view, cancel. The logistics domain moves an
+order through delivery and the payments domain moves it from `accepted` to `open`, both through
+`ORDER_REPOSITORY`. FARM-46 added the farmer's side: the incoming list, and accept or decline.
 
 ## Lifecycle
 
 ```
-requested ──farmer──▶ accepted ──▶ open ──▶ assigned ──▶ in_transit ──▶ delivered
+requested ──farmer──▶ accepted ──buyer pays──▶ open ──▶ assigned ──▶ in_transit ──▶ delivered
     │
     ├──farmer──▶ declined
     └──buyer───▶ cancelled        (only while `requested`)
 ```
+
+**`accepted` → `open` is the buyer paying** (FARM-41, `api/src/payments/README.md`). So an
+accepting use-case must leave the order at `accepted`. Two things write it: the farmer accepting
+a `requested` order (`RespondToOrder`), and an accepted offer creating its order
+(`PlaceOrder.executeFromOffer`, see `api/src/offers/README.md`).
+
+**`delivered` is the last status.** The buyer confirming receipt (FARM-51) stamps `receivedAt`
+and leaves the status alone.
+
+**A price can be renegotiated until pickup** (FARM-53): one `priceProposal` at a time sits on the
+order, and accepting it rewrites `pricePerKg` and `total`.
 
 The team's data model started an order at `open`. The product doc says a buyer *requests* and a
 farmer *accepts or negotiates*, so `requested`, `accepted` and `declined` sit in front of it. The
@@ -41,8 +53,11 @@ multi-item orders are ever wanted, add `items[]` beside these fields then.
 | ------ | ---- | ----- | ------ |
 | POST | `/orders` | `order:place` (buyer) | 201 `Order` in `requested`; 404 `listing_not_found`; 409 `listing_unavailable`; 400 `quantity_out_of_range` |
 | GET | `/orders/mine` | `order:read-own` | 200 `Order[]` — the caller's orders as buyer, newest first |
+| GET | `/orders/incoming` | `order:read-own` | 200 `Order[]` — the orders on the caller's listings, as farmer, newest first |
 | GET | `/orders/:id` | `order:read-own` | 200 `Order` for its buyer or its farmer; 403 `not_your_order`; 404 `order_not_found` |
 | POST | `/orders/:id/cancel` | `order:cancel` (buyer) | 200 `Order` in `cancelled`; 403; 409 `order_not_cancellable` |
+| POST | `/orders/:id/accept` | `order:accept` (farmer) | 200 `Order` in `accepted`; 403 `not_your_order`; 409 `order_not_answerable` |
+| POST | `/orders/:id/decline` | `order:accept` (farmer) | 200 `Order` in `declined`; 403 `not_your_order`; 409 `order_not_answerable` |
 
 The client sends only `{ listingId, quantityKg, note? }`. Price, farmer and crop are copied from
 the listing on the server, so a later price change does not rewrite history and a client cannot
@@ -70,8 +85,10 @@ Cancel is the same path with `CancelOrder`, which refuses unless the caller is t
 
 ## Reuse points
 
-- **`ORDER_REPOSITORY`** (`domain/repositories/order.repository.ts`) is the port farmer
-  acceptance, delivery and payment stories should extend with new methods, not bypass.
+- **`ORDER_REPOSITORY`** (`domain/repositories/order.repository.ts`) is the port other domains
+  extend with new methods rather than bypass. Logistics added `assignDriver`, `recordPickup` and
+  `recordDelivery`; payments added `markPaid`, `markReceived`, `setPriceProposal` and
+  `resolvePriceProposal`. Each one matches on who and on the stage inside the write.
 - The status enum and `ACTIVE_ORDER_STATUSES` come from `packages/shared/src/orders/order.ts`;
   the app colours them through `OrderStatusPill`. Add a state there, and both sides know it.
 - Unit tests: `application/services/orders.spec.ts` over `InMemoryOrderRepository` and the catalog's

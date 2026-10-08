@@ -6,7 +6,11 @@
  * mobile app switches on, so treat them as public API: add, do not rename.
  */
 export type IdentityErrorCode =
-  'phone_taken' | 'invalid_credentials' | 'invalid_token' | 'not_found';
+  | 'phone_taken'
+  | 'invalid_credentials'
+  | 'invalid_token'
+  | 'not_found'
+  | 'too_many_locations';
 
 export class IdentityError extends Error {
   constructor(

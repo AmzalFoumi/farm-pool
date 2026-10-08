@@ -17,6 +17,7 @@
 import { SvgXml } from "react-native-svg";
 
 type IconProps = { size?: number };
+type GenericIconProps = { color?: string };
 
 /* Figma 196:5547 — leaf lockup, 34×34, on the white logo tile */
 const LEAF = `<svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -83,6 +84,66 @@ const CHECK = `<svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns
 <path d="M14.1667 4.25L6.375 12.0417L2.83333 8.5" stroke="white" stroke-width="2.26667" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
+/* Generic UI Icons for cards and menus */
+const DOTS = `<svg viewBox="0 0 20 20" fill="currentColor">
+  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+</svg>`;
+
+const OFFERS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+</svg>`;
+
+const CHEVRON_RIGHT = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M9 5l7 7-7 7" />
+</svg>`;
+
+const POOL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+</svg>`;
+
+const SOLO = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M8 17l4 4 4-4m-4-5v9M4 4h16v8a4 4 0 01-4 4H8a4 4 0 01-4-4V4z" />
+</svg>`;
+
+const CHECK_MARK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M5 13l4 4L19 7" />
+</svg>`;
+
+const EDIT = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+</svg>`;
+
+const EYE_OFF = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+</svg>`;
+
+const SHARE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+</svg>`;
+
+const DUPLICATE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+</svg>`;
+
+const CHECK_CIRCLE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+</svg>`;
+
+const TRASH = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+</svg>`;
+
+const PLAY = `<svg viewBox="0 0 24 24" fill="currentColor">
+  <path d="M8 5v14l11-7z" />
+</svg>`;
+
+const HOURGLASS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M5 22h14" />
+  <path d="M5 2h14" />
+  <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" />
+  <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" />
+</svg>`;
+
 /* Each icon keeps the exact box Figma drew it at. `size` exists only for the
    role icons, which share one 28×28 rule; do not use it to rescale an icon
    into a box the design never gave it. */
@@ -102,4 +163,51 @@ export const BuyerIcon = ({ size = 28 }: IconProps) => (
 );
 export const DeliveryIcon = ({ size = 28 }: IconProps) => (
   <SvgXml xml={DELIVERY} width={size} height={size} />
+);
+
+export const DotsIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={DOTS} width={16} height={16} color={color} />
+);
+export const OffersIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={OFFERS} width={14} height={14} color={color} />
+);
+export const ChevronRightIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={CHEVRON_RIGHT} width={14} height={14} color={color} />
+);
+export const PoolIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={POOL} width={14} height={14} color={color} />
+);
+export const SoloIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={SOLO} width={14} height={14} color={color} />
+);
+export const CheckMarkIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={CHECK_MARK} width={14} height={14} color={color} />
+);
+export const EditIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={EDIT} width={16} height={16} color={color} />
+);
+export const EyeOffIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={EYE_OFF} width={16} height={16} color={color} />
+);
+export const ShareIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={SHARE} width={16} height={16} color={color} />
+);
+export const DuplicateIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={DUPLICATE} width={16} height={16} color={color} />
+);
+export const CheckCircleIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={CHECK_CIRCLE} width={16} height={16} color={color} />
+);
+export const TrashIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={TRASH} width={16} height={16} color={color} />
+);
+export const PlayIcon = ({ color = "currentColor" }: GenericIconProps) => (
+  <SvgXml xml={PLAY} width={16} height={16} color={color} />
+);
+
+export const HourglassIcon = ({
+  color = "currentColor",
+  size = 18
+}: GenericIconProps & { size?: number }) => (
+  <SvgXml xml={HOURGLASS} width={size} height={size} color={color} />
 );
