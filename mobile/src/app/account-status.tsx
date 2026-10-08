@@ -17,6 +17,7 @@
 
 import { DISTRICT_NAMES } from "@farm-pool/shared";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -33,6 +34,7 @@ import { useAuth } from "@/providers/auth-provider";
 export default function AccountStatusScreen() {
   const insets = useSafeAreaInsets();
   const auth = useAuth();
+  const { t } = useTranslation();
   const [district, setDistrict] = useState<string | null>(null);
   const [applying, setApplying] = useState(false);
   const [applyMessage, setApplyMessage] = useState<string | null>(null);
@@ -49,12 +51,12 @@ export default function AccountStatusScreen() {
     setApplyMessage(null);
     try {
       await coordinationApi.apply(token, district);
-      setApplyMessage(`Noted — waiting on the coordinator for ${district}.`);
+      setApplyMessage(t("accountStatus.applied", { district }));
     } catch (error) {
       setApplyMessage(
         error instanceof ApiError && error.code === "no_cooperative_for_district"
-          ? `No coordinator currently covers ${district} yet — try a different district.`
-          : "Could not reach the server. Try again."
+          ? t("accountStatus.noCooperative", { district })
+          : t("errors.network")
       );
     } finally {
       setApplying(false);
@@ -68,13 +70,13 @@ export default function AccountStatusScreen() {
       const fresh = await authApi.me(token);
       setCheckMessage(
         fresh.status === "active"
-          ? "You're approved! Log out and log back in to continue."
+          ? t("accountStatus.approved")
           : fresh.status === "suspended"
-            ? (fresh.rejectionReason ?? "Your account has been suspended.")
-            : "Still awaiting approval — check back later."
+            ? (fresh.rejectionReason ?? t("accountStatus.suspended"))
+            : t("accountStatus.stillPending")
       );
     } catch {
-      setCheckMessage("Could not reach the server. Try again.");
+      setCheckMessage(t("errors.network"));
     } finally {
       setChecking(false);
     }
@@ -89,22 +91,23 @@ export default function AccountStatusScreen() {
       >
         <VStack className="gap-2">
           <Text className="type-h2 text-foreground">
-            {suspended ? "Account suspended" : "Awaiting approval"}
+            {suspended ? t("accountStatus.suspendedTitle") : t("accountStatus.pendingTitle")}
           </Text>
           <Text className="type-body text-muted-foreground">
             {suspended
-              ? (user.rejectionReason ??
-                "Your account has been suspended. Contact your area coordinator for details.")
-              : "Your account is waiting for coordinator approval. You'll be able to use the app once they approve it."}
+              ? (user.rejectionReason ?? t("accountStatus.suspendedBody"))
+              : t("accountStatus.pendingBody")}
           </Text>
         </VStack>
 
         {!suspended && user.role === "farmer" ? (
           <VStack className="gap-3 rounded-card border border-border bg-card p-4">
             <VStack className="gap-1">
-              <Text className="type-body-bold text-foreground">Try a different district</Text>
+              <Text className="type-body-bold text-foreground">
+                {t("accountStatus.retryTitle")}
+              </Text>
               <Text className="type-caption text-muted-foreground">
-                No word yet, or picked a district with no coordinator? Apply again.
+                {t("accountStatus.retryNote")}
               </Text>
             </VStack>
             <HStack className="flex-wrap gap-2" accessibilityRole="radiogroup">
@@ -121,7 +124,7 @@ export default function AccountStatusScreen() {
               <Text className="type-caption text-muted-foreground">{applyMessage}</Text>
             ) : null}
             <AppButton
-              label={applying ? "Applying…" : "Apply"}
+              label={applying ? t("accountStatus.applyBusy") : t("accountStatus.apply")}
               variant="outline"
               disabled={!district || applying}
               onPress={() => void retryApply()}
@@ -134,12 +137,16 @@ export default function AccountStatusScreen() {
             <Text className="type-caption text-center text-muted-foreground">{checkMessage}</Text>
           ) : null}
           <AppButton
-            label={checking ? "Checking…" : "Check status"}
+            label={checking ? t("accountStatus.checkBusy") : t("accountStatus.checkStatus")}
             variant="outline"
             disabled={checking}
             onPress={() => void checkStatus()}
           />
-          <AppButton label="Go to home" variant="outline" onPress={() => void auth.signOut()} />
+          <AppButton
+            label={t("accountStatus.goHome")}
+            variant="outline"
+            onPress={() => void auth.signOut()}
+          />
         </VStack>
       </ScrollView>
     </View>

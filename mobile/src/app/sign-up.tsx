@@ -78,7 +78,7 @@ export default function SignUpScreen() {
       return;
     }
     if (isFarmer && !district) {
-      setErrors({ district: "Pick the district you farm in" });
+      setErrors({ district: t("signUp.districtError") });
       return;
     }
     setErrors({});
@@ -182,11 +182,9 @@ export default function SignUpScreen() {
 
             {isFarmer ? (
               <VStack className="gap-1">
-                <Text className="type-body-bold text-foreground">
-                  Which district do you farm in?
-                </Text>
+                <Text className="type-body-bold text-foreground">{t("signUp.districtLabel")}</Text>
                 <Text className="type-caption text-muted-foreground">
-                  Your area coordinator reviews new farmers before they can start listing.
+                  {t("signUp.districtNote")}
                 </Text>
                 {errors.district ? (
                   <Text className="type-caption text-destructive">{errors.district}</Text>

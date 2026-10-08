@@ -215,7 +215,10 @@
     "passwordPlaceholder": "At least 8 characters",
     "logInInstead": "Log in instead",
     "action": "Create account",
-    "actionBusy": "Creating your account…"
+    "actionBusy": "Creating your account…",
+    "districtLabel": "Which district do you farm in?",
+    "districtNote": "Your area coordinator reviews new farmers before they can start listing.",
+    "districtError": "Pick the district you farm in"
   },
   "logIn": {
     "title": "Log in",
@@ -225,5 +228,23 @@
     "newHere": "New to FarmPool?",
     "action": "Log in",
     "actionBusy": "Logging in…"
+  },
+  "accountStatus": {
+    "pendingTitle": "Awaiting approval",
+    "pendingBody": "Your account is waiting for coordinator approval. You'll be able to use the app once they approve it.",
+    "suspendedTitle": "Account suspended",
+    "suspendedBody": "Your account has been suspended. Contact your area coordinator for details.",
+    "retryTitle": "Try a different district",
+    "retryNote": "No word yet, or picked a district with no coordinator? Apply again.",
+    "applied": "Noted — waiting on the coordinator for {{district}}.",
+    "noCooperative": "No coordinator currently covers {{district}} yet — try a different district.",
+    "apply": "Apply",
+    "applyBusy": "Applying…",
+    "checkStatus": "Check status",
+    "checkBusy": "Checking…",
+    "approved": "You're approved! Log out and log back in to continue.",
+    "suspended": "Your account has been suspended.",
+    "stillPending": "Still awaiting approval — check back later.",
+    "goHome": "Go to home"
   }
 }
