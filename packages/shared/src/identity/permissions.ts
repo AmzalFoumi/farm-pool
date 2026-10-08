@@ -38,9 +38,11 @@ export const actionSchema = z.enum([
   "location:save",
   "users:list",
   "farmers:approve",
+  "farmers:reject",
   "cooperative:read-dashboard",
   "cooperative:read-farmers",
   "cooperative:read-tasks",
+  "cooperative:join",
   "benchmark:read",
   "benchmark:set"
 ]);
@@ -86,9 +88,13 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   // The coordinator is the trust checkpoint (`.plans/PRODUCT.md`); only they see everyone.
   "users:list": ["coordinator"],
   "farmers:approve": ["coordinator"],
+  "farmers:reject": ["coordinator"],
   "cooperative:read-dashboard": ["coordinator"],
   "cooperative:read-farmers": ["coordinator"],
   "cooperative:read-tasks": ["coordinator"],
+  // A still-pending farmer calling this right after registering (FARM-44) — reachable while
+  // pending via `@AllowWhilePending()`, the one deliberate exception to the status gate below.
+  "cooperative:join": ["farmer"],
   "benchmark:read": ["coordinator"],
   "benchmark:set": ["coordinator"]
 };

@@ -212,28 +212,44 @@ function TaskRow({ task }: { task: CoordinatorTask }) {
     );
   }
 
-  const title =
-    task.kind === "verify_farmer"
-      ? task.farmerName
-      : `${cropById(task.cropId).name} · ${task.quantityKg} kg`;
-  const subtitle = task.kind === "verify_farmer" ? "New farmer" : `From ${task.farmerName}`;
-  const pillLabel = task.kind === "verify_farmer" ? "Verify" : "Approve";
+  if (task.kind === "verify_farmer") {
+    return (
+      <Pressable
+        onPress={() => router.push(`/farmer/${task.farmerId}`)}
+        accessibilityRole="button"
+        accessibilityLabel={`Review ${task.farmerName}`}
+        className="min-h-tap flex-row items-center justify-between"
+      >
+        <VStack className="flex-1 gap-0.5">
+          <Text className="type-body-bold text-foreground" numberOfLines={1}>
+            {task.farmerName}
+          </Text>
+          <Text className="type-caption text-muted-foreground" numberOfLines={1}>
+            New farmer
+          </Text>
+        </VStack>
+        <Box className="rounded-pill bg-info-subtle px-3 py-1">
+          <Text className="type-body-sm-bold text-info">Review</Text>
+        </Box>
+      </Pressable>
+    );
+  }
 
   return (
     <HStack className="items-center justify-between">
       <VStack className="flex-1 gap-0.5">
         <Text className="type-body-bold text-foreground" numberOfLines={1}>
-          {title}
+          {`${cropById(task.cropId).name} · ${task.quantityKg} kg`}
         </Text>
         <Text className="type-caption text-muted-foreground" numberOfLines={1}>
-          {subtitle}
+          {`From ${task.farmerName}`}
         </Text>
       </VStack>
-      {/* Present, not actioned — no approve/verify endpoint yet
-          (`.plans/coordination/OPEN.md` #5). The benchmark kinds above are the actionable
-          ones: they open Set Crop Price, a real write. */}
+      {/* Present, not actioned — no listing-approval endpoint yet
+          (`.plans/coordination/OPEN.md` #5). Every other kind above is now actionable: the
+          benchmark kinds open Set Crop Price, verify_farmer opens Farmers pre-filtered. */}
       <Box className="rounded-pill bg-info-subtle px-3 py-1">
-        <Text className="type-body-sm-bold text-info">{pillLabel}</Text>
+        <Text className="type-body-sm-bold text-info">Approve</Text>
       </Box>
     </HStack>
   );

@@ -63,9 +63,15 @@ function RootNavigator() {
      hangs — see `auth-provider.tsx`. */
   if (auth.status === "loading") return null;
   const signedIn = auth.status === "signed-in";
-  const isCoordinator = signedIn && can(auth.user.role, "cooperative:read-dashboard");
-  const isFarmer = signedIn && can(auth.user.role, "listing:create");
-  const isDriver = signedIn && can(auth.user.role, "delivery:accept");
+  /* Role alone used to decide the shell; FARM-44 adds a farmer who is signed in but not yet
+     approved, so every role branch below also requires `isActive` — otherwise a pending farmer
+     satisfies `isFarmer` on role alone and lands in the farmer tabs with nothing in them working
+     (every write there 403s with `account_pending_review`). `account-status.tsx` is where they
+     land instead, until a coordinator approves them and they log back in. */
+  const isActive = signedIn && auth.user.status === "active";
+  const isCoordinator = isActive && can(auth.user.role, "cooperative:read-dashboard");
+  const isFarmer = isActive && can(auth.user.role, "listing:create");
+  const isDriver = isActive && can(auth.user.role, "delivery:accept");
 
   return (
     <>
@@ -94,12 +100,21 @@ function RootNavigator() {
           <Stack.Screen name="log-in" />
         </Stack.Protected>
 
+        {/* A signed-in account that is not yet active (FARM-44: a farmer awaiting coordinator
+            approval, or anyone suspended) gets this dead-end screen instead of any tab shell.
+            Declared right after the signed-out group and before every tab shell so it wins the
+            "first-declared-becomes-initial-route" rule below, and no tab-shell guard below can
+            be true at the same time now that each one also requires `isActive`. */}
+        <Stack.Protected guard={signedIn && !isActive}>
+          <Stack.Screen name="account-status" />
+        </Stack.Protected>
+
         {/* The tab shells must be declared before `listing/[id]` below: a Stack
             navigator's default initial route is whichever screen is registered
             first, and `listing/[id]` has no `id` without a real navigation into
             it — declaring it first makes the app try to open it blank on cold
             start (FARM-25 regression, caught 2026-09-19). */}
-        <Stack.Protected guard={signedIn && !isCoordinator && !isFarmer && !isDriver}>
+        <Stack.Protected guard={isActive && !isCoordinator && !isFarmer && !isDriver}>
           <Stack.Screen name="(tabs)" />
         </Stack.Protected>
 
@@ -122,13 +137,16 @@ function RootNavigator() {
           {/* Pushed from a Daily Benchmark row or a "Needs you today" benchmark task
               (FARM-37) — same reasoning as `coordinator-profile` above. */}
           <Stack.Screen name="benchmark/[cropId]" />
+          {/* Pushed from a Farmers row or a "Needs you today" verify_farmer task (FARM-44) —
+              same reasoning again. */}
+          <Stack.Screen name="farmer/[id]" />
         </Stack.Protected>
 
         {/* Orders and crop requests are reached from Home cards, not tabs,
             until the tab set is settled per role. A farmer needs them too
             (`order:read-own` and `wanted:read` are open to every role), so they
             sit outside the buyer shell's group. */}
-        <Stack.Protected guard={signedIn && !isCoordinator}>
+        <Stack.Protected guard={isActive && !isCoordinator}>
           <Stack.Screen name="orders/index" />
           <Stack.Screen name="orders/[id]" />
           <Stack.Screen name="receipt/[orderId]" />

@@ -21,16 +21,16 @@ describe('RegisterUser', () => {
       displayName: '  Nimal Perera ',
       phone: '077 123 4567',
       password: 'longenough',
-      role: 'farmer',
+      role: 'buyer',
     });
 
     const result = await register.execute(data);
 
-    expect(result.token).toBe(`token:${result.user.id}:farmer`);
+    expect(result.token).toBe(`token:${result.user.id}:buyer:active`);
     expect(result.user).toMatchObject({
       displayName: 'Nimal Perera',
       phone: '+94771234567',
-      role: 'farmer',
+      role: 'buyer',
       status: 'active',
     });
     expect(result.user).not.toHaveProperty('passwordHash');
@@ -39,7 +39,7 @@ describe('RegisterUser', () => {
     expect(stored?.passwordHash).toBe('hashed:longenough');
   });
 
-  it('every one of the four roles can self-register', async () => {
+  it('every one of the four roles can self-register, a farmer starting pending_review (FARM-44)', async () => {
     for (const [i, role] of [
       'farmer',
       'buyer',
@@ -54,6 +54,9 @@ describe('RegisterUser', () => {
       });
       const result = await register.execute(data);
       expect(result.user.role).toBe(role);
+      expect(result.user.status).toBe(
+        role === 'farmer' ? 'pending_review' : 'active',
+      );
     }
   });
 

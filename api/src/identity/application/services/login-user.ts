@@ -19,6 +19,11 @@ import type { TokenSigner } from '../ports/token-signer';
  * Every failure is the same `invalid_credentials`, and a missing account still costs one hash
  * check (`dummyHash`), so an attacker cannot tell "no such phone" from "wrong password" by the
  * response or by the time it took.
+ *
+ * `status` is not checked here — a `pending_review`/`suspended` account still logs in and gets a
+ * token (carrying that status), but `RolesGuard` refuses it everywhere except the one or two
+ * actions explicitly marked `@AllowWhilePending()` (FARM-44). This is what lets a pending farmer
+ * open the app and check their own status, rather than being told "wrong password."
  */
 export class LoginUser {
   private dummyHash: Promise<string> | undefined;
@@ -44,7 +49,11 @@ export class LoginUser {
       );
     }
 
-    const token = await this.tokens.sign({ sub: user.id, role: user.role });
+    const token = await this.tokens.sign({
+      sub: user.id,
+      role: user.role,
+      status: user.status,
+    });
     return { token, user: toPublicUser(user) };
   }
 

@@ -1,15 +1,16 @@
 /**
  * Farmers — every member of the coordinator's cooperative, their verification status and how
- * much they have listed. Figma (node 217:2) also shows a search field and a tappable "verify"
- * action on a pending row — no search endpoint and no approval endpoint exist yet
- * (`.plans/coordination/OPEN.md` #5), so neither is wired up; status is shown, not actioned.
+ * much they have listed. Figma (node 217:2) also shows a search field — no search endpoint
+ * exists yet (`.plans/coordination/OPEN.md` #5), so it is not wired up. Tapping a row opens
+ * `/farmer/:id` (FARM-44) — everything the farmer gave at registration, and the real
+ * approve/reject actions, rather than deciding from a bare name on this list.
  *
- * Region's "farmers to verify" stat links here with `?filter=pending_review` so it lands already
- * filtered, rather than making the coordinator reselect the pill they just tapped for.
+ * Region's "farmers to verify" stat and the "Needs you today" `verify_farmer` task both link
+ * here with `?filter=pending_review` so the list lands already filtered.
  */
 
 import type { CooperativeFarmer } from "@farm-pool/shared";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { FlatList, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -107,6 +108,7 @@ export default function FarmersScreen() {
 }
 
 function FarmerRow({ farmer }: { farmer: CooperativeFarmer }) {
+  const router = useRouter();
   const initial = farmer.displayName.trim().charAt(0).toUpperCase() || "?";
   const secondLine =
     farmer.status === "pending_review"
@@ -116,9 +118,13 @@ function FarmerRow({ farmer }: { farmer: CooperativeFarmer }) {
         : "No listings yet";
 
   return (
-    <HStack
+    <Pressable
+      onPress={() => router.push(`/farmer/${farmer.id}`)}
+      accessibilityRole="button"
+      accessibilityLabel={`Open ${farmer.displayName}`}
       className={[
         "elevation-card min-h-tap items-center gap-3 rounded-card border p-3",
+        "flex-row",
         farmer.status === "pending_review"
           ? "border-warning bg-warning-subtle"
           : "border-border bg-card"
@@ -136,6 +142,6 @@ function FarmerRow({ farmer }: { farmer: CooperativeFarmer }) {
         </Text>
       </VStack>
       <FarmerStatusPill status={farmer.status} />
-    </HStack>
+    </Pressable>
   );
 }

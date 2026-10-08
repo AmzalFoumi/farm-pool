@@ -46,7 +46,11 @@ describe('identity (e2e)', () => {
 
     const auth = body<AuthResponse>(res);
     expect(typeof auth.token).toBe('string');
-    expect(auth.user).toMatchObject({ role: 'farmer', status: 'active' });
+    // A farmer waits on a coordinator (FARM-44); every other role starts `active`.
+    expect(auth.user).toMatchObject({
+      role: 'farmer',
+      status: 'pending_review',
+    });
     expect(auth.user.phone).toMatch(/^\+94\d{9}$/);
     expect(auth.user).not.toHaveProperty('passwordHash');
     farmerToken = auth.token;

@@ -18,6 +18,7 @@ import {
   ORDER_REPOSITORY,
   type OrderRepository,
 } from './../src/orders/domain/repositories/order.repository';
+import { approveFarmer } from './approve-farmer';
 
 /**
  * The escrow story over HTTP: a buyer pays an accepted order, the order reaches the driver job
@@ -79,7 +80,11 @@ describe('payments (e2e)', () => {
 
     buyer = await register('buyer', 40);
     otherBuyer = await register('buyer', 41);
-    farmer = await register('farmer', 42);
+    farmer = await approveFarmer(
+      app,
+      await register('farmer', 42),
+      'longenough',
+    );
     driver = await register('logistics', 43);
 
     await request(app.getHttpServer())

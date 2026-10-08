@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { districtSchema } from "../catalog/listing";
 import { driverProfileSchema } from "./driver";
 import { savedLocationSchema } from "./saved-location";
 import { phoneSchema } from "./phone";
@@ -67,7 +68,13 @@ export const publicUserSchema = z.object({
   driver: driverProfileSchema.optional(),
   /** Places this buyer delivers to often (FARM-26). Absent rather than empty when none are
    *  saved, so an account that never used the feature carries nothing. */
-  savedLocations: z.array(savedLocationSchema).optional()
+  savedLocations: z.array(savedLocationSchema).optional(),
+  /** The district a farmer named when applying to a cooperative (FARM-44). Absent for every
+   *  other role, and for a farmer who registered before this existed. */
+  district: districtSchema.optional(),
+  /** Set by the coordinator who rejected this farmer (FARM-44). Shown back to the farmer on
+   *  their own account-status screen — the whole reason it is collected. */
+  rejectionReason: z.string().optional()
 });
 
 export type PublicUser = z.infer<typeof publicUserSchema>;

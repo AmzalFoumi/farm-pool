@@ -17,7 +17,7 @@ import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import { ObjectId } from "mongodb";
 
-import { api, closeDb, db, signUp } from "./helpers.mjs";
+import { api, closeDb, db, signUp, signUpApprovedFarmer } from "./helpers.mjs";
 
 const DISTRICT = "Kurunegala";
 
@@ -38,7 +38,7 @@ describe("FARM-49/54 driver lifecycle", () => {
   let database;
 
   before(async () => {
-    farmer = await signUp("farmer", "E2E Lifecycle Farmer");
+    farmer = await signUpApprovedFarmer("E2E Lifecycle Farmer");
     buyer = await signUp("buyer", "E2E Lifecycle Buyer");
     database = await db();
   });
