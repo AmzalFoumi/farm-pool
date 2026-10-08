@@ -52,19 +52,19 @@ export class RolesGuard implements CanActivate {
       PENDING_OK_KEY,
       [context.getHandler(), context.getClass()],
     );
-    if (!pendingOk) {
-      if (user.status === 'pending_review') {
-        throw new ForbiddenException({
-          code: 'account_pending_review',
-          message: 'Your account is awaiting coordinator approval',
-        });
-      }
-      if (user.status === 'suspended') {
-        throw new ForbiddenException({
-          code: 'account_suspended',
-          message: 'Your account has been suspended',
-        });
-      }
+    if (user.status === 'pending_review' && !pendingOk) {
+      throw new ForbiddenException({
+        code: 'account_pending_review',
+        message: 'Your account is awaiting coordinator approval',
+      });
+    }
+    // Never exempted: `@AllowWhilePending()` is for an account still waiting on a decision,
+    // not one a coordinator has already turned down.
+    if (user.status === 'suspended') {
+      throw new ForbiddenException({
+        code: 'account_suspended',
+        message: 'Your account has been suspended',
+      });
     }
     return true;
   }

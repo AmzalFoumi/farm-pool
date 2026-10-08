@@ -100,6 +100,17 @@ describe('RolesGuard', () => {
     ).toBe(true);
   });
 
+  it('still forbids a suspended account on a route marked @AllowWhilePending()', () => {
+    requireRoles(['farmer'], true);
+    const error = catchError(() =>
+      guard.canActivate(
+        contextWith({ sub: '1', role: 'farmer', status: 'suspended' }),
+      ),
+    );
+    expect(error).toBeInstanceOf(ForbiddenException);
+    expect(error.getResponse()).toMatchObject({ code: 'account_suspended' });
+  });
+
   it('still lets a pending_review account through a route with no role requirement at all (e.g. /identity/me)', () => {
     requireRoles(undefined);
     expect(

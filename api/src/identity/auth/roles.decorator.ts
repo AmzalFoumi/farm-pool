@@ -23,6 +23,7 @@ export const Roles = (...roles: Role[]) => SetMetadata(ROLES_KEY, roles);
  * Exempts one `@Allow()`/`@Roles()` route from `RolesGuard`'s account-status check, so a
  * `pending_review` account can still call it (FARM-44) — today, only `cooperative:join`: a
  * farmer applying to a cooperative right after registering, while still pending, is the point.
+ * A `suspended` account is refused here like everywhere else.
  *
  * `@Allow()` only stores the resolved role list, not the action name, so the guard has no other
  * way to single out one action for this exception.
