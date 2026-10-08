@@ -12,7 +12,7 @@ import assert from "node:assert/strict";
 import { after, before, describe, it } from "node:test";
 import { ObjectId } from "mongodb";
 
-import { PASSWORD, api, closeDb, db, signUp } from "./helpers.mjs";
+import { PASSWORD, api, closeDb, db, signUp, signUpApprovedFarmer } from "./helpers.mjs";
 
 const GATE = { latitude: 7.6281, longitude: 80.2447 }; // a field near Wariyapola
 const MARKET = { latitude: 7.8742, longitude: 80.6511 }; // Dambulla economic centre
@@ -24,7 +24,7 @@ describe("FARM-26 delivery flow", () => {
     const health = await api.get("/identity/users");
     assert.notEqual(health.status, undefined, `api unreachable — is it running?`);
 
-    farmer = await signUp("farmer", "E2E Farmer");
+    farmer = await signUpApprovedFarmer("E2E Farmer");
     buyer = await signUp("buyer", "E2E Buyer");
     driver = await signUp("logistics", "E2E Driver");
 

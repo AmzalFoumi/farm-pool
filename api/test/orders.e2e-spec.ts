@@ -8,6 +8,7 @@ import {
   LISTING_REPOSITORY,
   type ListingRepository,
 } from './../src/catalog/domain/repositories/listing.repository';
+import { approveFarmer } from './approve-farmer';
 
 /**
  * The buyer order story over HTTP: place → mine → get → cancel, plus the refusals
@@ -48,7 +49,11 @@ describe('orders (e2e)', () => {
 
     buyer = await register('buyer', 20);
     otherBuyer = await register('buyer', 21);
-    farmer = await register('farmer', 22);
+    farmer = await approveFarmer(
+      app,
+      await register('farmer', 22),
+      'longenough',
+    );
 
     const listings = app.get<ListingRepository>(LISTING_REPOSITORY);
     listingId = (

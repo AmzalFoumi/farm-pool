@@ -1,6 +1,6 @@
 /** Shared plumbing for the end-to-end tests. No framework, no dependencies. */
 
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import { readFileSync } from "node:fs";
 
 export const API = process.env.E2E_API_URL ?? "http://localhost:3000";
@@ -92,4 +92,30 @@ export async function db() {
 export async function closeDb() {
   await client?.close();
   client = undefined;
+}
+
+/**
+ * A farmer who can already act. Registration leaves a farmer `pending_review` (FARM-44) and the
+ * api refuses every farmer route with `account_pending_review` until a coordinator approves them.
+ *
+ * The approve endpoint exists, but reaching it takes a coordinator whose cooperative covers the
+ * farmer's district — a second story's worth of setup in front of every driver test. So this is
+ * a NUDGE: like the two in the README, and then a fresh login, because `status` is baked into
+ * the token and the one `signUp` returned still says `pending_review`.
+ */
+export async function signUpApprovedFarmer(displayName) {
+  const farmer = await signUp("farmer", displayName);
+  // NUDGE: coordinator approval needs a cooperative for the district (FARM-44).
+  await (
+    await db()
+  )
+    .collection("users")
+    .updateOne({ _id: new ObjectId(farmer.user.id) }, { $set: { status: "active" } });
+
+  const { status, body } = await api.post("/identity/login", {
+    identifier: farmer.phone,
+    password: PASSWORD
+  });
+  if (status !== 200) throw new Error(`login farmer: ${JSON.stringify(body)}`);
+  return { token: body.token, user: body.user, phone: farmer.phone };
 }
