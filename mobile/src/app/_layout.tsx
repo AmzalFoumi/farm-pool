@@ -152,6 +152,10 @@ function RootNavigator() {
           <Stack.Screen name="receipt/[orderId]" />
           <Stack.Screen name="wanted/index" />
           <Stack.Screen name="wanted/new" />
+          {/* Named `my-offers`, not `offers`: `(farmer)/offers/[id]` already resolves to
+              `/offers/:id`, and a route group adds no path segment. */}
+          <Stack.Screen name="my-offers/index" />
+          <Stack.Screen name="my-offers/[id]" />
         </Stack.Protected>
 
         {/* Common ground between the shells: a listing detail is reached
