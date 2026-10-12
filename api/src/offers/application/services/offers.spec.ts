@@ -41,6 +41,8 @@ describe('offers', () => {
   let buyer: User;
   let otherBuyer: User;
   let farmer: User;
+  let otherFarmer: User;
+  let wantedId: string;
   let listingId: string;
 
   const person = (displayName: string, phone: string, role: User['role']) =>
@@ -53,6 +55,14 @@ describe('offers', () => {
     proposedQuantityKg: quantityKg,
   });
 
+  const response = (quantityKg = 30, price = 175) => ({
+    listingId,
+    listingType: 'WANTED' as const,
+    wantedId,
+    proposedPrice: price,
+    proposedQuantityKg: quantityKg,
+  });
+
   beforeEach(async () => {
     users = new InMemoryUserRepository();
     listings = new InMemoryListingRepository();
@@ -60,7 +70,7 @@ describe('offers', () => {
     orders = new InMemoryOrderRepository();
     offers = new InMemoryOfferRepository();
     const placeOrder = new PlaceOrder(orders, listings);
-    create = new CreateOfferService(offers, listings, users);
+    create = new CreateOfferService(offers, listings, wanteds, users);
     negotiate = new SubmitNegotiationService(offers, listings);
     accept = new AcceptOfferService(offers, listings, wanteds, placeOrder);
     decline = new DeclineOfferService(offers);
@@ -71,6 +81,16 @@ describe('offers', () => {
     otherBuyer = await person('Kasun', '+94770000002', 'buyer');
     farmer = await person('Nimal', '+94770000003', 'farmer');
     listingId = (await listings.seed(listingFields(farmer))).id;
+    otherFarmer = await person('Kamala', '+94770000004', 'farmer');
+    wantedId = (
+      await wanteds.create({
+        buyerId: buyer.id,
+        cropId: 'tomato',
+        quantityKg: 60,
+        neededBy: '2026-12-01',
+        district: 'Colombo',
+      })
+    ).id;
   });
 
   describe('create', () => {
@@ -180,14 +200,107 @@ describe('offers', () => {
         create.execute(buyer.id, 'BUYER', standard()),
       ).resolves.toBeDefined();
     });
+  });
 
-    it('still refuses a wanted offer', async () => {
+  describe('respond to a wanted request', () => {
+    it('opens a PENDING offer from the farmer, on their own listing, for the buyer to answer', async () => {
+      const offer = await create.execute(farmer.id, 'FARMER', response());
+
+      expect(offer).toMatchObject({
+        buyerId: buyer.id,
+        farmerId: farmer.id,
+        listingId,
+        listingType: 'WANTED',
+        wantedId,
+        cropId: 'tomato',
+        initiatedBy: 'FARMER',
+        farmerName: 'Nimal',
+        buyerName: 'Priya',
+        pricePerKg: 175,
+        quantityKg: 30,
+        total: 5250,
+        status: 'PENDING',
+        actionRequiredBy: 'BUYER',
+      });
+      expect(offer.negotiationHistory[0]?.senderType).toBe('FARMER');
+    });
+
+    it('does not need the listing to be marked negotiable', async () => {
+      const fixed = await listings.seed({
+        ...listingFields(farmer),
+        acceptNegotiation: false,
+      });
       await expect(
         create.execute(farmer.id, 'FARMER', {
-          ...standard(),
-          listingType: 'WANTED',
+          ...response(),
+          listingId: fixed.id,
         }),
-      ).rejects.toMatchObject({ code: 'wanted_offers_unavailable' });
+      ).resolves.toBeDefined();
+    });
+
+    it('refuses a buyer, and a farmer using a listing that is not theirs', async () => {
+      await expect(
+        create.execute(buyer.id, 'BUYER', response()),
+      ).rejects.toMatchObject({ code: 'invalid', kind: 'invalid' });
+      await expect(
+        create.execute(otherFarmer.id, 'FARMER', response()),
+      ).rejects.toMatchObject({ code: 'not_your_listing', kind: 'forbidden' });
+    });
+
+    it('refuses a listing that is not approved, and a quantity it cannot fill', async () => {
+      const pending = await listings.seed({
+        ...listingFields(farmer),
+        status: 'pending_approval',
+      });
+      await expect(
+        create.execute(farmer.id, 'FARMER', {
+          ...response(),
+          listingId: pending.id,
+        }),
+      ).rejects.toMatchObject({
+        code: 'listing_unavailable',
+        kind: 'conflict',
+      });
+      await expect(
+        create.execute(farmer.id, 'FARMER', response(500)),
+      ).rejects.toMatchObject({ code: 'quantity_out_of_range' });
+    });
+
+    it('refuses a request that is closed or missing, and a listing of another crop', async () => {
+      const onions = await listings.seed({
+        ...listingFields(farmer),
+        cropId: 'onion',
+      });
+      await expect(
+        create.execute(farmer.id, 'FARMER', {
+          ...response(),
+          listingId: onions.id,
+        }),
+      ).rejects.toMatchObject({ code: 'crop_mismatch', kind: 'invalid' });
+
+      await expect(
+        create.execute(farmer.id, 'FARMER', {
+          ...response(),
+          wantedId: 'nope',
+        }),
+      ).rejects.toMatchObject({ code: 'wanted_closed', kind: 'conflict' });
+
+      await wanteds.updateStatus(wantedId, 'closed');
+      await expect(
+        create.execute(farmer.id, 'FARMER', response()),
+      ).rejects.toMatchObject({ code: 'wanted_closed' });
+    });
+
+    it('allows one live response per farmer per request, and does not block an ordinary offer', async () => {
+      await create.execute(farmer.id, 'FARMER', response());
+
+      await expect(
+        create.execute(farmer.id, 'FARMER', response()),
+      ).rejects.toMatchObject({ code: 'offer_exists', kind: 'conflict' });
+      // The same buyer may still make their own offer on that listing: it is a different negotiation.
+      await expect(
+        create.execute(buyer.id, 'BUYER', standard()),
+      ).resolves.toBeDefined();
     });
   });
 

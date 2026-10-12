@@ -4,8 +4,11 @@ import {
   type SenderType,
 } from '@farm-pool/shared';
 import { Inject, Injectable } from '@nestjs/common';
+import type { Listing } from '../../../catalog/domain/entities/listing';
 import { LISTING_REPOSITORY } from '../../../catalog/domain/repositories/listing.repository';
 import type { ListingRepository } from '../../../catalog/domain/repositories/listing.repository';
+import { WANTED_REPOSITORY } from '../../../catalog/domain/repositories/wanted.repository';
+import type { WantedRepository } from '../../../catalog/domain/repositories/wanted.repository';
 import { USER_REPOSITORY } from '../../../identity/domain/repositories/user.repository';
 import type { UserRepository } from '../../../identity/domain/repositories/user.repository';
 import type { NewOffer, Offer } from '../../domain/entities/offer';
@@ -14,11 +17,21 @@ import type { OfferRepository } from '../../domain/repositories/offer.repository
 import { OfferError } from '../errors';
 import { assertQuantityFits } from '../quantity';
 
+/**
+ * Starts a negotiation. Two cases, decided by `listingType`:
+ *
+ * - STANDARD — a buyer proposes a price on a farmer's listing (FARM-46).
+ * - WANTED — a farmer answers a buyer's wanted request from one of their own listings (FARM-47).
+ *
+ * In both, `listingId` is a real, verified listing. That is what lets an accepted offer become an
+ * order the driver job board can read a pickup place from.
+ */
 @Injectable()
 export class CreateOfferService {
   constructor(
     @Inject(OFFER_REPOSITORY) private readonly offers: OfferRepository,
     @Inject(LISTING_REPOSITORY) private readonly listings: ListingRepository,
+    @Inject(WANTED_REPOSITORY) private readonly wanteds: WantedRepository,
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
   ) {}
 
@@ -27,21 +40,15 @@ export class CreateOfferService {
     requesterRole: SenderType,
     data: CreateOfferData,
   ): Promise<Offer> {
-    /* Refused until FARM-47, which answers a wanted request from one of the farmer's own
-       listings so the order still has a listing for the driver to read the pickup place from. */
-    if (data.listingType === 'WANTED') {
-      throw new OfferError(
-        'conflict',
-        'wanted_offers_unavailable',
-        'Offers on a wanted request are not available yet',
-      );
-    }
-
-    if (requesterRole !== 'BUYER') {
+    const starter: SenderType =
+      data.listingType === 'WANTED' ? 'FARMER' : 'BUYER';
+    if (requesterRole !== starter) {
       throw new OfferError(
         'invalid',
         'invalid',
-        'Only buyers can make an offer on a listing',
+        starter === 'BUYER'
+          ? 'Only buyers can make an offer on a listing'
+          : 'Only farmers can respond to a wanted request',
       );
     }
 
@@ -53,49 +60,53 @@ export class CreateOfferService {
         'This listing is not available',
       );
     }
-    if (!listing.acceptNegotiation) {
-      throw new OfferError(
-        'conflict',
-        'negotiation_not_accepted',
-        'This farmer is not taking offers on this listing',
-      );
-    }
+
+    const { buyerId, wantedId } =
+      data.listingType === 'WANTED'
+        ? await this.checkResponse(requesterId, listing, data)
+        : this.checkOffer(requesterId, listing);
+
     assertQuantityFits(listing, data.proposedQuantityKg);
 
     const live = await this.offers.findActiveBetween({
-      buyerId: requesterId,
+      buyerId,
       farmerId: listing.farmerId,
       listingId: listing.id,
+      ...(wantedId ? { wantedId } : {}),
     });
     if (live.length > 0) {
       throw new OfferError(
         'conflict',
         'offer_exists',
-        'You already have an open offer on this listing',
+        wantedId
+          ? 'You already have an open response to this request'
+          : 'You already have an open offer on this listing',
       );
     }
 
-    const buyer = await this.users.findById(requesterId);
+    const buyer = await this.users.findById(buyerId);
 
     const newOffer: NewOffer = {
-      buyerId: requesterId,
+      buyerId,
       farmerId: listing.farmerId,
       listingId: listing.id,
-      listingType: 'STANDARD',
+      listingType: data.listingType,
+      ...(wantedId ? { wantedId } : {}),
       cropId: listing.cropId,
-      initiatedBy: 'BUYER',
+      initiatedBy: starter,
       farmerName: listing.farmerName,
       ...(buyer ? { buyerName: buyer.displayName } : {}),
       pricePerKg: data.proposedPrice,
       quantityKg: data.proposedQuantityKg,
       total: toCents(data.proposedPrice * data.proposedQuantityKg),
       note: data.note,
-      ...(data.dropOff ? { dropOff: data.dropOff } : {}),
+      // The delivery point is the buyer's; a farmer's response cannot set one.
+      ...(starter === 'BUYER' && data.dropOff ? { dropOff: data.dropOff } : {}),
       status: 'PENDING',
-      actionRequiredBy: 'FARMER',
+      actionRequiredBy: starter === 'BUYER' ? 'FARMER' : 'BUYER',
       negotiationHistory: [
         {
-          senderType: 'BUYER',
+          senderType: starter,
           proposedPrice: data.proposedPrice,
           proposedQuantityKg: data.proposedQuantityKg,
           note: data.note,
@@ -106,5 +117,52 @@ export class CreateOfferService {
     };
 
     return this.offers.create(newOffer);
+  }
+
+  /** A buyer's offer on a listing: the farmer must be taking offers on it. */
+  private checkOffer(
+    buyerId: string,
+    listing: Listing,
+  ): { buyerId: string; wantedId?: undefined } {
+    if (!listing.acceptNegotiation) {
+      throw new OfferError(
+        'conflict',
+        'negotiation_not_accepted',
+        'This farmer is not taking offers on this listing',
+      );
+    }
+    return { buyerId };
+  }
+
+  /** A farmer's response: from their own listing, to an open request for the same crop. */
+  private async checkResponse(
+    farmerId: string,
+    listing: Listing,
+    data: CreateOfferData,
+  ): Promise<{ buyerId: string; wantedId: string }> {
+    if (listing.farmerId !== farmerId) {
+      throw new OfferError(
+        'forbidden',
+        'not_your_listing',
+        'You can only respond from one of your own listings',
+      );
+    }
+    // The shared schema guarantees `wantedId` for WANTED; the `?? ''` only satisfies the type.
+    const wanted = await this.wanteds.findById(data.wantedId ?? '');
+    if (!wanted || wanted.status !== 'open') {
+      throw new OfferError(
+        'conflict',
+        'wanted_closed',
+        'This request is no longer open',
+      );
+    }
+    if (wanted.cropId !== listing.cropId) {
+      throw new OfferError(
+        'invalid',
+        'crop_mismatch',
+        'Respond from a listing of the crop the buyer asked for',
+      );
+    }
+    return { buyerId: wanted.buyerId, wantedId: wanted.id };
   }
 }
