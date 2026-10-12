@@ -123,6 +123,14 @@ export default function FarmerHomeScreen() {
           >
             <Text className="type-body-bold text-foreground">Call Requests</Text>
           </Pressable>
+          {/* What buyers are asking for (FARM-47). A farmer answers from one of their listings. */}
+          <Pressable
+            onPress={() => router.push("/requests")}
+            accessibilityRole="button"
+            className="min-h-tap rounded-card border border-border bg-card p-3.5 items-center justify-center"
+          >
+            <Text className="type-body-bold text-foreground">Buyer Requests</Text>
+          </Pressable>
         </VStack>
       </ScrollView>
     </View>

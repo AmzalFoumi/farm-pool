@@ -12,6 +12,11 @@ export const wantedApi = {
     return apiFetch("/catalog/wanted?mine=true", { token, schema: wantedListSchema });
   },
 
+  /** Every open request from every buyer — what a farmer looks through to find demand. */
+  open(token: string): Promise<WantedListing[]> {
+    return apiFetch("/catalog/wanted", { token, schema: wantedListSchema });
+  },
+
   create(token: string, input: CreateWantedInput): Promise<WantedListing> {
     return apiFetch("/catalog/wanted", {
       method: "POST",
