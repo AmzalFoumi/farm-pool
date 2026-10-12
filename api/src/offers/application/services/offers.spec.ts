@@ -9,6 +9,8 @@ import { InMemoryOfferRepository } from '../../infrastructure/persistence/in-mem
 import { AcceptOfferService } from './accept-offer.service';
 import { CreateOfferService } from './create-offer.service';
 import { DeclineOfferService } from './decline-offer.service';
+import { GetOfferService } from './get-offer.service';
+import { ListMyOffersService } from './list-my-offers.service';
 import { SubmitNegotiationService } from './submit-negotiation.service';
 
 const listingFields = (farmer: User): NewListing => ({
@@ -34,6 +36,8 @@ describe('offers', () => {
   let negotiate: SubmitNegotiationService;
   let accept: AcceptOfferService;
   let decline: DeclineOfferService;
+  let listMine: ListMyOffersService;
+  let getOne: GetOfferService;
   let buyer: User;
   let otherBuyer: User;
   let farmer: User;
@@ -60,6 +64,8 @@ describe('offers', () => {
     negotiate = new SubmitNegotiationService(offers, listings);
     accept = new AcceptOfferService(offers, listings, wanteds, placeOrder);
     decline = new DeclineOfferService(offers);
+    listMine = new ListMyOffersService(offers);
+    getOne = new GetOfferService(offers);
 
     buyer = await person('Priya', '+94770000001', 'buyer');
     otherBuyer = await person('Kasun', '+94770000002', 'buyer');
@@ -356,6 +362,38 @@ describe('offers', () => {
       );
       await expect(decline.execute(farmer.id, offer.id)).rejects.toMatchObject({
         code: 'invalid',
+      });
+    });
+  });
+
+  describe('reading', () => {
+    it('lists the offers a user is on, on either side', async () => {
+      const mine = await create.execute(buyer.id, 'BUYER', standard());
+      const theirs = await create.execute(otherBuyer.id, 'BUYER', standard());
+
+      expect((await listMine.execute(buyer.id)).map((o) => o.id)).toEqual([
+        mine.id,
+      ]);
+      expect(
+        (await listMine.execute(farmer.id)).map((o) => o.id).sort(),
+      ).toEqual([mine.id, theirs.id].sort());
+    });
+
+    it('shows one offer to its two sides only', async () => {
+      const offer = await create.execute(buyer.id, 'BUYER', standard());
+
+      await expect(getOne.execute(buyer.id, offer.id)).resolves.toMatchObject({
+        id: offer.id,
+      });
+      await expect(getOne.execute(farmer.id, offer.id)).resolves.toMatchObject({
+        id: offer.id,
+      });
+      await expect(
+        getOne.execute(otherBuyer.id, offer.id),
+      ).rejects.toMatchObject({ code: 'not_your_offer', kind: 'forbidden' });
+      await expect(getOne.execute(buyer.id, 'missing')).rejects.toMatchObject({
+        code: 'not_found',
+        kind: 'not_found',
       });
     });
   });

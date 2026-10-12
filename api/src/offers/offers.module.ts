@@ -6,6 +6,8 @@ import { OrdersModule } from '../orders/orders.module';
 import { AcceptOfferService } from './application/services/accept-offer.service';
 import { CreateOfferService } from './application/services/create-offer.service';
 import { DeclineOfferService } from './application/services/decline-offer.service';
+import { GetOfferService } from './application/services/get-offer.service';
+import { ListMyOffersService } from './application/services/list-my-offers.service';
 import { ListOffersService } from './application/services/list-offers.service';
 import { SubmitNegotiationService } from './application/services/submit-negotiation.service';
 import { OFFER_REPOSITORY } from './domain/repositories/offer.repository';
@@ -31,6 +33,8 @@ import { OffersController } from './offers.controller';
     AcceptOfferService,
     DeclineOfferService,
     ListOffersService,
+    ListMyOffersService,
+    GetOfferService,
   ],
   exports: [OFFER_REPOSITORY],
 })

@@ -15,6 +15,8 @@ import { ZodValidationPipe } from '../shared/http/zod-validation.pipe';
 import { AcceptOfferService } from './application/services/accept-offer.service';
 import { CreateOfferService } from './application/services/create-offer.service';
 import { DeclineOfferService } from './application/services/decline-offer.service';
+import { GetOfferService } from './application/services/get-offer.service';
+import { ListMyOffersService } from './application/services/list-my-offers.service';
 import { ListOffersService } from './application/services/list-offers.service';
 import { SubmitNegotiationService } from './application/services/submit-negotiation.service';
 import { toOfferDto } from './domain/entities/offer';
@@ -27,7 +29,17 @@ export class OffersController {
     private readonly acceptOffer: AcceptOfferService,
     private readonly declineOffer: DeclineOfferService,
     private readonly listOffers: ListOffersService,
+    private readonly listMyOffers: ListMyOffersService,
+    private readonly getOffer: GetOfferService,
   ) {}
+
+  /* Declared before `:id`, or Nest would read "mine" as an id. */
+  @Allow('order:read-own')
+  @Get('mine')
+  async mine(@CurrentUser() user: AuthenticatedUser) {
+    const offers = await this.listMyOffers.execute(user.sub);
+    return offers.map(toOfferDto);
+  }
 
   @Allow('listing:read') // the farmer reading their listing, or buyer looking at listing
   @Get('listing/:listingId')
@@ -37,6 +49,12 @@ export class OffersController {
   ) {
     const offers = await this.listOffers.execute(user.sub, listingId);
     return offers.map(toOfferDto);
+  }
+
+  @Allow('order:read-own')
+  @Get(':id')
+  async one(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return toOfferDto(await this.getOffer.execute(user.sub, id));
   }
 
   @Allow('offer:create')
