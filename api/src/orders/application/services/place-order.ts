@@ -97,6 +97,8 @@ export class PlaceOrder {
       pricePerKg: offer.pricePerKg,
       total: toCents(offer.quantityKg * offer.pricePerKg),
       ...(offer.note ? { note: offer.note } : {}),
+      /* Copied, not referenced, for the same reason as in `execute` above (FARM-26). */
+      ...(offer.dropOff ? { dropOff: offer.dropOff } : {}),
       status: 'accepted',
     });
     return toOrderDto(created);

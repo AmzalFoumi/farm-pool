@@ -1,5 +1,7 @@
 import {
+  acceptOfferSchema,
   createOfferSchema,
+  type AcceptOfferData,
   submitNegotiationSchema,
   type CreateOfferData,
   type SubmitNegotiationData,
@@ -66,8 +68,9 @@ export class OffersController {
   async accept(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
+    @Body(new ZodValidationPipe(acceptOfferSchema)) data: AcceptOfferData,
   ) {
-    return this.acceptOffer.execute(user.sub, id);
+    return this.acceptOffer.execute(user.sub, id, data);
   }
 
   @Allow('order:renegotiate')

@@ -287,6 +287,56 @@ describe('offers', () => {
       });
     });
 
+    it('copies the delivery point onto the order, from the offer or from the buyer accepting', async () => {
+      const market = {
+        label: 'Pettah',
+        point: { latitude: 6.93, longitude: 79.85 },
+      };
+
+      const withPoint = await create.execute(buyer.id, 'BUYER', {
+        ...standard(20),
+        dropOff: market,
+      });
+      const first = await accept.execute(farmer.id, withPoint.id);
+      expect((await orders.findById(first.orderId))?.dropOff).toEqual(market);
+
+      const bare = await create.execute(otherBuyer.id, 'BUYER', standard(20));
+      await negotiate.execute(farmer.id, bare.id, {
+        proposedPrice: 175,
+        proposedQuantityKg: 20,
+      });
+      const second = await accept.execute(otherBuyer.id, bare.id, {
+        dropOff: market,
+      });
+      expect((await orders.findById(second.orderId))?.dropOff).toEqual(market);
+    });
+
+    it('ignores a delivery point sent by the farmer accepting', async () => {
+      const offer = await create.execute(buyer.id, 'BUYER', standard(20));
+      const { orderId } = await accept.execute(farmer.id, offer.id, {
+        dropOff: { point: { latitude: 7.48, longitude: 80.36 } },
+      });
+      expect((await orders.findById(orderId))?.dropOff).toBeUndefined();
+    });
+
+    it('gives the stock to the first accept and puts the losing offer back', async () => {
+      const big = await create.execute(buyer.id, 'BUYER', standard(70));
+      const alsoBig = await create.execute(
+        otherBuyer.id,
+        'BUYER',
+        standard(70),
+      );
+
+      await accept.execute(farmer.id, big.id);
+
+      await expect(accept.execute(farmer.id, alsoBig.id)).rejects.toMatchObject(
+        { code: 'insufficient_stock', kind: 'conflict' },
+      );
+      expect((await offers.findById(alsoBig.id))?.status).toBe('PENDING');
+      expect((await listings.findById(listingId))?.quantityKg).toBe(30);
+      expect(await orders.findByBuyer(otherBuyer.id)).toEqual([]);
+    });
+
     it('marks a listing sold when what is left is below its minimum order', async () => {
       const offer = await create.execute(buyer.id, 'BUYER', standard(95));
       await accept.execute(farmer.id, offer.id);
