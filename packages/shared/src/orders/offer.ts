@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { cropIdSchema } from "../catalog/crops";
 import { kgSchema, pricePerKgSchema } from "../catalog/listing";
+import { dropOffSchema } from "./order";
 
 /**
  * The negotiation phase that precedes an Order (FARM-46).
@@ -45,10 +46,13 @@ export type NegotiationEntry = z.infer<typeof negotiationEntrySchema>;
 
 /** What either party sends to counter. Validated identically on mobile forms and the api. */
 export const submitNegotiationSchema = z.object({
-  senderType: senderTypeSchema,
+  /** Ignored by the api, which reads the side from the token. Optional so old clients still pass. */
+  senderType: senderTypeSchema.optional(),
   proposedPrice: pricePerKgSchema,
   proposedQuantityKg: kgSchema,
-  note: z.string().trim().max(280, "Keep the note under 280 characters").optional()
+  note: z.string().trim().max(280, "Keep the note under 280 characters").optional(),
+  /** Where the buyer wants it delivered. Only the buyer's side is stored. */
+  dropOff: dropOffSchema.optional()
 });
 export type SubmitNegotiationInput = z.input<typeof submitNegotiationSchema>;
 export type SubmitNegotiationData = z.output<typeof submitNegotiationSchema>;
@@ -59,10 +63,20 @@ export const createOfferSchema = z.object({
   listingType: listingTypeSchema,
   proposedPrice: pricePerKgSchema,
   proposedQuantityKg: kgSchema,
-  note: z.string().trim().max(280, "Keep the note under 280 characters").optional()
+  note: z.string().trim().max(280, "Keep the note under 280 characters").optional(),
+  /** Where the buyer wants it delivered (FARM-26). Copied onto the order when the offer is accepted. */
+  dropOff: dropOffSchema.optional()
 });
 export type CreateOfferInput = z.input<typeof createOfferSchema>;
 export type CreateOfferData = z.output<typeof createOfferSchema>;
+
+/** The optional body of an accept. `.default({})` because the app used to send no body at all. */
+export const acceptOfferSchema = z.object({ dropOff: dropOffSchema.optional() }).default({});
+export type AcceptOfferInput = z.input<typeof acceptOfferSchema>;
+export type AcceptOfferData = z.output<typeof acceptOfferSchema>;
+
+export const acceptOfferResultSchema = z.object({ orderId: z.string() });
+export type AcceptOfferResult = z.infer<typeof acceptOfferResultSchema>;
 
 export const offerSchema = z.object({
   id: z.string(),
@@ -72,11 +86,16 @@ export const offerSchema = z.object({
   listingType: listingTypeSchema,
   cropId: cropIdSchema,
   initiatedBy: senderTypeSchema,
+  /** Snapshots taken when the offer was created. Absent on offers stored before they existed. */
+  farmerName: z.string().optional(),
+  buyerName: z.string().optional(),
 
   pricePerKg: pricePerKgSchema,
   quantityKg: kgSchema,
   total: z.number().nonnegative(),
   note: z.string().optional(),
+  /** Where the buyer wants it delivered. Copied onto the order at acceptance. */
+  dropOff: dropOffSchema.optional(),
 
   status: offerStatusSchema,
   actionRequiredBy: senderTypeSchema,
