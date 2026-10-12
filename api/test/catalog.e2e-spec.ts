@@ -22,8 +22,9 @@ import {
 describe('catalog (e2e)', () => {
   let app: INestApplication<App>;
   const suffix = Number(Date.now().toString().slice(-8));
+  // Offset so a suite that starts in the same millisecond cannot pick the same phone.
   const phoneOf = (n: number) =>
-    `07${((suffix + n) % 1e8).toString().padStart(8, '0')}`;
+    `07${((suffix + 10000000 + n) % 1e8).toString().padStart(8, '0')}`;
 
   let buyerToken: string;
   let otherBuyerToken: string;

@@ -32,8 +32,9 @@ describe('payments (e2e)', () => {
   let app: INestApplication<App>;
   let orders: OrderRepository;
   const suffix = Number(Date.now().toString().slice(-8));
+  // Offset so a suite that starts in the same millisecond cannot pick the same phone.
   const phoneOf = (n: number) =>
-    `07${((suffix + n) % 1e8).toString().padStart(8, '0')}`;
+    `07${((suffix + 40000000 + n) % 1e8).toString().padStart(8, '0')}`;
   const district = `E2E-${suffix}-pay`;
 
   let buyer: AuthResponse;
