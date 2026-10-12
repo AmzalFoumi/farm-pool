@@ -466,6 +466,100 @@ describe('offers', () => {
     });
   });
 
+  describe('accept a response to a wanted request', () => {
+    it('closes the request, takes the stock, and creates the accepted order', async () => {
+      const offer = await create.execute(
+        farmer.id,
+        'FARMER',
+        response(30, 175),
+      );
+      const market = {
+        label: 'Pettah',
+        point: { latitude: 6.93, longitude: 79.85 },
+      };
+
+      const { orderId } = await accept.execute(buyer.id, offer.id, {
+        dropOff: market,
+      });
+
+      expect((await wanteds.findById(wantedId))?.status).toBe('closed');
+      expect((await listings.findById(listingId))?.quantityKg).toBe(70);
+      expect(await orders.findById(orderId)).toMatchObject({
+        buyerId: buyer.id,
+        farmerId: farmer.id,
+        listingId,
+        offerId: offer.id,
+        quantityKg: 30,
+        pricePerKg: 175,
+        status: 'accepted',
+        dropOff: market,
+      });
+    });
+
+    it('declines the other responses to that request, and nothing else', async () => {
+      const otherListing = await listings.seed(listingFields(otherFarmer));
+      const winner = await create.execute(farmer.id, 'FARMER', response());
+      const loser = await create.execute(otherFarmer.id, 'FARMER', {
+        ...response(),
+        listingId: otherListing.id,
+      });
+      // An ordinary offer by another buyer on the winning farmer's listing.
+      const ordinary = await create.execute(
+        otherBuyer.id,
+        'BUYER',
+        standard(20),
+      );
+
+      await accept.execute(buyer.id, winner.id);
+
+      expect((await offers.findById(loser.id))?.status).toBe('DECLINED');
+      expect((await offers.findById(ordinary.id))?.status).toBe('PENDING');
+    });
+
+    it('refuses once the buyer has closed the request, and changes nothing', async () => {
+      const offer = await create.execute(farmer.id, 'FARMER', response());
+      await wanteds.updateStatus(wantedId, 'closed');
+
+      await expect(accept.execute(buyer.id, offer.id)).rejects.toMatchObject({
+        code: 'wanted_closed',
+        kind: 'conflict',
+      });
+      expect((await offers.findById(offer.id))?.status).toBe('PENDING');
+      expect((await listings.findById(listingId))?.quantityKg).toBe(100);
+      expect(await orders.findByBuyer(buyer.id)).toEqual([]);
+    });
+
+    it('reopens the request when the stock has gone', async () => {
+      const offer = await create.execute(farmer.id, 'FARMER', response(60));
+      // Someone else's deal takes most of the stock first.
+      const big = await create.execute(otherBuyer.id, 'BUYER', standard(70));
+      await accept.execute(farmer.id, big.id);
+
+      await expect(accept.execute(buyer.id, offer.id)).rejects.toMatchObject({
+        code: 'insufficient_stock',
+      });
+      expect((await wanteds.findById(wantedId))?.status).toBe('open');
+      expect((await offers.findById(offer.id))?.status).toBe('PENDING');
+    });
+
+    it('lets the farmer accept after the buyer counters', async () => {
+      const offer = await create.execute(
+        farmer.id,
+        'FARMER',
+        response(30, 175),
+      );
+      await negotiate.execute(buyer.id, offer.id, {
+        proposedPrice: 168,
+        proposedQuantityKg: 30,
+      });
+
+      const { orderId } = await accept.execute(farmer.id, offer.id);
+
+      expect((await orders.findById(orderId))?.pricePerKg).toBe(168);
+      expect((await wanteds.findById(wantedId))?.status).toBe('closed');
+    });
+  });
+
   describe('decline', () => {
     it('lets either side decline a live offer, once', async () => {
       const offer = await create.execute(buyer.id, 'BUYER', standard());
