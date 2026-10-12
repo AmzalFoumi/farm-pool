@@ -42,7 +42,7 @@ export default function StepReview({
     certifications: ["GAP Verified"]
   },
   step3 = { widePhotoUri: null, closeupPhotoUri: null, packagingPhotoUri: null },
-  step4 = { pricePerKg: 195, grossEarnings: 58500 },
+  step4 = { pricePerKg: 195, grossEarnings: 58500, acceptNegotiation: false },
   step5 = {
     fulfillmentOption: "shared",
     harvestDate: "05 Nov 2026",
