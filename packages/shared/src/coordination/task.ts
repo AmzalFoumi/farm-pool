@@ -6,8 +6,9 @@ import { cropIdSchema } from "../catalog/crops";
  * "Needs you today" (FARM-25) — real items a coordinator should look at, each a discriminated
  * union member so the app can render and route each kind differently.
  *
- * `verify_farmer` and `approve_listing` are read-only: the api has no approve/verify endpoint yet
- * (`.plans/coordination/OPEN.md` #5), so the app shows these, it does not act on them.
+ * `verify_farmer` is read-only: the api has no verify endpoint yet
+ * (`.plans/coordination/OPEN.md` #5), so the app shows it, it does not act on it. `approve_listing`
+ * is actioned by `PUT /coordination/listings/:listingId/approve`.
  * `benchmark_missing` and `benchmark_stale` (FARM-37) are different — tapping either opens Set
  * Crop Price, a real write. Both only appear for a crop their own farmers are actively listing; a
  * crop nobody sells yet is not a task. `benchmark_missing` is a crop with no price at all;
