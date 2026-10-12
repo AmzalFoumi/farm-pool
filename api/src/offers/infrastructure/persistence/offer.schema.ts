@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, type HydratedDocument } from 'mongoose';
-import { CROP_IDS, type CropId } from '@farm-pool/shared';
+import { CROP_IDS, type CropId, type DropOff } from '@farm-pool/shared';
 
 @Schema({ _id: false })
 export class NegotiationEntryDocument {
@@ -22,11 +22,15 @@ export class OfferDocument extends Document {
   @Prop({ required: true, enum: ['STANDARD', 'WANTED'] }) listingType: string;
   @Prop({ type: String, required: true, enum: CROP_IDS }) cropId: CropId;
   @Prop({ required: true, enum: ['FARMER', 'BUYER'] }) initiatedBy: string;
+  @Prop({ type: String, required: false }) farmerName?: string;
+  @Prop({ type: String, required: false }) buyerName?: string;
 
   @Prop({ required: true }) pricePerKg: number;
   @Prop({ required: true }) quantityKg: number;
   @Prop({ required: true }) total: number;
   @Prop() note?: string;
+  /** `{ label?, point: { latitude, longitude } }`, validated by zod at the edge. */
+  @Prop({ type: Object, required: false }) dropOff?: DropOff;
 
   @Prop({
     required: true,
