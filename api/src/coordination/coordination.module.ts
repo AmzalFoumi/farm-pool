@@ -11,6 +11,7 @@ import {
   type UserRepository,
 } from '../identity/domain/repositories/user.repository';
 import { ApproveFarmer } from './application/services/approve-farmer';
+import { ApproveListing } from './application/services/approve-listing';
 import { GetBenchmarkPriceHistory } from './application/services/get-benchmark-price-history';
 import { GetBenchmarkPrices } from './application/services/get-benchmark-prices';
 import { GetCoordinatorDashboard } from './application/services/get-coordinator-dashboard';
@@ -148,6 +149,14 @@ import { MongooseCooperativeRepository } from './infrastructure/persistence/mong
         cooperatives: CooperativeRepository,
         users: UserRepository,
       ) => new RejectFarmer(cooperatives, users),
+    },
+    {
+      provide: ApproveListing,
+      inject: [COOPERATIVE_REPOSITORY, LISTING_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        listings: ListingRepository,
+      ) => new ApproveListing(cooperatives, listings),
     },
   ],
   exports: [],

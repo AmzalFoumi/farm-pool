@@ -2,7 +2,8 @@
 
 **Owns:** a negotiation between one buyer and one farmer about one listing, before an order
 exists: the price and quantity currently on the table, whose turn it is, and every counter made
-so far.
+so far. It is started either by a buyer on that listing, or by a farmer answering a buyer's wanted
+request from that listing (the offer then carries `wantedId`; `listingId` is always a listing).
 
 Built in FARM-46. When an offer is accepted it becomes an order (`api/src/orders/README.md`), and
 from there on the orders and payments domains take over.
@@ -27,16 +28,21 @@ Each counter overwrites the current `pricePerKg` / `quantityKg` / `note`, append
 the buyer to pay". Paying moves it to `open` and onto the driver job board (FARM-41). It must not
 be created as `open`: that would skip payment.
 
+Accepting a response to a wanted request first closes the request (`markClosedIfOpen`), then takes
+the stock. If the stock is gone the request is reopened. The other live responses to that request
+are declined; ordinary offers on the listing are not.
+
 ## Endpoints
 
 | Method | Path | Allow | Result |
 | ------ | ---- | ----- | ------ |
 | GET | `/offers/listing/:listingId` | `listing:read` | 200 `Offer[]` — the offers on that listing the caller is a side of |
+| GET | `/offers/wanted/:wantedId` | `wanted:read` | 200 `Offer[]` — the responses to that request the caller is a side of (the buyer sees all, a farmer only their own) |
 | GET | `/offers/mine` | `order:read-own` | 200 `Offer[]` — every offer the caller is a side of |
 | GET | `/offers/:id` | `order:read-own` | 200 `Offer`; 403 `not_your_offer`; 404 when it does not exist |
-| POST | `/offers` | `offer:create` (buyer, farmer) | 201 `Offer` in `PENDING`; 409 `listing_unavailable`; 409 `negotiation_not_accepted`; 400 `quantity_out_of_range`; 409 `offer_exists`; 409 `wanted_offers_unavailable` for a wanted request |
+| POST | `/offers` | `offer:create` (buyer, farmer) | 201 `Offer` in `PENDING`; 409 `listing_unavailable`; 409 `negotiation_not_accepted`; 400 `quantity_out_of_range`; 409 `offer_exists`; for a response to a wanted request also 403 `not_your_listing`, 409 `wanted_closed`, 400 `crop_mismatch` |
 | POST | `/offers/:id/negotiation` | `order:renegotiate` | `Offer` in `NEGOTIATING`; 403 `not_your_offer`; 400 when it is not the caller's turn; 400 `quantity_out_of_range` |
-| POST | `/offers/:id/accept` | `order:renegotiate` | optional body `{ dropOff? }`; `{ orderId }`; 403 `not_your_offer`; 400 when it is not the caller's turn; 409 `insufficient_stock` when the stock is gone |
+| POST | `/offers/:id/accept` | `order:renegotiate` | optional body `{ dropOff? }`; `{ orderId }`; 403 `not_your_offer`; 400 when it is not the caller's turn; 409 `insufficient_stock` when the stock is gone; 409 `wanted_closed` when it answers a request that is no longer open |
 | POST | `/offers/:id/decline` | `order:renegotiate` | `Offer` in `DECLINED`; 403 `not_your_offer` |
 
 One live offer per buyer, farmer and listing. `farmerName` and `buyerName` are snapshots taken at
@@ -75,10 +81,7 @@ left with less than its `minOrderKg` becomes `sold`.
 
 ## Not done yet
 
-- **Offers on a buyer's "wanted" request are refused** with 409 `wanted_offers_unavailable`
-  (FARM-47). An order made from one would have no listing, and the listing is where a driver
-  reads the pickup place from, so the buyer could pay for an order no driver is ever shown.
-  Two more things block it: creating one needs `order:place`, which only buyers have, and
-  `executeFromOffer` looks the request up as a listing.
+- Closing a wanted request does not decline its live responses; accepting one then answers
+  `wanted_closed`. Catalog cannot call into offers (offers depends on catalog).
 - Offers do not expire (`expire-offers.service.ts` is a note, not a job).
 - The services import NestJS inside `application/`, which `npm run lint -w api` reports.

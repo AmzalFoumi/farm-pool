@@ -17,6 +17,7 @@ import { CreateOfferService } from './application/services/create-offer.service'
 import { DeclineOfferService } from './application/services/decline-offer.service';
 import { GetOfferService } from './application/services/get-offer.service';
 import { ListMyOffersService } from './application/services/list-my-offers.service';
+import { ListWantedOffersService } from './application/services/list-wanted-offers.service';
 import { ListOffersService } from './application/services/list-offers.service';
 import { SubmitNegotiationService } from './application/services/submit-negotiation.service';
 import { toOfferDto } from './domain/entities/offer';
@@ -31,6 +32,7 @@ export class OffersController {
     private readonly listOffers: ListOffersService,
     private readonly listMyOffers: ListMyOffersService,
     private readonly getOffer: GetOfferService,
+    private readonly listWantedOffers: ListWantedOffersService,
   ) {}
 
   /* Declared before `:id`, or Nest would read "mine" as an id. */
@@ -48,6 +50,17 @@ export class OffersController {
     @Param('listingId') listingId: string,
   ) {
     const offers = await this.listOffers.execute(user.sub, listingId);
+    return offers.map(toOfferDto);
+  }
+
+  /* The farmers who answered a buyer's wanted request (FARM-47). Declared before `:id`. */
+  @Allow('wanted:read')
+  @Get('wanted/:wantedId')
+  async getForWanted(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('wantedId') wantedId: string,
+  ) {
+    const offers = await this.listWantedOffers.execute(user.sub, wantedId);
     return offers.map(toOfferDto);
   }
 

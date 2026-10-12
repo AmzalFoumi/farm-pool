@@ -68,9 +68,33 @@ export class MongooseOfferRepository implements OfferRepository {
         buyerId: pair.buyerId,
         farmerId: pair.farmerId,
         listingId: pair.listingId,
+        // No `wantedId` in the pair means "an ordinary offer", so match documents without one.
+        wantedId: pair.wantedId ?? { $exists: false },
         status: { $in: ['PENDING', 'NEGOTIATING'] },
       })
       .sort({ createdAt: -1 })
+      .exec();
+    return docs.map((d) => this.toDomain(d));
+  }
+
+  async findByWantedId(wantedId: string): Promise<Offer[]> {
+    const docs = await this.model
+      .find({ wantedId })
+      .sort({ createdAt: -1 })
+      .exec();
+    return docs.map((d) => this.toDomain(d));
+  }
+
+  async findActiveByWantedId(
+    wantedId: string,
+    excludeOfferId?: string,
+  ): Promise<Offer[]> {
+    const docs = await this.model
+      .find({
+        wantedId,
+        status: { $in: ['PENDING', 'NEGOTIATING'] },
+        ...(excludeOfferId ? { _id: { $ne: excludeOfferId } } : {}),
+      })
       .exec();
     return docs.map((d) => this.toDomain(d));
   }
@@ -105,6 +129,7 @@ export class MongooseOfferRepository implements OfferRepository {
       farmerId: doc.farmerId,
       listingId: doc.listingId,
       listingType: doc.listingType as ListingType,
+      ...(typeof doc.wantedId === 'string' ? { wantedId: doc.wantedId } : {}),
       cropId: doc.cropId,
       initiatedBy: doc.initiatedBy as SenderType,
       ...(typeof doc.farmerName === 'string'
@@ -140,6 +165,7 @@ export class MongooseOfferRepository implements OfferRepository {
       farmerId: offer.farmerId,
       listingId: offer.listingId,
       listingType: offer.listingType,
+      ...(offer.wantedId !== undefined ? { wantedId: offer.wantedId } : {}),
       cropId: offer.cropId,
       initiatedBy: offer.initiatedBy,
       ...(offer.farmerName !== undefined

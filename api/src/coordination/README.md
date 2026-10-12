@@ -25,6 +25,9 @@ Recipe: `.plans/PLAYBOOK.md`.
 | GET | `/coordination/dashboard` | `cooperative:read-dashboard` (coordinator) | 200 `CoordinatorDashboard` — the cooperative, farmer count, verified listing count; 404 `cooperative_not_found` |
 | GET | `/coordination/farmers` | `cooperative:read-farmers` (coordinator) | 200 `CooperativeFarmer[]` — every member, status, listing count, most-recent district; 404 `cooperative_not_found` |
 | GET | `/coordination/tasks` | `cooperative:read-tasks` (coordinator) | 200 `CoordinatorTask[]` — farmers pending verification + listings pending approval; 404 `cooperative_not_found` |
+| PUT | `/coordination/listings/:listingId/approve` | `listings:approve` (coordinator) | 200 `Listing` (now `verified`); 403 `forbidden`; 404 `cooperative_not_found` or `listing_not_found` (also for a listing of a farmer outside the cooperative); 409 `listing_not_pending` |
+
+Approving is atomic: `ListingRepository.markVerifiedIfPending` matches on `pending_approval` inside the write. Rejecting a listing is not built.
 
 Errors are `{ code, message }` via `DomainErrorFilter` (`src/shared/http`), registered once in
 `app.module.ts`.
@@ -37,9 +40,9 @@ Errors are `{ code, message }` via `DomainErrorFilter` (`src/shared/http`), regi
   `coordination` imports from it — `coordination.module.ts` exports nothing yet.
 - **A coordinator's cooperative is looked up by `findByCoordinatorId`, not assumed 1:1.** Every
   use-case takes the first result. See `.plans/coordination/OPEN.md` #1.
-- **Tasks are read-only.** `GetCoordinatorTasks` shows farmers with `status: pending_review` and
-  listings with `status: pending_approval` — there is no verify/approve endpoint yet
-  (`.plans/coordination/OPEN.md` #5), so the app displays these, it does not act on them.
+- **Tasks are a read; the listing ones can be acted on.** `GetCoordinatorTasks` shows farmers with
+  `status: pending_review` and listings with `status: pending_approval`. A listing task is cleared by
+  `PUT /coordination/listings/:listingId/approve` (FARM-43); the task list itself changes nothing.
 - **`ListingFilter` gained `farmerIds` and `ListingRepository` gained `findPendingApproval`** in
   `catalog`, specifically so this domain could query listings scoped to a cooperative without
   duplicating catalog's query logic. Both are additive — nothing in `catalog` had to change

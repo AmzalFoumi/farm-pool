@@ -86,3 +86,27 @@ describe('GetListing', () => {
     });
   });
 });
+
+describe('ListingRepository.markVerifiedIfPending', () => {
+  const fields: NewListing = { ...base, status: 'pending_approval' };
+
+  it('moves a pending listing to verified, once', async () => {
+    const listings = new InMemoryListingRepository();
+    const pending = await listings.seed({ ...fields });
+
+    const first = await listings.markVerifiedIfPending(pending.id);
+    expect(first?.status).toBe('verified');
+
+    const second = await listings.markVerifiedIfPending(pending.id);
+    expect(second).toBeNull();
+  });
+
+  it('leaves a listing in any other status alone', async () => {
+    const listings = new InMemoryListingRepository();
+    const sold = await listings.seed({ ...fields, status: 'sold' });
+
+    expect(await listings.markVerifiedIfPending(sold.id)).toBeNull();
+    expect((await listings.findById(sold.id))?.status).toBe('sold');
+    expect(await listings.markVerifiedIfPending('missing')).toBeNull();
+  });
+});

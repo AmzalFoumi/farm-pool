@@ -7,6 +7,7 @@ import type {
   CropId,
   CropPriceContext,
   JoinCooperativeInput,
+  Listing,
   PublicUser,
   RejectFarmerInput,
   SetBenchmarkPrice as SetBenchmarkPriceBody,
@@ -23,6 +24,7 @@ import { CurrentUser } from '../identity/auth/current-user.decorator';
 import { Allow, AllowWhilePending } from '../identity/auth/roles.decorator';
 import { ZodValidationPipe } from '../shared/http/zod-validation.pipe';
 import { ApproveFarmer } from './application/services/approve-farmer';
+import { ApproveListing } from './application/services/approve-listing';
 import { GetBenchmarkPriceHistory } from './application/services/get-benchmark-price-history';
 import { GetBenchmarkPrices } from './application/services/get-benchmark-prices';
 import { GetCoordinatorDashboard } from './application/services/get-coordinator-dashboard';
@@ -47,6 +49,7 @@ import { SetBenchmarkPrice } from './application/services/set-benchmark-price';
  * | POST   | /coordination/apply     | `cooperative:join` (while pending) | 200 `Cooperative` · 404 |
  * | PUT    | /coordination/farmers/:farmerId/approve | `farmers:approve` | 200 `PublicUser` · 404 · 409 |
  * | PUT    | /coordination/farmers/:farmerId/reject | `farmers:reject`  | 200 `PublicUser` · 400 · 404 · 409 |
+ * | PUT    | /coordination/listings/:listingId/approve | `listings:approve` | 200 `Listing` · 404 · 409 |
  */
 @Controller('coordination')
 export class CoordinationController {
@@ -60,6 +63,7 @@ export class CoordinationController {
     private readonly joinCooperative: JoinCooperative,
     private readonly approveFarmer: ApproveFarmer,
     private readonly rejectFarmer: RejectFarmer,
+    private readonly approveListing: ApproveListing,
   ) {}
 
   @Allow('cooperative:read-dashboard')
@@ -140,5 +144,14 @@ export class CoordinationController {
     @Body(new ZodValidationPipe(rejectFarmerSchema)) body: RejectFarmerInput,
   ): Promise<PublicUser> {
     return this.rejectFarmer.execute(user.sub, farmerId, body.reason);
+  }
+
+  @Allow('listings:approve')
+  @Put('listings/:listingId/approve')
+  approveListingById(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('listingId') listingId: string,
+  ): Promise<Listing> {
+    return this.approveListing.execute(user.sub, listingId);
   }
 }

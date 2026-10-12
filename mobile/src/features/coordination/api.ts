@@ -6,6 +6,7 @@ import {
   coordinatorDashboardSchema,
   coordinatorTaskListSchema,
   cropPriceContextListSchema,
+  listingSchema,
   publicUserSchema,
   type BenchmarkPrice,
   type Cooperative,
@@ -14,6 +15,7 @@ import {
   type CoordinatorTask,
   type CropId,
   type CropPriceContext,
+  type Listing,
   type PublicUser,
   type SetBenchmarkPrice
 } from "@farm-pool/shared";
@@ -78,6 +80,15 @@ export const coordinationApi = {
       token,
       body: { reason },
       schema: publicUserSchema
+    });
+  },
+
+  /** Approve a member farmer's pending listing (FARM-43). It becomes visible to buyers. */
+  approveListing(token: string, listingId: string): Promise<Listing> {
+    return apiFetch(`/coordination/listings/${encodeURIComponent(listingId)}/approve`, {
+      method: "PUT",
+      token,
+      schema: listingSchema
     });
   }
 };

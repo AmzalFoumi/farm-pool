@@ -452,8 +452,9 @@ decision is made.
 Decided 18 September 2026 (FARM-36). The team's data model had no table for the reverse listing
 the product doc describes (a buyer says what they want; farmers respond). It is a
 `wanted_listings` collection in the catalog domain, because it is the same kind of thing as a
-listing — an offer on the market, from the other side — and the farmer-response story will add a
-`responses` concept beside it rather than inside it. Lifecycle is `open` → `closed` for now.
+listing — an offer on the market, from the other side. How a farmer answers one is decided in
+"Farmer responses to wanted requests are offers (FARM-47)" below. Lifecycle is `open` → `closed`
+for now.
 
 ### Video calls: Agora, request-then-accept, linked to a listing
 
@@ -624,6 +625,14 @@ vectors — and they are composed into one SVG by centring each on the box Figma
   again atomically at accept (`deductQuantity`), so two accepts cannot sell the same stock. A
   short listing at accept is 409 `insufficient_stock`.
 - **`offer:create` is its own action** (buyer and farmer), so `order:place` stays buyer-only.
+
+### Farmer responses to wanted requests are offers (FARM-47)
+
+A response is an offer on the farmer's own verified listing, with `wantedId` set to the buyer's
+request. It was chosen over a separate `responses` concept, and over orders that have no listing,
+because the driver job board, payments and the coordinator's figures all read the listing, and
+this way none of them change. The cost: a farmer needs an approved listing of that crop before
+they can answer a request.
 
 ### Localisation: i18next, chosen language, and Noto in place of Poppins/Mulish
 

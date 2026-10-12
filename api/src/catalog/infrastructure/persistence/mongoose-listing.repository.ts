@@ -120,6 +120,18 @@ export class MongooseListingRepository implements ListingRepository {
     return doc ? toListing(doc) : null;
   }
 
+  async markVerifiedIfPending(id: string): Promise<Listing | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.listings
+      .findOneAndUpdate(
+        { _id: id, status: 'pending_approval' },
+        { $set: { status: 'verified' } },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toListing(doc) : null;
+  }
+
   async create(listing: NewListing): Promise<Listing> {
     const created = await this.listings.create({
       ...listing,
