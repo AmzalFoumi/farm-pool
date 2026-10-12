@@ -56,7 +56,7 @@ describe('offers', () => {
     orders = new InMemoryOrderRepository();
     offers = new InMemoryOfferRepository();
     const placeOrder = new PlaceOrder(orders, listings);
-    create = new CreateOfferService(offers, listings, wanteds);
+    create = new CreateOfferService(offers, listings, users);
     negotiate = new SubmitNegotiationService(offers);
     accept = new AcceptOfferService(offers, listings, wanteds, placeOrder);
     decline = new DeclineOfferService(offers);
@@ -91,6 +91,97 @@ describe('offers', () => {
       await expect(
         create.execute(farmer.id, 'FARMER', standard()),
       ).rejects.toMatchObject({ code: 'invalid', kind: 'invalid' });
+    });
+
+    it('records both names and the delivery point the buyer gave', async () => {
+      const dropOff = {
+        label: 'Manning Market',
+        point: { latitude: 6.94, longitude: 79.86 },
+      };
+      const offer = await create.execute(buyer.id, 'BUYER', {
+        ...standard(),
+        dropOff,
+      });
+      expect(offer).toMatchObject({
+        farmerName: 'Nimal',
+        buyerName: 'Priya',
+        dropOff,
+      });
+    });
+
+    it('refuses a listing that is missing or not verified', async () => {
+      const pending = await listings.seed({
+        ...listingFields(farmer),
+        status: 'pending_approval',
+      });
+      await expect(
+        create.execute(buyer.id, 'BUYER', { ...standard(), listingId: 'nope' }),
+      ).rejects.toMatchObject({
+        code: 'listing_unavailable',
+        kind: 'conflict',
+      });
+      await expect(
+        create.execute(buyer.id, 'BUYER', {
+          ...standard(),
+          listingId: pending.id,
+        }),
+      ).rejects.toMatchObject({ code: 'listing_unavailable' });
+    });
+
+    it('refuses a listing whose farmer does not take offers', async () => {
+      const fixed = await listings.seed({
+        ...listingFields(farmer),
+        acceptNegotiation: false,
+      });
+      await expect(
+        create.execute(buyer.id, 'BUYER', {
+          ...standard(),
+          listingId: fixed.id,
+        }),
+      ).rejects.toMatchObject({
+        code: 'negotiation_not_accepted',
+        kind: 'conflict',
+      });
+    });
+
+    it('refuses a quantity below the minimum order or above the stock', async () => {
+      await expect(
+        create.execute(buyer.id, 'BUYER', standard(5)),
+      ).rejects.toMatchObject({
+        code: 'quantity_out_of_range',
+        kind: 'invalid',
+      });
+      await expect(
+        create.execute(buyer.id, 'BUYER', standard(101)),
+      ).rejects.toMatchObject({ code: 'quantity_out_of_range' });
+      await expect(
+        create.execute(buyer.id, 'BUYER', standard(100)),
+      ).resolves.toBeDefined();
+    });
+
+    it('refuses a second live offer from the same buyer, but allows one after a decline', async () => {
+      const first = await create.execute(buyer.id, 'BUYER', standard());
+
+      await expect(
+        create.execute(buyer.id, 'BUYER', standard()),
+      ).rejects.toMatchObject({ code: 'offer_exists', kind: 'conflict' });
+      await expect(
+        create.execute(otherBuyer.id, 'BUYER', standard()),
+      ).resolves.toBeDefined();
+
+      await decline.execute(buyer.id, first.id);
+      await expect(
+        create.execute(buyer.id, 'BUYER', standard()),
+      ).resolves.toBeDefined();
+    });
+
+    it('still refuses a wanted offer', async () => {
+      await expect(
+        create.execute(farmer.id, 'FARMER', {
+          ...standard(),
+          listingType: 'WANTED',
+        }),
+      ).rejects.toMatchObject({ code: 'wanted_offers_unavailable' });
     });
   });
 

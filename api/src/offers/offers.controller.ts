@@ -37,13 +37,14 @@ export class OffersController {
     return offers.map(toOfferDto);
   }
 
-  @Allow('order:place') // Using order:place because buying a listing is order:place, offering on wanted is similar
+  @Allow('offer:create')
   @Post()
   async create(
     @CurrentUser() user: AuthenticatedUser,
     @Body(new ZodValidationPipe(createOfferSchema)) data: CreateOfferData,
   ) {
-    const role = user.role.toUpperCase() as SenderType;
+    // `offer:create` admits buyers and farmers only, so these are the two cases.
+    const role: SenderType = user.role === 'farmer' ? 'FARMER' : 'BUYER';
     const offer = await this.createOffer.execute(user.sub, role, data);
     return toOfferDto(offer);
   }

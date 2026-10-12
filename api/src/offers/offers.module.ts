@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CatalogModule } from '../catalog/catalog.module';
+import { IdentityModule } from '../identity/identity.module';
 import { OrdersModule } from '../orders/orders.module';
 import { AcceptOfferService } from './application/services/accept-offer.service';
 import { CreateOfferService } from './application/services/create-offer.service';
@@ -20,6 +21,7 @@ import { OffersController } from './offers.controller';
     MongooseModule.forFeature([{ name: OFFER_MODEL, schema: OfferSchema }]),
     OrdersModule,
     CatalogModule,
+    IdentityModule,
   ],
   controllers: [OffersController],
   providers: [
