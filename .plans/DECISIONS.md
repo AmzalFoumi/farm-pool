@@ -617,6 +617,14 @@ exported as single SVGs. Slide 1 did not — its frame contains text, so Figma e
 vectors — and they are composed into one SVG by centring each on the box Figma reported, with the
 "1" and "2" badges rendered as React Native `<Text>` so Poppins resolves through expo-font.
 
+### Offers (FARM-46)
+
+- **One live offer per buyer, farmer and listing.** A second one is refused with 409 `offer_exists`.
+- **Quantity is checked against the listing** when an offer is made and when it is countered, and
+  again atomically at accept (`deductQuantity`), so two accepts cannot sell the same stock. A
+  short listing at accept is 409 `insufficient_stock`.
+- **`offer:create` is its own action** (buyer and farmer), so `order:place` stays buyer-only.
+
 ### Localisation: i18next, chosen language, and Noto in place of Poppins/Mulish
 
 Decided 1 October 2026 (LP-91). All four research interviews were conducted in Sinhala or Tamil,

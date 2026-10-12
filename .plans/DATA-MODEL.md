@@ -93,6 +93,7 @@ one order; `items[]` is added beside these fields only if multi-item orders are 
 | `farmerName` | string | yes | | **Snapshot** from the listing. | yes |
 | `listingId` | string → `listings._id` | yes | yes | | yes |
 | `offerId` | string → `offers._id` | no | yes | Set only on an order created from an accepted offer (FARM-46). | yes (optional) |
+| `dropOff` | embedded object (`label`, `point`) | no | | The buyer's delivery point. Set on an order made from an accepted offer when the buyer gave one (FARM-46). | yes (optional) |
 | `cropId` | enum `CropId` | yes | | **Copied from the listing.** | yes |
 | `quantityKg` | integer ≥ 1 | yes | | Must sit between the listing's `minOrderKg` and `quantityKg` at placement. | yes |
 | `pricePerKg` | number ≥ 0 | yes | | **Snapshot** of the listing price at placement; a later price change does not alter an existing order. | yes |
@@ -134,6 +135,9 @@ A negotiation that comes before an order (FARM-46). One document per offer.
 | Field | Type | Required | Index | Meaning | On the wire? |
 | ----- | ---- | -------- | ----- | ------- | ------------ |
 | `buyerId` / `farmerId` | string → `users._id` | yes | yes | The two sides. | yes |
+| `farmerName` | string | no | | Snapshot of the farmer's display name at creation. | yes (optional) |
+| `buyerName` | string | no | | Snapshot of the buyer's display name at creation. | yes (optional) |
+| `dropOff` | embedded object (`label`, `point`) | no | | The buyer's delivery point, set when making, countering or accepting. Copied onto the order. | yes (optional) |
 | `listingId` | string | yes | yes | The listing, or the wanted request, the offer is about. | yes |
 | `listingType` | `STANDARD` / `WANTED` | yes | | Which of the two `listingId` points at. | yes |
 | `cropId` | enum `CropId` | yes | | Copied from the listing. | yes |
