@@ -8,7 +8,9 @@ export type CoordinationErrorCode =
   | 'cooperative_not_found'
   | 'no_cooperative_for_district'
   | 'farmer_not_found'
-  | 'farmer_not_pending';
+  | 'farmer_not_pending'
+  | 'listing_not_found'
+  | 'listing_not_pending';
 
 export class CoordinationError extends DomainError<CoordinationErrorCode> {
   constructor(
