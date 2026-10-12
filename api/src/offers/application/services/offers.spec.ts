@@ -57,7 +57,7 @@ describe('offers', () => {
     offers = new InMemoryOfferRepository();
     const placeOrder = new PlaceOrder(orders, listings);
     create = new CreateOfferService(offers, listings, users);
-    negotiate = new SubmitNegotiationService(offers);
+    negotiate = new SubmitNegotiationService(offers, listings);
     accept = new AcceptOfferService(offers, listings, wanteds, placeOrder);
     decline = new DeclineOfferService(offers);
 
@@ -216,6 +216,43 @@ describe('offers', () => {
       await expect(
         negotiate.execute(otherBuyer.id, offer.id, terms),
       ).rejects.toMatchObject({ code: 'not_your_offer', kind: 'forbidden' });
+    });
+
+    it('refuses a countered quantity the listing cannot fill', async () => {
+      const offer = await create.execute(buyer.id, 'BUYER', standard());
+      await expect(
+        negotiate.execute(farmer.id, offer.id, {
+          proposedPrice: 176,
+          proposedQuantityKg: 500,
+        }),
+      ).rejects.toMatchObject({ code: 'quantity_out_of_range' });
+      expect(await offers.findById(offer.id)).toMatchObject({
+        status: 'PENDING',
+        quantityKg: 40,
+      });
+    });
+
+    it('keeps a delivery point from the buyer and ignores one from the farmer', async () => {
+      const offer = await create.execute(buyer.id, 'BUYER', standard());
+      const farmGate = { point: { latitude: 7.48, longitude: 80.36 } };
+      const market = {
+        label: 'Pettah',
+        point: { latitude: 6.93, longitude: 79.85 },
+      };
+
+      const fromFarmer = await negotiate.execute(farmer.id, offer.id, {
+        proposedPrice: 176,
+        proposedQuantityKg: 40,
+        dropOff: farmGate,
+      });
+      expect(fromFarmer.dropOff).toBeUndefined();
+
+      const fromBuyer = await negotiate.execute(buyer.id, offer.id, {
+        proposedPrice: 172,
+        proposedQuantityKg: 40,
+        dropOff: market,
+      });
+      expect(fromBuyer.dropOff).toEqual(market);
     });
   });
 
