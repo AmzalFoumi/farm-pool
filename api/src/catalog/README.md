@@ -68,6 +68,9 @@ refusing with `not_your_request` (`forbidden`) or `wanted_already_closed` (`conf
 app side `wanted/new.tsx` parses with the shared schema first, then `router.back()` and the list
 reloads on focus (`useReloadOnRefocus`).
 
+A farmer answers a request with an offer that carries the request's id (`api/src/offers/README.md`).
+`markClosedIfOpen` is the atomic step that lets one response win.
+
 ## Reuse points
 
 - **`LISTING_REPOSITORY`** is exported from `catalog.module.ts`; `orders` injects it to read the
