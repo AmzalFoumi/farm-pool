@@ -62,7 +62,26 @@ export class InMemoryOfferRepository implements OfferRepository {
           o.buyerId === pair.buyerId &&
           o.farmerId === pair.farmerId &&
           o.listingId === pair.listingId &&
+          o.wantedId === pair.wantedId &&
           LIVE.includes(o.status),
+      ),
+    );
+  }
+
+  findByWantedId(wantedId: string): Promise<Offer[]> {
+    return Promise.resolve(this.newestFirst((o) => o.wantedId === wantedId));
+  }
+
+  findActiveByWantedId(
+    wantedId: string,
+    excludeOfferId?: string,
+  ): Promise<Offer[]> {
+    return Promise.resolve(
+      this.newestFirst(
+        (o) =>
+          o.wantedId === wantedId &&
+          LIVE.includes(o.status) &&
+          o.id !== excludeOfferId,
       ),
     );
   }

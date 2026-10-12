@@ -14,6 +14,8 @@ export interface Offer {
   farmerId: string;
   listingId: string;
   listingType: ListingType;
+  /** The buyer's wanted request this offer answers (FARM-47). `listingId` is still a listing. */
+  wantedId?: string;
   cropId: CropId;
   initiatedBy: SenderType;
   /** Snapshots taken at creation. Absent on offers stored before they existed. */
@@ -50,6 +52,7 @@ export function toOfferDto(offer: Offer): OfferDto {
     farmerId: offer.farmerId,
     listingId: offer.listingId,
     listingType: offer.listingType,
+    ...(offer.wantedId !== undefined ? { wantedId: offer.wantedId } : {}),
     cropId: offer.cropId,
     initiatedBy: offer.initiatedBy,
     ...(offer.farmerName !== undefined ? { farmerName: offer.farmerName } : {}),

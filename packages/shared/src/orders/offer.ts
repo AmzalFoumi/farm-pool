@@ -6,9 +6,9 @@ import { dropOffSchema } from "./order";
 /**
  * The negotiation phase that precedes an Order (FARM-46).
  *
- * Two listing types can start a negotiation: a buyer countering a farmer's STANDARD listing, or a
- * farmer countering a buyer's WANTED listing. Both produce the same shape — only `initiatedBy`
- * and which side of (buyerId, farmerId) came from the listing vs. the requester differs.
+ * Two ways a negotiation starts. STANDARD: a buyer proposes a price on a farmer's listing.
+ * WANTED: a farmer answers a buyer's wanted request (FARM-47) — from one of the farmer's own
+ * listings, so `listingId` is ALWAYS a real listing, and `wantedId` names the request.
  *
  * LIFECYCLE. Unlike Order, this is not linear — either side can counter repeatedly:
  *
@@ -57,16 +57,24 @@ export const submitNegotiationSchema = z.object({
 export type SubmitNegotiationInput = z.input<typeof submitNegotiationSchema>;
 export type SubmitNegotiationData = z.output<typeof submitNegotiationSchema>;
 
-/** What starts a negotiation — a buyer requesting a STANDARD listing, or a farmer offering on a WANTED one. */
-export const createOfferSchema = z.object({
-  listingId: z.string().min(1),
-  listingType: listingTypeSchema,
-  proposedPrice: pricePerKgSchema,
-  proposedQuantityKg: kgSchema,
-  note: z.string().trim().max(280, "Keep the note under 280 characters").optional(),
-  /** Where the buyer wants it delivered (FARM-26). Copied onto the order when the offer is accepted. */
-  dropOff: dropOffSchema.optional()
-});
+/** What starts a negotiation — a buyer on a STANDARD listing, or a farmer answering a WANTED request. */
+export const createOfferSchema = z
+  .object({
+    /** Always a listing. For WANTED it is the responding farmer's own listing. */
+    listingId: z.string().min(1),
+    listingType: listingTypeSchema,
+    /** The buyer's wanted request this answers. Required for WANTED, not allowed for STANDARD. */
+    wantedId: z.string().min(1).optional(),
+    proposedPrice: pricePerKgSchema,
+    proposedQuantityKg: kgSchema,
+    note: z.string().trim().max(280, "Keep the note under 280 characters").optional(),
+    /** Where the buyer wants it delivered (FARM-26). Copied onto the order when the offer is accepted. */
+    dropOff: dropOffSchema.optional()
+  })
+  .refine((data) => (data.listingType === "WANTED") === (data.wantedId !== undefined), {
+    path: ["wantedId"],
+    message: "A response needs the request it answers, and only a response has one"
+  });
 export type CreateOfferInput = z.input<typeof createOfferSchema>;
 export type CreateOfferData = z.output<typeof createOfferSchema>;
 
@@ -84,6 +92,8 @@ export const offerSchema = z.object({
   farmerId: z.string(),
   listingId: z.string(),
   listingType: listingTypeSchema,
+  /** The wanted request this offer answers (FARM-47). Absent on an offer made on a listing. */
+  wantedId: z.string().optional(),
   cropId: cropIdSchema,
   initiatedBy: senderTypeSchema,
   /** Snapshots taken when the offer was created. Absent on offers stored before they existed. */

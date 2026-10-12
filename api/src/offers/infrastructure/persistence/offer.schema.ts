@@ -20,6 +20,7 @@ export class OfferDocument extends Document {
   @Prop({ required: true, index: true }) farmerId: string;
   @Prop({ required: true, index: true }) listingId: string;
   @Prop({ required: true, enum: ['STANDARD', 'WANTED'] }) listingType: string;
+  @Prop({ type: String, required: false, index: true }) wantedId?: string;
   @Prop({ type: String, required: true, enum: CROP_IDS }) cropId: CropId;
   @Prop({ required: true, enum: ['FARMER', 'BUYER'] }) initiatedBy: string;
   @Prop({ type: String, required: false }) farmerName?: string;
@@ -57,5 +58,6 @@ export const OfferSchema = SchemaFactory.createForClass(OfferDocument);
 OfferSchema.index({ buyerId: 1, status: 1 });
 OfferSchema.index({ farmerId: 1, status: 1 });
 OfferSchema.index({ listingId: 1, status: 1 });
+OfferSchema.index({ wantedId: 1, status: 1 });
 
 export const OFFER_MODEL = OfferDocument.name;

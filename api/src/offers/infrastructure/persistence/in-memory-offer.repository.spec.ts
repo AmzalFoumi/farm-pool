@@ -61,6 +61,53 @@ describe('InMemoryOfferRepository', () => {
     expect(between.map((o) => o.id)).toEqual([live.id]);
   });
 
+  it('keeps responses to a request apart from ordinary offers on the same listing', async () => {
+    const offers = new InMemoryOfferRepository();
+    const ordinary = await offers.create({ ...fields });
+    const response = await offers.create({
+      ...fields,
+      listingType: 'WANTED',
+      wantedId: 'wanted-1',
+      initiatedBy: 'FARMER',
+      actionRequiredBy: 'BUYER',
+    });
+    const otherResponse = await offers.create({
+      ...fields,
+      farmerId: 'farmer-2',
+      listingId: 'listing-2',
+      listingType: 'WANTED',
+      wantedId: 'wanted-1',
+    });
+    await offers.create({
+      ...fields,
+      wantedId: 'wanted-1',
+      status: 'DECLINED',
+    });
+
+    expect(
+      (await offers.findByWantedId('wanted-1')).map((o) => o.id).sort(),
+    ).toHaveLength(3);
+    expect(
+      (await offers.findActiveByWantedId('wanted-1', response.id)).map(
+        (o) => o.id,
+      ),
+    ).toEqual([otherResponse.id]);
+
+    const pair = {
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      listingId: 'listing-1',
+    };
+    expect((await offers.findActiveBetween(pair)).map((o) => o.id)).toEqual([
+      ordinary.id,
+    ]);
+    expect(
+      (await offers.findActiveBetween({ ...pair, wantedId: 'wanted-1' })).map(
+        (o) => o.id,
+      ),
+    ).toEqual([response.id]);
+  });
+
   it('maps an offer stored before names and delivery points existed', async () => {
     const offers = new InMemoryOfferRepository();
     const dto = toOfferDto(await offers.create({ ...fields }));
