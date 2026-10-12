@@ -11,6 +11,7 @@ import { CreateOfferService } from './create-offer.service';
 import { DeclineOfferService } from './decline-offer.service';
 import { GetOfferService } from './get-offer.service';
 import { ListMyOffersService } from './list-my-offers.service';
+import { ListWantedOffersService } from './list-wanted-offers.service';
 import { SubmitNegotiationService } from './submit-negotiation.service';
 
 const listingFields = (farmer: User): NewListing => ({
@@ -38,6 +39,7 @@ describe('offers', () => {
   let decline: DeclineOfferService;
   let listMine: ListMyOffersService;
   let getOne: GetOfferService;
+  let listForWanted: ListWantedOffersService;
   let buyer: User;
   let otherBuyer: User;
   let farmer: User;
@@ -76,6 +78,7 @@ describe('offers', () => {
     decline = new DeclineOfferService(offers);
     listMine = new ListMyOffersService(offers);
     getOne = new GetOfferService(offers);
+    listForWanted = new ListWantedOffersService(offers);
 
     buyer = await person('Priya', '+94770000001', 'buyer');
     otherBuyer = await person('Kasun', '+94770000002', 'buyer');
@@ -584,6 +587,25 @@ describe('offers', () => {
       expect(
         (await listMine.execute(farmer.id)).map((o) => o.id).sort(),
       ).toEqual([mine.id, theirs.id].sort());
+    });
+
+    it('shows a request’s responses to its buyer, and to each farmer only their own', async () => {
+      const otherListing = await listings.seed(listingFields(otherFarmer));
+      const mine = await create.execute(farmer.id, 'FARMER', response());
+      const theirs = await create.execute(otherFarmer.id, 'FARMER', {
+        ...response(),
+        listingId: otherListing.id,
+      });
+
+      expect(
+        (await listForWanted.execute(buyer.id, wantedId))
+          .map((o) => o.id)
+          .sort(),
+      ).toEqual([mine.id, theirs.id].sort());
+      expect(
+        (await listForWanted.execute(farmer.id, wantedId)).map((o) => o.id),
+      ).toEqual([mine.id]);
+      expect(await listForWanted.execute(otherBuyer.id, wantedId)).toEqual([]);
     });
 
     it('shows one offer to its two sides only', async () => {

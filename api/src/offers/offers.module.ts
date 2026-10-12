@@ -9,6 +9,7 @@ import { DeclineOfferService } from './application/services/decline-offer.servic
 import { GetOfferService } from './application/services/get-offer.service';
 import { ListMyOffersService } from './application/services/list-my-offers.service';
 import { ListOffersService } from './application/services/list-offers.service';
+import { ListWantedOffersService } from './application/services/list-wanted-offers.service';
 import { SubmitNegotiationService } from './application/services/submit-negotiation.service';
 import { OFFER_REPOSITORY } from './domain/repositories/offer.repository';
 import { MongooseOfferRepository } from './infrastructure/persistence/mongoose-offer.repository';
@@ -35,6 +36,7 @@ import { OffersController } from './offers.controller';
     ListOffersService,
     ListMyOffersService,
     GetOfferService,
+    ListWantedOffersService,
   ],
   exports: [OFFER_REPOSITORY],
 })
