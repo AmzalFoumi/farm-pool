@@ -17,20 +17,26 @@ export function NegotiateSheet({
   isOpen,
   onClose,
   offer,
+  minKg,
+  maxKg,
   onSubmit
 }: {
   isOpen: boolean;
   onClose: () => void;
   offer: Offer;
+  /** The listing's minimum order and what is left on it; a counter must fit between them. */
+  minKg: number;
+  maxKg: number;
   onSubmit: (rate: number, quantity: number, note: string) => void;
 }) {
-  const [rate, setRate] = useState(String(offer?.rate + 2 || 176));
-  const [quantity, setQuantity] = useState(String(offer?.quantityKg || 500));
+  const [rate, setRate] = useState(String(offer?.rate ?? ""));
+  const [quantity, setQuantity] = useState(String(offer?.quantityKg ?? ""));
   const [note, setNote] = useState("");
 
+  // Start from the terms on the table, so a counter is an edit of them and not a guess.
   useEffect(() => {
     if (isOpen && offer) {
-      setRate(String(offer.rate + 2));
+      setRate(String(offer.rate));
       setQuantity(String(offer.quantityKg));
       setNote("");
     }
@@ -38,22 +44,19 @@ export function NegotiateSheet({
 
   if (!offer) return null;
 
-  const parsedRate = parseInt(rate, 10) || 0;
+  const parsedRate = Number(rate) > 0 ? Math.round(Number(rate) * 100) / 100 : 0;
   const parsedQty = parseInt(quantity, 10) || 0;
-  const total = parsedRate * parsedQty;
+  const total = Math.round(parsedRate * parsedQty * 100) / 100;
+  const quantityFits = parsedQty >= minKg && parsedQty <= maxKg;
+  const canSend = parsedRate > 0 && quantityFits;
+  const isFarmer = offer.viewer === "FARMER";
 
   const adjustRate = (delta: number) => {
-    const next = Math.max(0, parsedRate + delta);
-    setRate(String(next));
+    setRate(String(Math.max(1, parsedRate + delta)));
   };
 
   const adjustQty = (delta: number) => {
-    const next = Math.min(offer.quantityKg, Math.max(50, parsedQty + delta));
-    setQuantity(String(next));
-  };
-
-  const setFixedQty = (qty: number) => {
-    setQuantity(String(Math.min(offer.quantityKg, Math.max(50, qty))));
+    setQuantity(String(Math.min(maxKg, Math.max(minKg, parsedQty + delta))));
   };
 
   return (
@@ -78,7 +81,7 @@ export function NegotiateSheet({
               <VStack>
                 <Text className="text-[17px] font-bold text-primary">Submit Counter-Offer</Text>
                 <Text className="mt-0.5 text-[12px] text-muted-foreground">
-                  Negotiating with {offer.buyer.name}
+                  Negotiating with {offer.counterparty.name}
                 </Text>
               </VStack>
               <Pressable
@@ -96,9 +99,6 @@ export function NegotiateSheet({
                 <HStack className="items-center justify-between">
                   <Text className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Counter Rate
-                  </Text>
-                  <Text className="text-[12px] font-bold text-foreground">
-                    Target: Rs. {offer.rate + 5}
                   </Text>
                 </HStack>
                 <HStack className="mt-2 items-center justify-between gap-3">
@@ -134,12 +134,12 @@ export function NegotiateSheet({
                     Quantity
                   </Text>
                   <Text className="text-[11px] text-muted-foreground">
-                    Max: {offer.quantityKg} kg
+                    {minKg}–{maxKg} kg
                   </Text>
                 </HStack>
                 <HStack className="mt-2 items-center justify-between gap-3">
                   <Pressable
-                    onPress={() => adjustQty(-50)}
+                    onPress={() => adjustQty(-10)}
                     className="h-11 w-11 items-center justify-center rounded-xl bg-background shadow-sm active:scale-95"
                   >
                     <Text className="text-[20px] font-bold text-primary">−</Text>
@@ -154,7 +154,7 @@ export function NegotiateSheet({
                     <Text className="text-[14px] font-medium text-muted-foreground">kg</Text>
                   </HStack>
                   <Pressable
-                    onPress={() => adjustQty(50)}
+                    onPress={() => adjustQty(10)}
                     className="h-11 w-11 items-center justify-center rounded-xl bg-background shadow-sm active:scale-95"
                   >
                     <Text className="text-[20px] font-bold text-primary">+</Text>
@@ -163,7 +163,9 @@ export function NegotiateSheet({
                 <HStack className="mt-2 items-center gap-1.5">
                   <Text className="text-[14px] text-foreground font-bold">i</Text>
                   <Text className="text-[11px] text-muted-foreground">
-                    Partial quantity is supported. Remaining crop stays listed.
+                    {quantityFits
+                      ? `Between ${minKg} kg and ${maxKg} kg.`
+                      : `Enter between ${minKg} kg and ${maxKg} kg.`}
                   </Text>
                 </HStack>
               </VStack>
@@ -172,7 +174,7 @@ export function NegotiateSheet({
               <HStack className="items-center justify-between rounded-xl border border-border bg-background p-3">
                 <VStack>
                   <Text className="text-[11px] font-medium text-muted-foreground">
-                    Gross payout
+                    {isFarmer ? "Gross payout" : "You pay"}
                   </Text>
                   <Text className="mt-0.5 text-[11.5px] font-semibold text-muted-foreground">
                     {parsedQty.toLocaleString("en-US")} kg × Rs.{" "}
@@ -194,7 +196,11 @@ export function NegotiateSheet({
               <TextInput
                 value={note}
                 onChangeText={setNote}
-                placeholder="e.g. Sorted Grade A, well sun-dried, ready for pickup tomorrow."
+                placeholder={
+                  isFarmer
+                    ? "e.g. Sorted Grade A, ready for pickup tomorrow."
+                    : "e.g. I can collect on Friday if the price works."
+                }
                 multiline
                 numberOfLines={3}
                 className="mt-1.5 w-full rounded-xl bg-muted p-3 text-[13px] text-foreground focus:outline-none min-h-[80px]"
@@ -212,7 +218,10 @@ export function NegotiateSheet({
               </Pressable>
               <Pressable
                 onPress={() => onSubmit(parsedRate, parsedQty, note)}
-                className="flex-[2] flex-row items-center justify-center gap-1.5 rounded-xl bg-brand-deep px-3 py-3 shadow-sm active:scale-95"
+                disabled={!canSend}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !canSend }}
+                className={`flex-[2] flex-row items-center justify-center gap-1.5 rounded-xl bg-brand-deep px-3 py-3 shadow-sm active:scale-95 ${canSend ? "" : "opacity-60"}`}
               >
                 <Text className="text-[13px] font-semibold text-brand-deep-foreground">
                   Send Counter

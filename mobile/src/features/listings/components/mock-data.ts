@@ -4,7 +4,8 @@ export const MOCK_OFFERS: Offer[] = [
   {
     id: "1",
     status: "new",
-    buyer: {
+    viewer: "FARMER",
+    counterparty: {
       name: "Keells Fresh Produce Direct",
       initials: "KF",
       subtitle: "Tier-1 Supermarket Partner · ⭐ 4.95"
@@ -18,7 +19,8 @@ export const MOCK_OFFERS: Offer[] = [
     id: "2",
     status: "negotiating",
     isMyTurn: true,
-    buyer: {
+    viewer: "FARMER",
+    counterparty: {
       name: "Bandara Wholesale Traders",
       initials: "BW",
       subtitle: "Kurunegala Aggregator · ⭐ 4.7"
@@ -27,7 +29,7 @@ export const MOCK_OFFERS: Offer[] = [
     quantityKg: 500,
     total: 86000,
     round: "Round 2 of 3",
-    buyerCounter: 172,
+    theirCounter: 172,
     yourCounter: 175,
     latestMessage: "Can settle via CEFT at FarmGate tomorrow morning if Rs. 172."
   },
@@ -35,7 +37,8 @@ export const MOCK_OFFERS: Offer[] = [
     id: "3",
     status: "negotiating",
     isMyTurn: false,
-    buyer: {
+    viewer: "FARMER",
+    counterparty: {
       name: "Matale Vegetable Traders",
       initials: "MV",
       subtitle: "Matale Collection Point · ⭐ 4.6"
@@ -49,7 +52,8 @@ export const MOCK_OFFERS: Offer[] = [
   {
     id: "4",
     status: "confirmed",
-    buyer: {
+    viewer: "FARMER",
+    counterparty: {
       name: "Cargills Agri-Hub",
       initials: "CA",
       subtitle: "Dambulla DEC Hub · ⭐ 4.9 · 120+ trades"
@@ -62,7 +66,8 @@ export const MOCK_OFFERS: Offer[] = [
   {
     id: "5",
     status: "history",
-    buyer: { name: "Regional Agro Buyers", initials: "RA", subtitle: "Dambulla · ⭐ 4.4" },
+    viewer: "FARMER",
+    counterparty: { name: "Regional Agro Buyers", initials: "RA", subtitle: "Dambulla · ⭐ 4.4" },
     rate: 160,
     quantityKg: 500,
     total: 80000,
