@@ -16,6 +16,7 @@
 import type { CoordinatorTask } from "@farm-pool/shared";
 import { cropById } from "@farm-pool/shared";
 import { useFocusEffect, useRouter } from "expo-router";
+import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -29,6 +30,7 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { coordinationApi } from "@/features/coordination/api";
 import { CoordinatorHeader } from "@/features/coordination/coordinator-header";
+import { ApiError } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { useReloadOnRefocus, useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
@@ -104,7 +106,14 @@ export default function RegionScreen() {
 
             <VStack className="mx-gutter gap-3 rounded-card border border-border bg-card p-4">
               <Text className="type-h4 text-foreground">Needs you today</Text>
-              <TasksSection tasks={tasks} />
+              <TasksSection
+                tasks={tasks}
+                token={token ?? ""}
+                onChanged={() => {
+                  tasks.reload();
+                  dashboard.reload();
+                }}
+              />
             </VStack>
 
             <View className="px-gutter">
@@ -153,7 +162,15 @@ function StatCard({
  * A small inline section, not `RequestView`: that component's loading/error states are built to
  * fill a whole screen (`flex-1`), which collapses to nothing inside a card this size.
  */
-function TasksSection({ tasks }: { tasks: ReturnType<typeof useRequest<CoordinatorTask[]>> }) {
+function TasksSection({
+  tasks,
+  token,
+  onChanged
+}: {
+  tasks: ReturnType<typeof useRequest<CoordinatorTask[]>>;
+  token: string;
+  onChanged: () => void;
+}) {
   if (tasks.status === "loading") {
     return (
       <HStack className="items-center gap-2 py-2">
@@ -173,14 +190,24 @@ function TasksSection({ tasks }: { tasks: ReturnType<typeof useRequest<Coordinat
   return (
     <VStack className="gap-2">
       {tasks.data.map((task, i) => (
-        <TaskRow key={`${task.kind}-${i}`} task={task} />
+        <TaskRow key={`${task.kind}-${i}`} task={task} token={token} onChanged={onChanged} />
       ))}
     </VStack>
   );
 }
 
-function TaskRow({ task }: { task: CoordinatorTask }) {
+function TaskRow({
+  task,
+  token,
+  onChanged
+}: {
+  task: CoordinatorTask;
+  token: string;
+  onChanged: () => void;
+}) {
   const router = useRouter();
+  const [approving, setApproving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (task.kind === "benchmark_missing" || task.kind === "benchmark_stale") {
     const cropName = cropById(task.cropId).name;
@@ -235,22 +262,47 @@ function TaskRow({ task }: { task: CoordinatorTask }) {
     );
   }
 
+  const approve = async () => {
+    setApproving(true);
+    setError(null);
+    try {
+      await coordinationApi.approveListing(token, task.listingId);
+      onChanged();
+    } catch (e) {
+      // Already approved from another device: the list is stale, so reload instead of complaining.
+      if (e instanceof ApiError && e.code === "listing_not_pending") onChanged();
+      else setError(e instanceof ApiError ? e.message : "Could not approve this listing");
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  const cropName = cropById(task.cropId).name;
   return (
-    <HStack className="items-center justify-between">
-      <VStack className="flex-1 gap-0.5">
-        <Text className="type-body-bold text-foreground" numberOfLines={1}>
-          {`${cropById(task.cropId).name} · ${task.quantityKg} kg`}
-        </Text>
-        <Text className="type-caption text-muted-foreground" numberOfLines={1}>
-          {`From ${task.farmerName}`}
-        </Text>
-      </VStack>
-      {/* Present, not actioned — no listing-approval endpoint yet
-          (`.plans/coordination/OPEN.md` #5). Every other kind above is now actionable: the
-          benchmark kinds open Set Crop Price, verify_farmer opens Farmers pre-filtered. */}
-      <Box className="rounded-pill bg-info-subtle px-3 py-1">
-        <Text className="type-body-sm-bold text-info">Approve</Text>
-      </Box>
-    </HStack>
+    <VStack className="gap-1">
+      <HStack className="items-center justify-between">
+        <VStack className="flex-1 gap-0.5">
+          <Text className="type-body-bold text-foreground" numberOfLines={1}>
+            {`${cropName} · ${task.quantityKg} kg`}
+          </Text>
+          <Text className="type-caption text-muted-foreground" numberOfLines={1}>
+            {`From ${task.farmerName}`}
+          </Text>
+        </VStack>
+        <Pressable
+          onPress={() => void approve()}
+          disabled={approving}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: approving }}
+          accessibilityLabel={`Approve ${cropName} listing from ${task.farmerName}`}
+          className={`min-h-tap justify-center rounded-pill bg-info-subtle px-4 ${approving ? "opacity-60" : ""}`}
+        >
+          <Text className="type-body-sm-bold text-info">
+            {approving ? "Approving…" : "Approve"}
+          </Text>
+        </Pressable>
+      </HStack>
+      {error ? <Text className="type-caption text-destructive">{error}</Text> : null}
+    </VStack>
   );
 }
