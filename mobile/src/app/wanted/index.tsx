@@ -1,4 +1,4 @@
-/** My requests — the crops this buyer has asked for, with a way to close one. */
+/** My requests — the crops this buyer has asked for, the responses to each, and a way to close one. */
 
 import { cropById, type WantedListing } from "@farm-pool/shared";
 import { useFocusEffect, useRouter } from "expo-router";
@@ -66,6 +66,16 @@ export default function WantedScreen() {
                     </VStack>
                     <WantedStatusPill status={item.status} />
                   </HStack>
+                  <Pressable
+                    onPress={() =>
+                      router.push({ pathname: "/wanted/[id]", params: { id: item.id } })
+                    }
+                    accessibilityRole="button"
+                    accessibilityLabel={`See responses to your request for ${crop.name}`}
+                    className="min-h-tap items-center justify-center rounded-field border border-brand-deep"
+                  >
+                    <Text className="type-body-bold text-brand-deep">View responses</Text>
+                  </Pressable>
                   {item.status === "open" ? (
                     <Pressable
                       onPress={() => void close(item)}

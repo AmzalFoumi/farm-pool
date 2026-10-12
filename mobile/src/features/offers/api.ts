@@ -19,6 +19,14 @@ export const offersApi = {
     });
   },
 
+  /** The farmers' responses to one wanted request (FARM-47). */
+  forWanted(token: string, wantedId: string): Promise<Offer[]> {
+    return apiFetch(`/offers/wanted/${encodeURIComponent(wantedId)}?_t=${Date.now()}`, {
+      token,
+      schema: offerListSchema
+    });
+  },
+
   create(token: string, data: CreateOfferInput): Promise<Offer> {
     return apiFetch("/offers", {
       method: "POST",
