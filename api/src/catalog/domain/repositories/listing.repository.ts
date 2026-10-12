@@ -29,6 +29,9 @@ export interface ListingRepository {
   deductQuantity(id: string, quantity: number): Promise<Listing | null>;
   /** Restores deducted quantity and flips status back to verified if it was sold. */
   refundQuantity(id: string, quantity: number): Promise<Listing | null>;
+  /** `pending_approval` → `verified` in one step (FARM-43, a coordinator approving a listing).
+   *  Resolves `null` when the listing is missing or is not currently `pending_approval`. */
+  markVerifiedIfPending(id: string): Promise<Listing | null>;
   upsertBySeedKey(seedKey: string, listing: NewListing): Promise<Listing>;
 }
 
