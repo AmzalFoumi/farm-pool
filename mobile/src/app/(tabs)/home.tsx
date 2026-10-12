@@ -1,9 +1,9 @@
 /**
  * Buyer home — wireframe frame 1.
  *
- * Greets the signed-in user and offers the three things a buyer does: browse listings, see
- * their orders, see their crop requests. Counts and "near you" wait for a location and a
- * dashboard endpoint; nothing here is invented.
+ * Greets the signed-in user and offers the four things a buyer does: browse listings, see
+ * their orders, see their offers, see their crop requests. Counts and "near you" wait for a
+ * location and a dashboard endpoint; nothing here is invented.
  */
 
 import { useRouter, type Href } from "expo-router";
@@ -24,6 +24,7 @@ const CARDS: { title: string; note: string; href: Href }[] = [
     href: "/listings"
   },
   { title: "My orders", note: "Requests you have sent to farmers", href: "/orders" },
+  { title: "My offers", note: "Prices you are negotiating with farmers", href: "/my-offers" },
   { title: "My requests", note: "Crops you are looking for", href: "/wanted" }
 ];
 

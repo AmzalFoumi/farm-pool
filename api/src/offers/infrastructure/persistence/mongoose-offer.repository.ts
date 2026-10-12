@@ -3,7 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import type { NewOffer, Offer } from '../../domain/entities/offer';
-import type { OfferRepository } from '../../domain/repositories/offer.repository';
+import type {
+  OfferPair,
+  OfferRepository,
+} from '../../domain/repositories/offer.repository';
 import { OfferError } from '../../application/errors';
 import { OFFER_MODEL, OfferDocument, type OfferHydrated } from './offer.schema';
 
@@ -43,6 +46,35 @@ export class MongooseOfferRepository implements OfferRepository {
     return docs.map((d) => this.toDomain(d));
   }
 
+  async findByBuyerId(buyerId: string): Promise<Offer[]> {
+    const docs = await this.model
+      .find({ buyerId })
+      .sort({ createdAt: -1 })
+      .exec();
+    return docs.map((d) => this.toDomain(d));
+  }
+
+  async findByFarmerId(farmerId: string): Promise<Offer[]> {
+    const docs = await this.model
+      .find({ farmerId })
+      .sort({ createdAt: -1 })
+      .exec();
+    return docs.map((d) => this.toDomain(d));
+  }
+
+  async findActiveBetween(pair: OfferPair): Promise<Offer[]> {
+    const docs = await this.model
+      .find({
+        buyerId: pair.buyerId,
+        farmerId: pair.farmerId,
+        listingId: pair.listingId,
+        status: { $in: ['PENDING', 'NEGOTIATING'] },
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+    return docs.map((d) => this.toDomain(d));
+  }
+
   async save(offer: Offer): Promise<void> {
     const previousVersion = offer.version - 1;
     const result = await this.model
@@ -75,10 +107,17 @@ export class MongooseOfferRepository implements OfferRepository {
       listingType: doc.listingType as ListingType,
       cropId: doc.cropId,
       initiatedBy: doc.initiatedBy as SenderType,
+      ...(typeof doc.farmerName === 'string'
+        ? { farmerName: doc.farmerName }
+        : {}),
+      ...(typeof doc.buyerName === 'string'
+        ? { buyerName: doc.buyerName }
+        : {}),
       pricePerKg: doc.pricePerKg,
       quantityKg: doc.quantityKg,
       total: doc.total,
       ...(typeof doc.note === 'string' ? { note: doc.note } : {}),
+      ...(doc.dropOff ? { dropOff: doc.dropOff } : {}),
       status: doc.status as OfferStatus,
       actionRequiredBy: doc.actionRequiredBy as SenderType,
       negotiationHistory: doc.negotiationHistory.map((h) => ({
@@ -103,10 +142,15 @@ export class MongooseOfferRepository implements OfferRepository {
       listingType: offer.listingType,
       cropId: offer.cropId,
       initiatedBy: offer.initiatedBy,
+      ...(offer.farmerName !== undefined
+        ? { farmerName: offer.farmerName }
+        : {}),
+      ...(offer.buyerName !== undefined ? { buyerName: offer.buyerName } : {}),
       pricePerKg: offer.pricePerKg,
       quantityKg: offer.quantityKg,
       total: offer.total,
       ...(offer.note !== undefined ? { note: offer.note } : {}),
+      ...(offer.dropOff !== undefined ? { dropOff: offer.dropOff } : {}),
       status: offer.status,
       actionRequiredBy: offer.actionRequiredBy,
       negotiationHistory: offer.negotiationHistory.map((h) => ({

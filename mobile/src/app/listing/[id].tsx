@@ -9,7 +9,8 @@
  * `address` is deliberately not shown — it is the farm's pickup address, not browse information.
  *
  * "Place order" opens a sheet with one quantity field and sends `POST /orders`. "Request call"
- * stays disabled: contacting the farmer is FARM-24, another developer's story.
+ * asks the farmer for a video call (FARM-24). "Make an offer" shows on a negotiable listing and
+ * opens the buyer's own-price sheet (FARM-46).
  */
 
 import {
@@ -50,6 +51,7 @@ import { callsApi } from "@/features/calls/api";
 import { listingsApi } from "@/features/listings/api";
 import { CropTile } from "@/features/listings/crop-tile";
 import { DeliveryLocationField } from "@/features/geo/delivery-location-field";
+import { MakeOfferSheet } from "@/features/offers/make-offer-sheet";
 import { ordersApi } from "@/features/orders/api";
 import { ApiError } from "@/lib/api";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -88,6 +90,14 @@ export default function ListingDetailScreen() {
             listing={data}
             canOrder={auth.user ? can(auth.user.role, "order:place") : false}
             canCall={auth.user ? can(auth.user.role, "call:request") : false}
+            canOffer={
+              auth.user
+                ? can(auth.user.role, "offer:create") && can(auth.user.role, "order:place")
+                : false
+            }
+            onOfferMade={(offerId) =>
+              router.push({ pathname: "/my-offers/[id]", params: { id: offerId } })
+            }
             onCallRequested={() => router.push("/calls")}
             token={token}
             savedLocations={auth.user?.savedLocations ?? []}
@@ -109,6 +119,8 @@ function ListingBody({
   listing,
   canOrder,
   canCall,
+  canOffer,
+  onOfferMade,
   onCallRequested,
   token,
   savedLocations,
@@ -121,6 +133,8 @@ function ListingBody({
   listing: Listing;
   canOrder: boolean;
   canCall: boolean;
+  canOffer: boolean;
+  onOfferMade: (offerId: string) => void;
   /** After a call request is sent (or one was already open): go to the Calls tab. */
   onCallRequested: () => void;
   token: string;
@@ -135,6 +149,7 @@ function ListingBody({
 }) {
   const crop = cropById(listing.cropId);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [offerOpen, setOfferOpen] = useState(false);
   const [calling, setCalling] = useState(false);
   const [callError, setCallError] = useState<string | null>(null);
 
@@ -250,8 +265,23 @@ function ListingBody({
       {/* Footer. `AppButton` is full-width with no size axis, so the pair mirrors
           its construction (`h-control rounded-field`). "Request call" is for buyers
           (FARM-24); for anyone else it stays visible but disabled. */}
+      {canOffer && listing.acceptNegotiation ? (
+        <VStack className="border-t border-border bg-card px-gutter pt-3">
+          <Pressable
+            testID="open-make-offer"
+            onPress={() => setOfferOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel={`Offer your own price to ${listing.farmerName}`}
+            className="min-h-tap flex-row items-center justify-center rounded-field border border-border bg-card active:opacity-80"
+          >
+            <Text className="type-body-bold text-foreground">Make an offer</Text>
+          </Pressable>
+        </VStack>
+      ) : null}
       <HStack
-        className="gap-3 border-t border-border bg-card px-gutter pt-3"
+        className={`gap-3 bg-card px-gutter pt-3 ${
+          canOffer && listing.acceptNegotiation ? "" : "border-t border-border"
+        }`}
         style={{ paddingBottom: Math.max(bottomInset, 23) }}
       >
         <Pressable
@@ -291,6 +321,17 @@ function ListingBody({
         savedLocations={savedLocations}
         onUserChanged={onUserChanged}
         onPlaced={onPlaced}
+        bottomInset={bottomInset}
+      />
+
+      <MakeOfferSheet
+        open={offerOpen}
+        onClose={() => setOfferOpen(false)}
+        listing={listing}
+        token={token}
+        savedLocations={savedLocations}
+        onUserChanged={onUserChanged}
+        onMade={onOfferMade}
         bottomInset={bottomInset}
       />
     </>

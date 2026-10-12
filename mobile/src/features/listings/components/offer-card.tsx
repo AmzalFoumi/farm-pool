@@ -1,3 +1,4 @@
+import type { SenderType } from "@farm-pool/shared";
 import { View, Animated, Easing } from "react-native";
 import { useEffect, useRef } from "react";
 import { Text } from "@/components/ui/text";
@@ -45,8 +46,11 @@ function SpinningHourglass() {
 export type Offer = {
   id: string;
   status: OfferStatus;
+  /** Which side is looking at the card. Wording and whose turn it is follow this. */
+  viewer: SenderType;
   isMyTurn?: boolean;
-  buyer: {
+  /** The other side of the deal: the buyer for a farmer, the farmer for a buyer. */
+  counterparty: {
     name: string;
     initials: string;
     subtitle: string;
@@ -58,7 +62,7 @@ export type Offer = {
   // Specific payload values for UI depending on type
   expiresIn?: string;
   round?: string;
-  buyerCounter?: number;
+  theirCounter?: number;
   yourCounter?: number;
   latestMessage?: string;
   timeAgo?: string;
@@ -78,6 +82,7 @@ export function OfferCard({
   onAccept?: () => void;
   onDecline?: () => void;
 }) {
+  const other = offer.viewer === "FARMER" ? "Buyer" : "Farmer";
   if (offer.status === "new") {
     return (
       <Card className="p-4 bg-card rounded-2xl shadow-sm gap-3">
@@ -96,14 +101,16 @@ export function OfferCard({
         <HStack className="items-center justify-between gap-3">
           <HStack className="flex-1 min-w-0 items-center gap-2.5">
             <View className="h-10 w-10 shrink-0 rounded-xl bg-brand-deep items-center justify-center">
-              <Text className="font-bold text-brand-deep-foreground">{offer.buyer.initials}</Text>
+              <Text className="font-bold text-brand-deep-foreground">
+                {offer.counterparty.initials}
+              </Text>
             </View>
             <VStack className="min-w-0">
               <Text className="truncate text-[14px] font-bold leading-tight text-foreground">
-                {offer.buyer.name}
+                {offer.counterparty.name}
               </Text>
               <Text className="mt-0.5 text-[11.5px] text-muted-foreground">
-                {offer.buyer.subtitle}
+                {offer.counterparty.subtitle}
               </Text>
             </VStack>
           </HStack>
@@ -178,14 +185,14 @@ export function OfferCard({
         <HStack className="items-center justify-between gap-3">
           <HStack className="flex-1 min-w-0 items-center gap-2.5">
             <View className="h-10 w-10 shrink-0 rounded-xl bg-muted items-center justify-center">
-              <Text className="font-bold text-foreground">{offer.buyer.initials}</Text>
+              <Text className="font-bold text-foreground">{offer.counterparty.initials}</Text>
             </View>
             <VStack className="min-w-0">
               <Text className="truncate text-[14px] font-bold leading-tight text-foreground">
-                {offer.buyer.name}
+                {offer.counterparty.name}
               </Text>
               <Text className="mt-0.5 text-[11.5px] text-muted-foreground">
-                {offer.buyer.subtitle}
+                {offer.counterparty.subtitle}
               </Text>
             </VStack>
           </HStack>
@@ -196,10 +203,10 @@ export function OfferCard({
 
         <HStack className="items-center justify-between rounded-xl bg-muted p-3">
           <VStack>
-            <Text className="text-[11px] font-medium text-muted-foreground">Buyer Countered</Text>
+            <Text className="text-[11px] font-medium text-muted-foreground">{other} Countered</Text>
             <HStack className="items-baseline gap-1 mt-0.5">
               <Text className="text-[20px] font-bold text-foreground">
-                Rs. {offer.buyerCounter}
+                Rs. {offer.theirCounter}
               </Text>
               <Text className="text-[12px] text-muted-foreground">/ kg</Text>
             </HStack>
@@ -264,7 +271,7 @@ export function OfferCard({
         <HStack className="items-center justify-between gap-3">
           <View className="flex-row items-center gap-1.5 rounded-full bg-muted px-2.5 py-1">
             <Text className="text-[11px] font-bold text-foreground tracking-wide">
-              Waiting for Buyer
+              Waiting for {other}
             </Text>
           </View>
           {offer.timeAgo && (
@@ -275,14 +282,14 @@ export function OfferCard({
         <HStack className="items-center justify-between gap-3">
           <HStack className="flex-1 min-w-0 items-center gap-2.5">
             <View className="h-10 w-10 shrink-0 rounded-xl bg-muted items-center justify-center">
-              <Text className="font-bold text-foreground">{offer.buyer.initials}</Text>
+              <Text className="font-bold text-foreground">{offer.counterparty.initials}</Text>
             </View>
             <VStack className="min-w-0">
               <Text className="truncate text-[14px] font-bold leading-tight text-foreground">
-                {offer.buyer.name}
+                {offer.counterparty.name}
               </Text>
               <Text className="mt-0.5 text-[11.5px] text-muted-foreground">
-                {offer.buyer.subtitle}
+                {offer.counterparty.subtitle}
               </Text>
             </VStack>
           </HStack>
@@ -311,7 +318,7 @@ export function OfferCard({
           <View className="flex-row items-center justify-center gap-2 rounded-xl bg-muted py-3 opacity-70">
             <SpinningHourglass />
             <Text className="text-[13px] font-semibold text-muted-foreground">
-              Waiting for buyer to accept or counter...
+              Waiting for the {other.toLowerCase()} to accept or counter…
             </Text>
           </View>
 
@@ -352,14 +359,16 @@ export function OfferCard({
         <HStack className="items-center justify-between gap-3">
           <HStack className="flex-1 min-w-0 items-center gap-2.5">
             <View className="h-10 w-10 shrink-0 rounded-xl bg-brand-deep items-center justify-center">
-              <Text className="font-bold text-brand-deep-foreground">{offer.buyer.initials}</Text>
+              <Text className="font-bold text-brand-deep-foreground">
+                {offer.counterparty.initials}
+              </Text>
             </View>
             <VStack className="min-w-0">
               <Text className="truncate text-[14px] font-bold leading-tight text-foreground">
-                {offer.buyer.name}
+                {offer.counterparty.name}
               </Text>
               <Text className="mt-0.5 text-[11.5px] text-muted-foreground">
-                {offer.buyer.subtitle}
+                {offer.counterparty.subtitle}
               </Text>
             </VStack>
           </HStack>
@@ -424,13 +433,15 @@ export function OfferCard({
 
       <HStack className="items-center gap-2.5">
         <View className="h-10 w-10 shrink-0 rounded-xl bg-muted items-center justify-center">
-          <Text className="font-bold text-foreground">{offer.buyer.initials}</Text>
+          <Text className="font-bold text-foreground">{offer.counterparty.initials}</Text>
         </View>
         <VStack className="min-w-0">
           <Text className="truncate text-[14px] font-bold leading-tight text-foreground">
-            {offer.buyer.name}
+            {offer.counterparty.name}
           </Text>
-          <Text className="mt-0.5 text-[11.5px] text-muted-foreground">{offer.buyer.subtitle}</Text>
+          <Text className="mt-0.5 text-[11.5px] text-muted-foreground">
+            {offer.counterparty.subtitle}
+          </Text>
         </VStack>
       </HStack>
 
@@ -448,8 +459,9 @@ export function OfferCard({
       </HStack>
 
       <Text className="text-[12px] leading-5 text-muted-foreground">
-        This offer is no longer active. Your listing can continue receiving offers from other
-        buyers.
+        {offer.viewer === "FARMER"
+          ? "This offer is no longer active. Your listing can continue receiving offers from other buyers."
+          : "This offer is no longer active. You can make a new offer from the listing."}
       </Text>
 
       <HStack className="gap-2 pt-1">

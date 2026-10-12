@@ -1,4 +1,4 @@
-import type { OfferStatus } from '@farm-pool/shared';
+import type { AcceptOfferData, OfferStatus } from '@farm-pool/shared';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { LISTING_REPOSITORY } from '../../../catalog/domain/repositories/listing.repository';
 import type { ListingRepository } from '../../../catalog/domain/repositories/listing.repository';
@@ -25,6 +25,7 @@ export class AcceptOfferService {
   async execute(
     callerId: string,
     offerId: string,
+    data: AcceptOfferData = {},
   ): Promise<{ orderId: string }> {
     const offer = await this.offers.findById(offerId);
     if (!offer) {
@@ -56,6 +57,9 @@ export class AcceptOfferService {
       );
     }
 
+    // The delivery point is the buyer's to set. It is saved with the status change below.
+    if (side === 'BUYER' && data.dropOff) offer.dropOff = data.dropOff;
+
     const previousStatus = offer.status;
     offer.status = 'ACCEPTED';
     offer.version += 1;
@@ -71,7 +75,7 @@ export class AcceptOfferService {
       await this.revertOffer(offer, previousStatus);
       throw new OfferError(
         'conflict',
-        'conflict',
+        'insufficient_stock',
         'Not enough quantity available',
       );
     }

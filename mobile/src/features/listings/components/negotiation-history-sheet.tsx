@@ -11,16 +11,19 @@ import { Text } from "@/components/ui/text";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { Pressable } from "@/components/ui/pressable";
-import { type Offer as SharedOffer } from "@farm-pool/shared";
+import { type Offer as SharedOffer, type SenderType } from "@farm-pool/shared";
 
 export function NegotiationHistorySheet({
   isOpen,
   onClose,
-  offer
+  offer,
+  viewer
 }: {
   isOpen: boolean;
   onClose: () => void;
   offer: SharedOffer | null;
+  /** Whose phone this is: their own entries read "You" and sit on the right. */
+  viewer: SenderType;
 }) {
   if (!offer) return null;
 
@@ -48,17 +51,20 @@ export function NegotiationHistorySheet({
         <ScrollView className="w-full" showsVerticalScrollIndicator={false}>
           <VStack className="gap-4 w-full">
             {offer.negotiationHistory.map((entry, index) => {
-              const isFarmer = entry.senderType === "FARMER";
+              const isMine = entry.senderType === viewer;
+              const otherName =
+                (viewer === "FARMER" ? offer.buyerName : offer.farmerName) ??
+                (viewer === "FARMER" ? "Buyer" : "Farmer");
               return (
                 <View
                   key={index}
-                  className={`p-4 rounded-2xl w-11/12 ${isFarmer ? "bg-brand-deep/10 self-end rounded-tr-sm" : "bg-muted self-start rounded-tl-sm"}`}
+                  className={`p-4 rounded-2xl w-11/12 ${isMine ? "bg-brand-deep/10 self-end rounded-tr-sm" : "bg-muted self-start rounded-tl-sm"}`}
                 >
                   <HStack className="justify-between items-center mb-2">
                     <Text
-                      className={`text-[12px] font-bold ${isFarmer ? "text-brand-deep" : "text-foreground"}`}
+                      className={`text-[12px] font-bold ${isMine ? "text-brand-deep" : "text-foreground"}`}
                     >
-                      {isFarmer ? "You" : "Buyer"}
+                      {isMine ? "You" : otherName}
                     </Text>
                     <Text className="text-[10px] text-muted-foreground">
                       {new Date(entry.timestamp).toLocaleDateString()}{" "}

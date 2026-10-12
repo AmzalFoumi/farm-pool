@@ -113,6 +113,7 @@ name should appear in an access rule:
 | `listing:read` | ✓ | ✓ | ✓ | ✓ |
 | `listing:create` | ✓ | | | |
 | `order:place` | | ✓ | | |
+| `offer:create` | ✓ | ✓ | | |
 | `order:accept` | ✓ | | | |
 | `order:read-own` | ✓ | ✓ | ✓ | ✓ |
 | `order:cancel` | | ✓ | | |

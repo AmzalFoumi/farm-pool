@@ -76,7 +76,8 @@ export function CreateListingScreen({ initialData }: { initialData?: Listing }) 
         },
         step4: {
           pricePerKg: initialData.pricePerKg,
-          grossEarnings: initialData.pricePerKg * initialData.quantityKg
+          grossEarnings: initialData.pricePerKg * initialData.quantityKg,
+          acceptNegotiation: initialData.acceptNegotiation ?? false
         },
         step5: {
           harvestDate: initialData.harvestDate,
@@ -130,6 +131,7 @@ export function CreateListingScreen({ initialData }: { initialData?: Listing }) 
       packaging: listingData.step2?.packaging,
       certifications: listingData.step2?.certifications,
       pricePerKg: listingData.step4?.pricePerKg ?? 180,
+      acceptNegotiation: listingData.step4?.acceptNegotiation ?? false,
       minOrderKg: listingData.step2?.moqKg,
       harvestDate: listingData.step5?.harvestDate || new Date().toISOString().split("T")[0],
       expiryDays: listingData.step5?.validityDays,

@@ -1,5 +1,7 @@
 import {
+  acceptOfferSchema,
   createOfferSchema,
+  type AcceptOfferData,
   submitNegotiationSchema,
   type CreateOfferData,
   type SubmitNegotiationData,
@@ -13,6 +15,8 @@ import { ZodValidationPipe } from '../shared/http/zod-validation.pipe';
 import { AcceptOfferService } from './application/services/accept-offer.service';
 import { CreateOfferService } from './application/services/create-offer.service';
 import { DeclineOfferService } from './application/services/decline-offer.service';
+import { GetOfferService } from './application/services/get-offer.service';
+import { ListMyOffersService } from './application/services/list-my-offers.service';
 import { ListOffersService } from './application/services/list-offers.service';
 import { SubmitNegotiationService } from './application/services/submit-negotiation.service';
 import { toOfferDto } from './domain/entities/offer';
@@ -25,7 +29,17 @@ export class OffersController {
     private readonly acceptOffer: AcceptOfferService,
     private readonly declineOffer: DeclineOfferService,
     private readonly listOffers: ListOffersService,
+    private readonly listMyOffers: ListMyOffersService,
+    private readonly getOffer: GetOfferService,
   ) {}
+
+  /* Declared before `:id`, or Nest would read "mine" as an id. */
+  @Allow('order:read-own')
+  @Get('mine')
+  async mine(@CurrentUser() user: AuthenticatedUser) {
+    const offers = await this.listMyOffers.execute(user.sub);
+    return offers.map(toOfferDto);
+  }
 
   @Allow('listing:read') // the farmer reading their listing, or buyer looking at listing
   @Get('listing/:listingId')
@@ -37,13 +51,20 @@ export class OffersController {
     return offers.map(toOfferDto);
   }
 
-  @Allow('order:place') // Using order:place because buying a listing is order:place, offering on wanted is similar
+  @Allow('order:read-own')
+  @Get(':id')
+  async one(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return toOfferDto(await this.getOffer.execute(user.sub, id));
+  }
+
+  @Allow('offer:create')
   @Post()
   async create(
     @CurrentUser() user: AuthenticatedUser,
     @Body(new ZodValidationPipe(createOfferSchema)) data: CreateOfferData,
   ) {
-    const role = user.role.toUpperCase() as SenderType;
+    // `offer:create` admits buyers and farmers only, so these are the two cases.
+    const role: SenderType = user.role === 'farmer' ? 'FARMER' : 'BUYER';
     const offer = await this.createOffer.execute(user.sub, role, data);
     return toOfferDto(offer);
   }
@@ -65,8 +86,9 @@ export class OffersController {
   async accept(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
+    @Body(new ZodValidationPipe(acceptOfferSchema)) data: AcceptOfferData,
   ) {
-    return this.acceptOffer.execute(user.sub, id);
+    return this.acceptOffer.execute(user.sub, id, data);
   }
 
   @Allow('order:renegotiate')

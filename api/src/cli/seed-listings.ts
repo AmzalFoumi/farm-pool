@@ -39,6 +39,8 @@ type SeedRow = {
   harvestDate: string;
   district: string;
   minOrderKg: number;
+  /** Buyers may offer their own price on this listing. Left off for most rows. */
+  acceptNegotiation?: boolean;
 };
 
 const ROWS: SeedRow[] = [
@@ -50,6 +52,7 @@ const ROWS: SeedRow[] = [
     harvestDate: '2026-09-22',
     district: 'Kurunegala',
     minOrderKg: 20,
+    acceptNegotiation: true,
   },
   {
     key: 'chilli-dambulla',
@@ -95,6 +98,7 @@ const ROWS: SeedRow[] = [
     harvestDate: '2026-09-24',
     district: 'Nuwara Eliya',
     minOrderKg: 10,
+    acceptNegotiation: true,
   },
   {
     key: 'banana-kurunegala',
@@ -113,6 +117,7 @@ const ROWS: SeedRow[] = [
     harvestDate: '2026-09-26',
     district: 'Matale',
     minOrderKg: 100,
+    acceptNegotiation: true,
   },
 ];
 

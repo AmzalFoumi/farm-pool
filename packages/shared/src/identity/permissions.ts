@@ -23,6 +23,7 @@ export const actionSchema = z.enum([
   "order:accept",
   "order:confirm-receipt",
   "order:renegotiate",
+  "offer:create",
   "payment:pay",
   "payment:read-own",
   "call:join",
@@ -61,6 +62,9 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   "order:confirm-receipt": ["buyer"],
   // Either side of a deal may propose a new price; the use-case checks the caller is on the order.
   "order:renegotiate": ["buyer", "farmer"],
+  /* Starting a negotiation: a buyer on a farmer's listing, or a farmer answering a buyer's wanted
+     request. The use-case checks which of the two the caller may start. */
+  "offer:create": ["buyer", "farmer"],
   "payment:pay": ["buyer"],
   // Any role may ask for a payment; the use-case then checks the caller is its buyer or farmer.
   "payment:read-own": ROLES,

@@ -17,6 +17,8 @@ import { WizardActions, WizardShell } from "./wizard-shell";
 export type Step4PriceData = {
   pricePerKg: number;
   grossEarnings: number;
+  /** Whether buyers may offer their own price on this listing (FARM-46). */
+  acceptNegotiation: boolean;
 };
 
 type Step4PriceProps = {
@@ -48,6 +50,10 @@ export default function Step4Price({
 
   const [pricePerKg, setPricePerKg] = useState<number>(initialPrice);
   const [isKeypadVisible, setIsKeypadVisible] = useState<boolean>(false);
+  // Off unless the farmer turns it on: a fixed price is what a listing has always meant.
+  const [acceptNegotiation, setAcceptNegotiation] = useState<boolean>(
+    initialData?.acceptNegotiation ?? false
+  );
 
   const quantity = batchInfo.quantity > 0 ? batchInfo.quantity : 300;
   const totalQuantityKg = toKg(quantity, batchInfo.unit);
@@ -80,7 +86,7 @@ export default function Step4Price({
       Alert.alert("Invalid Price", "Please enter a valid asking price per kg.");
       return;
     }
-    onNext?.({ pricePerKg, grossEarnings });
+    onNext?.({ pricePerKg, grossEarnings, acceptNegotiation });
   };
 
   return (
@@ -204,6 +210,38 @@ export default function Step4Price({
           <Text className="type-body-sm-bold text-secondary-foreground">{badge.label}</Text>
         </Box>
       </VStack>
+
+      {/* Whether buyers may offer their own price */}
+      <Pressable
+        testID="toggle-accept-negotiation"
+        onPress={() => setAcceptNegotiation((prev) => !prev)}
+        accessibilityRole="switch"
+        accessibilityState={{ checked: acceptNegotiation }}
+        accessibilityLabel="Let buyers offer their own price"
+        className="elevation-card min-h-tap flex-row items-center justify-between gap-3 rounded-card border border-border bg-card p-4 active:opacity-80"
+      >
+        <VStack className="flex-1 gap-0.5">
+          <Text className="type-body-bold text-foreground">Let buyers offer their own price</Text>
+          <Text className="type-caption text-muted-foreground">
+            {acceptNegotiation
+              ? "Buyers can send you an offer. You can accept, decline or name another price."
+              : "Buyers can only order at your asking price."}
+          </Text>
+        </VStack>
+        <Box
+          className={`rounded-pill border px-3 py-1 ${
+            acceptNegotiation ? "border-primary bg-primary" : "border-border bg-background"
+          }`}
+        >
+          <Text
+            className={`type-body-sm-bold ${
+              acceptNegotiation ? "text-primary-foreground" : "text-muted-foreground"
+            }`}
+          >
+            {acceptNegotiation ? "On" : "Off"}
+          </Text>
+        </Box>
+      </Pressable>
 
       {/* Dark Gross Batch Value Card (Calculation + Final Earnings) */}
       <HStack className="elevation-card items-center justify-between rounded-card bg-brand-deep p-4 text-brand-deep-foreground">

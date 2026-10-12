@@ -1,5 +1,12 @@
 import type { Offer, NewOffer } from '../entities/offer';
 
+/** The two people and the listing a negotiation is between. */
+export interface OfferPair {
+  buyerId: string;
+  farmerId: string;
+  listingId: string;
+}
+
 export interface OfferRepository {
   findById(id: string): Promise<Offer | null>;
   findActiveByListingId(
@@ -7,6 +14,13 @@ export interface OfferRepository {
     excludeOfferId?: string,
   ): Promise<Offer[]>;
   findByListingId(listingId: string): Promise<Offer[]>;
+  /** Every offer this user made or received as the buyer, newest first. */
+  findByBuyerId(buyerId: string): Promise<Offer[]>;
+  /** Every offer this user made or received as the farmer, newest first. */
+  findByFarmerId(farmerId: string): Promise<Offer[]>;
+  /** The `PENDING` and `NEGOTIATING` offers between this pair on this listing. Used to refuse a
+   *  second live offer between the same two people. */
+  findActiveBetween(pair: OfferPair): Promise<Offer[]>;
   /**
    * Must guard on `version` to catch concurrent writes — throw OfferError('conflict', ...) on
    * mismatch. Caller is responsible for incrementing `offer.version` before calling this; it does

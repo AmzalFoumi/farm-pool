@@ -2,6 +2,7 @@ import type {
   CallStatus,
   DriverVerification,
   ListingStatus,
+  OfferStatus,
   OrderStatus,
   PaymentStatus,
   WantedStatus
@@ -29,6 +30,16 @@ const ORDER: Record<OrderStatus, { label: string; tone: string }> = {
 const WANTED: Record<WantedStatus, { label: string; tone: string }> = {
   open: { label: "Open", tone: "warning" },
   closed: { label: "Closed", tone: "muted" }
+};
+
+/* A negotiation (FARM-46). Still being talked about is `warning`, like everything waiting on
+   someone; agreed is `success`; declined is `destructive`; lapsed is history, so `muted`. */
+const OFFER: Record<OfferStatus, { label: string; tone: string }> = {
+  PENDING: { label: "Sent", tone: "warning" },
+  NEGOTIATING: { label: "Negotiating", tone: "warning" },
+  ACCEPTED: { label: "Agreed", tone: "success" },
+  DECLINED: { label: "Declined", tone: "destructive" },
+  EXPIRED: { label: "Expired", tone: "muted" }
 };
 
 /* A farmer's own listing. Pending approval waits on the coordinator, so it is `warning`;
@@ -90,6 +101,10 @@ export function OrderStatusPill({ status }: { status: OrderStatus }) {
 
 export function WantedStatusPill({ status }: { status: WantedStatus }) {
   return <Pill {...WANTED[status]} />;
+}
+
+export function OfferStatusPill({ status }: { status: OfferStatus }) {
+  return <Pill {...OFFER[status]} />;
 }
 
 export function ListingStatusPill({ status }: { status: ListingStatus }) {
