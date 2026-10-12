@@ -102,7 +102,9 @@ export function MakeOfferSheet({
         // They already have a live offer on this listing: take them to it rather than refuse.
         const existing = (await offersApi.mine(token).catch(() => [])).find(
           (o) =>
-            o.listingId === listing.id && (o.status === "PENDING" || o.status === "NEGOTIATING")
+            o.listingId === listing.id &&
+            !o.wantedId &&
+            (o.status === "PENDING" || o.status === "NEGOTIATING")
         );
         if (existing) {
           onClose();
