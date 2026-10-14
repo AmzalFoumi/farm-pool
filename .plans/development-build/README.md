@@ -81,6 +81,71 @@ npx expo run:android               # first build 10–20 min; installs and opens
 After a rebuild, share the new `.apk` from `mobile/android/app/build/outputs/apk/debug/app-debug.apk`
 with anyone who does not build locally.
 
+## 4. Build a standalone APK for testers
+
+The development build above needs the dev server on this computer. A **release** APK carries the
+JavaScript inside it, so testers install it and use it anywhere with internet.
+
+Before building, set two values in `mobile/.env` (gitignored; never commit them):
+
+| Variable | What | Why it matters |
+| --- | --- | --- |
+| `EXPO_PUBLIC_API_URL` | The api's public `https://` address | Baked in at build time. A release build refuses a non-`https` URL and stops at launch (`mobile/src/lib/api.ts`), so a LAN address does not work. Changing it means rebuilding |
+| `GOOGLE_MAPS_ANDROID_KEY` | Google Maps key (Maps SDK for Android) | `mobile/app.config.js` puts it in the manifest. Without it, screens with a map stop the app (create listing, step 5) |
+
+Then, starting in `mobile/`:
+
+```bash
+npx expo prebuild --platform android --clean   # regenerates android/ with the .env values and app.json
+cd android
+mkdir -p ../../../farmpool-apks                # outside the repo: prebuild --clean wipes android/
+
+./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+cp app/build/outputs/apk/release/app-release.apk ../../../farmpool-apks/FarmPool-test-<date>-phone.apk
+
+./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
+cp app/build/outputs/apk/release/app-release.apk ../../../farmpool-apks/FarmPool-test-<date>-phone64.apk
+
+./gradlew assembleRelease -PreactNativeArchitectures=x86_64
+cp app/build/outputs/apk/release/app-release.apk ../../../farmpool-apks/FarmPool-test-<date>-emulator.apk
+```
+
+Every build writes to the same `app-release.apk`, so copy each one out before the next build. The
+first build took 13 min; the others reuse the compiled native code and take under a minute.
+
+The three variants are the same app with the same `.env` values. They differ only in which
+processor types (ABIs) they carry native code for — mostly Agora's video engine, ~90 MB per ABI:
+
+| File | ABIs | Size (2026-10-14) | Give to |
+| --- | --- | --- | --- |
+| `…-phone.apk` | `arm64-v8a`, `armeabi-v7a` | 192 MB | Default. Installs on every phone, including old or cheap 32-bit ones |
+| `…-phone64.apk` | `arm64-v8a` | 121 MB | Testers on limited data. Almost every phone since ~2017; a 32-bit one says "App not installed" — send `phone` instead |
+| `…-emulator.apk` | `x86_64` | 102 MB | Emulators on a laptop only. No real phone uses this ABI |
+
+Name files `FarmPool-test-<YYYY-MM-DD>-<variant>.apk` (add `-b2` for a second build that day), so
+testers can tell which is newest. Listing all three ABIs in one build gives a universal APK (~270 MB).
+
+- Run `prebuild` **inside `mobile/`**. From the repo root it treats the root as a new empty app: it
+  reports `com.anonymous.<name>`, edits the root `package.json` and creates a root `android/` and
+  `app.json`. Answer `n` to its install prompt, then `git restore package.json` and delete the two
+  new root entries.
+- Release builds are signed with the debug keystore (`android/app/build.gradle`). Fine for testers,
+  not for the Play Store. A Maps key restricted by SHA-1 must list this keystore's SHA-1:
+  `keytool -list -v -keystore android/app/debug.keystore -alias androiddebugkey -storepass android`.
+Install on a running emulator or a USB-connected phone:
+
+```bash
+adb install -r ../../../farmpool-apks/FarmPool-test-<date>-emulator.apk   # or -phone / -phone64 on a phone
+```
+
+- `-r` replaces an installed copy. If it fails with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, a build
+  signed differently is installed: `adb uninstall com.farmpool.app` first (that device only; the
+  user signs in again).
+- The emulator needs a "Google Play" or "Google APIs" system image, or the map stays blank.
+
+Testers without `adb` open the `.apk` from a download link and allow "Install unknown apps". Share
+the link with named people only: the Maps key can be read out of the APK.
+
 ## Issues hit on Amzal's machine
 
 1. **"This environment variable is too large… up to 2047 characters"** when adding `%ANDROID_HOME%\platform-tools` to the user Path.
