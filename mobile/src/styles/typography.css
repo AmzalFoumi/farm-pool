@@ -85,8 +85,8 @@
    deliberately NOT set — pair with `text-foreground`, `text-muted-foreground`,
    `text-primary`, etc. so the same style works on every surface. */
 
-/* Display — the wordmark on the welcome hero, and nothing smaller than that.
-   Larger than H1 and outside the Figma type frame, which stops at H1; the
+/* Display — the big numbers in the listing wizard (quantity, price). It was first the typed
+   wordmark on the welcome hero; that is now the brand SVG (`WordmarkIcon`). Larger than H1 and outside the Figma type frame, which stops at H1; the
    welcome screen (node 196:5544) sets it at 40/44/-0.8 and it is a real,
    recurring role, so it belongs in the ramp rather than as a one-off. */
 @utility type-display {

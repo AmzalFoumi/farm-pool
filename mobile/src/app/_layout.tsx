@@ -7,7 +7,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaListener } from "react-native-safe-area-context";
 import { Uniwind } from "uniwind";
 
-import { AnimatedSplashOverlay } from "@/components/animated-icon";
+import { LaunchAnimation } from "@/components/app/launch-animation";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "@/global.css";
 import { FONT_ASSETS } from "@/lib/i18n/fonts";
@@ -75,7 +75,7 @@ function RootNavigator() {
 
   return (
     <>
-      <AnimatedSplashOverlay />
+      <LaunchAnimation />
       {/* Onboarding is the root stack, so `index` (the welcome screen) is
           what a cold start lands on when nobody is signed in. The tab shell
           lives one level in — `(farmer)` for a farmer (FARM-21),
