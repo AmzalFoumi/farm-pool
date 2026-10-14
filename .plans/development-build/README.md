@@ -98,24 +98,44 @@ Then, starting in `mobile/`:
 ```bash
 npx expo prebuild --platform android --clean   # regenerates android/ with the .env values and app.json
 cd android
-./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a,x86_64
+mkdir -p ../../../farmpool-apks                # outside the repo: prebuild --clean wipes android/
+
+./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+cp app/build/outputs/apk/release/app-release.apk ../../../farmpool-apks/FarmPool-test-<date>-phone.apk
+
+./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
+cp app/build/outputs/apk/release/app-release.apk ../../../farmpool-apks/FarmPool-test-<date>-phone64.apk
+
+./gradlew assembleRelease -PreactNativeArchitectures=x86_64
+cp app/build/outputs/apk/release/app-release.apk ../../../farmpool-apks/FarmPool-test-<date>-emulator.apk
 ```
+
+Every build writes to the same `app-release.apk`, so copy each one out before the next build. The
+first build took 13 min; the others reuse the compiled native code and take under a minute.
+
+The three variants are the same app with the same `.env` values. They differ only in which
+processor types (ABIs) they carry native code for — mostly Agora's video engine, ~90 MB per ABI:
+
+| File | ABIs | Size (2026-10-14) | Give to |
+| --- | --- | --- | --- |
+| `…-phone.apk` | `arm64-v8a`, `armeabi-v7a` | 192 MB | Default. Installs on every phone, including old or cheap 32-bit ones |
+| `…-phone64.apk` | `arm64-v8a` | 121 MB | Testers on limited data. Almost every phone since ~2017; a 32-bit one says "App not installed" — send `phone` instead |
+| `…-emulator.apk` | `x86_64` | 102 MB | Emulators on a laptop only. No real phone uses this ABI |
+
+Name files `FarmPool-test-<YYYY-MM-DD>-<variant>.apk` (add `-b2` for a second build that day), so
+testers can tell which is newest. Listing all three ABIs in one build gives a universal APK (~270 MB).
 
 - Run `prebuild` **inside `mobile/`**. From the repo root it treats the root as a new empty app: it
   reports `com.anonymous.<name>`, edits the root `package.json` and creates a root `android/` and
   `app.json`. Answer `n` to its install prompt, then `git restore package.json` and delete the two
   new root entries.
-- `arm64-v8a` covers almost every phone, `armeabi-v7a` older 32-bit ones, `x86_64` the emulator.
-  Drop `x86_64` for a smaller APK if nobody tests on an emulator.
 - Release builds are signed with the debug keystore (`android/app/build.gradle`). Fine for testers,
   not for the Play Store. A Maps key restricted by SHA-1 must list this keystore's SHA-1:
   `keytool -list -v -keystore android/app/debug.keystore -alias androiddebugkey -storepass android`.
-- Output: `android/app/build/outputs/apk/release/app-release.apk`.
-
-Install on a running emulator or a USB-connected phone (from `mobile/android`):
+Install on a running emulator or a USB-connected phone:
 
 ```bash
-adb install -r app/build/outputs/apk/release/app-release.apk
+adb install -r ../../../farmpool-apks/FarmPool-test-<date>-emulator.apk   # or -phone / -phone64 on a phone
 ```
 
 - `-r` replaces an installed copy. If it fails with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, a build
