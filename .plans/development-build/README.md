@@ -81,6 +81,51 @@ npx expo run:android               # first build 10–20 min; installs and opens
 After a rebuild, share the new `.apk` from `mobile/android/app/build/outputs/apk/debug/app-debug.apk`
 with anyone who does not build locally.
 
+## 4. Build a standalone APK for testers
+
+The development build above needs the dev server on this computer. A **release** APK carries the
+JavaScript inside it, so testers install it and use it anywhere with internet.
+
+Before building, set two values in `mobile/.env` (gitignored; never commit them):
+
+| Variable | What | Why it matters |
+| --- | --- | --- |
+| `EXPO_PUBLIC_API_URL` | The api's public `https://` address | Baked in at build time. A release build refuses a non-`https` URL and stops at launch (`mobile/src/lib/api.ts`), so a LAN address does not work. Changing it means rebuilding |
+| `GOOGLE_MAPS_ANDROID_KEY` | Google Maps key (Maps SDK for Android) | `mobile/app.config.js` puts it in the manifest. Without it, screens with a map stop the app (create listing, step 5) |
+
+Then, starting in `mobile/`:
+
+```bash
+npx expo prebuild --platform android --clean   # regenerates android/ with the .env values and app.json
+cd android
+./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a,x86_64
+```
+
+- Run `prebuild` **inside `mobile/`**. From the repo root it treats the root as a new empty app: it
+  reports `com.anonymous.<name>`, edits the root `package.json` and creates a root `android/` and
+  `app.json`. Answer `n` to its install prompt, then `git restore package.json` and delete the two
+  new root entries.
+- `arm64-v8a` covers almost every phone, `armeabi-v7a` older 32-bit ones, `x86_64` the emulator.
+  Drop `x86_64` for a smaller APK if nobody tests on an emulator.
+- Release builds are signed with the debug keystore (`android/app/build.gradle`). Fine for testers,
+  not for the Play Store. A Maps key restricted by SHA-1 must list this keystore's SHA-1:
+  `keytool -list -v -keystore android/app/debug.keystore -alias androiddebugkey -storepass android`.
+- Output: `android/app/build/outputs/apk/release/app-release.apk`.
+
+Install on a running emulator or a USB-connected phone (from `mobile/android`):
+
+```bash
+adb install -r app/build/outputs/apk/release/app-release.apk
+```
+
+- `-r` replaces an installed copy. If it fails with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, a build
+  signed differently is installed: `adb uninstall com.farmpool.app` first (that device only; the
+  user signs in again).
+- The emulator needs a "Google Play" or "Google APIs" system image, or the map stays blank.
+
+Testers without `adb` open the `.apk` from a download link and allow "Install unknown apps". Share
+the link with named people only: the Maps key can be read out of the APK.
+
 ## Issues hit on Amzal's machine
 
 1. **"This environment variable is too large… up to 2047 characters"** when adding `%ANDROID_HOME%\platform-tools` to the user Path.
