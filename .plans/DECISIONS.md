@@ -702,6 +702,22 @@ cannot read CSS tokens, so the same hex is written there for the native splash a
 **The icon is the wide wordmark on the logo green — a stopgap.** Icons are square and the wordmark
 is 3.5 : 1, so it is small on a home screen. A square mark from the designer should replace it.
 
+### Tester backend: an ngrok tunnel, started with `concurrently`
+
+Decided 15 October 2026 (FARM-0). The api is not hosted. To put a release APK on testers' phones,
+the api runs on a developer's laptop behind an ngrok tunnel: a release build refuses a non-`https`
+API URL, and the free ngrok plan gives each account one fixed `https` domain, so the address baked
+into the APK survives restarts. The domain is never committed — the tunnel picks it up from the
+logged-in account. Hosting (Render or Railway with the existing Atlas database) replaces this when
+testers need the api while the laptop is off.
+
+**`concurrently` (api devDependency) runs the api and the tunnel from one command**
+(`npm run api:ngrok`). npm scripts cannot run two long-lived processes portably: `&` means
+different things in Windows `cmd` and POSIX shells, and on Windows leaves the tunnel running after
+Ctrl+C. `concurrently` labels both outputs and stops both on Ctrl+C or when either exits (`-k`).
+Dev-only; it never ships. The ngrok CLI itself is a per-machine install, not a dependency, so the
+plain `npm run api` is unchanged for anyone without it.
+
 ## Open
 
 *Persistence* and *Authentication*, formerly questions 1 and 2, were settled on 18 September 2026
