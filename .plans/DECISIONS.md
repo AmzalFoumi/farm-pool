@@ -707,8 +707,9 @@ is 3.5 : 1, so it is small on a home screen. A square mark from the designer sho
 Decided 15 October 2026 (FARM-0). The api is not hosted. To put a release APK on testers' phones,
 the api runs on a developer's laptop behind an ngrok tunnel: a release build refuses a non-`https`
 API URL, and the free ngrok plan gives each account one fixed `https` domain, so the address baked
-into the APK survives restarts. The domain is never committed — the tunnel picks it up from the
-logged-in account. Hosting (Render or Railway with the existing Atlas database) replaces this when
+into the APK survives restarts. The script asks for it with `--url https://`, ngrok's value for "this
+account's dev domain" (docs: universal-gateway/domains); a bare `ngrok http` is not documented to
+reuse it. So the domain is never committed, and each member gets their own. Hosting (Render or Railway with the existing Atlas database) replaces this when
 testers need the api while the laptop is off.
 
 **`concurrently` (api devDependency) runs the api and the tunnel from one command**

@@ -18,7 +18,9 @@ The api refuses to start if a required variable is missing and prints which one
 
 For testers on other networks, `npm run api:ngrok` runs the same watch mode plus an
 [ngrok](https://ngrok.com) tunnel, so the api answers at your account's fixed `https://…ngrok-free.dev`
-address (printed as `url=` in the `[ngrok]` lines). Needs the ngrok CLI installed and logged in
+address (printed as `url=` in the `[ngrok]` lines). `--url https://` in the script is what asks for
+that dev domain; without it ngrok does not promise the same address. Do not run a second tunnel on
+the same account: ngrok shares the domain between them and sends some requests to the other one. Needs the ngrok CLI installed and logged in
 (`ngrok config add-authtoken …`); without it, use `npm run api`. The tunnel targets port 3000, so
 change the script too if you change `PORT`. Ctrl+C stops both. A release APK needs this `https`
 address as `EXPO_PUBLIC_API_URL` (`.plans/development-build/README.md`, section 4).
