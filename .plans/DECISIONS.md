@@ -684,6 +684,24 @@ empty.
 **Converted so far: the driver flow only** — onboarding, sign-up, job board, job detail and the
 cards they share (130 keys). The other ~370 strings across the app are still hard-coded English.
 
+### Brand logo, app icon and launch animation
+
+Decided 14 October 2026 (FARM-0). The designer delivered a "Farmpool" wordmark and a launch
+animation video; the master files are in `mobile/assets/brand/` (see its README).
+
+**The welcome screen draws the wordmark SVG** (`WordmarkIcon`, coloured by the
+`brand-deep-foreground` token) in place of the leaf tile and the typed name.
+
+**A new token, `leaf-400` (`#50B05B`), the logo green.** It is not any existing green: `primary` is
+`#00B14F` and `brand-deep` `#1E6B48`. It is a brand ramp, not a semantic token, because it is
+decorative only — the launch screen and the app icon — and must never read as an action. `app.json`
+cannot read CSS tokens, so the same hex is written there for the native splash and adaptive icon.
+
+**The launch animation is the designer's animated SVG, replayed in code, not the video.** The video is landscape and would be cropped on a portrait phone, and adds weight to a 3G download. `farmpool-logo-animated.svg` draws each letter through a mask whose line "writes" itself — but with CSS, which React Native does not run. `wordmark-strokes.ts` holds its paths and timings unaltered, and `AnimatedWordmark` replays them with reanimated (≈2.1 s). It is reusable for any branded wait (`loop` redraws it). The launch screen holds the drawn logo 0.5 s rather than the video's 3 s, and with reduced motion the logo appears whole. The native splash is the same green with a transparent image, so the hand-off is invisible.
+
+**The icon is the wide wordmark on the logo green — a stopgap.** Icons are square and the wordmark
+is 3.5 : 1, so it is small on a home screen. A square mark from the designer should replace it.
+
 ## Open
 
 *Persistence* and *Authentication*, formerly questions 1 and 2, were settled on 18 September 2026
