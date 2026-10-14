@@ -30,6 +30,8 @@
                                  warmer/greyer than leaf-50. This is the one that
                                  ships; see the note at the foot of this file. */
   --color-leaf-200: #9fe1cb; /* soft mint — borders on tinted surfaces, charts */
+  --color-leaf-400: #50b05b; /* the LOGO green — the launch animation and app icon background
+                                 (assets/brand/). Decorative only: never an action colour. */
   --color-leaf-500: #00b14f; /* PRIMARY — every primary button and CTA */
   --color-leaf-700: #1e6b48; /* mid forest — the green the screens actually use for
                                  full-bleed panels, selected borders and icon tiles */
