@@ -43,6 +43,8 @@ export interface Listing {
   farmgateNotes?: string;
   minOrderKg: number;
   status: ListingStatus;
+  /** Set by the coordinator who rejected this listing (FARM-43). */
+  rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -75,6 +77,7 @@ export function toListingDto(listing: Listing): ListingDto {
     farmgateNotes: listing.farmgateNotes,
     minOrderKg: listing.minOrderKg,
     status: listing.status,
+    rejectionReason: listing.rejectionReason,
     createdAt: listing.createdAt.toISOString(),
   };
 }
