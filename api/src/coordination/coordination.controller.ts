@@ -8,14 +8,17 @@ import type {
   CropPriceContext,
   JoinCooperativeInput,
   Listing,
+  Order,
   PublicUser,
   RejectFarmerInput,
+  RejectListingInput,
   SetBenchmarkPrice as SetBenchmarkPriceBody,
 } from '@farm-pool/shared';
 import {
   cropIdSchema,
   joinCooperativeSchema,
   rejectFarmerSchema,
+  rejectListingSchema,
   setBenchmarkPriceSchema,
 } from '@farm-pool/shared';
 import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
@@ -31,7 +34,10 @@ import { GetCoordinatorDashboard } from './application/services/get-coordinator-
 import { GetCoordinatorTasks } from './application/services/get-coordinator-tasks';
 import { JoinCooperative } from './application/services/join-cooperative';
 import { ListCooperativeFarmers } from './application/services/list-cooperative-farmers';
+import { ListCooperativeListings } from './application/services/list-cooperative-listings';
+import { ListCooperativeOrders } from './application/services/list-cooperative-orders';
 import { RejectFarmer } from './application/services/reject-farmer';
+import { RejectListing } from './application/services/reject-listing';
 import { SetBenchmarkPrice } from './application/services/set-benchmark-price';
 
 /**
@@ -49,7 +55,10 @@ import { SetBenchmarkPrice } from './application/services/set-benchmark-price';
  * | POST   | /coordination/apply     | `cooperative:join` (while pending) | 200 `Cooperative` · 404 |
  * | PUT    | /coordination/farmers/:farmerId/approve | `farmers:approve` | 200 `PublicUser` · 404 · 409 |
  * | PUT    | /coordination/farmers/:farmerId/reject | `farmers:reject`  | 200 `PublicUser` · 400 · 404 · 409 |
+ * | GET    | /coordination/listings  | `cooperative:read-listings`    | 200 `Listing[]` · 404    |
  * | PUT    | /coordination/listings/:listingId/approve | `listings:approve` | 200 `Listing` · 404 · 409 |
+ * | PUT    | /coordination/listings/:listingId/reject | `listings:reject` | 200 `Listing` · 400 · 404 · 409 |
+ * | GET    | /coordination/orders    | `cooperative:read-orders`      | 200 `Order[]` · 404      |
  */
 @Controller('coordination')
 export class CoordinationController {
@@ -61,9 +70,12 @@ export class CoordinationController {
     private readonly setBenchmarkPrice: SetBenchmarkPrice,
     private readonly getBenchmarkPriceHistory: GetBenchmarkPriceHistory,
     private readonly joinCooperative: JoinCooperative,
+    private readonly listCooperativeOrders: ListCooperativeOrders,
     private readonly approveFarmer: ApproveFarmer,
     private readonly rejectFarmer: RejectFarmer,
+    private readonly listCooperativeListings: ListCooperativeListings,
     private readonly approveListing: ApproveListing,
+    private readonly rejectListing: RejectListing,
   ) {}
 
   @Allow('cooperative:read-dashboard')
@@ -146,6 +158,12 @@ export class CoordinationController {
     return this.rejectFarmer.execute(user.sub, farmerId, body.reason);
   }
 
+  @Allow('cooperative:read-listings')
+  @Get('listings')
+  listings(@CurrentUser() user: AuthenticatedUser): Promise<Listing[]> {
+    return this.listCooperativeListings.execute(user.sub);
+  }
+
   @Allow('listings:approve')
   @Put('listings/:listingId/approve')
   approveListingById(
@@ -153,5 +171,21 @@ export class CoordinationController {
     @Param('listingId') listingId: string,
   ): Promise<Listing> {
     return this.approveListing.execute(user.sub, listingId);
+  }
+
+  @Allow('listings:reject')
+  @Put('listings/:listingId/reject')
+  rejectListingById(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('listingId') listingId: string,
+    @Body(new ZodValidationPipe(rejectListingSchema)) body: RejectListingInput,
+  ): Promise<Listing> {
+    return this.rejectListing.execute(user.sub, listingId, body.reason);
+  }
+
+  @Allow('cooperative:read-orders')
+  @Get('orders')
+  orders(@CurrentUser() user: AuthenticatedUser): Promise<Order[]> {
+    return this.listCooperativeOrders.execute(user.sub);
   }
 }
