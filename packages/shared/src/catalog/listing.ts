@@ -94,6 +94,9 @@ export const listingSchema = z.object({
   /** The smallest quantity a buyer may order. Set by the farmer or the seed, never by the buyer. */
   minOrderKg: kgSchema,
   status: listingStatusSchema,
+  /** Set by the coordinator who rejected this listing (FARM-43). Shown back to the farmer on
+   *  their own listings screen — the whole reason it is collected. */
+  rejectionReason: z.string().optional(),
   createdAt: z.iso.datetime()
 });
 

@@ -41,9 +41,12 @@ export const actionSchema = z.enum([
   "farmers:approve",
   "farmers:reject",
   "listings:approve",
+  "listings:reject",
   "cooperative:read-dashboard",
   "cooperative:read-farmers",
   "cooperative:read-tasks",
+  "cooperative:read-listings",
+  "cooperative:read-orders",
   "cooperative:join",
   "benchmark:read",
   "benchmark:set"
@@ -95,9 +98,15 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   "farmers:approve": ["coordinator"],
   "farmers:reject": ["coordinator"],
   "listings:approve": ["coordinator"],
+  "listings:reject": ["coordinator"],
   "cooperative:read-dashboard": ["coordinator"],
   "cooperative:read-farmers": ["coordinator"],
   "cooperative:read-tasks": ["coordinator"],
+  "cooperative:read-listings": ["coordinator"],
+  // Monitoring only — the coordinator's own rule is to call a farmer outside the app if an order
+  // looks wrong, not to mediate or resolve anything in it (`.plans/PRODUCT.md`'s open question on
+  // dispute authority stays unanswered; this does not answer it).
+  "cooperative:read-orders": ["coordinator"],
   // A still-pending farmer calling this right after registering (FARM-44) — reachable while
   // pending via `@AllowWhilePending()`, the one deliberate exception to the status gate below.
   "cooperative:join": ["farmer"],
