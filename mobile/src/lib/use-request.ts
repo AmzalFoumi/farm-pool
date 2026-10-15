@@ -27,7 +27,7 @@ export function useRequest<T>(
   key: string
 ): RequestState<T> & {
   reload: () => void;
-  silentRefresh: () => void;
+  silentRefresh: () => Promise<void>;
 } {
   const [tick, setTick] = useState(0);
   const [settled, setSettled] = useState<Settled<T> | null>(null);
@@ -62,10 +62,10 @@ export function useRequest<T>(
   }, [attempt]);
 
   const inFlightRef = useRef(false);
-  const silentRefresh = useCallback(() => {
-    if (inFlightRef.current) return;
+  const silentRefresh = useCallback((): Promise<void> => {
+    if (inFlightRef.current) return Promise.resolve();
     inFlightRef.current = true;
-    runRef.current().then(
+    return runRef.current().then(
       (data) => {
         inFlightRef.current = false;
         setSettled((prev) => (prev ? { attempt: prev.attempt, ok: true, data } : null));
