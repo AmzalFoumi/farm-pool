@@ -667,6 +667,33 @@ empty.
 **Converted so far: the driver flow only** — onboarding, sign-up, job board, job detail and the
 cards they share (130 keys). The other ~370 strings across the app are still hard-coded English.
 
+### Logging: Nest's own `Logger`, per-domain interceptor, no audit collection
+
+Decided 7 October 2026 (FARM-61, logistics first). The api logs through `Logger` from
+`@nestjs/common` — no pino, no winston, no request-logging middleware — and a domain that needs a
+trail registers one interceptor over its controller. `LogisticsAuditInterceptor` is the first and
+the shape to copy: writes at `log`, reads at `debug`, `DomainError` refusals at `warn` with their
+stable code, anything else at `error` with the cause.
+
+**An interceptor, not `logger.log` inside the use-cases.** The use-case classes import nothing
+from `@nestjs/*` — that is what lets them be unit tested against the in-memory repositories alone
+— and a rule enforced in one place cannot be forgotten by the next endpoint added.
+
+**Per domain, not a global `APP_INTERCEPTOR`.** What is worth recording differs: a delivery turns
+on who accepted and what weight was loaded, a catalog read on nothing at all. A global interceptor
+would have to log everything or nothing, and logging everything is how the lines that matter get
+buried.
+
+**No `audit_logs` collection.** Logistics owns no collection by design, and a write-behind audit
+table is a second source of truth about who did what that can disagree with the orders collection.
+Where history is genuinely part of the domain it is modelled as such instead — `negotiationHistory`
+on an offer, one row per benchmark price change. If a dispute flow ever needs queryable history,
+that is the pattern to extend, not a generic log table.
+
+**Not settled:** where the lines go in a deployed environment. Today they go to stdout and
+nowhere else, which is fine for a demo and useless the moment the api runs anywhere a terminal is
+not attached.
+
 ## Open
 
 *Persistence* and *Authentication*, formerly questions 1 and 2, were settled on 18 September 2026
