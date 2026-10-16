@@ -39,5 +39,6 @@ export * from "./calls/call";
 export * from "./coordination/cooperative";
 export * from "./coordination/dashboard";
 export * from "./coordination/farmer";
+export * from "./coordination/listing";
 export * from "./coordination/task";
 export * from "./coordination/benchmark-price";

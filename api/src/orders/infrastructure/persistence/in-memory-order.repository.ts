@@ -42,6 +42,12 @@ export class InMemoryOrderRepository implements OrderRepository {
     return Promise.resolve(this.newestFirst((o) => o.farmerId === farmerId));
   }
 
+  findByFarmerIds(farmerIds: string[], limit: number): Promise<Order[]> {
+    return Promise.resolve(
+      this.newestFirst((o) => farmerIds.includes(o.farmerId)).slice(0, limit),
+    );
+  }
+
   answerRequest(
     id: string,
     farmerId: string,

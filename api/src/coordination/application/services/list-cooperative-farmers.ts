@@ -6,8 +6,10 @@ import { CoordinationError } from '../errors';
 
 /**
  * Every member of the coordinator's cooperative, with their account status and how much they
- * currently have listed. `district` is the farmer's most recent listing's district — `User`
- * carries no location of its own, so a member with no listings yet has none.
+ * currently have listed — the list the coordinator's Farmers screen and farmer detail screen
+ * (FARM-44) both read from, no separate endpoint for the detail view. `district` prefers the one
+ * the farmer named applying (`User.district`, FARM-44); a member who joined before that existed
+ * falls back to their most recent listing's district, same as before.
  */
 export class ListCooperativeFarmers {
   constructor(
@@ -42,12 +44,15 @@ export class ListCooperativeFarmers {
     return members.map((member) => {
       const listings = memberListings.filter((l) => l.farmerId === member.id);
       const mostRecent = listings[0];
+      const district = member.district ?? mostRecent?.district;
       return {
         id: member.id,
         displayName: member.displayName,
+        phone: member.phone,
         status: member.status,
-        ...(mostRecent ? { district: mostRecent.district } : {}),
+        ...(district ? { district } : {}),
         listingCount: listings.length,
+        createdAt: member.createdAt.toISOString(),
       };
     });
   }

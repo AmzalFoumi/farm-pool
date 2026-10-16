@@ -18,10 +18,10 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useResolveClassNames } from "uniwind";
 
 import { AppButton } from "@/components/app/app-button";
-import { LeafIcon, LoginIcon, MailIcon, PlusIcon } from "@/components/app/icons";
-import { Box } from "@/components/ui/box";
+import { LoginIcon, MailIcon, PlusIcon, WordmarkIcon } from "@/components/app/icons";
 import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
@@ -39,16 +39,16 @@ export default function WelcomeScreen() {
   /* Translated last, but it matters most here: this is the screen the chips are on, so a tap on
      සිංහල that left this copy in English would say the switch had not worked. */
   const { t } = useTranslation();
+  /* The wordmark is an SVG, so it takes a colour value rather than a className; resolving the
+     token keeps it on the design system. */
+  const wordmarkColor = useResolveClassNames("text-brand-deep-foreground").color as string;
 
   return (
     <View className="flex-1 bg-brand-deep">
       {/* ── Hero ─────────────────────────────────────────────────────── */}
       <VStack className="flex-1 justify-end px-7 pb-26" style={{ paddingTop: insets.top }}>
-        <Box className="h-16 w-16 items-center justify-center rounded-tile bg-card">
-          <LeafIcon />
-        </Box>
-
-        <Text className="type-display mt-4.5 text-brand-deep-foreground">FarmPool</Text>
+        {/* The brand wordmark (assets/brand/) replaced the leaf tile and the typed name. */}
+        <WordmarkIcon width={240} color={wordmarkColor} />
 
         <Text className="type-body-lg mt-5.5 text-brand-deep-muted">{t("welcome.tagline")}</Text>
       </VStack>

@@ -5,6 +5,7 @@ import type {
   ListingType,
   CropId,
   Offer as OfferDto,
+  DropOff,
 } from '@farm-pool/shared';
 
 export interface Offer {
@@ -13,12 +14,19 @@ export interface Offer {
   farmerId: string;
   listingId: string;
   listingType: ListingType;
+  /** The buyer's wanted request this offer answers (FARM-47). `listingId` is still a listing. */
+  wantedId?: string;
   cropId: CropId;
   initiatedBy: SenderType;
+  /** Snapshots taken at creation. Absent on offers stored before they existed. */
+  farmerName?: string;
+  buyerName?: string;
   pricePerKg: number;
   quantityKg: number;
   total: number;
   note?: string;
+  /** Where the buyer wants it delivered; copied onto the order at acceptance. */
+  dropOff?: DropOff;
   status: OfferStatus;
   actionRequiredBy: SenderType;
   negotiationHistory: NegotiationEntry[];
@@ -44,12 +52,16 @@ export function toOfferDto(offer: Offer): OfferDto {
     farmerId: offer.farmerId,
     listingId: offer.listingId,
     listingType: offer.listingType,
+    ...(offer.wantedId !== undefined ? { wantedId: offer.wantedId } : {}),
     cropId: offer.cropId,
     initiatedBy: offer.initiatedBy,
+    ...(offer.farmerName !== undefined ? { farmerName: offer.farmerName } : {}),
+    ...(offer.buyerName !== undefined ? { buyerName: offer.buyerName } : {}),
     pricePerKg: offer.pricePerKg,
     quantityKg: offer.quantityKg,
     total: offer.total,
     ...(offer.note !== undefined ? { note: offer.note } : {}),
+    ...(offer.dropOff !== undefined ? { dropOff: offer.dropOff } : {}),
     status: offer.status,
     actionRequiredBy: offer.actionRequiredBy,
     negotiationHistory: offer.negotiationHistory,

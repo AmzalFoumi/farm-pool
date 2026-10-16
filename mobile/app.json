@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "FarmPool",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +9,6 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.farmpool.app",
-      "icon": "./assets/expo.icon",
       "infoPlist": {
         "NSCameraUsageDescription": "FarmPool uses the camera for video calls between buyers and farmers.",
         "NSMicrophoneUsageDescription": "FarmPool uses the microphone for video calls between buyers and farmers."
@@ -19,7 +18,7 @@
       "package": "com.farmpool.app",
       "permissions": ["android.permission.CAMERA", "android.permission.RECORD_AUDIO"],
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#50B05B",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -35,7 +34,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#50B05B",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }

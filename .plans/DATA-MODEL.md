@@ -75,8 +75,7 @@ A buyer's crop request, the "reverse listing" from `.plans/PRODUCT.md`.
 | `note` | string ≤ 280 | no | | Free text. | yes (optional) |
 | `status` | enum `WantedStatus` | yes, default `open` | yes | `open`, `closed`. `expired` is expected later when a job runs over `neededBy`. | yes |
 
-Farmer responses to a request are not modelled. The plan is a separate `responses` concept beside
-this collection, not an array inside it.
+A farmer's response is an offer with `wantedId` set to this request.
 
 ## `orders`
 
@@ -93,6 +92,7 @@ one order; `items[]` is added beside these fields only if multi-item orders are 
 | `farmerName` | string | yes | | **Snapshot** from the listing. | yes |
 | `listingId` | string → `listings._id` | yes | yes | | yes |
 | `offerId` | string → `offers._id` | no | yes | Set only on an order created from an accepted offer (FARM-46). | yes (optional) |
+| `dropOff` | embedded object (`label`, `point`) | no | | The buyer's delivery point. Set on an order made from an accepted offer when the buyer gave one (FARM-46). | yes (optional) |
 | `cropId` | enum `CropId` | yes | | **Copied from the listing.** | yes |
 | `quantityKg` | integer ≥ 1 | yes | | Must sit between the listing's `minOrderKg` and `quantityKg` at placement. | yes |
 | `pricePerKg` | number ≥ 0 | yes | | **Snapshot** of the listing price at placement; a later price change does not alter an existing order. | yes |
@@ -134,8 +134,12 @@ A negotiation that comes before an order (FARM-46). One document per offer.
 | Field | Type | Required | Index | Meaning | On the wire? |
 | ----- | ---- | -------- | ----- | ------- | ------------ |
 | `buyerId` / `farmerId` | string → `users._id` | yes | yes | The two sides. | yes |
-| `listingId` | string | yes | yes | The listing, or the wanted request, the offer is about. | yes |
-| `listingType` | `STANDARD` / `WANTED` | yes | | Which of the two `listingId` points at. | yes |
+| `farmerName` | string | no | | Snapshot of the farmer's display name at creation. | yes (optional) |
+| `buyerName` | string | no | | Snapshot of the buyer's display name at creation. | yes (optional) |
+| `dropOff` | embedded object (`label`, `point`) | no | | The buyer's delivery point, set when making, countering or accepting. Copied onto the order. | yes (optional) |
+| `listingId` | string | yes | yes | The listing the offer is about — always a listing. | yes |
+| `listingType` | `STANDARD` / `WANTED` | yes | | `STANDARD`: a buyer's offer. `WANTED`: a farmer's response to a wanted request. | yes |
+| `wantedId` | string → `wanted_listings._id` | no | yes | The wanted request this offer answers (FARM-47). Absent on an ordinary offer. | yes (optional) |
 | `cropId` | enum `CropId` | yes | | Copied from the listing. | yes |
 | `initiatedBy` | `FARMER` / `BUYER` | yes | | Who opened it. | yes |
 | `pricePerKg`, `quantityKg`, `total`, `note` | numbers, string | yes (note optional) | | What is on the table now. Overwritten by each counter. | yes |
@@ -219,6 +223,7 @@ users ──< wanted_listings   wanted_listings.buyerId
 users ──< orders            orders.buyerId, orders.farmerId
 listings ──< orders         orders.listingId
 listings ──< offers         offers.listingId
+wanted_listings ──< offers  offers.wantedId
 offers ──1 orders           orders.offerId
 orders ──1 payments         payments.orderId (unique)
 users ──< payments          payments.buyerId, payments.farmerId
@@ -255,7 +260,7 @@ the api already share; renaming them is a shared-package change, not a database-
 
 So nobody assumes it is: produce photos and image storage, quality grade, expiry, depots, saved or favourite farmers, benchmark prices, a real payment provider or payout (payments are simulated), delivery
 batches and multi-stop routes, the driver verification *process* (the state is stored, nothing moves it past `pending`), in-app calls or messages (`calls` tab is a placeholder),
-farmer responses to wanted requests, coordinator approval records, refresh tokens or sessions.
+coordinator approval records, refresh tokens or sessions.
 Each is one optional field or one new collection when its story arrives; none needs a change to
 what exists.
 

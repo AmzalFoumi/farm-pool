@@ -25,12 +25,14 @@ leave them behind; that is deliberate, because a test that cleans up cannot tell
 data it wrote was readable on the next request. To clear them out of the shared cluster later,
 match users on `phone: /^\+94770/`.
 
-**Two transitions have no endpoint yet** and are nudged directly in Mongo:
+**Three transitions are nudged directly in Mongo**, two because there is no endpoint yet and one
+because reaching the endpoint is a story of its own:
 
-| Transition | Why there is no endpoint | Remove when |
-| ---------- | ------------------------ | ----------- |
+| Transition | Why it is not done over HTTP | Remove when |
+| ---------- | ---------------------------- | ----------- |
 | listing `pending_approval` → `verified` | Coordinator approval is unbuilt (FARM-43) | FARM-43 lands |
 | order `requested` → `open` | Farmer acceptance is unbuilt (FARM-46) | FARM-46 lands |
+| farmer `pending_review` → `active` | Approval (FARM-44) needs a coordinator whose cooperative covers the farmer's district; `signUpApprovedFarmer` skips that and logs in again for a token that says `active` | The tests seed a cooperative and approve through the api |
 
 ## Testing the driver rules by hand
 
@@ -54,5 +56,5 @@ refused `vehicle_full`, with A's promised window byte-identical afterwards.
 | `delivery-flow.test.mjs` | FARM-26 — farm gate, delivery point and the distance between them |
 | `collection-windows.test.mjs` | FARM-61 — the promised time, and that taking more work cannot move one already made |
 
-Both are marked `NUDGE:` in the source. They are the two places these tests lie about the system,
+All three are marked `NUDGE:` in the source. They are the places these tests lie about the system,
 so they are the first thing to delete when the real endpoints exist.

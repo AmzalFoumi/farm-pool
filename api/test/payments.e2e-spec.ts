@@ -18,6 +18,7 @@ import {
   ORDER_REPOSITORY,
   type OrderRepository,
 } from './../src/orders/domain/repositories/order.repository';
+import { approveFarmer } from './approve-farmer';
 
 /**
  * The escrow story over HTTP: a buyer pays an accepted order, the order reaches the driver job
@@ -31,8 +32,9 @@ describe('payments (e2e)', () => {
   let app: INestApplication<App>;
   let orders: OrderRepository;
   const suffix = Number(Date.now().toString().slice(-8));
+  // Offset so a suite that starts in the same millisecond cannot pick the same phone.
   const phoneOf = (n: number) =>
-    `07${((suffix + n) % 1e8).toString().padStart(8, '0')}`;
+    `07${((suffix + 40000000 + n) % 1e8).toString().padStart(8, '0')}`;
   const district = `E2E-${suffix}-pay`;
 
   let buyer: AuthResponse;
@@ -79,7 +81,11 @@ describe('payments (e2e)', () => {
 
     buyer = await register('buyer', 40);
     otherBuyer = await register('buyer', 41);
-    farmer = await register('farmer', 42);
+    farmer = await approveFarmer(
+      app,
+      await register('farmer', 42),
+      'longenough',
+    );
     driver = await register('logistics', 43);
 
     await request(app.getHttpServer())

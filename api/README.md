@@ -16,6 +16,15 @@ npm run api                        # = npm run start:dev -w api; watch mode on 0
 The api refuses to start if a required variable is missing and prints which one
 (`src/config/env.ts`). A phone on the same Wi-Fi reaches it at `http://<your LAN ip>:3000`.
 
+For testers on other networks, `npm run api:ngrok` runs the same watch mode plus an
+[ngrok](https://ngrok.com) tunnel, so the api answers at your account's fixed `https://…ngrok-free.dev`
+address (printed as `url=` in the `[ngrok]` lines). `--url https://` in the script is what asks for
+that dev domain; without it ngrok does not promise the same address. Do not run a second tunnel on
+the same account: ngrok shares the domain between them and sends some requests to the other one. Needs the ngrok CLI installed and logged in
+(`ngrok config add-authtoken …`); without it, use `npm run api`. The tunnel targets port 3000, so
+change the script too if you change `PORT`. Ctrl+C stops both. A release APK needs this `https`
+address as `EXPO_PUBLIC_API_URL` (`.plans/development-build/README.md`, section 4).
+
 Something to look at: `npm run seed:listings -w api` creates one farmer and eight verified
 listings, safe to re-run.
 
@@ -24,6 +33,7 @@ listings, safe to re-run.
 | Command | What |
 | ------- | ---- |
 | `npm run start:dev -w api` | Watch mode |
+| `npm run start:dev:ngrok -w api` | Watch mode plus an ngrok tunnel to port 3000 (`npm run api:ngrok` from the root) |
 | `npm run build -w api` | Compile to `dist/` (also a type check) |
 | `npm run lint -w api` | ESLint, including the rule that keeps NestJS and Mongoose out of `domain/` |
 | `npm test -w api` | Unit tests: use-cases over in-memory repositories, guards, hasher, signer |

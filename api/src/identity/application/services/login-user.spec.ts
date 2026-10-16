@@ -30,7 +30,7 @@ describe('LoginUser', () => {
     ]) {
       const result = await login.execute({ identifier, password: 'secret123' });
       expect(result.user.phone).toBe('+94771234567');
-      expect(result.token).toBe(`token:${result.user.id}:buyer`);
+      expect(result.token).toBe(`token:${result.user.id}:buyer:active`);
     }
   });
 

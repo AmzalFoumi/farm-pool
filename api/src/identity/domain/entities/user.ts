@@ -29,6 +29,11 @@ export interface User {
   driver?: DriverProfile;
   /** Places this buyer delivers to often (FARM-26). Absent, never empty, when none are saved. */
   savedLocations?: SavedLocation[];
+  /** The district a farmer named applying to a cooperative (FARM-44). Absent for every other
+   *  role, and for a farmer who registered before this existed. */
+  district?: string;
+  /** Set by the coordinator who rejected this farmer (FARM-44). */
+  rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -88,6 +93,10 @@ export function toPublicUser(user: User): PublicUser {
             point: { ...l.point },
           })),
         }
+      : {}),
+    ...(user.district !== undefined ? { district: user.district } : {}),
+    ...(user.rejectionReason !== undefined
+      ? { rejectionReason: user.rejectionReason }
       : {}),
   };
 }

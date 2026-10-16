@@ -10,11 +10,23 @@ import {
   USER_REPOSITORY,
   type UserRepository,
 } from '../identity/domain/repositories/user.repository';
+import { OrdersModule } from '../orders/orders.module';
+import {
+  ORDER_REPOSITORY,
+  type OrderRepository,
+} from '../orders/domain/repositories/order.repository';
+import { ApproveFarmer } from './application/services/approve-farmer';
+import { ApproveListing } from './application/services/approve-listing';
 import { GetBenchmarkPriceHistory } from './application/services/get-benchmark-price-history';
 import { GetBenchmarkPrices } from './application/services/get-benchmark-prices';
 import { GetCoordinatorDashboard } from './application/services/get-coordinator-dashboard';
 import { GetCoordinatorTasks } from './application/services/get-coordinator-tasks';
+import { JoinCooperative } from './application/services/join-cooperative';
 import { ListCooperativeFarmers } from './application/services/list-cooperative-farmers';
+import { ListCooperativeListings } from './application/services/list-cooperative-listings';
+import { ListCooperativeOrders } from './application/services/list-cooperative-orders';
+import { RejectFarmer } from './application/services/reject-farmer';
+import { RejectListing } from './application/services/reject-listing';
 import { SetBenchmarkPrice } from './application/services/set-benchmark-price';
 import { CoordinationController } from './coordination.controller';
 import {
@@ -37,9 +49,10 @@ import { MongooseBenchmarkPriceRepository } from './infrastructure/persistence/m
 import { MongooseCooperativeRepository } from './infrastructure/persistence/mongoose-cooperative.repository';
 
 /**
- * The coordination domain. Imports `CatalogModule` for the listing repository and `IdentityModule`
- * for the user repository: the dashboard and the farmers list both read across domains. One-way
- * dependency in both cases, same as `orders` → `catalog`.
+ * The coordination domain. Imports `CatalogModule` for the listing repository, `IdentityModule`
+ * for the user repository, and `OrdersModule` for the order repository (Disputes monitoring,
+ * FARM-43 follow-up): the dashboard, farmers list and disputes view each read across domains.
+ * One-way dependency in every case, same as `orders` → `catalog`.
  */
 @Module({
   imports: [
@@ -49,6 +62,7 @@ import { MongooseCooperativeRepository } from './infrastructure/persistence/mong
     ]),
     CatalogModule,
     IdentityModule,
+    OrdersModule,
   ],
   controllers: [CoordinationController],
   providers: [
@@ -121,6 +135,62 @@ import { MongooseCooperativeRepository } from './infrastructure/persistence/mong
         cooperatives: CooperativeRepository,
         benchmarkPrices: BenchmarkPriceRepository,
       ) => new GetBenchmarkPriceHistory(cooperatives, benchmarkPrices),
+    },
+    {
+      provide: JoinCooperative,
+      inject: [COOPERATIVE_REPOSITORY, USER_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        users: UserRepository,
+      ) => new JoinCooperative(cooperatives, users),
+    },
+    {
+      provide: ApproveFarmer,
+      inject: [COOPERATIVE_REPOSITORY, USER_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        users: UserRepository,
+      ) => new ApproveFarmer(cooperatives, users),
+    },
+    {
+      provide: RejectFarmer,
+      inject: [COOPERATIVE_REPOSITORY, USER_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        users: UserRepository,
+      ) => new RejectFarmer(cooperatives, users),
+    },
+    {
+      provide: ApproveListing,
+      inject: [COOPERATIVE_REPOSITORY, LISTING_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        listings: ListingRepository,
+      ) => new ApproveListing(cooperatives, listings),
+    },
+    {
+      provide: ListCooperativeListings,
+      inject: [COOPERATIVE_REPOSITORY, LISTING_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        listings: ListingRepository,
+      ) => new ListCooperativeListings(cooperatives, listings),
+    },
+    {
+      provide: RejectListing,
+      inject: [COOPERATIVE_REPOSITORY, LISTING_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        listings: ListingRepository,
+      ) => new RejectListing(cooperatives, listings),
+    },
+    {
+      provide: ListCooperativeOrders,
+      inject: [COOPERATIVE_REPOSITORY, ORDER_REPOSITORY],
+      useFactory: (
+        cooperatives: CooperativeRepository,
+        orders: OrderRepository,
+      ) => new ListCooperativeOrders(cooperatives, orders),
     },
   ],
   exports: [],

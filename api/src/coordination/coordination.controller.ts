@@ -1,23 +1,43 @@
 import type {
   BenchmarkPrice,
+  Cooperative,
   CooperativeFarmer,
   CoordinatorDashboard,
   CoordinatorTask,
   CropId,
   CropPriceContext,
+  JoinCooperativeInput,
+  Listing,
+  Order,
+  PublicUser,
+  RejectFarmerInput,
+  RejectListingInput,
   SetBenchmarkPrice as SetBenchmarkPriceBody,
 } from '@farm-pool/shared';
-import { cropIdSchema, setBenchmarkPriceSchema } from '@farm-pool/shared';
-import { Body, Controller, Get, Param, Put } from '@nestjs/common';
+import {
+  cropIdSchema,
+  joinCooperativeSchema,
+  rejectFarmerSchema,
+  rejectListingSchema,
+  setBenchmarkPriceSchema,
+} from '@farm-pool/shared';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import type { AuthenticatedUser } from '../identity/auth/authenticated-request';
 import { CurrentUser } from '../identity/auth/current-user.decorator';
-import { Allow } from '../identity/auth/roles.decorator';
+import { Allow, AllowWhilePending } from '../identity/auth/roles.decorator';
 import { ZodValidationPipe } from '../shared/http/zod-validation.pipe';
+import { ApproveFarmer } from './application/services/approve-farmer';
+import { ApproveListing } from './application/services/approve-listing';
 import { GetBenchmarkPriceHistory } from './application/services/get-benchmark-price-history';
 import { GetBenchmarkPrices } from './application/services/get-benchmark-prices';
 import { GetCoordinatorDashboard } from './application/services/get-coordinator-dashboard';
 import { GetCoordinatorTasks } from './application/services/get-coordinator-tasks';
+import { JoinCooperative } from './application/services/join-cooperative';
 import { ListCooperativeFarmers } from './application/services/list-cooperative-farmers';
+import { ListCooperativeListings } from './application/services/list-cooperative-listings';
+import { ListCooperativeOrders } from './application/services/list-cooperative-orders';
+import { RejectFarmer } from './application/services/reject-farmer';
+import { RejectListing } from './application/services/reject-listing';
 import { SetBenchmarkPrice } from './application/services/set-benchmark-price';
 
 /**
@@ -32,6 +52,13 @@ import { SetBenchmarkPrice } from './application/services/set-benchmark-price';
  * | GET    | /coordination/benchmarks | `benchmark:read`              | 200 `CropPriceContext[]` · 404  |
  * | PUT    | /coordination/benchmarks/:cropId | `benchmark:set`       | 200 `BenchmarkPrice` · 400 · 404 |
  * | GET    | /coordination/benchmarks/:cropId/history | `benchmark:read` | 200 `BenchmarkPrice[]` · 404 |
+ * | POST   | /coordination/apply     | `cooperative:join` (while pending) | 200 `Cooperative` · 404 |
+ * | PUT    | /coordination/farmers/:farmerId/approve | `farmers:approve` | 200 `PublicUser` · 404 · 409 |
+ * | PUT    | /coordination/farmers/:farmerId/reject | `farmers:reject`  | 200 `PublicUser` · 400 · 404 · 409 |
+ * | GET    | /coordination/listings  | `cooperative:read-listings`    | 200 `Listing[]` · 404    |
+ * | PUT    | /coordination/listings/:listingId/approve | `listings:approve` | 200 `Listing` · 404 · 409 |
+ * | PUT    | /coordination/listings/:listingId/reject | `listings:reject` | 200 `Listing` · 400 · 404 · 409 |
+ * | GET    | /coordination/orders    | `cooperative:read-orders`      | 200 `Order[]` · 404      |
  */
 @Controller('coordination')
 export class CoordinationController {
@@ -42,6 +69,13 @@ export class CoordinationController {
     private readonly getBenchmarkPrices: GetBenchmarkPrices,
     private readonly setBenchmarkPrice: SetBenchmarkPrice,
     private readonly getBenchmarkPriceHistory: GetBenchmarkPriceHistory,
+    private readonly joinCooperative: JoinCooperative,
+    private readonly listCooperativeOrders: ListCooperativeOrders,
+    private readonly approveFarmer: ApproveFarmer,
+    private readonly rejectFarmer: RejectFarmer,
+    private readonly listCooperativeListings: ListCooperativeListings,
+    private readonly approveListing: ApproveListing,
+    private readonly rejectListing: RejectListing,
   ) {}
 
   @Allow('cooperative:read-dashboard')
@@ -92,5 +126,66 @@ export class CoordinationController {
     @Param('cropId', new ZodValidationPipe(cropIdSchema)) cropId: CropId,
   ): Promise<BenchmarkPrice[]> {
     return this.getBenchmarkPriceHistory.execute(user.sub, cropId);
+  }
+
+  @Allow('cooperative:join')
+  @AllowWhilePending()
+  @Post('apply')
+  apply(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body(new ZodValidationPipe(joinCooperativeSchema))
+    body: JoinCooperativeInput,
+  ): Promise<Cooperative> {
+    return this.joinCooperative.execute(user.sub, body.district);
+  }
+
+  @Allow('farmers:approve')
+  @Put('farmers/:farmerId/approve')
+  approve(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('farmerId') farmerId: string,
+  ): Promise<PublicUser> {
+    return this.approveFarmer.execute(user.sub, farmerId);
+  }
+
+  @Allow('farmers:reject')
+  @Put('farmers/:farmerId/reject')
+  reject(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('farmerId') farmerId: string,
+    @Body(new ZodValidationPipe(rejectFarmerSchema)) body: RejectFarmerInput,
+  ): Promise<PublicUser> {
+    return this.rejectFarmer.execute(user.sub, farmerId, body.reason);
+  }
+
+  @Allow('cooperative:read-listings')
+  @Get('listings')
+  listings(@CurrentUser() user: AuthenticatedUser): Promise<Listing[]> {
+    return this.listCooperativeListings.execute(user.sub);
+  }
+
+  @Allow('listings:approve')
+  @Put('listings/:listingId/approve')
+  approveListingById(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('listingId') listingId: string,
+  ): Promise<Listing> {
+    return this.approveListing.execute(user.sub, listingId);
+  }
+
+  @Allow('listings:reject')
+  @Put('listings/:listingId/reject')
+  rejectListingById(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('listingId') listingId: string,
+    @Body(new ZodValidationPipe(rejectListingSchema)) body: RejectListingInput,
+  ): Promise<Listing> {
+    return this.rejectListing.execute(user.sub, listingId, body.reason);
+  }
+
+  @Allow('cooperative:read-orders')
+  @Get('orders')
+  orders(@CurrentUser() user: AuthenticatedUser): Promise<Order[]> {
+    return this.listCooperativeOrders.execute(user.sub);
   }
 }

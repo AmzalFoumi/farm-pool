@@ -22,6 +22,36 @@ export class InMemoryCooperativeRepository implements CooperativeRepository {
     return Promise.resolve(found);
   }
 
+  findByDistrict(district: string): Promise<Cooperative | null> {
+    const wanted = district.toLowerCase();
+    const row = [...this.rows.values()].find(
+      (c) => c.district.toLowerCase() === wanted,
+    );
+    return Promise.resolve(row ? snapshot(row) : null);
+  }
+
+  addMember(
+    cooperativeId: string,
+    farmerId: string,
+  ): Promise<Cooperative | null> {
+    const row = this.rows.get(cooperativeId);
+    if (!row) return Promise.resolve(null);
+    if (!row.memberFarmerIds.includes(farmerId)) {
+      row.memberFarmerIds.push(farmerId);
+    }
+    return Promise.resolve(snapshot(row));
+  }
+
+  removeMember(
+    cooperativeId: string,
+    farmerId: string,
+  ): Promise<Cooperative | null> {
+    const row = this.rows.get(cooperativeId);
+    if (!row) return Promise.resolve(null);
+    row.memberFarmerIds = row.memberFarmerIds.filter((id) => id !== farmerId);
+    return Promise.resolve(snapshot(row));
+  }
+
   upsertBySeedKey(
     seedKey: string,
     cooperative: NewCooperative,

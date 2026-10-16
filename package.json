@@ -14,6 +14,7 @@
   "scripts": {
     "mobile": "npm run start --workspace mobile",
     "api": "npm run start:dev --workspace api",
+    "api:ngrok": "npm run start:dev:ngrok --workspace api",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,mjs,cjs,json,md,yml,yaml,css}\" --cache",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,mjs,cjs,json,md,yml,yaml,css}\"",
     "test:e2e": "node --test \"tests/e2e/*.test.mjs\"",

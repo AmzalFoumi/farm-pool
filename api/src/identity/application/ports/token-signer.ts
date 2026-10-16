@@ -1,9 +1,10 @@
-import type { JwtPayload, Role } from '@farm-pool/shared';
+import type { AccountStatus, JwtPayload, Role } from '@farm-pool/shared';
 
 /** The claims a use-case supplies; the signer adds `iat` and `exp`. */
 export interface TokenClaims {
   sub: string;
   role: Role;
+  status: AccountStatus;
 }
 
 /**

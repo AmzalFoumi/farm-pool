@@ -19,3 +19,11 @@ export const cooperativeSchema = z.object({
 export type Cooperative = z.infer<typeof cooperativeSchema>;
 
 export const cooperativeListSchema = z.array(cooperativeSchema);
+
+/** Body for `POST /coordination/apply` (FARM-44) — a farmer naming the district they farm in,
+ *  right after registering, so they land in the cooperative that covers it. */
+export const joinCooperativeSchema = z.object({
+  district: districtSchema
+});
+
+export type JoinCooperativeInput = z.infer<typeof joinCooperativeSchema>;

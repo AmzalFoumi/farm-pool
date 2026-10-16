@@ -8,6 +8,7 @@ import {
   LISTING_REPOSITORY,
   type ListingRepository,
 } from './../src/catalog/domain/repositories/listing.repository';
+import { approveFarmer } from './approve-farmer';
 
 /**
  * The buyer order story over HTTP: place → mine → get → cancel, plus the refusals
@@ -16,8 +17,9 @@ import {
 describe('orders (e2e)', () => {
   let app: INestApplication<App>;
   const suffix = Number(Date.now().toString().slice(-8));
+  // Offset so a suite that starts in the same millisecond cannot pick the same phone.
   const phoneOf = (n: number) =>
-    `07${((suffix + n) % 1e8).toString().padStart(8, '0')}`;
+    `07${((suffix + 20000000 + n) % 1e8).toString().padStart(8, '0')}`;
 
   let buyer: AuthResponse;
   let otherBuyer: AuthResponse;
@@ -48,7 +50,11 @@ describe('orders (e2e)', () => {
 
     buyer = await register('buyer', 20);
     otherBuyer = await register('buyer', 21);
-    farmer = await register('farmer', 22);
+    farmer = await approveFarmer(
+      app,
+      await register('farmer', 22),
+      'longenough',
+    );
 
     const listings = app.get<ListingRepository>(LISTING_REPOSITORY);
     listingId = (

@@ -23,6 +23,7 @@ export const actionSchema = z.enum([
   "order:accept",
   "order:confirm-receipt",
   "order:renegotiate",
+  "offer:create",
   "payment:pay",
   "payment:read-own",
   "call:join",
@@ -38,9 +39,15 @@ export const actionSchema = z.enum([
   "location:save",
   "users:list",
   "farmers:approve",
+  "farmers:reject",
+  "listings:approve",
+  "listings:reject",
   "cooperative:read-dashboard",
   "cooperative:read-farmers",
   "cooperative:read-tasks",
+  "cooperative:read-listings",
+  "cooperative:read-orders",
+  "cooperative:join",
   "benchmark:read",
   "benchmark:set"
 ]);
@@ -59,6 +66,9 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   "order:confirm-receipt": ["buyer"],
   // Either side of a deal may propose a new price; the use-case checks the caller is on the order.
   "order:renegotiate": ["buyer", "farmer"],
+  /* Starting a negotiation: a buyer on a farmer's listing, or a farmer answering a buyer's wanted
+     request. The use-case checks which of the two the caller may start. */
+  "offer:create": ["buyer", "farmer"],
   "payment:pay": ["buyer"],
   // Any role may ask for a payment; the use-case then checks the caller is its buyer or farmer.
   "payment:read-own": ROLES,
@@ -86,9 +96,20 @@ export const PERMISSIONS: Readonly<Record<Action, readonly Role[]>> = {
   // The coordinator is the trust checkpoint (`.plans/PRODUCT.md`); only they see everyone.
   "users:list": ["coordinator"],
   "farmers:approve": ["coordinator"],
+  "farmers:reject": ["coordinator"],
+  "listings:approve": ["coordinator"],
+  "listings:reject": ["coordinator"],
   "cooperative:read-dashboard": ["coordinator"],
   "cooperative:read-farmers": ["coordinator"],
   "cooperative:read-tasks": ["coordinator"],
+  "cooperative:read-listings": ["coordinator"],
+  // Monitoring only — the coordinator's own rule is to call a farmer outside the app if an order
+  // looks wrong, not to mediate or resolve anything in it (`.plans/PRODUCT.md`'s open question on
+  // dispute authority stays unanswered; this does not answer it).
+  "cooperative:read-orders": ["coordinator"],
+  // A still-pending farmer calling this right after registering (FARM-44) — reachable while
+  // pending via `@AllowWhilePending()`, the one deliberate exception to the status gate below.
+  "cooperative:join": ["farmer"],
   "benchmark:read": ["coordinator"],
   "benchmark:set": ["coordinator"]
 };

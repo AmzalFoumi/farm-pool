@@ -7,16 +7,25 @@ const secret = 'unit-test-secret-that-is-at-least-32-characters';
 describe('JsonwebtokenTokenSigner', () => {
   const signer = new JsonwebtokenTokenSigner({ secret, expiresIn: '1h' });
 
-  it('signs claims that verify back with sub, role, iat and exp', async () => {
-    const token = await signer.sign({ sub: 'user-1', role: 'farmer' });
+  it('signs claims that verify back with sub, role, status, iat and exp', async () => {
+    const token = await signer.sign({
+      sub: 'user-1',
+      role: 'farmer',
+      status: 'active',
+    });
     const payload = await signer.verify(token);
     expect(payload.sub).toBe('user-1');
     expect(payload.role).toBe('farmer');
+    expect(payload.status).toBe('active');
     expect(payload.exp - payload.iat).toBe(3600);
   });
 
   it('rejects a tampered token', async () => {
-    const token = await signer.sign({ sub: 'user-1', role: 'farmer' });
+    const token = await signer.sign({
+      sub: 'user-1',
+      role: 'farmer',
+      status: 'active',
+    });
     const [header, payload, signature] = token.split('.');
     const forged = Buffer.from(
       JSON.stringify({ ...decode(payload), role: 'coordinator' }),
@@ -31,7 +40,11 @@ describe('JsonwebtokenTokenSigner', () => {
       secret: 'another-secret-that-is-also-32-characters-long',
       expiresIn: '1h',
     });
-    const token = await other.sign({ sub: 'user-1', role: 'buyer' });
+    const token = await other.sign({
+      sub: 'user-1',
+      role: 'buyer',
+      status: 'active',
+    });
     await expect(signer.verify(token)).rejects.toBeInstanceOf(IdentityError);
   });
 
@@ -40,7 +53,11 @@ describe('JsonwebtokenTokenSigner', () => {
       secret,
       expiresIn: '-1s',
     });
-    const token = await shortLived.sign({ sub: 'user-1', role: 'buyer' });
+    const token = await shortLived.sign({
+      sub: 'user-1',
+      role: 'buyer',
+      status: 'active',
+    });
     await expect(signer.verify(token)).rejects.toMatchObject({
       code: 'invalid_token',
     });

@@ -18,6 +18,16 @@ export interface UserRepository {
   /** Replace the whole saved-location list. The use-case owns the add/remove rules and the cap,
    *  so the store only ever writes the list it is given. Resolves `null` when no such user. */
   saveLocations(id: string, locations: SavedLocation[]): Promise<User | null>;
+  /** Sets the district a farmer named applying to a cooperative (FARM-44). Resolves `null` when
+   *  no such user exists. */
+  saveFarmerDistrict(id: string, district: string): Promise<User | null>;
+  /** `pending_review` → `active` (FARM-44, a coordinator approving a farmer). Filtered on the
+   *  current status, same as `OrderRepository.assignDriver`: resolves `null` if the account is
+   *  not currently `pending_review` (already active, suspended, or gone), never partially. */
+  activate(id: string): Promise<User | null>;
+  /** `pending_review` → `suspended`, recording why (FARM-44, a coordinator rejecting a farmer).
+   *  Same filtered shape as `activate`. */
+  reject(id: string, reason: string): Promise<User | null>;
 }
 
 /**

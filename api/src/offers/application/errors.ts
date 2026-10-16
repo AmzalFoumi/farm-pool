@@ -8,7 +8,15 @@ export type OfferErrorCode =
   | 'conflict'
   | 'invalid'
   | 'not_your_offer'
-  | 'wanted_offers_unavailable';
+  | 'wanted_offers_unavailable'
+  | 'listing_unavailable'
+  | 'negotiation_not_accepted'
+  | 'quantity_out_of_range'
+  | 'offer_exists'
+  | 'insufficient_stock'
+  | 'not_your_listing'
+  | 'wanted_closed'
+  | 'crop_mismatch';
 
 export class OfferError extends DomainError<OfferErrorCode> {
   constructor(kind: DomainErrorKind, code: OfferErrorCode, message: string) {

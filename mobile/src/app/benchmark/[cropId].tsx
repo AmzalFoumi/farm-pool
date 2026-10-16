@@ -10,7 +10,7 @@ import { cropById, cropIdSchema, setBenchmarkPriceSchema } from "@farm-pool/shar
 import type { BenchmarkPrice, CropId, CropPriceContext } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { KeyboardAvoidingView, Linking, Platform, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppBar } from "@/components/app/app-bar";
@@ -18,6 +18,8 @@ import { AppButton } from "@/components/app/app-button";
 import { AppTextField } from "@/components/app/app-text-field";
 import { EmptyNote, RequestView } from "@/components/app/request-view";
 import { HStack } from "@/components/ui/hstack";
+import { GlobeIcon, Icon } from "@/components/ui/icon";
+import { Pressable } from "@/components/ui/pressable";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -73,6 +75,7 @@ function SetCropPriceForm({
 }) {
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
+  const cropName = cropById(cropId).name;
   const history = useRequest(
     () => coordinationApi.benchmarkHistory(token ?? "", cropId),
     `${token ?? ""}|${cropId}`
@@ -145,7 +148,35 @@ function SetCropPriceForm({
                 } ${context.activeListingRange.listingCount === 1 ? "listing" : "listings"}.`
               : "None of your farmers have an active listing for this crop right now."}
           </Text>
+          <Text className="type-caption text-muted-foreground">
+            No live market feed exists yet — this is set from what you already know.
+          </Text>
         </VStack>
+
+        {/* No official live price API exists for Sri Lankan crops (checked: HARTI, the Dambulla
+            Economic Centre and the Census & Statistics Dept. all publish PDFs or nothing at all,
+            not a feed) — `BenchmarkPrice.source` stays `"manual"` for exactly that reason. This
+            is the honest middle ground: a one-tap way to cross-reference before publishing,
+            rather than the app pretending to show live data it cannot actually fetch. A search
+            URL, not a fixed page, so it never goes stale the way a linked PDF would. */}
+        <Pressable
+          onPress={() =>
+            void Linking.openURL(
+              `https://www.google.com/search?q=${encodeURIComponent(`${cropName} price today Sri Lanka`)}`
+            )
+          }
+          accessibilityRole="link"
+          accessibilityLabel={`Search for today's ${cropName} price`}
+          className="min-h-tap flex-row items-center gap-3 rounded-card border border-border bg-card p-4"
+        >
+          <Icon as={GlobeIcon} className="text-muted-foreground" size="md" />
+          <VStack className="flex-1 gap-0.5">
+            <Text className="type-body-bold text-foreground">Check other sources</Text>
+            <Text className="type-caption text-muted-foreground">
+              See what {cropName} is selling for elsewhere today
+            </Text>
+          </VStack>
+        </Pressable>
 
         <VStack className="gap-2 rounded-card border border-border bg-card p-4">
           <Text className="type-body-bold text-foreground">Price history</Text>

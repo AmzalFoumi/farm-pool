@@ -88,6 +88,38 @@ export class MongooseUserRepository implements UserRepository {
       .exec();
     return doc ? toUser(doc) : null;
   }
+
+  async saveFarmerDistrict(id: string, district: string): Promise<User | null> {
+    if (!/^[0-9a-f]{24}$/i.test(id)) return null;
+    const doc = await this.users
+      .findByIdAndUpdate(id, { $set: { district } }, { new: true })
+      .exec();
+    return doc ? toUser(doc) : null;
+  }
+
+  async activate(id: string): Promise<User | null> {
+    if (!/^[0-9a-f]{24}$/i.test(id)) return null;
+    const doc = await this.users
+      .findOneAndUpdate(
+        { _id: id, status: 'pending_review' },
+        { $set: { status: 'active' } },
+        { new: true },
+      )
+      .exec();
+    return doc ? toUser(doc) : null;
+  }
+
+  async reject(id: string, reason: string): Promise<User | null> {
+    if (!/^[0-9a-f]{24}$/i.test(id)) return null;
+    const doc = await this.users
+      .findOneAndUpdate(
+        { _id: id, status: 'pending_review' },
+        { $set: { status: 'suspended', rejectionReason: reason } },
+        { new: true },
+      )
+      .exec();
+    return doc ? toUser(doc) : null;
+  }
 }
 
 function toUser(doc: UserHydrated): User {
@@ -108,6 +140,10 @@ function toUser(doc: UserHydrated): User {
             point: { latitude: l.point.latitude, longitude: l.point.longitude },
           })),
         }
+      : {}),
+    ...(typeof doc.district === 'string' ? { district: doc.district } : {}),
+    ...(typeof doc.rejectionReason === 'string'
+      ? { rejectionReason: doc.rejectionReason }
       : {}),
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,

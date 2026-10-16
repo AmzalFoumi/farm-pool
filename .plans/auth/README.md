@@ -113,6 +113,7 @@ name should appear in an access rule:
 | `listing:read` | ✓ | ✓ | ✓ | ✓ |
 | `listing:create` | ✓ | | | |
 | `order:place` | | ✓ | | |
+| `offer:create` | ✓ | ✓ | | |
 | `order:accept` | ✓ | | | |
 | `order:read-own` | ✓ | ✓ | ✓ | ✓ |
 | `order:cancel` | | ✓ | | |
@@ -129,6 +130,7 @@ name should appear in an access rule:
 | `driver:update-vehicle` | | | | ✓ |
 | `users:list` | | | ✓ | |
 | `farmers:approve` | | | ✓ | |
+| `listings:approve` | | | ✓ | |
 | `cooperative:read-dashboard` | | | ✓ | |
 | `cooperative:read-farmers` | | | ✓ | |
 | `cooperative:read-tasks` | | | ✓ | |

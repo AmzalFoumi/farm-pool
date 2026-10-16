@@ -31,6 +31,10 @@ export interface ListingRepository {
   findPendingApproval(filter: ListingFilter, limit: number): Promise<Listing[]>;
   /** One farmer's listings in every status, newest first. Added for FARM-21's "My listings". */
   findByFarmerId(farmerId: string): Promise<Listing[]>;
+  /** Every listing of this farmer set, any status except `draft` (a coordinator's cooperative
+   *  view, FARM-43) — not the plural of `findByFarmerId`, which is one farmer, every status
+   *  including `draft`, unlimited. */
+  findByFarmerIds(filter: ListingFilter, limit: number): Promise<Listing[]>;
   /** Farmer listing creation (FARM-21). */
   create(listing: NewListing): Promise<Listing>;
   update(id: string, listing: Partial<Listing>): Promise<Listing>;
@@ -38,6 +42,12 @@ export interface ListingRepository {
   deductQuantity(id: string, quantity: number): Promise<Listing | null>;
   /** Restores deducted quantity and flips status back to verified if it was sold. */
   refundQuantity(id: string, quantity: number): Promise<Listing | null>;
+  /** `pending_approval` → `verified` in one step (FARM-43, a coordinator approving a listing).
+   *  Resolves `null` when the listing is missing or is not currently `pending_approval`. */
+  markVerifiedIfPending(id: string): Promise<Listing | null>;
+  /** `pending_approval` → `rejected`, recording why (FARM-43, a coordinator rejecting a
+   *  listing). Same filtered shape as `markVerifiedIfPending`. */
+  markRejectedIfPending(id: string, reason: string): Promise<Listing | null>;
   upsertBySeedKey(seedKey: string, listing: NewListing): Promise<Listing>;
 }
 

@@ -19,7 +19,8 @@ requested ──farmer──▶ accepted ──buyer pays──▶ open ──�
 **`accepted` → `open` is the buyer paying** (FARM-41, `api/src/payments/README.md`). So an
 accepting use-case must leave the order at `accepted`. Two things write it: the farmer accepting
 a `requested` order (`RespondToOrder`), and an accepted offer creating its order
-(`PlaceOrder.executeFromOffer`, see `api/src/offers/README.md`).
+(`PlaceOrder.executeFromOffer`, see `api/src/offers/README.md`). An order made from an accepted
+offer carries the offer's delivery point (`dropOff`) when the buyer set one.
 
 **`delivered` is the last status.** The buyer confirming receipt (FARM-51) stamps `receivedAt`
 and leaves the status alone.

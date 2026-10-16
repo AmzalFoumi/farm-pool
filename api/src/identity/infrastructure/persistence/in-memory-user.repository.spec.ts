@@ -64,4 +64,33 @@ describe('InMemoryUserRepository', () => {
     expect(pub).not.toHaveProperty('passwordHash');
     expect(pub.createdAt).toBe(user.createdAt.toISOString());
   });
+
+  it('activate flips pending_review to active, and is null otherwise (FARM-44)', async () => {
+    const repo = new InMemoryUserRepository();
+    const user = await repo.create({ ...farmer, status: 'pending_review' });
+
+    expect(await repo.activate('does-not-exist')).toBeNull();
+
+    const activated = await repo.activate(user.id);
+    expect(activated?.status).toBe('active');
+    expect(await repo.findById(user.id)).toMatchObject({ status: 'active' });
+
+    // Already active: a second call is a no-op, not a re-activation.
+    expect(await repo.activate(user.id)).toBeNull();
+  });
+
+  it('reject flips pending_review to suspended and records why, and is null otherwise (FARM-44)', async () => {
+    const repo = new InMemoryUserRepository();
+    const user = await repo.create({ ...farmer, status: 'pending_review' });
+
+    const rejected = await repo.reject(user.id, 'Could not verify identity');
+    expect(rejected?.status).toBe('suspended');
+    expect(await repo.findById(user.id)).toMatchObject({
+      status: 'suspended',
+      rejectionReason: 'Could not verify identity',
+    });
+
+    // Already suspended: a second call is a no-op.
+    expect(await repo.reject(user.id, 'Again')).toBeNull();
+  });
 });

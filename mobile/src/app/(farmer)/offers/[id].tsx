@@ -12,45 +12,14 @@ import { Text } from "@/components/ui/text";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { Pressable } from "@/components/ui/pressable";
-import {
-  type Offer as UiOffer,
-  OfferCard,
-  type OfferStatus
-} from "@/features/listings/components/offer-card";
+import { OfferCard, type OfferStatus } from "@/features/listings/components/offer-card";
 import { NegotiateSheet } from "@/features/listings/components/negotiate-sheet";
 import { NegotiationHistorySheet } from "@/features/listings/components/negotiation-history-sheet";
 import { BackIcon } from "@/components/app/icons";
 import { offersApi } from "@/features/offers/api";
 import { ApiError } from "@/lib/api";
-import { Offer as SharedOffer } from "@farm-pool/shared";
-
-function mapOfferToUI(offer: SharedOffer): UiOffer {
-  // A copy, newest first: `reverse()` on the original would reorder the cached history.
-  const newestFirst = [...offer.negotiationHistory].reverse();
-  let status: OfferStatus = "new";
-  if (offer.status === "PENDING") status = "new";
-  else if (offer.status === "NEGOTIATING") status = "negotiating";
-  else if (offer.status === "ACCEPTED") status = "confirmed";
-  else if (offer.status === "DECLINED" || offer.status === "EXPIRED") status = "history";
-
-  return {
-    id: offer.id,
-    status,
-    isMyTurn: offer.actionRequiredBy === "FARMER",
-    buyer: {
-      name: "Buyer " + offer.buyerId.slice(-4),
-      initials: "B",
-      subtitle: "Verified Buyer"
-    },
-    rate: offer.pricePerKg,
-    quantityKg: offer.quantityKg,
-    total: offer.total,
-    contractId: offer.orderId,
-    yourCounter: newestFirst.find((h) => h.senderType === "FARMER")?.proposedPrice,
-    buyerCounter: newestFirst.find((h) => h.senderType === "BUYER")?.proposedPrice,
-    latestMessage: offer.negotiationHistory[offer.negotiationHistory.length - 1]?.note
-  };
-}
+import { offerErrorMessage } from "@/features/offers/error-message";
+import { toUiOffer } from "@/features/offers/to-ui-offer";
 
 export default function OffersScreen() {
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
@@ -65,14 +34,21 @@ export default function OffersScreen() {
   const [isDecliningOfferId, setIsDecliningOfferId] = useState<string | null>(null);
 
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
-  const req = useRequest(() => listingsApi.get(token ?? "", id), `${token}|${id}`);
+  /* The farmer's own list, in every status: the public detail endpoint only returns verified
+     listings, and offers outlive that (a listing goes `sold` when its last stock is agreed). */
+  const req = useRequest(async () => {
+    const mine = await listingsApi.mine(token ?? "");
+    const found = mine.find((listing) => listing.id === id);
+    if (!found) throw new ApiError(404, "listing_not_found", "This listing was not found");
+    return found;
+  }, `${token}|${id}`);
 
   const offersReq = useRequest(
     () => offersApi.forListing(token ?? "", id),
     `offers|${token}|${id}`
   );
 
-  const allOffers = (offersReq.data ?? []).map(mapOfferToUI);
+  const allOffers = (offersReq.data ?? []).map((offer) => toUiOffer(offer, "FARMER"));
 
   useFocusEffect(
     useCallback(() => {
@@ -133,7 +109,6 @@ export default function OffersScreen() {
         </VStack>
       </HStack>
 
-      {/* TODO: replace hardcoded offers with offersApi.list(token, id) when ready */}
       {/* Filters */}
       <View>
         <ScrollView
@@ -218,11 +193,14 @@ export default function OffersScreen() {
                         if (!token || isAcceptingOfferId) return; // Prevent double taps or concurrent actions
                         setIsAcceptingOfferId(offer.id);
                         try {
-                          await offersApi.accept(token, offer.id);
-                          offersReq.reload();
+                          const { orderId } = await offersApi.accept(token, offer.id);
+                          router.push({ pathname: "/orders/[id]", params: { id: orderId } });
                         } catch (err) {
-                          console.error("Failed to accept offer:", err);
-                          Alert.alert("Error", "Failed to accept the offer. Please try again.");
+                          Alert.alert(
+                            "Could not accept",
+                            offerErrorMessage(err, "Failed to accept the offer. Please try again.")
+                          );
+                          offersReq.reload();
                         } finally {
                           setIsAcceptingOfferId(null);
                         }
@@ -247,8 +225,10 @@ export default function OffersScreen() {
                           await offersApi.decline(token, offer.id);
                           offersReq.reload();
                         } catch (err) {
-                          console.error("Failed to decline offer:", err);
-                          Alert.alert("Error", "Failed to decline the offer. Please try again.");
+                          Alert.alert(
+                            "Could not decline",
+                            offerErrorMessage(err, "Failed to decline the offer. Please try again.")
+                          );
                         } finally {
                           setIsDecliningOfferId(null);
                         }
@@ -266,25 +246,25 @@ export default function OffersScreen() {
           isOpen={true}
           onClose={() => setNegotiatingOfferId(null)}
           offer={allOffers.find((o) => o.id === negotiatingOfferId)!}
+          minKg={req.data?.minOrderKg ?? 1}
+          maxKg={
+            req.data?.quantityKg ?? allOffers.find((o) => o.id === negotiatingOfferId)!.quantityKg
+          }
           onSubmit={async (rate, quantity, note) => {
             if (!token) return;
             try {
               await offersApi.negotiate(token, negotiatingOfferId, {
-                senderType: "FARMER",
                 proposedPrice: rate,
                 proposedQuantityKg: quantity,
                 note: note || undefined
               });
-              offersReq.reload(); // refresh the list
+              offersReq.reload();
               setNegotiatingOfferId(null);
             } catch (err) {
               // The sheet stays open so what was typed is not lost.
-              console.error("Failed to negotiate:", err);
               Alert.alert(
-                "Error",
-                err instanceof ApiError
-                  ? err.message
-                  : "Failed to send the counter-offer. Please try again."
+                "Could not send",
+                offerErrorMessage(err, "Failed to send the counter-offer. Please try again.")
               );
             }
           }}
@@ -295,6 +275,7 @@ export default function OffersScreen() {
         <NegotiationHistorySheet
           isOpen={true}
           onClose={() => setViewHistoryOfferId(null)}
+          viewer="FARMER"
           offer={(offersReq.data ?? []).find((o) => o.id === viewHistoryOfferId) ?? null}
         />
       )}

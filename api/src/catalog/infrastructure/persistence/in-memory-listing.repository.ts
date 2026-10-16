@@ -23,24 +23,28 @@ export class InMemoryListingRepository implements ListingRepository {
   }
 
   findVerified(filter: ListingFilter, limit: number): Promise<Listing[]> {
-    return this.findByStatus('verified', filter, limit);
+    return this.findWhere((s) => s === 'verified', filter, limit);
   }
 
   findPendingApproval(
     filter: ListingFilter,
     limit: number,
   ): Promise<Listing[]> {
-    return this.findByStatus('pending_approval', filter, limit);
+    return this.findWhere((s) => s === 'pending_approval', filter, limit);
   }
 
-  private findByStatus(
-    status: ListingStatus,
+  findByFarmerIds(filter: ListingFilter, limit: number): Promise<Listing[]> {
+    return this.findWhere((s) => s !== 'draft', filter, limit);
+  }
+
+  private findWhere(
+    matches: (status: ListingStatus) => boolean,
     filter: ListingFilter,
     limit: number,
   ): Promise<Listing[]> {
     const district = filter.district?.toLowerCase();
     const found = [...this.rows.values()]
-      .filter((l) => l.status === status)
+      .filter((l) => matches(l.status))
       .filter((l) => !filter.crop || l.cropId === filter.crop)
       .filter((l) => !district || l.district.toLowerCase() === district)
       .filter((l) => !filter.farmerIds || filter.farmerIds.includes(l.farmerId))
@@ -104,6 +108,31 @@ export class InMemoryListingRepository implements ListingRepository {
       ...row,
       quantityKg: newQuantity,
       status: newStatus as ListingStatus,
+      updatedAt: new Date(),
+    };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
+  markVerifiedIfPending(id: string): Promise<Listing | null> {
+    const row = this.rows.get(id);
+    if (!row || row.status !== 'pending_approval') return Promise.resolve(null);
+    const updated = {
+      ...row,
+      status: 'verified' as ListingStatus,
+      updatedAt: new Date(),
+    };
+    this.rows.set(id, updated);
+    return Promise.resolve(snapshot(updated));
+  }
+
+  markRejectedIfPending(id: string, reason: string): Promise<Listing | null> {
+    const row = this.rows.get(id);
+    if (!row || row.status !== 'pending_approval') return Promise.resolve(null);
+    const updated = {
+      ...row,
+      status: 'rejected' as ListingStatus,
+      rejectionReason: reason,
       updatedAt: new Date(),
     };
     this.rows.set(id, updated);

@@ -25,8 +25,8 @@ export interface JsonwebtokenTokenSignerOptions {
  * whole point of the port is that the use-cases and their adapters run without Nest.
  *
  * Verification pins the algorithm to HS256 so a token that claims `alg: none` is rejected, and
- * then checks the claims against `jwtPayloadSchema`, so the guard only ever sees the four
- * fields the app agreed on.
+ * then checks the claims against `jwtPayloadSchema`, so the guard only ever sees the fields the
+ * app agreed on.
  */
 export class JsonwebtokenTokenSigner implements TokenSigner {
   constructor(private readonly options: JsonwebtokenTokenSignerOptions) {}
@@ -34,7 +34,7 @@ export class JsonwebtokenTokenSigner implements TokenSigner {
   sign(claims: TokenClaims): Promise<string> {
     return new Promise((resolve, reject) => {
       jwt.sign(
-        { role: claims.role },
+        { role: claims.role, status: claims.status },
         this.options.secret,
         {
           algorithm: 'HS256',

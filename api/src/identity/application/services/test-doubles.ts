@@ -20,18 +20,21 @@ export class FakePasswordHasher implements PasswordHasher {
 
 export class FakeTokenSigner implements TokenSigner {
   sign(claims: TokenClaims): Promise<string> {
-    return Promise.resolve(`token:${claims.sub}:${claims.role}`);
+    return Promise.resolve(
+      `token:${claims.sub}:${claims.role}:${claims.status}`,
+    );
   }
 
   verify(token: string): Promise<JwtPayload> {
-    const [prefix, sub, role] = token.split(':');
-    if (prefix !== 'token' || !sub || !role) {
+    const [prefix, sub, role, status] = token.split(':');
+    if (prefix !== 'token' || !sub || !role || !status) {
       return Promise.reject(new IdentityError('invalid_token', 'bad token'));
     }
     const iat = Math.floor(Date.now() / 1000);
     return Promise.resolve({
       sub,
       role: role as JwtPayload['role'],
+      status: status as JwtPayload['status'],
       iat,
       exp: iat + 3600,
     });

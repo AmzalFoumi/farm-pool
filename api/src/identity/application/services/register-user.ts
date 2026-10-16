@@ -15,6 +15,12 @@ import type { TokenSigner } from '../ports/token-signer';
  * and an Expo API route would build it with `new`. The input is already validated and the phone
  * already normalised — `registerSchema` ran at the edge (`ZodValidationPipe`), so this file
  * holds only the rule that is not a shape rule: one account per phone number.
+ *
+ * A farmer starts `pending_review`, not `active` (FARM-44) — every other role is unaffected.
+ * They still get a token back: `RolesGuard` is what keeps a pending account from doing anything
+ * beyond `cooperative:join` (see `AllowWhilePending`), not registration itself. Which cooperative
+ * they join is a separate step the app calls right after this one (`POST /coordination/apply`) —
+ * kept out of here so `identity` never has to depend on `coordination`.
  */
 export class RegisterUser {
   constructor(
@@ -33,6 +39,9 @@ export class RegisterUser {
         phone: data.phone,
         passwordHash,
         role: data.role,
+        ...(data.role === 'farmer'
+          ? { status: 'pending_review' as const }
+          : {}),
       });
     } catch (error) {
       if (error instanceof DuplicatePhoneError) {
@@ -44,7 +53,11 @@ export class RegisterUser {
       throw error;
     }
 
-    const token = await this.tokens.sign({ sub: user.id, role: user.role });
+    const token = await this.tokens.sign({
+      sub: user.id,
+      role: user.role,
+      status: user.status,
+    });
     return { token, user: toPublicUser(user) };
   }
 }

@@ -1,4 +1,4 @@
-import type { OfferStatus } from '@farm-pool/shared';
+import type { AcceptOfferData, OfferStatus } from '@farm-pool/shared';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { LISTING_REPOSITORY } from '../../../catalog/domain/repositories/listing.repository';
 import type { ListingRepository } from '../../../catalog/domain/repositories/listing.repository';
@@ -25,6 +25,7 @@ export class AcceptOfferService {
   async execute(
     callerId: string,
     offerId: string,
+    data: AcceptOfferData = {},
   ): Promise<{ orderId: string }> {
     const offer = await this.offers.findById(offerId);
     if (!offer) {
@@ -56,22 +57,41 @@ export class AcceptOfferService {
       );
     }
 
+    // The delivery point is the buyer's to set. It is saved with the status change below.
+    if (side === 'BUYER' && data.dropOff) offer.dropOff = data.dropOff;
+
     const previousStatus = offer.status;
     offer.status = 'ACCEPTED';
     offer.version += 1;
     await this.offers.save(offer); // Step 1
 
-    // Step 2 — single atomic claim, no read-check-then-write race window
-    const reserved =
-      offer.listingType === 'STANDARD'
-        ? await this.listings.deductQuantity(offer.listingId, offer.quantityKg)
-        : await this.wanteds.markClosedIfOpen(offer.listingId);
+    /* Step 2 — claim, in two atomic steps. A response to a wanted request closes the request
+       first, so two responses to one request cannot both win. Then the stock is taken from the
+       listing, exactly as for an ordinary offer. */
+    if (offer.wantedId) {
+      const closed = await this.wanteds.markClosedIfOpen(offer.wantedId);
+      if (!closed) {
+        await this.revertOffer(offer, previousStatus);
+        throw new OfferError(
+          'conflict',
+          'wanted_closed',
+          'This request is no longer open',
+        );
+      }
+    }
 
+    const reserved = await this.listings.deductQuantity(
+      offer.listingId,
+      offer.quantityKg,
+    );
     if (!reserved) {
+      if (offer.wantedId) {
+        await this.wanteds.updateStatus(offer.wantedId, 'open');
+      }
       await this.revertOffer(offer, previousStatus);
       throw new OfferError(
         'conflict',
-        'conflict',
+        'insufficient_stock',
         'Not enough quantity available',
       );
     }
@@ -97,10 +117,11 @@ export class AcceptOfferService {
       // Order is already valid and authoritative; this is a traceability gap only
     }
 
-    // Step 5 — WANTED is single-fulfillment: decline every other pending offer on this listing
-    if (offer.listingType === 'WANTED') {
-      const siblings = await this.offers.findActiveByListingId(
-        offer.listingId,
+    /* Step 5 — a wanted request is filled once: decline the other live responses to it. Keyed on
+       the request, never on the listing, so ordinary offers on the same listing stay live. */
+    if (offer.wantedId) {
+      const siblings = await this.offers.findActiveByWantedId(
+        offer.wantedId,
         offer.id,
       );
       for (const sibling of siblings) {
@@ -126,11 +147,11 @@ export class AcceptOfferService {
     await this.offers.save(offer);
   }
 
+  /** Undo step 2: give the stock back, and reopen the request if this was a response to one. */
   private async revertListing(offer: Offer) {
-    if (offer.listingType === 'STANDARD') {
-      await this.listings.refundQuantity(offer.listingId, offer.quantityKg);
-    } else {
-      await this.wanteds.updateStatus(offer.listingId, 'open');
+    await this.listings.refundQuantity(offer.listingId, offer.quantityKg);
+    if (offer.wantedId) {
+      await this.wanteds.updateStatus(offer.wantedId, 'open');
     }
   }
 }

@@ -452,8 +452,9 @@ decision is made.
 Decided 18 September 2026 (FARM-36). The team's data model had no table for the reverse listing
 the product doc describes (a buyer says what they want; farmers respond). It is a
 `wanted_listings` collection in the catalog domain, because it is the same kind of thing as a
-listing — an offer on the market, from the other side — and the farmer-response story will add a
-`responses` concept beside it rather than inside it. Lifecycle is `open` → `closed` for now.
+listing — an offer on the market, from the other side. How a farmer answers one is decided in
+"Farmer responses to wanted requests are offers (FARM-47)" below. Lifecycle is `open` → `closed`
+for now.
 
 ### Video calls: Agora, request-then-accept, linked to a listing
 
@@ -617,6 +618,22 @@ exported as single SVGs. Slide 1 did not — its frame contains text, so Figma e
 vectors — and they are composed into one SVG by centring each on the box Figma reported, with the
 "1" and "2" badges rendered as React Native `<Text>` so Poppins resolves through expo-font.
 
+### Offers (FARM-46)
+
+- **One live offer per buyer, farmer and listing.** A second one is refused with 409 `offer_exists`.
+- **Quantity is checked against the listing** when an offer is made and when it is countered, and
+  again atomically at accept (`deductQuantity`), so two accepts cannot sell the same stock. A
+  short listing at accept is 409 `insufficient_stock`.
+- **`offer:create` is its own action** (buyer and farmer), so `order:place` stays buyer-only.
+
+### Farmer responses to wanted requests are offers (FARM-47)
+
+A response is an offer on the farmer's own verified listing, with `wantedId` set to the buyer's
+request. It was chosen over a separate `responses` concept, and over orders that have no listing,
+because the driver job board, payments and the coordinator's figures all read the listing, and
+this way none of them change. The cost: a farmer needs an approved listing of that crop before
+they can answer a request.
+
 ### Localisation: i18next, chosen language, and Noto in place of Poppins/Mulish
 
 Decided 1 October 2026 (LP-91). All four research interviews were conducted in Sinhala or Tamil,
@@ -693,6 +710,40 @@ that is the pattern to extend, not a generic log table.
 **Not settled:** where the lines go in a deployed environment. Today they go to stdout and
 nowhere else, which is fine for a demo and useless the moment the api runs anywhere a terminal is
 not attached.
+### Brand logo, app icon and launch animation
+
+Decided 14 October 2026 (FARM-0). The designer delivered a "Farmpool" wordmark and a launch
+animation video; the master files are in `mobile/assets/brand/` (see its README).
+
+**The welcome screen draws the wordmark SVG** (`WordmarkIcon`, coloured by the
+`brand-deep-foreground` token) in place of the leaf tile and the typed name.
+
+**A new token, `leaf-400` (`#50B05B`), the logo green.** It is not any existing green: `primary` is
+`#00B14F` and `brand-deep` `#1E6B48`. It is a brand ramp, not a semantic token, because it is
+decorative only — the launch screen and the app icon — and must never read as an action. `app.json`
+cannot read CSS tokens, so the same hex is written there for the native splash and adaptive icon.
+
+**The launch animation is the designer's animated SVG, replayed in code, not the video.** The video is landscape and would be cropped on a portrait phone, and adds weight to a 3G download. `farmpool-logo-animated.svg` draws each letter through a mask whose line "writes" itself — but with CSS, which React Native does not run. `wordmark-strokes.ts` holds its paths and timings unaltered, and `AnimatedWordmark` replays them with reanimated (≈2.1 s). It is reusable for any branded wait (`loop` redraws it). The launch screen holds the drawn logo 0.5 s rather than the video's 3 s, and with reduced motion the logo appears whole. The native splash is the same green with a transparent image, so the hand-off is invisible.
+
+**The icon is the wide wordmark on the logo green — a stopgap.** Icons are square and the wordmark
+is 3.5 : 1, so it is small on a home screen. A square mark from the designer should replace it.
+
+### Tester backend: an ngrok tunnel, started with `concurrently`
+
+Decided 15 October 2026 (FARM-0). The api is not hosted. To put a release APK on testers' phones,
+the api runs on a developer's laptop behind an ngrok tunnel: a release build refuses a non-`https`
+API URL, and the free ngrok plan gives each account one fixed `https` domain, so the address baked
+into the APK survives restarts. The script asks for it with `--url https://`, ngrok's value for "this
+account's dev domain" (docs: universal-gateway/domains); a bare `ngrok http` is not documented to
+reuse it. So the domain is never committed, and each member gets their own. Hosting (Render or Railway with the existing Atlas database) replaces this when
+testers need the api while the laptop is off.
+
+**`concurrently` (api devDependency) runs the api and the tunnel from one command**
+(`npm run api:ngrok`). npm scripts cannot run two long-lived processes portably: `&` means
+different things in Windows `cmd` and POSIX shells, and on Windows leaves the tunnel running after
+Ctrl+C. `concurrently` labels both outputs and stops both on Ctrl+C or when either exits (`-k`).
+Dev-only; it never ships. The ngrok CLI itself is a per-machine install, not a dependency, so the
+plain `npm run api` is unchanged for anyone without it.
 
 ## Open
 
