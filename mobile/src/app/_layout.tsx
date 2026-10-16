@@ -140,6 +140,9 @@ function RootNavigator() {
           {/* Pushed from a Farmers row or a "Needs you today" verify_farmer task (FARM-44) —
               same reasoning again. */}
           <Stack.Screen name="farmer/[id]" />
+          {/* Pushed from a Listings row or a "Needs you today" approve_listing task (FARM-43) —
+              same reasoning again. */}
+          <Stack.Screen name="listing-review/[id]" />
         </Stack.Protected>
 
         {/* Orders and crop requests are reached from Home cards, not tabs,

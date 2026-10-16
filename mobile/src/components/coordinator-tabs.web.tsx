@@ -26,8 +26,8 @@ export default function CoordinatorTabs() {
           <TabTrigger name="farmers" href="/farmers" asChild>
             <TabButton>Farmers</TabButton>
           </TabTrigger>
-          <TabTrigger name="batches" href="/batches" asChild>
-            <TabButton>Batches</TabButton>
+          <TabTrigger name="cooperative-listings" href="/cooperative-listings" asChild>
+            <TabButton>Listings</TabButton>
           </TabTrigger>
           <TabTrigger name="disputes" href="/disputes" asChild>
             <TabButton>Disputes</TabButton>

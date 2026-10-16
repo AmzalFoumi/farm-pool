@@ -17,12 +17,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppBar } from "@/components/app/app-bar";
 import { AppButton } from "@/components/app/app-button";
 import { AppTextField } from "@/components/app/app-text-field";
+import { ChevronRightIcon } from "@/components/app/icons";
 import { EmptyNote, RequestView } from "@/components/app/request-view";
 import { HStack } from "@/components/ui/hstack";
+import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { coordinationApi } from "@/features/coordination/api";
 import { FarmerStatusPill } from "@/features/coordination/farmer-status-pill";
+import { setScopedFarmerId } from "@/features/coordination/listing-scope";
 import { ApiError } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { useRequest } from "@/lib/use-request";
@@ -63,6 +66,7 @@ function FarmerDetail({
   token: string;
   onDecided: () => void;
 }) {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [reason, setReason] = useState("");
   const [confirmingReject, setConfirmingReject] = useState(false);
@@ -114,6 +118,10 @@ function FarmerDetail({
         <DetailRow
           label="Listings"
           value={`${farmer.listingCount} ${farmer.listingCount === 1 ? "listing" : "listings"}`}
+          onPress={() => {
+            setScopedFarmerId(farmer.id);
+            router.push("/cooperative-listings");
+          }}
         />
       </VStack>
 
@@ -170,13 +178,41 @@ function FarmerDetail({
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <HStack className="min-h-tap items-center justify-between">
+function DetailRow({
+  label,
+  value,
+  onPress
+}: {
+  label: string;
+  value: string;
+  /** Only the "Listings" row passes this — it opens that farmer's listings (the Listings tab,
+   *  scoped by `?farmerId=`) rather than this screen duplicating a second listings view. */
+  onPress?: () => void;
+}) {
+  const content = (
+    <>
       <Text className="type-body text-muted-foreground">{label}</Text>
-      <Text className="type-body-bold text-foreground" numberOfLines={1}>
-        {value}
-      </Text>
-    </HStack>
+      <HStack className="items-center gap-1">
+        <Text className="type-body-bold text-foreground" numberOfLines={1}>
+          {value}
+        </Text>
+        {onPress ? <ChevronRightIcon /> : null}
+      </HStack>
+    </>
+  );
+
+  if (!onPress) {
+    return <HStack className="min-h-tap items-center justify-between">{content}</HStack>;
+  }
+
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${value}`}
+      className="min-h-tap flex-row items-center justify-between"
+    >
+      {content}
+    </Pressable>
   );
 }

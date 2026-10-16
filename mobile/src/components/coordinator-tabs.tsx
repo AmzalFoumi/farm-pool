@@ -9,7 +9,12 @@ import { Colors } from "@/constants/theme";
    is Android's practical ceiling for a native tab bar, so this stays within precedent). Same
    NativeTabs mechanism as the buyer shell (`app-tabs.tsx`) — platform symbol sets, no PNG
    triples, nothing here bypasses the design system. See `.plans/DECISIONS.md`, open question 1
-   for the same iconography caveat that already applies to the buyer tabs. */
+   for the same iconography caveat that already applies to the buyer tabs.
+   `disableTransparentOnScrollEdge` — iOS 26's tab bar goes transparent and blurs/refracts
+   whatever scrolled underneath it once a screen's content reaches the bottom edge ("Liquid
+   Glass"). Found on Disputes once it had enough rows to actually reach that edge: content
+   visibly distorted through the bar instead of sitting cleanly above it. Every coordinator
+   screen shares this one tab bar, so the fix belongs here rather than per screen. */
 export default function CoordinatorTabs() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === "unspecified" ? "light" : scheme];
@@ -19,6 +24,7 @@ export default function CoordinatorTabs() {
       backgroundColor={colors.background}
       indicatorColor={colors.backgroundElement}
       labelStyle={{ selected: { color: colors.text } }}
+      disableTransparentOnScrollEdge
     >
       <NativeTabs.Trigger name="region">
         <NativeTabs.Trigger.Label>Region</NativeTabs.Trigger.Label>
@@ -36,9 +42,9 @@ export default function CoordinatorTabs() {
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="batches">
-        <NativeTabs.Trigger.Label>Batches</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="square.grid.2x2" md="grid_view" />
+      <NativeTabs.Trigger name="cooperative-listings">
+        <NativeTabs.Trigger.Label>Listings</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="list.bullet" md="list" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="disputes">

@@ -123,6 +123,10 @@ export class ListingDocument {
   @Prop({ required: false, unique: true, sparse: true })
   seedKey?: string;
 
+  /** Set by the coordinator who rejected this listing (FARM-43). */
+  @Prop({ required: false })
+  rejectionReason?: string;
+
   createdAt: Date;
   updatedAt: Date;
 }

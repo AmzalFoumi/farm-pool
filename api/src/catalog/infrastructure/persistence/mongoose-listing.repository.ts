@@ -28,22 +28,29 @@ export class MongooseListingRepository implements ListingRepository {
   }
 
   findVerified(filter: ListingFilter, limit: number): Promise<Listing[]> {
-    return this.findByStatus('verified', filter, limit);
+    return this.findWhere({ status: 'verified' }, filter, limit);
   }
 
   findPendingApproval(
     filter: ListingFilter,
     limit: number,
   ): Promise<Listing[]> {
-    return this.findByStatus('pending_approval', filter, limit);
+    return this.findWhere({ status: 'pending_approval' }, filter, limit);
   }
 
-  private async findByStatus(
-    status: ListingDocument['status'],
+  findByFarmerIds(filter: ListingFilter, limit: number): Promise<Listing[]> {
+    return this.findWhere({ status: { $ne: 'draft' } }, filter, limit);
+  }
+
+  /** `statusCondition` is merged straight into the query, so a caller can ask for one status
+   *  (`{ status: 'verified' }`) or a shape like `{ status: { $ne: 'draft' } }` without this
+   *  method knowing the difference. */
+  private async findWhere(
+    statusCondition: QueryFilter<ListingDocument>,
     filter: ListingFilter,
     limit: number,
   ): Promise<Listing[]> {
-    const query: QueryFilter<ListingDocument> = { status };
+    const query: QueryFilter<ListingDocument> = { ...statusCondition };
     if (filter.crop) query.cropId = filter.crop;
     if (filter.district) query.districtKey = filter.district.toLowerCase();
     if (filter.farmerIds) query.farmerId = { $in: filter.farmerIds };
@@ -132,6 +139,21 @@ export class MongooseListingRepository implements ListingRepository {
     return doc ? toListing(doc) : null;
   }
 
+  async markRejectedIfPending(
+    id: string,
+    reason: string,
+  ): Promise<Listing | null> {
+    if (!OBJECT_ID.test(id)) return null;
+    const doc = await this.listings
+      .findOneAndUpdate(
+        { _id: id, status: 'pending_approval' },
+        { $set: { status: 'rejected', rejectionReason: reason } },
+        { returnDocument: 'after' },
+      )
+      .exec();
+    return doc ? toListing(doc) : null;
+  }
+
   async create(listing: NewListing): Promise<Listing> {
     const created = await this.listings.create({
       ...listing,
@@ -187,6 +209,7 @@ function toListing(doc: ListingHydrated): Listing {
     farmgateNotes: doc.farmgateNotes,
     minOrderKg: doc.minOrderKg,
     status: doc.status,
+    rejectionReason: doc.rejectionReason,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };

@@ -138,6 +138,14 @@ export function FarmerListingCard({
         </View>
       )}
 
+      {listing.status === "rejected" && (
+        <View className="bg-destructive-subtle rounded-xl px-3 py-1.5 flex-row items-center justify-between mb-1">
+          <Text className="type-body-sm-bold text-destructive uppercase tracking-wider text-[10px]">
+            {listing.rejectionReason ? `Rejected: ${listing.rejectionReason}` : "Rejected"}
+          </Text>
+        </View>
+      )}
+
       <HStack className="items-start gap-3">
         <View className="relative shrink-0">
           <View
@@ -163,6 +171,11 @@ export function FarmerListingCard({
           {listing.status === "sold" && (
             <View className="absolute bottom-1 right-1 bg-muted-foreground px-1 rounded shadow">
               <Text className="text-[9px] font-black text-card">SOLD</Text>
+            </View>
+          )}
+          {listing.status === "rejected" && (
+            <View className="absolute bottom-1 right-1 bg-destructive px-1 rounded shadow">
+              <Text className="text-[9px] font-black text-destructive-foreground">REJECTED</Text>
             </View>
           )}
         </View>
@@ -197,6 +210,10 @@ export function FarmerListingCard({
             ) : listing.status === "draft" ? (
               <View className="bg-warning-subtle px-2 py-0.5 rounded-md">
                 <Text className="type-body-sm-bold text-warning">Incomplete</Text>
+              </View>
+            ) : listing.status === "rejected" ? (
+              <View className="bg-destructive-subtle px-2 py-0.5 rounded-md">
+                <Text className="type-body-sm-bold text-destructive">Rejected</Text>
               </View>
             ) : (
               <View className="bg-secondary px-2 py-0.5 rounded-md">

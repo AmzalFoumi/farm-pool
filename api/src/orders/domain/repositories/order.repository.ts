@@ -8,6 +8,10 @@ export interface OrderRepository {
   findByBuyer(buyerId: string): Promise<Order[]>;
   /** Orders placed against this farmer's listings, newest first. */
   findByFarmer(farmerId: string): Promise<Order[]>;
+  /** Every order against any of these farmers' listings, any status, newest first, at most
+   *  `limit`. Added for coordination's Disputes monitoring (FARM-43 follow-up) — not the plural
+   *  of `findByFarmer`, which is one farmer, unlimited. */
+  findByFarmerIds(farmerIds: string[], limit: number): Promise<Order[]>;
   /** Every order in one status, newest first. The driver job board reads `open` through this
    *  rather than querying the `orders` collection from the logistics domain. */
   findByStatus(status: OrderStatus): Promise<Order[]>;

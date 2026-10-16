@@ -46,6 +46,15 @@ export class MongooseOrderRepository implements OrderRepository {
     return docs.map(toOrder);
   }
 
+  async findByFarmerIds(farmerIds: string[], limit: number): Promise<Order[]> {
+    const docs = await this.orders
+      .find({ farmerId: { $in: farmerIds } })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .exec();
+    return docs.map(toOrder);
+  }
+
   async answerRequest(
     id: string,
     farmerId: string,
