@@ -221,8 +221,8 @@ export function FarmerListingActionSheet({
               <Text className="text-xs font-bold text-foreground">Mark as Sold</Text>
               <Text className="text-[11px] text-muted-foreground font-medium truncate">
                 {isPaused
-                  ? "Record offline / direct settlement receipt"
-                  : "Conclude crop escrow & record settlement receipt"}
+                  ? t("listings.actionSheet.offlineReceipt")
+                  : t("listings.actionSheet.escrowReceipt")}
               </Text>
             </VStack>
             <View className="text-muted-foreground shrink-0">

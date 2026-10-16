@@ -196,6 +196,123 @@
       "photos": "අස්වනු ඡායාරූප",
       "photosSamples": "අස්වනු ඡායාරූප (නියැදි)",
       "noneAttached": "කිසිවක් එක් කර නැත"
+    },
+    "offerCard": {
+      "newOffer": "නව ඉල්ලීම",
+      "offeredRate": "ඉදිරිපත් කළ මිල",
+      "grossTotal": "මුළු එකතුව",
+      "negotiate": "සාකච්ඡා කරන්න",
+      "yourCounter": "ඔබේ ප්‍රතිඉල්ලීම",
+      "payout": "ගෙවීම",
+      "agreedRate": "එකඟ වූ මිල",
+      "securedAmount": "සුරක්ෂිත මුදල",
+      "pickupDetails": "එකතු කිරීමේ විස්තර",
+      "lastOffer": "අවසන් ඉල්ලීම",
+      "quantity": "ප්‍රමාණය",
+      "inactiveFarmer": "මෙම ඉල්ලීම තවදුරටත් ක්‍රියාත්මක නැත. ඔබේ දැන්වීමට වෙනත් ගැනුම්කරුවන්ගෙන් ඉල්ලීම් ලැබිය හැක.",
+      "inactiveBuyer": "මෙම ඉල්ලීම තවදුරටත් ක්‍රියාත්මක නැත. ඔබට දැන්වීමෙන් නව ඉල්ලීමක් කළ හැක.",
+      "viewHistory": "සාකච්ඡා ඉතිහාසය බලන්න"
+    },
+    "negotiate": {
+      "submit": "ප්‍රතිඉල්ලීම යොමු කරන්න",
+      "grossPayout": "මුළු ගෙවීම",
+      "youPay": "ඔබ ගෙවන්නේ",
+      "total": "එකතුව",
+      "addNote": "සටහනක් එක් කරන්න"
+    },
+    "history": {
+      "title": "සාකච්ඡා ඉතිහාසය",
+      "subtitle": "ඉල්ලීම් කාලරේඛාව",
+      "price": "මිල",
+      "quantity": "ප්‍රමාණය"
+    },
+    "actionSheet": {
+      "primary": "ප්‍රධාන",
+      "editDetails": "දැන්වීමේ විස්තර වෙනස් කරන්න",
+      "markSold": "විකුණා ඇති ලෙස සලකුණු කරන්න",
+      "offlineReceipt": "ඕෆ්ලයින් / සෘජු ගෙවීම් රිසිට්පත සටහන් කරන්න",
+      "escrowReceipt": "බෝග එස්ක්‍රෝ අවසන් කර ගෙවීම් රිසිට්පත සටහන් කරන්න",
+      "deleteListing": "දැන්වීම මකන්න"
+    },
+    "farmerCard": {
+      "noOffers": "තවම ඉල්ලීම් නැත",
+      "sharedPool": "බෙදාගත් කණ්ඩායම",
+      "soloDelivery": "තනි බෙදාහැරීම",
+      "resume": "නැවත ආරම්භ කරන්න",
+      "complete": "දැන්වීම සම්පූර්ණ කරන්න",
+      "completedRecently": "මෑතකදී සම්පූර්ණ කළා",
+      "escrowReleased": "එස්ක්‍රෝ නිදහස් කළා",
+      "rejected": "ප්‍රතික්ෂේප කළා",
+      "paused": "තාවකාලිකව නවතා",
+      "incomplete": "අසම්පූර්ණ"
+    },
+    "empty": {
+      "noPaused": "නවතා ඇති දැන්වීම් නැත",
+      "noneFound": "දැන්වීම් හමු නොවිය",
+      "create": "දැන්වීමක් සාදන්න"
+    },
+    "detail": {
+      "callError": "ඇමතුමක් ඉල්ලිය නොහැකි විය",
+      "unitPrice": "ඒකක මිල",
+      "available": "තිබෙන ප්‍රමාණය",
+      "minimumOrder": "අවම ඇණවුම",
+      "harvestDate": "අස්වනු දිනය",
+      "variety": "ප්‍රභේදය",
+      "grade": "ශ්‍රේණිය",
+      "packaging": "ඇසුරුම",
+      "certifications": "සහතික",
+      "negotiable": "මිල සාකච්ඡා කළ හැක",
+      "quantityAndPrice": "ප්‍රමාණය සහ මිල",
+      "produceDetails": "අස්වනු විස්තර",
+      "requestCall": "ඇමතුමක් ඉල්ලන්න",
+      "requesting": "ඉල්ලමින්…",
+      "makeOffer": "ඉල්ලීමක් කරන්න",
+      "placeOrderFor": "මෙම දැන්වීම සඳහා ඇණවුමක් කරන්න",
+      "placeOrder": "ඇණවුම් කරන්න",
+      "enterQuantity": "ප්‍රමාණයක් ඇතුළත් කරන්න",
+      "orderError": "ඇණවුම කළ නොහැකි විය",
+      "quantityKg": "ප්‍රමාණය (කි.ග්‍රෑ.)",
+      "sending": "යවමින්…",
+      "sendRequest": "ඉල්ලීම යවන්න",
+      "transportShared": "බෙදාගත් ප්‍රවාහනය",
+      "transportSolo": "තනි ප්‍රවාහනය"
+    },
+    "browse": {
+      "noMatchFilters": "මෙම පෙරහන් සමඟ දැන්වීම් නැත",
+      "tryAnother": "වෙනත් බෝගයක් හෝ දිස්ත්‍රික්කයක් උත්සාහ කරන්න.",
+      "clearFilters": "පෙරහන් ඉවත් කරන්න",
+      "title": "දැන්වීම්",
+      "gridView": "ජාල දැක්ම",
+      "listView": "ලැයිස්තු දැක්ම",
+      "searchPlaceholder": "අස්වැන්න, ගොවියා හෝ දිස්ත්‍රික්කය සොයන්න",
+      "allCrops": "සියලු බෝග",
+      "allDistricts": "සියලු දිස්ත්‍රික්ක",
+      "noMatches": "ගැළපීම් නැත",
+      "noneYet": "තවම දැන්වීම් නැත",
+      "noneYetBody": "සත්‍යාපිත ගොවි දැන්වීම් මෙහි දිස්වේ."
+    },
+    "benchmark": {
+      "setPrice": "මිල සකසන්න",
+      "unknownCrop": "නොදන්නා බෝගය",
+      "unknownCropBody": "මෙම බෝගය හඳුනාගත නොහැක.",
+      "saveError": "මිල සුරැකිය නොහැකි විය",
+      "whatYouHave": "ඔබට දැනටමත් ඇති තොරතුරු",
+      "noPublished": "මෙම බෝගය සඳහා තවම මිලක් ප්‍රකාශ කර නැත.",
+      "noActiveListing": "මේ මොහොතේ ඔබේ ගොවීන් කිසිවෙකුට මෙම බෝගය සඳහා ක්‍රියාකාරී දැන්වීමක් නැත.",
+      "checkOther": "වෙනත් මූලාශ්‍ර පරීක්ෂා කරන්න",
+      "priceHistory": "මිල ඉතිහාසය",
+      "lowPrice": "අඩු මිල (රු. / කි.ග්‍රෑ.)",
+      "highPrice": "වැඩි මිල (රු. / කි.ග්‍රෑ.)",
+      "saving": "සුරකිමින්…",
+      "publishPrice": "මිල ප්‍රකාශ කරන්න",
+      "loadingHistory": "ඉතිහාසය පූරණය වෙමින්…",
+      "historyError": "මිල ඉතිහාසය පූරණය කළ නොහැකි විය."
+    },
+    "packagingShort": {
+      "plastic-crate": "ප්ලාස්ටික් කූඩ",
+      "wooden-box": "ලී පෙට්ටි",
+      "cardboard": "කාඩ්බෝඩ් පෙට්ටි",
+      "mesh-bag": "ජාල මල්ල"
     }
   }
 }

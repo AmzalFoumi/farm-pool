@@ -10,7 +10,13 @@
     "phone": "Phone",
     "loading": "Loading",
     "signUp": "Sign up",
-    "logIn": "Log in"
+    "logIn": "Log in",
+    "cancel": "Cancel",
+    "more": "More",
+    "edit": "Edit",
+    "decline": "Decline",
+    "accept": "Accept",
+    "tryAgain2": "Please try again."
   },
   "errors": {
     "network": "Can't reach the server. Check your connection and try again.",
@@ -47,5 +53,9 @@
     "buyer": "Wholesale buyer",
     "coordinator": "Area coordinator",
     "logistics": "Delivery partner"
+  },
+  "party": {
+    "buyer": "Buyer",
+    "farmer": "Farmer"
   }
 }

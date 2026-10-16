@@ -43,12 +43,19 @@ export default function SetCropPriceScreen() {
   return (
     <View className="flex-1 bg-background">
       <AppBar
-        title={parsedCropId.success ? t(cropLabelKey(parsedCropId.data)) : "Set price"}
+        title={
+          parsedCropId.success
+            ? t(cropLabelKey(parsedCropId.data))
+            : t("listings.benchmark.setPrice")
+        }
         onBack={() => router.back()}
       />
 
       {!parsedCropId.success ? (
-        <EmptyNote title="Unknown crop" note="This crop isn't recognised." />
+        <EmptyNote
+          title={t("listings.benchmark.unknownCrop")}
+          note={t("listings.benchmark.unknownCropBody")}
+        />
       ) : (
         <RequestView request={prices}>
           {(rows) => (
@@ -117,7 +124,7 @@ function SetCropPriceForm({
         for (const issue of e.issues) next[issue.path as Field] ??= issue.message;
         setErrors(next);
       } else {
-        setFormError(e instanceof ApiError ? e.message : "Could not save the price");
+        setFormError(e instanceof ApiError ? e.message : t("listings.benchmark.saveError"));
       }
     } finally {
       setSubmitting(false);
@@ -141,7 +148,7 @@ function SetCropPriceForm({
               ? `Last published ${formatDate(context.current.publishedAt)}: ${formatPrice(
                   context.current.lowPricePerKg
                 )}–${formatPrice(context.current.highPricePerKg)}`
-              : "No price has been published for this crop yet."}
+              : t("listings.benchmark.noPublished")}
           </Text>
           <Text className="type-caption text-muted-foreground">
             {context?.activeListingRange
@@ -150,7 +157,7 @@ function SetCropPriceForm({
                 )}–${formatPrice(context.activeListingRange.highPricePerKg)} across ${
                   context.activeListingRange.listingCount
                 } ${context.activeListingRange.listingCount === 1 ? "listing" : "listings"}.`
-              : "None of your farmers have an active listing for this crop right now."}
+              : t("listings.benchmark.noActiveListing")}
           </Text>
           <Text className="type-caption text-muted-foreground">
             No live market feed exists yet — this is set from what you already know.
@@ -183,19 +190,21 @@ function SetCropPriceForm({
         </Pressable>
 
         <VStack className="gap-2 rounded-card border border-border bg-card p-4">
-          <Text className="type-body-bold text-foreground">Price history</Text>
+          <Text className="type-body-bold text-foreground">
+            {t("listings.benchmark.priceHistory")}
+          </Text>
           <PriceHistorySection history={history} />
         </VStack>
 
         <AppTextField
-          label="Low price (Rs / kg)"
+          label={t("listings.benchmark.lowPrice")}
           value={low}
           onChangeText={setLow}
           keyboardType="decimal-pad"
           error={errors.lowPricePerKg}
         />
         <AppTextField
-          label="High price (Rs / kg)"
+          label={t("listings.benchmark.highPrice")}
           value={high}
           onChangeText={setHigh}
           keyboardType="decimal-pad"
@@ -207,7 +216,7 @@ function SetCropPriceForm({
         {formError ? <Text className="type-caption text-destructive">{formError}</Text> : null}
 
         <AppButton
-          label={submitting ? "Saving…" : "Publish price"}
+          label={submitting ? t("listings.benchmark.saving") : t("listings.benchmark.publishPrice")}
           onPress={() => void submit()}
           disabled={submitting}
         />

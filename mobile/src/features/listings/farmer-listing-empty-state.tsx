@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { SvgXml } from "react-native-svg";
 import { AppButton } from "@/components/app/app-button";
@@ -15,6 +16,7 @@ interface FarmerListingEmptyStateProps {
 }
 
 export function FarmerListingEmptyState({ filter }: FarmerListingEmptyStateProps) {
+  const { t } = useTranslation();
   const router = useRouter();
 
   if (filter === "paused") {
@@ -40,7 +42,7 @@ export function FarmerListingEmptyState({ filter }: FarmerListingEmptyStateProps
         You have not posted any produce batches under this tab yet.
       </Text>
       <AppButton
-        label="Create listing"
+        label={t("listings.empty.create")}
         icon={<PlusIcon />}
         onPress={() => router.push("/(farmer)/create-listing/create")}
       />

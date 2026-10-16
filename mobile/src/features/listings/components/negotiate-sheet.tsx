@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { View, TextInput, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import {
   Actionsheet,
@@ -29,6 +30,7 @@ export function NegotiateSheet({
   maxKg: number;
   onSubmit: (rate: number, quantity: number, note: string) => void;
 }) {
+  const { t } = useTranslation();
   const [rate, setRate] = useState(String(offer?.rate ?? ""));
   const [quantity, setQuantity] = useState(String(offer?.quantityKg ?? ""));
   const [note, setNote] = useState("");
@@ -182,7 +184,9 @@ export function NegotiateSheet({
                   </Text>
                 </VStack>
                 <VStack className="items-end">
-                  <Text className="text-[11px] font-medium text-muted-foreground">Total</Text>
+                  <Text className="text-[11px] font-medium text-muted-foreground">
+                    {t("listings.negotiate.total")}
+                  </Text>
                   <Text className="mt-0.5 text-[16px] font-bold text-primary">
                     Rs. {total.toLocaleString("en-US")}
                   </Text>

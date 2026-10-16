@@ -10,6 +10,7 @@ import enFarmer from "./locales/en/farmer.json";
 import enGeo from "./locales/en/geo.json";
 import enListings from "./locales/en/listings.json";
 import enLogistics from "./locales/en/logistics.json";
+import enOffers from "./locales/en/offers.json";
 import enOnboarding from "./locales/en/onboarding.json";
 import siBuyer from "./locales/si/buyer.json";
 import siCatalog from "./locales/si/catalog.json";
@@ -20,6 +21,7 @@ import siFarmer from "./locales/si/farmer.json";
 import siGeo from "./locales/si/geo.json";
 import siListings from "./locales/si/listings.json";
 import siLogistics from "./locales/si/logistics.json";
+import siOffers from "./locales/si/offers.json";
 import siOnboarding from "./locales/si/onboarding.json";
 import taBuyer from "./locales/ta/buyer.json";
 import taCatalog from "./locales/ta/catalog.json";
@@ -30,6 +32,7 @@ import taFarmer from "./locales/ta/farmer.json";
 import taGeo from "./locales/ta/geo.json";
 import taListings from "./locales/ta/listings.json";
 import taLogistics from "./locales/ta/logistics.json";
+import taOffers from "./locales/ta/offers.json";
 import taOnboarding from "./locales/ta/onboarding.json";
 
 export { LANGUAGES, isLanguageCode, type LanguageCode } from "./languages";
@@ -57,6 +60,7 @@ const bundle = (parts: Record<string, unknown>[]) => Object.assign({}, ...parts)
 const en = bundle([
   enCommon,
   enCatalog,
+  enOffers,
   enOnboarding,
   enDriver,
   enListings,
@@ -69,6 +73,7 @@ const en = bundle([
 const si = bundle([
   siCommon,
   siCatalog,
+  siOffers,
   siOnboarding,
   siDriver,
   siListings,
@@ -81,6 +86,7 @@ const si = bundle([
 const ta = bundle([
   taCommon,
   taCatalog,
+  taOffers,
   taOnboarding,
   taDriver,
   taListings,

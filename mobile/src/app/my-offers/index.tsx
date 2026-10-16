@@ -32,7 +32,7 @@ export default function MyOffersScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="My offers" />
+      <AppBar title={t("offers.mine.title")} />
       <RequestView request={offers}>
         {(rows) => (
           <FlatList
@@ -45,7 +45,7 @@ export default function MyOffersScreen() {
               const viewer = viewerOf(item, user?.id ?? "");
               const other =
                 (viewer === "FARMER" ? item.buyerName : item.farmerName) ??
-                (viewer === "FARMER" ? "Buyer" : "Farmer");
+                (viewer === "FARMER" ? t("party.buyer") : t("party.farmer"));
               const live = item.status === "PENDING" || item.status === "NEGOTIATING";
               const yourTurn = live && item.actionRequiredBy === viewer;
               return (
@@ -74,10 +74,7 @@ export default function MyOffersScreen() {
               );
             }}
             ListEmptyComponent={
-              <EmptyNote
-                title="No offers yet"
-                note="Open a listing marked Price negotiable and tap Make an offer."
-              />
+              <EmptyNote title={t("offers.mine.noneYet")} note={t("offers.mine.noneYetBody")} />
             }
           />
         )}

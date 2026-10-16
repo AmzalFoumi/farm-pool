@@ -46,15 +46,19 @@ function GridGlyph({ className }: { className: string }) {
 /** A component, not an inline `VStack`: FlatList clones its empty element with a native `style`
  *  prop, which the web `VStack` (a plain `div`) cannot accept and crashes on. */
 function NoFilterMatches({ onClear }: { onClear: () => void }) {
+  const { t } = useTranslation();
   return (
     <VStack className="items-center">
-      <EmptyNote title="No listings match these filters" note="Try another crop or district." />
+      <EmptyNote
+        title={t("listings.browse.noMatchFilters")}
+        note={t("listings.browse.tryAnother")}
+      />
       <Pressable
         onPress={onClear}
         accessibilityRole="button"
         className="min-h-tap items-center justify-center rounded-pill border border-primary px-6 active:opacity-80"
       >
-        <Text className="type-body-bold text-primary">Clear filters</Text>
+        <Text className="type-body-bold text-primary">{t("listings.browse.clearFilters")}</Text>
       </Pressable>
     </VStack>
   );
@@ -121,7 +125,7 @@ export default function ListingsScreen() {
               hitSlop={4}
               accessibilityRole="button"
               accessibilityState={{ selected: view === "grid" }}
-              accessibilityLabel="Grid view"
+              accessibilityLabel={t("listings.browse.gridView")}
               className={`h-10 w-12 items-center justify-center rounded-chip ${
                 view === "grid" ? "bg-card" : ""
               }`}
@@ -134,7 +138,7 @@ export default function ListingsScreen() {
               hitSlop={4}
               accessibilityRole="button"
               accessibilityState={{ selected: view === "list" }}
-              accessibilityLabel="List view"
+              accessibilityLabel={t("listings.browse.listView")}
               className={`h-10 w-12 items-center justify-center rounded-chip ${
                 view === "list" ? "bg-card" : ""
               }`}
@@ -154,7 +158,7 @@ export default function ListingsScreen() {
           <InputField
             value={query}
             onChangeText={setQuery}
-            placeholder="Search produce, farmer or district"
+            placeholder={t("listings.browse.searchPlaceholder")}
             returnKeyType="search"
             autoCorrect={false}
             className="type-body"
@@ -171,7 +175,11 @@ export default function ListingsScreen() {
           className="shrink-0 grow-0"
           contentContainerClassName="gap-2 px-gutter"
         >
-          <FilterChip label="All crops" selected={!crop} onPress={() => setCrop(undefined)} />
+          <FilterChip
+            label={t("listings.browse.allCrops")}
+            selected={!crop}
+            onPress={() => setCrop(undefined)}
+          />
           {CROPS.map((c) => (
             <FilterChip
               key={c.id}
@@ -190,7 +198,7 @@ export default function ListingsScreen() {
             contentContainerClassName="gap-2 px-gutter"
           >
             <FilterChip
-              label="All districts"
+              label={t("listings.browse.allDistricts")}
               selected={!district}
               onPress={() => setDistrict(undefined)}
             />
@@ -233,13 +241,16 @@ export default function ListingsScreen() {
               }}
               ListEmptyComponent={
                 needle ? (
-                  <EmptyNote title="No matches" note={`Nothing matches “${query.trim()}”.`} />
+                  <EmptyNote
+                    title={t("listings.browse.noMatches")}
+                    note={`Nothing matches “${query.trim()}”.`}
+                  />
                 ) : filtered ? (
                   <NoFilterMatches onClear={clearFilters} />
                 ) : (
                   <EmptyNote
-                    title="No listings yet"
-                    note="Verified farmer listings will appear here."
+                    title={t("listings.browse.noneYet")}
+                    note={t("listings.browse.noneYetBody")}
                   />
                 )
               }

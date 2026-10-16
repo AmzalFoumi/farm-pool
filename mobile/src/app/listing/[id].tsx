@@ -8,8 +8,8 @@
  * photos, fulfilment…) each show only when set (FARM-60); seeded listings have none of them.
  * `address` is deliberately not shown — it is the farm's pickup address, not browse information.
  *
- * "Place order" opens a sheet with one quantity field and sends `POST /orders`. "Request call"
- * asks the farmer for a video call (FARM-24). "Make an offer" shows on a negotiable listing and
+ * t("listings.detail.placeOrder") opens a sheet with one quantity field and sends `POST /orders`. t("listings.detail.requestCall")
+ * asks the farmer for a video call (FARM-24). t("listings.detail.makeOffer") shows on a negotiable listing and
  * opens the buyer's own-price sheet (FARM-46).
  */
 
@@ -60,20 +60,14 @@ import { formatDate, formatPrice } from "@/lib/format";
 import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
-/* Short buyer-facing names. The wizard's own labels are longer ("Reusable Plastic Crates
-   (Standard 25kg)") and live inside its step components, so they are not importable. */
-const PACKAGING_LABELS: Record<ListingPackaging, string> = {
-  "plastic-crate": "Plastic crates",
-  "wooden-box": "Wooden boxes",
-  cardboard: "Cardboard cartons",
-  "mesh-bag": "Mesh bags"
-};
+/* Short buyer-facing names, deliberately a different (shorter) set from the wizard's own
+   `listings.packaging.*` — "Plastic crates" rather than "Reusable Plastic Crates (Standard
+   25kg)" — so they live under their own keys rather than being shared. */
+const packagingLabelKey = (p: ListingPackaging) => `listings.packagingShort.${p}` as const;
 
-/* Same wording as the wizard's review step. */
-const FULFILLMENT_LABELS: Record<FulfillmentOption, string> = {
-  shared: "Shared transport",
-  solo: "Solo transport"
-};
+/* Same wording as the wizard's review step, so it shares the step-5 keys. */
+const fulfillmentLabelKey = (f: FulfillmentOption) =>
+  f === "shared" ? "listings.step5.shared" : "listings.step5.solo";
 
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -165,7 +159,7 @@ function ListingBody({
       onCallRequested();
     } catch (e) {
       if (e instanceof ApiError && e.code === "call_already_open") onCallRequested();
-      else setCallError(e instanceof ApiError ? e.message : "Could not request a call");
+      else setCallError(e instanceof ApiError ? e.message : t("listings.detail.callError"));
     } finally {
       setCalling(false);
     }
@@ -181,7 +175,9 @@ function ListingBody({
   const details = [
     listing.variety ? { label: "Variety", value: listing.variety } : null,
     listing.grade ? { label: "Grade", value: `Grade ${listing.grade}` } : null,
-    listing.packaging ? { label: "Packaging", value: PACKAGING_LABELS[listing.packaging] } : null,
+    listing.packaging
+      ? { label: "Packaging", value: t(packagingLabelKey(listing.packaging)) }
+      : null,
     listing.certifications?.length
       ? { label: "Certifications", value: listing.certifications.join(", ") }
       : null
@@ -199,7 +195,7 @@ function ListingBody({
         <Pressable
           onPress={onBack}
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel={t("common.back")}
           className="h-tap w-tap items-center justify-center rounded-pill border border-border"
         >
           <BackIcon />
@@ -252,7 +248,7 @@ function ListingBody({
           <Text className="type-caption text-muted-foreground">Pickup in {place} district</Text>
           {listing.fulfillmentOption ? (
             <Text className="type-caption text-muted-foreground">
-              {FULFILLMENT_LABELS[listing.fulfillmentOption]}
+              {t(fulfillmentLabelKey(listing.fulfillmentOption))}
             </Text>
           ) : null}
           {listing.farmgateNotes ? (
@@ -266,7 +262,7 @@ function ListingBody({
       ) : null}
 
       {/* Footer. `AppButton` is full-width with no size axis, so the pair mirrors
-          its construction (`h-control rounded-field`). "Request call" is for buyers
+          its construction (`h-control rounded-field`). t("listings.detail.requestCall") is for buyers
           (FARM-24); for anyone else it stays visible but disabled. */}
       {canOffer && listing.acceptNegotiation ? (
         <VStack className="border-t border-border bg-card px-gutter pt-3">
@@ -299,7 +295,7 @@ function ListingBody({
         >
           <Icon as={PhoneIcon} className="text-brand-deep" />
           <Text className="type-h4 text-brand-deep">
-            {calling ? "Requesting…" : "Request call"}
+            {calling ? t("listings.detail.requesting") : t("listings.detail.requestCall")}
           </Text>
         </Pressable>
 
@@ -308,7 +304,7 @@ function ListingBody({
             testID="open-place-order"
             onPress={() => setSheetOpen(true)}
             accessibilityRole="button"
-            accessibilityLabel="Place an order for this listing"
+            accessibilityLabel={t("listings.detail.placeOrderFor")}
             className="h-control flex-1 flex-row items-center justify-center rounded-field bg-primary active:opacity-80"
           >
             <Text className="type-h4 text-primary-foreground">Place order</Text>
@@ -379,6 +375,7 @@ function PlaceOrderSheet({
   onPlaced: (orderId: string) => void;
   bottomInset: number;
 }) {
+  const { t } = useTranslation();
   const [quantity, setQuantity] = useState(String(listing.minOrderKg));
   const [dropOff, setDropOff] = useState<DropOff | undefined>();
   const [error, setError] = useState<string | null>(null);
@@ -398,7 +395,7 @@ function PlaceOrderSheet({
       ...(dropOff ? { dropOff } : {})
     });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Enter a quantity");
+      setError(parsed.error.issues[0]?.message ?? t("listings.detail.enterQuantity"));
       return;
     }
     if (!inRange) {
@@ -411,7 +408,7 @@ function PlaceOrderSheet({
       onClose();
       onPlaced(order.id);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not place the order");
+      setError(e instanceof ApiError ? e.message : t("listings.detail.orderError"));
     } finally {
       setSubmitting(false);
     }
@@ -442,7 +439,7 @@ function PlaceOrderSheet({
             <Text className="type-h3 text-foreground">Place order</Text>
             <AppTextField
               testID="order-quantity"
-              label="Quantity (kg)"
+              label={t("listings.detail.quantityKg")}
               value={quantity}
               onChangeText={setQuantity}
               keyboardType="number-pad"
@@ -469,7 +466,7 @@ function PlaceOrderSheet({
             />
             <AppButton
               testID="order-send"
-              label={submitting ? "Sending…" : "Send request"}
+              label={submitting ? t("listings.detail.sending") : t("listings.detail.sendRequest")}
               onPress={() => void submit()}
               disabled={submitting}
             />

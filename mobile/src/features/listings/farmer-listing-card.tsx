@@ -45,7 +45,7 @@ export function FarmerListingCard({
     // Dynamic styles based on offers
     let offerTagBg = "bg-secondary";
     let offerTagText = "text-secondary-foreground";
-    let offersLabel = "No offers yet";
+    let offersLabel = t("listings.farmerCard.noOffers");
 
     if (offersCount > 0) {
       offerTagBg = "bg-success-subtle";
@@ -77,7 +77,9 @@ export function FarmerListingCard({
               {listing.fulfillmentOption === "shared" ? <PoolIcon /> : <SoloIcon />}
             </View>
             <Text className="type-body-sm-bold text-info capitalize">
-              {listing.fulfillmentOption === "shared" ? "Shared Pool" : "Solo Delivery"}
+              {listing.fulfillmentOption === "shared"
+                ? t("listings.farmerCard.sharedPool")
+                : t("listings.farmerCard.soloDelivery")}
             </Text>
           </View>
         )}
@@ -144,7 +146,9 @@ export function FarmerListingCard({
       {listing.status === "rejected" && (
         <View className="bg-destructive-subtle rounded-xl px-3 py-1.5 flex-row items-center justify-between mb-1">
           <Text className="type-body-sm-bold text-destructive uppercase tracking-wider text-[10px]">
-            {listing.rejectionReason ? `Rejected: ${listing.rejectionReason}` : "Rejected"}
+            {listing.rejectionReason
+              ? `Rejected: ${listing.rejectionReason}`
+              : t("listings.farmerCard.rejected")}
           </Text>
         </View>
       )}

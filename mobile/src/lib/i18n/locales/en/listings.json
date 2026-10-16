@@ -196,6 +196,123 @@
       "photos": "Harvest Photos",
       "photosSamples": "Harvest Photos (samples)",
       "noneAttached": "None attached"
+    },
+    "offerCard": {
+      "newOffer": "New Offer",
+      "offeredRate": "Offered Rate",
+      "grossTotal": "Gross Total",
+      "negotiate": "Negotiate",
+      "yourCounter": "Your Counter",
+      "payout": "Payout",
+      "agreedRate": "Agreed Rate",
+      "securedAmount": "Secured Amount",
+      "pickupDetails": "Pickup Details",
+      "lastOffer": "Last Offer",
+      "quantity": "Quantity",
+      "inactiveFarmer": "This offer is no longer active. Your listing can continue receiving offers from other buyers.",
+      "inactiveBuyer": "This offer is no longer active. You can make a new offer from the listing.",
+      "viewHistory": "View Negotiation History"
+    },
+    "negotiate": {
+      "submit": "Submit Counter-Offer",
+      "grossPayout": "Gross payout",
+      "youPay": "You pay",
+      "total": "Total",
+      "addNote": "Add a note"
+    },
+    "history": {
+      "title": "Negotiation History",
+      "subtitle": "Timeline of offers",
+      "price": "Price",
+      "quantity": "Quantity"
+    },
+    "actionSheet": {
+      "primary": "Primary",
+      "editDetails": "Edit Listing Details",
+      "markSold": "Mark as Sold",
+      "offlineReceipt": "Record offline / direct settlement receipt",
+      "escrowReceipt": "Conclude crop escrow & record settlement receipt",
+      "deleteListing": "Delete Listing"
+    },
+    "farmerCard": {
+      "noOffers": "No offers yet",
+      "sharedPool": "Shared Pool",
+      "soloDelivery": "Solo Delivery",
+      "resume": "Resume / Unhide",
+      "complete": "Complete Listing",
+      "completedRecently": "Completed recently",
+      "escrowReleased": "Escrow Released",
+      "rejected": "Rejected",
+      "paused": "Paused",
+      "incomplete": "Incomplete"
+    },
+    "empty": {
+      "noPaused": "No paused listings",
+      "noneFound": "No listings found",
+      "create": "Create listing"
+    },
+    "detail": {
+      "callError": "Could not request a call",
+      "unitPrice": "Unit price",
+      "available": "Available",
+      "minimumOrder": "Minimum order",
+      "harvestDate": "Harvest date",
+      "variety": "Variety",
+      "grade": "Grade",
+      "packaging": "Packaging",
+      "certifications": "Certifications",
+      "negotiable": "Price negotiable",
+      "quantityAndPrice": "Quantity & price",
+      "produceDetails": "Produce details",
+      "requestCall": "Request call",
+      "requesting": "Requesting…",
+      "makeOffer": "Make an offer",
+      "placeOrderFor": "Place an order for this listing",
+      "placeOrder": "Place order",
+      "enterQuantity": "Enter a quantity",
+      "orderError": "Could not place the order",
+      "quantityKg": "Quantity (kg)",
+      "sending": "Sending…",
+      "sendRequest": "Send request",
+      "transportShared": "Shared transport",
+      "transportSolo": "Solo transport"
+    },
+    "browse": {
+      "noMatchFilters": "No listings match these filters",
+      "tryAnother": "Try another crop or district.",
+      "clearFilters": "Clear filters",
+      "title": "Listings",
+      "gridView": "Grid view",
+      "listView": "List view",
+      "searchPlaceholder": "Search produce, farmer or district",
+      "allCrops": "All crops",
+      "allDistricts": "All districts",
+      "noMatches": "No matches",
+      "noneYet": "No listings yet",
+      "noneYetBody": "Verified farmer listings will appear here."
+    },
+    "benchmark": {
+      "setPrice": "Set price",
+      "unknownCrop": "Unknown crop",
+      "unknownCropBody": "This crop isn't recognised.",
+      "saveError": "Could not save the price",
+      "whatYouHave": "What you already have to go on",
+      "noPublished": "No price has been published for this crop yet.",
+      "noActiveListing": "None of your farmers have an active listing for this crop right now.",
+      "checkOther": "Check other sources",
+      "priceHistory": "Price history",
+      "lowPrice": "Low price (Rs / kg)",
+      "highPrice": "High price (Rs / kg)",
+      "saving": "Saving…",
+      "publishPrice": "Publish price",
+      "loadingHistory": "Loading history…",
+      "historyError": "Could not load price history."
+    },
+    "packagingShort": {
+      "plastic-crate": "Plastic crates",
+      "wooden-box": "Wooden boxes",
+      "cardboard": "Cardboard cartons",
+      "mesh-bag": "Mesh bags"
     }
   }
 }

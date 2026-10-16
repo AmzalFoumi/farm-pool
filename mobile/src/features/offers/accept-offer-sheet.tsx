@@ -64,7 +64,7 @@ export function AcceptOfferSheet({
       onClose();
       onAccepted(orderId);
     } catch (e) {
-      setError(offerErrorMessage(e, "Could not accept the offer"));
+      setError(offerErrorMessage(e, t("offers.accept.error")));
     } finally {
       setSubmitting(false);
     }
@@ -95,9 +95,7 @@ export function AcceptOfferSheet({
                 {formatPrice(offer.pricePerKg)} per kg — {formatPrice(offer.total)} in all.
               </Text>
               <Text className="type-caption text-muted-foreground">
-                {viewer === "BUYER"
-                  ? "This creates the order. You pay from the order screen."
-                  : "This creates the order and takes the quantity off your listing."}
+                {viewer === "BUYER" ? t("offers.accept.buyerNote") : t("offers.accept.farmerNote")}
               </Text>
             </VStack>
 
@@ -116,11 +114,16 @@ export function AcceptOfferSheet({
 
             <AppButton
               testID="offer-accept-confirm"
-              label={submitting ? "Accepting…" : "Accept offer"}
+              label={submitting ? t("offers.accept.accepting") : t("offers.accept.action")}
               onPress={() => void submit()}
               disabled={submitting}
             />
-            <AppButton label="Not now" variant="outline" onPress={onClose} disabled={submitting} />
+            <AppButton
+              label={t("offers.accept.notNow")}
+              variant="outline"
+              onPress={onClose}
+              disabled={submitting}
+            />
           </VStack>
         </ScrollView>
       </ActionsheetContent>
