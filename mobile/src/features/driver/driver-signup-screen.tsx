@@ -16,7 +16,7 @@ import { Step3Vehicle } from "./components/onboarding/step-3-vehicle";
 import { Step4Documents, type DocumentId } from "./components/onboarding/step-4-documents";
 import { StepDone } from "./components/onboarding/step-done";
 import { generatePassword, requestCode, verifyCode } from "./sms-code";
-import { vehicleById } from "./vehicles";
+import { vehicleById, vehicleLabelKey } from "./vehicles";
 
 /**
  * A delivery partner's sign-up, all four steps and the confirmation
@@ -184,7 +184,7 @@ export function DriverSignUpScreen() {
     return (
       <StepDone
         phone={normalized ?? ""}
-        vehicleLabel={vehicleType ? vehicleById(vehicleType).label : ""}
+        vehicleLabel={vehicleType ? t(vehicleLabelKey(vehicleType)) : ""}
         registration={registration.trim()}
         onSeeJobs={() => router.replace("/driver-jobs")}
       />

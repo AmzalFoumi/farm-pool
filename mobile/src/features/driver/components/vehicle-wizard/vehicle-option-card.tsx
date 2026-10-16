@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { CheckIcon } from "@/components/app/icons";
 import { Box } from "@/components/ui/box";
 import { Pressable } from "@/components/ui/pressable";
@@ -20,6 +22,8 @@ export function VehicleOptionCard({
   selected,
   onPress
 }: VehicleOptionCardProps) {
+  const { t } = useTranslation();
+
   return (
     <Pressable
       onPress={onPress}
@@ -39,7 +43,7 @@ export function VehicleOptionCard({
           {label}
         </Text>
         <Text className="type-caption text-muted-foreground">
-          Usually up to {typicalCapacityKg.toLocaleString()} kg
+          {t("vehicles.capacityHint", { count: typicalCapacityKg })}
         </Text>
       </VStack>
       {selected ? (

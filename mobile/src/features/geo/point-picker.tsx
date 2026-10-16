@@ -1,5 +1,6 @@
 import { districtPoint, type GeoPoint } from "@farm-pool/shared";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import MapView, { Marker, type LatLng } from "react-native-maps";
 
 import { AppButton } from "@/components/app/app-button";
@@ -42,6 +43,7 @@ export function PointPicker({
   onChange: (point: GeoPoint | undefined) => void;
 }) {
   const centre = districtPoint(district);
+  const { t } = useTranslation();
   const [touched, setTouched] = useState(false);
 
   /* Until the district is one the table knows, there is nowhere sensible to open the map. The
@@ -97,14 +99,17 @@ export function PointPicker({
       <HStack className="items-center justify-between gap-3">
         <Text className="type-caption flex-1 text-muted-foreground">
           {value
-            ? `Pinned at ${value.latitude.toFixed(4)}, ${value.longitude.toFixed(4)}`
+            ? t("geo.pinnedAt", {
+                lat: value.latitude.toFixed(4),
+                lng: value.longitude.toFixed(4)
+              })
             : touched
-              ? "No pin set"
+              ? t("geo.noPin")
               : unsetNote}
         </Text>
         {value ? (
           <AppButton
-            label="Clear"
+            label={t("geo.clear")}
             variant="outline"
             onPress={() => {
               setTouched(true);

@@ -6,7 +6,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 
-import { DISTRICTS, VEHICLES } from "../../vehicles";
+import { DISTRICTS, VEHICLES, vehicleLabelKey } from "../../vehicles";
 import { DistrictChip } from "../vehicle-wizard/district-chip";
 import { StepHeading } from "./onboarding-shell";
 import { VehicleTile } from "./vehicle-tile";
@@ -50,7 +50,7 @@ export function Step3Vehicle({
           {tiles.slice(0, 2).map((v) => (
             <VehicleTile
               key={v.id}
-              label={v.label}
+              label={t(vehicleLabelKey(v.id))}
               emoji={v.emoji}
               capacityKg={v.capacityKg}
               selected={vehicleType === v.id}
@@ -62,7 +62,7 @@ export function Step3Vehicle({
           {tiles.slice(2).map((v) => (
             <VehicleTile
               key={v.id}
-              label={v.label}
+              label={t(vehicleLabelKey(v.id))}
               emoji={v.emoji}
               capacityKg={v.capacityKg}
               selected={vehicleType === v.id}

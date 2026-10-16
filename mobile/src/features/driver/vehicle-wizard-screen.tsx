@@ -7,6 +7,7 @@ import {
 } from "@farm-pool/shared";
 import { Redirect, useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { WizardStep } from "@/features/listings/components/create-listing/wizard-shell";
 import { ApiError } from "@/lib/api";
@@ -18,7 +19,7 @@ import { Step2PlateLoad } from "./components/vehicle-wizard/step-2-plate-load";
 import { Step3District } from "./components/vehicle-wizard/step-3-district";
 import { StepReview } from "./components/vehicle-wizard/step-review";
 import { toFieldErrors, type VehicleFieldErrors } from "./vehicle-form";
-import { vehicleById } from "./vehicles";
+import { vehicleById, vehicleLabelKey } from "./vehicles";
 
 /**
  * A delivery partner's vehicle, in three steps and a check (FARM-45, LP-02/LP-07): what they
@@ -32,6 +33,7 @@ import { vehicleById } from "./vehicles";
  * The first finishes by going to Jobs, the second by going back.
  */
 export function VehicleWizardScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const auth = useAuth();
   const existing = auth.status === "signed-in" ? auth.user.driver : undefined;
@@ -111,9 +113,9 @@ export function VehicleWizardScreen() {
       if (error instanceof ApiError && error.code === "validation_error") {
         showFieldErrors(error.issues);
       } else if (error instanceof ApiError && error.code === "network_error") {
-        setFormError("Can't reach the server. Check your connection and try again.");
+        setFormError(t("errors.network"));
       } else {
-        setFormError("Something went wrong. Please try again.");
+        setFormError(t("errors.generic"));
       }
     } finally {
       setSubmitting(false);
@@ -140,7 +142,11 @@ export function VehicleWizardScreen() {
           onChangeRegistration={setRegistration}
           capacityKg={capacityKg}
           onChangeCapacity={setCapacityKg}
-          vehicle={vehicle}
+          vehicle={
+            vehicle
+              ? { label: t(vehicleLabelKey(vehicle.id)), capacityKg: vehicle.capacityKg }
+              : null
+          }
           errors={errors}
           onBack={() => setStep(1)}
           onContinue={continueFromPlate}
@@ -159,7 +165,7 @@ export function VehicleWizardScreen() {
     default:
       return (
         <StepReview
-          vehicleLabel={vehicle?.label ?? "—"}
+          vehicleLabel={vehicle ? t(vehicleLabelKey(vehicle.id)) : "—"}
           registration={registration}
           capacityKg={capacityKg ?? 0}
           district={district ?? "—"}
