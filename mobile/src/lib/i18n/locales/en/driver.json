@@ -1,0 +1,159 @@
+{
+  "driverOnboarding": {
+    "slide1": {
+      "title": "One job, one route",
+      "body": "A buyer books several farmers at once. You get it as a single job with the pickups already in the best order, and the drop at the end."
+    },
+    "slide2": {
+      "title": "Scan at the drop, money moves",
+      "body": "At each depot you scan the buyer's code. That confirms the delivery, releases the farmers' payment, and books your trip fee. No paperwork."
+    },
+    "slide3": {
+      "title": "Weak signal is fine",
+      "body": "Your route, pickups and scans are saved on the phone. They sync on their own when you pass through network."
+    },
+    "createAccount": "Create my account",
+    "skipIntro": "Skip the introduction"
+  },
+  "driverSignUp": {
+    "stepLabel": "Delivery partner · step {{step}} of {{count}}",
+    "phone": {
+      "title": "Your mobile number",
+      "note": "We send a 6-digit code by SMS. Buyers and farmers see this number on the day of a pickup.",
+      "nameLabel": "Your name",
+      "namePlaceholder": "As farmers will know you",
+      "nameError": "Enter your name",
+      "numberLabel": "Your mobile number, without the country code",
+      "numberPlaceholder": "77 123 4567",
+      "numberError": "Enter a Sri Lankan mobile number, like 77 123 4567",
+      "oneAccount": "One number, one account. If the phone is shared at home, use your own number.",
+      "action": "Send code",
+      "actionBusy": "Sending…"
+    },
+    "code": {
+      "title": "Enter the code",
+      "note": "Sent by SMS to {{phone}}.",
+      "inputLabel": "Six digit code from the SMS",
+      "digitLabel": "Digit {{index}}",
+      "resendIn": "Resend in {{time}}",
+      "resendNow": "Send the code again",
+      "resendWait": "You can ask for a new code in {{count}} seconds",
+      "voiceCall": "Call me the code instead",
+      "wrong": "That code is not right. Check the SMS and try again.",
+      "action": "Verify",
+      "actionBusy": "Checking…"
+    },
+    "vehicle": {
+      "title": "What do you drive?",
+      "note": "Pick your vehicle and type the number on the plate.",
+      "capacity": "up to {{count, number}} kg",
+      "tileLabel": "{{label}}, up to {{count, number}} kilograms",
+      "plateLabel": "Number plate",
+      "platePlaceholder": "NC LH 4821",
+      "plateError": "Enter the number on the plate",
+      "typeError": "Pick the vehicle you drive",
+      "districtLabel": "Where you collect",
+      "districtNote": "Jobs in this district are shown to you first.",
+      "districtError": "Pick the district you collect in"
+    },
+    "documents": {
+      "title": "Two photos",
+      "note": "Take a clear photo of each. No typing needed.",
+      "licence": "Driving licence",
+      "licenceNote": "Clear photo of the front",
+      "nationalId": "National ID card",
+      "nationalIdNote": "Front side, both sides later",
+      "added": "Photo added",
+      "done": "Done",
+      "take": "Take photo",
+      "takeLabel": "Take a photo of your {{document}}",
+      "offline": "No signal? The photos stay on your phone and upload when you get network.",
+      "noCamera": "Allow camera access to photograph your documents.",
+      "action": "Send for approval",
+      "actionBusy": "Sending…"
+    },
+    "done": {
+      "title": "Sent for checking",
+      "body": "Your area coordinator reviews your details, usually within one day. We SMS you when jobs open up.",
+      "numberVerified": "Number verified · {{phone}}",
+      "withCoordinator": "Documents with coordinator",
+      "unassigned": "Waiting to be assigned",
+      "action": "See jobs near you"
+    },
+    "failed": "Could not finish sign-up. Please try again.",
+    "phoneTakenLogIn": "An account with this number already exists. Log in instead."
+  },
+  "vehicles": {
+    "motorbike": "Motorbike",
+    "three-wheeler": "Three-wheeler",
+    "van": "Van",
+    "small-lorry": "Small lorry",
+    "lorry": "Lorry",
+    "tractor": "Tractor trailer",
+    "capacityHint": "Usually up to {{count, number}} kg"
+  },
+  "vehicleWizard": {
+    "step1": {
+      "title": "Your vehicle",
+      "heading": "What do you drive?",
+      "note": "Farmers see this before they hand over their produce.",
+      "help": "Pick the vehicle you collect produce with. You can change it later from your profile."
+    },
+    "step2": {
+      "title": "Plate and load",
+      "help": "The plate number is checked before you are verified. The load is how much you can carry in one trip.",
+      "plateLabel": "Plate number",
+      "platePlaceholder": "e.g. WP CAB-1234",
+      "keypadTitle": "How much can you carry?"
+    },
+    "step3": {
+      "title": "Where you work",
+      "heading": "Which district?",
+      "help": "Pick the district you usually collect produce in. Jobs there are shown to you first."
+    },
+    "review": {
+      "title": "Check and save",
+      "save": "Save vehicle",
+      "saving": "Saving…",
+      "noteFirst": "Your vehicle is checked before farmers see it as verified. You can still see your profile while you wait.",
+      "noteVerified": "Changing the vehicle or plate means it is checked again before farmers see it as verified."
+    },
+    "load": {
+      "label": "Most you can carry",
+      "change": "Change",
+      "unset": "Tap to set",
+      "hint": "Suggested for a {{vehicle}}. Change it if yours carries more or less.",
+      "a11y": "Load, {{count}} kilograms. Tap to change."
+    },
+    "row": {
+      "vehicle": "Vehicle",
+      "plate": "Plate number",
+      "load": "Most you can carry",
+      "district": "District",
+      "edit": "Edit",
+      "a11y": "{{label}}, {{value}}. Tap to change."
+    },
+    "cancel": "Cancel",
+    "editVehicle": "Edit vehicle"
+  },
+  "profile": {
+    "title": "Profile",
+    "role": "Delivery partner",
+    "deliveries": "Deliveries",
+    "deliveriesCount": "{{count}} carried",
+    "vehicle": "Vehicle",
+    "language": "Language",
+    "logOut": "Log out",
+    "loggingOut": "Logging out…",
+    "verification": {
+      "pending": "Your vehicle is waiting to be checked. Farmers see it as not yet verified.",
+      "verified": "Farmers see your vehicle as verified when you come to collect.",
+      "rejected": "Your vehicle was not approved. Check the plate number and save it again."
+    }
+  },
+  "deliveries": {
+    "title": "Deliveries",
+    "emptyTitle": "Nothing carried yet",
+    "emptyBody": "Loads you have delivered appear here, newest first."
+  }
+}

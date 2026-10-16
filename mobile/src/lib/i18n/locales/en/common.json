@@ -1,0 +1,51 @@
+{
+  "common": {
+    "back": "Go back",
+    "next": "Next",
+    "skip": "Skip",
+    "continue": "Continue",
+    "tryAgain": "Try again",
+    "couldNotLoad": "Could not load",
+    "kg": "{{count, number}} kg",
+    "phone": "Phone",
+    "loading": "Loading",
+    "signUp": "Sign up",
+    "logIn": "Log in"
+  },
+  "errors": {
+    "network": "Can't reach the server. Check your connection and try again.",
+    "generic": "Something went wrong. Please try again.",
+    "phone_taken": "An account with this number already exists.",
+    "job_taken": "Another driver took this job first.",
+    "load_too_heavy": "This load is heavier than your vehicle can carry.",
+    "no_vehicle": "Add your vehicle before accepting a job.",
+    "job_not_found": "This job is no longer available.",
+    "not_your_job": "This job is not yours any more.",
+    "wrong_stage": "This job has already moved on.",
+    "invalid_credentials": "Phone number or password is incorrect.",
+    "vehicle_full": "Your vehicle is full. Deliver what you are carrying, then take this job.",
+    "window_clash": "You have already promised another farmer that time. Pick a slot you are free for.",
+    "window_outside_offer": "That is outside the time the farmer can be ready."
+  },
+  "verification": {
+    "pending": "Awaiting check",
+    "verified": "Verified",
+    "rejected": "Not approved"
+  },
+  "orderStatus": {
+    "requested": "Requested",
+    "accepted": "Accepted",
+    "declined": "Declined",
+    "cancelled": "Cancelled",
+    "open": "Open",
+    "assigned": "Driver assigned",
+    "in_transit": "In transit",
+    "delivered": "Delivered"
+  },
+  "roles": {
+    "farmer": "Farmer",
+    "buyer": "Wholesale buyer",
+    "coordinator": "Area coordinator",
+    "logistics": "Delivery partner"
+  }
+}
