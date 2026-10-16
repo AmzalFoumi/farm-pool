@@ -23,6 +23,7 @@ export function JobCard({ job, onPress }: { job: JobSummary; onPress: () => void
 
   return (
     <Pressable
+      testID="job-card"
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={t("jobs.cardLabel", {

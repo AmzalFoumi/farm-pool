@@ -41,6 +41,33 @@ a confirmed order, and the cheapest way to guarantee that is to have nothing to 
 Only the pickup takes a body — the weight actually loaded. Everything else is identified by the
 order it belongs to and acted on by the caller's own token.
 
+## Every request leaves a line
+
+`LogisticsAuditInterceptor` wraps the whole controller, so each call logs who acted, on which
+order, and how it ended:
+
+```
+[Logistics] accept actor=68f0… order=68f1… window=360-540 → ok 42ms
+[Logistics] accept actor=68f2… order=68f1… window=360-540 → refused conflict/job_taken 11ms
+[Logistics] pickup actor=68f0… order=68f1… collectedKg=95 → ok 38ms
+```
+
+This is the only audit trail the domain has, and it is here because a delivery is the one part of
+the app with a physical counterpart. The orders collection holds the *current* state; it cannot
+say who accepted at what time, or which of two drivers was refused, or when a 100 kg deal became
+95 kg on the lorry. Those are the disputes a farmer actually raises.
+
+- **Writes (`accept`, `pickup`, `deliver`) log at `log`; reads log at `debug`.** The board is
+  polled, and logging every poll at info level would bury the three lines that matter.
+- **Refusals log at `warn` with the kind and the stable code** — `conflict/job_taken` — so they
+  can be counted later. Anything that is not a `DomainError` logs at `error` with the cause.
+- **Only two body fields are kept**: the promised window and the collected weight, the numbers a
+  dispute turns on. Nothing from the response is logged — a held `JobDetail` carries the farmer's
+  phone number, and a log file is easier to leak than the database.
+
+Adding an endpoint to the controller needs nothing to keep this true. Adding a body field worth
+auditing means one line in `detail()` in `logistics-audit.interceptor.ts`.
+
 ### Two rules worth knowing before you change anything
 
 **The farmer's phone number is attached only to a job its caller holds.** An open job on the board
@@ -79,6 +106,24 @@ a job and a farmer a collection.
 Two codes, deliberately: `load_too_heavy` is a load the vehicle can never carry, `vehicle_full` is
 one it cannot carry *yet*. A driver deciding what to do next needs to know which, and one code for
 both would leave the app unable to say.
+
+**A collection time given to a farmer is a promise, not a prediction (FARM-61).** The farmer
+offers a window on the listing; the driver commits to a slot inside it when accepting; and nothing
+afterwards recomputes it. That is the whole design: if the time were derived from the driver's
+current queue, every job they later accepted would silently push back every promise already made,
+and a farmer who harvested for 2 pm would be standing at a gate at 4 pm with produce in the sun.
+
+So accepting is a *feasibility check*, the same shape as the capacity check above — refuse now
+rather than disappoint later. `windowIsFree` in `domain/entities/job.ts` rejects a slot that
+overlaps one already promised; `windowContains` rejects one outside what the farmer offered. The
+window is written in the same Mongo operation as the claim, so a driver can never hold a job with
+no promised time.
+
+Known gap, commented at `windowIsFree`: overlap is the only test, so two non-overlapping windows
+50 km apart both pass and are impossible. Closing that needs a road-distance estimate the app does
+not have — `distanceKm` is straight-line haversine and a hill road runs 1.5–2× that — so it is the
+next layer rather than a missing piece of this one. Refusing the overlaps is strictly better than
+refusing nothing and never refuses something that was possible.
 
 **Verification is deliberately not checked on accept.** Nothing moves a driver past `pending`
 yet (`docs/logistics-driver-role.md`, open question 3), so gating on `verified` would mean no

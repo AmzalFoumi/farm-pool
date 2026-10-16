@@ -1,4 +1,4 @@
-import type { JobDetail } from "@farm-pool/shared";
+import type { CollectionWindow, JobDetail } from "@farm-pool/shared";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { View } from "react-native";
@@ -8,6 +8,7 @@ import { AppTextField } from "@/components/app/app-text-field";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { logisticsApi } from "@/features/logistics/api";
+import { WindowPicker } from "@/features/logistics/window-picker";
 import { ApiError } from "@/lib/api";
 
 /**
@@ -27,6 +28,8 @@ const KNOWN_CODES = [
   "job_taken",
   "load_too_heavy",
   "vehicle_full",
+  "window_clash",
+  "window_outside_offer",
   "no_vehicle",
   "job_not_found",
   "not_your_job",
@@ -48,6 +51,7 @@ export function JobActions({
 }) {
   const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
+  const [slot, setSlot] = useState<CollectionWindow | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [collected, setCollected] = useState(String(job.quantityKg));
 
@@ -102,11 +106,22 @@ export function JobActions({
         ) : null}
 
         {job.status === "open" ? (
-          <AppButton
-            label={t(busy ? "jobs.actions.takeBusy" : "jobs.actions.take")}
-            disabled={busy}
-            onPress={() => void run(() => logisticsApi.accept(token, job.id))}
-          />
+          <>
+            {/* A slot is only asked for when the farmer offered a window to choose inside. An
+                older listing has none, and the driver agrees a time by phone as they always did —
+                so the picker renders away rather than blocking the job. */}
+            {job.collectionWindow ? (
+              <WindowPicker offered={job.collectionWindow} value={slot} onChange={setSlot} />
+            ) : null}
+            <AppButton
+              testID="job-take"
+              label={t(busy ? "jobs.actions.takeBusy" : "jobs.actions.take")}
+              /* Disabled until a slot is chosen, because accepting without one would promise the
+                 farmer nothing — and the whole point of this screen is that the promise exists. */
+              disabled={busy || (job.collectionWindow !== undefined && slot === undefined)}
+              onPress={() => void run(() => logisticsApi.accept(token, job.id, slot))}
+            />
+          </>
         ) : null}
 
         {job.status === "assigned" ? (

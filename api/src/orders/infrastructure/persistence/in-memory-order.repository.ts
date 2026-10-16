@@ -1,5 +1,5 @@
 import { RENEGOTIABLE_ORDER_STATUSES } from '@farm-pool/shared';
-import type { OrderStatus } from '@farm-pool/shared';
+import type { CollectionWindow, OrderStatus } from '@farm-pool/shared';
 import { randomUUID } from 'node:crypto';
 import type {
   NewOrder,
@@ -74,13 +74,18 @@ export class InMemoryOrderRepository implements OrderRepository {
 
   /* Mirrors the Mongo claim: the status check and the write are one step here too, so a test
      can assert the second accept loses without reaching for fake concurrency. */
-  assignDriver(id: string, driverId: string): Promise<Order | null> {
+  assignDriver(
+    id: string,
+    driverId: string,
+    committedWindow?: CollectionWindow,
+  ): Promise<Order | null> {
     const row = this.rows.get(id);
     if (!row || row.status !== 'open') return Promise.resolve(null);
     const updated: Order = {
       ...row,
       status: 'assigned',
       assignedDriverId: driverId,
+      ...(committedWindow ? { committedWindow } : {}),
       updatedAt: new Date(),
     };
     this.rows.set(id, updated);

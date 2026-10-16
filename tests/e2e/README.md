@@ -34,6 +34,19 @@ because reaching the endpoint is a story of its own:
 | order `requested` → `open` | Farmer acceptance is unbuilt (FARM-46) | FARM-46 lands |
 | farmer `pending_review` → `active` | Approval (FARM-44) needs a coordinator whose cooperative covers the farmer's district; `signUpApprovedFarmer` skips that and logs in again for a token that says `active` | The tests seed a cooperative and approve through the api |
 
+## Testing the driver rules by hand
+
+```bash
+node tests/e2e/seed-driver-scenario.mjs
+```
+
+Puts six jobs on the board, each proving exactly one rule, and prints what to expect from each.
+Two of them never appear at all — a board that hides work a lorry cannot take is a behaviour worth
+seeing, not just a refusal. It clears whatever the driver is holding first, so it is re-runnable.
+
+Verified against the api on 2026-10-06: accept A → B refused `window_clash` → C accepts → E
+refused `vehicle_full`, with A's promised window byte-identical afterwards.
+
 ## The files
 
 | File | Covers |
@@ -41,6 +54,7 @@ because reaching the endpoint is a story of its own:
 | `driver-registration.test.mjs` | FARM-45 — account, then vehicle on its own endpoint; plate normalisation; the board refusing until a vehicle exists |
 | `driver-lifecycle.test.mjs` | FARM-49/54 — board filters, the accept race, pickup and drop-off, and what the farmer sees at the gate |
 | `delivery-flow.test.mjs` | FARM-26 — farm gate, delivery point and the distance between them |
+| `collection-windows.test.mjs` | FARM-61 — the promised time, and that taking more work cannot move one already made |
 
 All three are marked `NUDGE:` in the source. They are the places these tests lie about the system,
 so they are the first thing to delete when the real endpoints exist.

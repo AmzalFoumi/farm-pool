@@ -20,9 +20,11 @@ import {
   ConfirmPickup,
 } from './application/services/confirm-delivery-step';
 import { GetAssignedDriver } from './application/services/get-assigned-driver';
+import { GetDriverRoute } from './application/services/get-driver-route';
 import { GetJob } from './application/services/get-job';
 import { ListMyJobs } from './application/services/list-my-jobs';
 import { ListOpenJobs } from './application/services/list-open-jobs';
+import { LogisticsAuditInterceptor } from './logistics-audit.interceptor';
 import { LogisticsController } from './logistics.controller';
 
 /**
@@ -45,6 +47,7 @@ import { LogisticsController } from './logistics.controller';
   imports: [OrdersModule, CatalogModule, IdentityModule],
   controllers: [LogisticsController],
   providers: [
+    LogisticsAuditInterceptor,
     {
       provide: ListOpenJobs,
       inject: [ORDER_REPOSITORY, LISTING_REPOSITORY, USER_REPOSITORY],
@@ -95,6 +98,12 @@ import { LogisticsController } from './logistics.controller';
         listings: ListingRepository,
         users: UserRepository,
       ) => new ConfirmDelivery(orders, listings, users),
+    },
+    {
+      provide: GetDriverRoute,
+      inject: [ORDER_REPOSITORY, LISTING_REPOSITORY],
+      useFactory: (orders: OrderRepository, listings: ListingRepository) =>
+        new GetDriverRoute(orders, listings),
     },
     {
       provide: GetAssignedDriver,

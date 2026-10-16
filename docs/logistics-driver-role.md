@@ -7,9 +7,10 @@ SE3080 mid-project agile review (Group_038, Assignment 01) and reconciled agains
 **Status of this document.** It records what the role is _meant_ to do, and — in
 [§10](#10-driver-registration-what-exists-today) — what is actually built. As of `main` at
 `7821502`, registration, login and role-based access exist and work for all four roles (FARM-34);
-`api/src/logistics/` now holds the driver job board, accept, and pickup/drop-off confirmation
-(LP-20 … LP-24, LP-50, LP-52, LP-53). Batching (LP-30 …), routing (LP-40 …), offline queueing
-(LP-54), photos (LP-55) and the return leg (LP-60) are still unimplemented.
+`api/src/logistics/` now holds the driver job board, accept, pickup/drop-off confirmation, both
+ends of the trip on a map, and committed collection windows (LP-20 … LP-24, LP-50, LP-52, LP-53,
+and the reachable parts of LP-22 and LP-40). Batching (LP-30 …), true multi-stop routing (LP-40),
+offline queueing (LP-54), photos (LP-55) and the return leg (LP-60) are still unimplemented.
 Where the agile review and `.plans/PRODUCT.md` disagree, the disagreement is noted in place rather
 than silently resolved; see [Conflicts and open questions](#conflicts-and-open-questions).
 
@@ -237,15 +238,49 @@ LP-05 need nothing built.
 > half of LP-52 — today the driver's word ends the lifecycle), offline queueing of a confirmation
 > taken with no signal (LP-54), and photos on a confirmation (LP-55).
 >
-> **Pickup preview status (FARM-26).** Built: the job screen shows a Google map of the pickup
-> district with a hand-off to the Google Maps app for directions (LP-22, the reachable part of
-> LP-40). The pin is the district centre, not the farm gate, and the screen says so — no listing
-> holds a coordinate.
+> **Pickup and drop-off status (FARM-26).** Built: a farmer pins the **farm gate** on the listing
+> and a buyer sets a **delivery point** on the order, so the job screen maps the real place rather
+> than a district centre, and the board shows the straight-line distance between the two (LP-22).
+> Both are optional and both fall back to the district, with the screen saying which it is showing
+> — no signal must never stop someone posting produce or placing an order.
 >
-> **The drop-off half is blocked on data, not effort.** A buyer has no location anywhere: not on
-> the account, not on the order. So "drop-off location" and "distance/route length" in LP-22, and
-> the optimised multi-stop route in LP-40, cannot be built until some story decides where a
-> delivery address lives. The order is the likelier home, since it can differ per order.
+> The point lives on the **listing**, not the farmer's account: a farmer may harvest from more than
+> one plot. The drop-off is **copied onto the order**, never referenced, so renaming a saved place
+> cannot rewrite where a past delivery went. Buyers may save up to 20 places.
+>
+> Distance appears **only when both ends are real**. One measured from a district centre would be
+> precise enough to be believed and wrong by however far the gate is from the town — exactly the
+> number a driver would quote a fee from. It is straight-line and labelled as such; a hill road
+> runs 1.5–2× that, which is why it cannot yet feed a travel-time estimate.
+>
+> **Still blocked:** the optimised multi-stop route (LP-40) needs stop ordering, not just two
+> points, and LP-41's offline caching of it is untouched.
+>
+> **Capacity is checked across every job a driver holds (FARM-49).** It was once per-order, which
+> let a 900 kg van accept three 600 kg jobs — three farmers each promised a collection one vehicle
+> could not make. `assigned` and `in_transit` count against the lorry; `delivered` frees it again,
+> which is what lets a driver run a second trip without the app having any concept of a trip. Two
+> codes, deliberately: `load_too_heavy` can never be taken, `vehicle_full` can be taken later.
+>
+> **Collection times are commitments, not predictions (FARM-61).** The farmer offers a window on
+> the listing, the driver promises a slot inside it when accepting, and **nothing afterwards
+> recomputes it**. This is the rule the whole story exists for: if the time were derived from the
+> driver's queue, every job they later took would silently push back every promise already made,
+> and a farmer who harvested for 2 pm would be at a gate at 4 pm with produce in the sun.
+>
+> So accepting is a _feasibility check_ — the same shape as the capacity check — refusing now
+> rather than disappointing later. A slot overlapping one already promised is refused; so is one
+> outside what the farmer offered. The window is written in the same database operation as the
+> claim, so a driver can never hold a job with no promised time.
+>
+> Windows are minutes-of-day plus a date, not instants: a window is a wall-clock fact about a farm,
+> and a UTC conversion would shift a farmer's dawn to midday. Minimum 30 minutes, because a promise
+> of "2:00–2:05" is not one a rural road keeps. Optional throughout, so listings made before this
+> still work and are agreed by phone as they always were.
+>
+> **Known gap:** overlap is the only test, so two non-overlapping windows 50 km apart both pass and
+> are impossible. Closing that needs road distance, which is the next layer (see LP-40). Refusing
+> the overlaps is strictly better than refusing nothing and never refuses something possible.
 >
 > **Assignment took the LP-20/24 route, not LP-31.** A driver accepts from a board rather than a
 > coordinator assigning them. That is the faster half of the story and it leaves LP-30/31/32 —
@@ -295,18 +330,30 @@ completed in Sprint 1 (FARM-29) and never implemented.
 
 ## Build order
 
-Dependency order, not priority order. FARM-49 and FARM-54 are the Highest-priority stories, but
-neither can start first.
+Dependency order, not priority order. Marked with what has actually landed, as of 6 October 2026.
 
-1. **FARM-45** — driver and vehicle verification. No upstream blocker. Establishes the driver
-   profile shape every later story assigns against. → §10, LP-02/03/04/06/08–11.
-2. **FARM-49** — assign a driver (solo or batch). Needs FARM-45 for a driver to exist, and
-   Tharushi's **FARM-46** for orders to reach `open` — LP-21 forbids a job without a confirmed
-   order. Writes `assigned`. → LP-30/31/32.
-3. **FARM-54** — driver accepts and confirms fulfilment. Needs jobs from FARM-49. Drives
-   `in_transit` → `delivered`. → LP-24/50/52.
-4. **FARM-26** — pickup and drop-off preview. Needs job data from FARM-49. → LP-22/40.
-5. **FARM-52** (Sprint 4) — post-delivery ratings. → LP-80.
+1. ✅ **FARM-45** — driver and vehicle verification. Establishes the driver profile shape every
+   later story assigns against. → §10, LP-02/03/04/06/08–11.
+2. ✅ **FARM-49** — assign a driver. Shipped as a driver-accepts board, _not_ coordinator batch
+   assignment; LP-30/31/32 remain open. Also carries the cross-job capacity check. → LP-20/23/24.
+3. ✅ **FARM-54** — driver accepts and confirms fulfilment. Drives `in_transit` → `delivered`.
+   → LP-24/50/52.
+4. ✅ **FARM-26** — pickup and drop-off. Farm gate, delivery point and the distance between them.
+   The multi-stop route half of LP-40 is still open. → LP-22.
+5. ✅ **FARM-61** — committed collection windows, so a time given to a farmer holds when the driver
+   takes more work. → LP-22, LP-90.
+6. **FARM-52** (Sprint 4) — post-delivery ratings. → LP-80.
+
+**FARM-46 unblocked the chain on 6 October.** A farmer accepting leaves an order `accepted`; the
+buyer paying moves it to `open` and onto the board. Before that, nothing in the app could produce
+a job at all, and both the e2e tests and the payments work had to nudge the status in the database.
+The listing-approval nudge remains until a coordinator endpoint exists (FARM-43).
+
+**What is left in this role, in rough order of value:** consolidated batches (LP-30/31/32, and
+batch assembly belongs to the coordinator's module); the optimised multi-stop route and its offline
+cache (LP-40/41); travel-time feasibility, which needs road distance rather than the straight-line
+number FARM-26 added; offline queueing of a confirmation (LP-54); photos (LP-55); the return leg
+(LP-60); and ratings (LP-80).
 
 `packages/shared/src/orders/order.ts` already reserves `assigned → in_transit → delivered` in
 `orderStatusSchema`, with a comment marking them as a later story's work. That is this role's

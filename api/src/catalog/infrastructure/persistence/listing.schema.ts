@@ -36,6 +36,24 @@ export class PickupPointDocument {
 
 const PickupPointSchema = SchemaFactory.createForClass(PickupPointDocument);
 
+/** When the farmer can be ready (FARM-61). Minutes-of-day, not an instant: a window is a
+ *  wall-clock fact about a farm, and a UTC conversion would shift it by 5½ hours. */
+@Schema({ _id: false })
+export class CollectionWindowDocument {
+  @Prop({ required: true })
+  date: string;
+
+  @Prop({ required: true, min: 0, max: 24 * 60 - 1 })
+  from: number;
+
+  @Prop({ required: true, min: 0, max: 24 * 60 - 1 })
+  to: number;
+}
+
+const CollectionWindowSchema = SchemaFactory.createForClass(
+  CollectionWindowDocument,
+);
+
 @Schema({ collection: 'listings', timestamps: true })
 export class ListingDocument {
   @Prop({ required: true, index: true })
@@ -98,6 +116,9 @@ export class ListingDocument {
    */
   @Prop({ type: PickupPointSchema, required: false })
   pickupPoint?: PickupPointDocument;
+
+  @Prop({ type: CollectionWindowSchema, required: false })
+  collectionWindow?: CollectionWindowDocument;
 
   @Prop({ type: String, required: false, enum: FULFILLMENT_OPTIONS })
   fulfillmentOption?: FulfillmentOption;

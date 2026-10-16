@@ -1,5 +1,5 @@
 import { RENEGOTIABLE_ORDER_STATUSES } from '@farm-pool/shared';
-import type { OrderStatus } from '@farm-pool/shared';
+import type { CollectionWindow, OrderStatus } from '@farm-pool/shared';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -90,12 +90,22 @@ export class MongooseOrderRepository implements OrderRepository {
   /* `findOneAndUpdate` with `status: 'open'` in the filter is what makes this a claim rather
      than a write: Mongo matches and updates in one operation, so the second driver's filter
      finds nothing and gets `null` instead of overwriting the first driver's assignment. */
-  async assignDriver(id: string, driverId: string): Promise<Order | null> {
+  async assignDriver(
+    id: string,
+    driverId: string,
+    committedWindow?: CollectionWindow,
+  ): Promise<Order | null> {
     if (!OBJECT_ID.test(id)) return null;
     const doc = await this.orders
       .findOneAndUpdate(
         { _id: id, status: 'open' },
-        { status: 'assigned', assignedDriverId: driverId },
+        {
+          status: 'assigned',
+          assignedDriverId: driverId,
+          /* Written in the same operation as the claim, so a driver can never hold a job with no
+             promised window — which would be a farmer with no time to plan around. */
+          ...(committedWindow ? { committedWindow } : {}),
+        },
         { returnDocument: 'after' },
       )
       .exec();
@@ -235,6 +245,15 @@ function toOrder(doc: OrderHydrated): Order {
       : {}),
     ...(typeof doc.collectedKg === 'number'
       ? { collectedKg: doc.collectedKg }
+      : {}),
+    ...(doc.committedWindow
+      ? {
+          committedWindow: {
+            date: doc.committedWindow.date,
+            from: doc.committedWindow.from,
+            to: doc.committedWindow.to,
+          },
+        }
       : {}),
     ...(doc.dropOff
       ? {

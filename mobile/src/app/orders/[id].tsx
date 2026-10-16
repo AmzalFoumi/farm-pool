@@ -28,6 +28,7 @@ import { PaySheet } from "@/features/payments/pay-sheet";
 import { PaymentCard } from "@/features/payments/payment-card";
 import { PriceProposalCard } from "@/features/payments/price-proposal-card";
 import { ApiError } from "@/lib/api";
+import { formatWindow } from "@/features/logistics/window-picker";
 import { formatDate, formatPrice } from "@/lib/format";
 import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
@@ -146,6 +147,11 @@ function OrderBody({
        rather than replacing it: the difference between the two is the thing worth seeing. */
     ...(order.collectedKg !== undefined
       ? [{ label: "Collected", value: `${order.collectedKg} kg` }]
+      : []),
+    /* The time the driver promised (FARM-61). This is why a farmer harvests when they do, so it
+       belongs with the deal rather than hidden behind the driver card. */
+    ...(order.committedWindow
+      ? [{ label: "Collection", value: formatWindow(order.committedWindow) }]
       : []),
     { label: "Unit price", value: `${formatPrice(order.pricePerKg)} / kg` },
     { label: "Total", value: formatPrice(order.total) },

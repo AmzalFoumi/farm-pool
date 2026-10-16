@@ -23,7 +23,9 @@
     "not_your_job": "This job is not yours any more.",
     "wrong_stage": "This job has already moved on.",
     "invalid_credentials": "Phone number or password is incorrect.",
-    "vehicle_full": "Your vehicle is full. Deliver what you are carrying, then take this job."
+    "vehicle_full": "Your vehicle is full. Deliver what you are carrying, then take this job.",
+    "window_clash": "You have already promised another farmer that time. Pick a slot you are free for.",
+    "window_outside_offer": "That is outside the time the farmer can be ready."
   },
   "orderStatus": {
     "requested": "Requested",
@@ -169,6 +171,13 @@
       "vehicle": "Vehicle",
       "driver": "Driver",
       "unverified": "This driver's vehicle has not been checked yet. Match the plate number above against the vehicle before you hand over produce."
+    },
+    "window": {
+      "title": "Promise a collection time",
+      "help": "The farmer can be ready {{window}}. Pick the slot you will be there.",
+      "promise": "The farmer harvests for this time. You cannot move it later without telling them.",
+      "committed": "You promised",
+      "farmerWindow": "Farmer is ready"
     }
   },
   "verification": {
@@ -228,6 +237,38 @@
     "newHere": "New to FarmPool?",
     "action": "Log in",
     "actionBusy": "Logging in…"
+  },
+  "route": {
+    "title": "Route",
+    "emptyTitle": "Nothing on today's run",
+    "emptyBody": "Take a job from the Jobs tab and it appears here, in the order you promised.",
+    "summary": "{{km}} km · {{kg}} kg",
+    "estimateNote": "Times are estimated from straight-line distance, so allow for the road.",
+    "fits": "Every promise fits · {{minutes}} min spare",
+    "tight": "Tight · only {{minutes}} min spare",
+    "willNotFit": "This run does not fit — tell a farmer before they harvest",
+    "leg": "{{minutes}} min from the last stop",
+    "late": "{{minutes}} min late",
+    "collected": "Collected",
+    "stopLabel": "Stop {{position}}, {{name}}, {{place}}"
+  },
+  "profile": {
+    "deliveries": "Deliveries",
+    "deliveriesCount": "{{count}} carried",
+    "vehicle": "Vehicle",
+    "language": "Language",
+    "logOut": "Log out",
+    "loggingOut": "Logging out…",
+    "verification": {
+      "pending": "Your vehicle is waiting to be checked. Farmers see it as not yet verified.",
+      "verified": "Farmers see your vehicle as verified when you come to collect.",
+      "rejected": "Your vehicle was not approved. Check the plate number and save it again."
+    }
+  },
+  "deliveries": {
+    "title": "Deliveries",
+    "emptyTitle": "Nothing carried yet",
+    "emptyBody": "Loads you have delivered appear here, newest first."
   },
   "accountStatus": {
     "pendingTitle": "Awaiting approval",

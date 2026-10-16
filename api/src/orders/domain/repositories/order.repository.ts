@@ -1,4 +1,4 @@
-import type { OrderStatus } from '@farm-pool/shared';
+import type { CollectionWindow, OrderStatus } from '@farm-pool/shared';
 import type { NewOrder, Order, PriceProposal } from '../entities/order';
 
 export interface OrderRepository {
@@ -34,7 +34,11 @@ export interface OrderRepository {
    * is the race of two drivers tapping Accept at once, and the loser must be told, not silently
    * given a job someone else holds.
    */
-  assignDriver(id: string, driverId: string): Promise<Order | null>;
+  assignDriver(
+    id: string,
+    driverId: string,
+    committedWindow?: CollectionWindow,
+  ): Promise<Order | null>;
   /**
    * The driver confirms the load is on the vehicle (LP-50): `assigned` → `in_transit`, recording
    * what was actually collected. Matches on the driver *and* the status in one operation, so the

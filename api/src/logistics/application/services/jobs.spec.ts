@@ -5,8 +5,13 @@ import { InMemoryOrderRepository } from '../../../orders/infrastructure/persiste
 import { AcceptJob } from './accept-job';
 import { ConfirmDelivery, ConfirmPickup } from './confirm-delivery-step';
 import { GetAssignedDriver } from './get-assigned-driver';
+import { GetDriverRoute } from './get-driver-route';
 import { GetJob } from './get-job';
-import { ListMyJobs } from './list-my-jobs';
+import {
+  FINISHED_JOB_STATUSES,
+  LIVE_JOB_STATUSES,
+  ListMyJobs,
+} from './list-my-jobs';
 import { ListOpenJobs } from './list-open-jobs';
 
 const listingFields: NewListing = {
@@ -631,5 +636,695 @@ describe('vehicle capacity across held jobs', () => {
     await expect(
       accept.execute(driverId, await openOrder(600)),
     ).resolves.toMatchObject({ status: 'assigned' });
+  });
+});
+
+/**
+ * Committed collection windows (FARM-61).
+ *
+ * The rule under test: a time a farmer was given is a promise, and nothing a driver does later
+ * may move it. So accepting is a feasibility check against promises already made — a new job fits
+ * in the gaps or it is refused, and no existing window is ever recomputed.
+ */
+describe('committed collection windows', () => {
+  const at = (h: number) => h * 60;
+  const DAY = '2026-10-07';
+  /** The farmer can be ready all morning. */
+  const OFFERED = { date: DAY, from: at(6), to: at(12) };
+
+  let listings: InMemoryListingRepository;
+  let orders: InMemoryOrderRepository;
+  let users: InMemoryUserRepository;
+  let accept: AcceptJob;
+  let driverId: string;
+
+  const openOrder = async (window = OFFERED) => {
+    const listing = await listings.seed({
+      ...listingFields,
+      quantityKg: 5000,
+      collectionWindow: window,
+    });
+    const order = await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg: 50,
+      pricePerKg: 180,
+      total: 9000,
+      status: 'open',
+    });
+    return order.id;
+  };
+
+  beforeEach(async () => {
+    listings = new InMemoryListingRepository();
+    orders = new InMemoryOrderRepository();
+    users = new InMemoryUserRepository();
+    accept = new AcceptJob(orders, listings, users);
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000600',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'small-lorry',
+      registration: 'NW WIN-0001',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+    driverId = driver.id;
+  });
+
+  it('stores the slot the driver promised, so the farmer has a time to plan around', async () => {
+    const job = await accept.execute(driverId, await openOrder(), {
+      date: DAY,
+      from: at(8),
+      to: at(9),
+    });
+
+    expect(job.committedWindow).toEqual({ date: DAY, from: at(8), to: at(9) });
+  });
+
+  /* The promise a farmer was given must survive the driver taking more work — that is the whole
+     story. A second job at a clashing time is refused rather than quietly shifting the first. */
+  it('refuses a second promise that overlaps one already made', async () => {
+    await accept.execute(driverId, await openOrder(), {
+      date: DAY,
+      from: at(8),
+      to: at(9),
+    });
+
+    await expect(
+      accept.execute(driverId, await openOrder(), {
+        date: DAY,
+        from: at(8) + 30,
+        to: at(10),
+      }),
+    ).rejects.toMatchObject({ code: 'window_clash' });
+  });
+
+  it('leaves the first promise exactly as it was after a refusal', async () => {
+    const first = await openOrder();
+    await accept.execute(driverId, first, {
+      date: DAY,
+      from: at(8),
+      to: at(9),
+    });
+
+    await accept
+      .execute(driverId, await openOrder(), {
+        date: DAY,
+        from: at(8),
+        to: at(9),
+      })
+      .catch(() => undefined);
+
+    await expect(orders.findById(first)).resolves.toMatchObject({
+      committedWindow: { date: DAY, from: at(8), to: at(9) },
+    });
+  });
+
+  it('allows a second job in the gap between promises', async () => {
+    await accept.execute(driverId, await openOrder(), {
+      date: DAY,
+      from: at(6),
+      to: at(7),
+    });
+
+    await expect(
+      accept.execute(driverId, await openOrder(), {
+        date: DAY,
+        from: at(9),
+        to: at(10),
+      }),
+    ).resolves.toMatchObject({ status: 'assigned' });
+  });
+
+  it('does not clash across different days', async () => {
+    await accept.execute(driverId, await openOrder(), {
+      date: DAY,
+      from: at(8),
+      to: at(9),
+    });
+
+    const nextDay = { date: '2026-10-08', from: at(8), to: at(9) };
+    await expect(
+      accept.execute(driverId, await openOrder(nextDay), nextDay),
+    ).resolves.toMatchObject({ status: 'assigned' });
+  });
+
+  /* A slot outside what the farmer offered is a time they never said they could be ready for —
+     the gate may be shut and the produce not picked. */
+  it('refuses a promise outside the window the farmer offered', async () => {
+    await expect(
+      accept.execute(driverId, await openOrder(), {
+        date: DAY,
+        from: at(14),
+        to: at(15),
+      }),
+    ).rejects.toMatchObject({ code: 'window_outside_offer' });
+  });
+
+  it('names the window the farmer actually offered, so the driver can pick again', async () => {
+    const refusal = await accept
+      .execute(driverId, await openOrder(), {
+        date: DAY,
+        from: at(14),
+        to: at(15),
+      })
+      .then(() => null)
+      .catch((e: Error) => e.message);
+
+    expect(refusal).toContain('6:00 am');
+    expect(refusal).toContain('12:00 pm');
+  });
+
+  /* Listings made before windows existed offer none, and a driver taking one agrees a time by
+     phone exactly as they always did. Requiring a window would make every old listing dead. */
+  it('still accepts a job on a listing that offers no window', async () => {
+    const listing = await listings.seed({ ...listingFields, quantityKg: 5000 });
+    const order = await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg: 50,
+      pricePerKg: 180,
+      total: 9000,
+      status: 'open',
+    });
+
+    await expect(accept.execute(driverId, order.id)).resolves.toMatchObject({
+      status: 'assigned',
+    });
+  });
+
+  /* Delivering frees the time as well as the space — the same rule capacity already follows. */
+  it('frees a promised slot once that job is delivered', async () => {
+    const first = await openOrder();
+    const slot = { date: DAY, from: at(8), to: at(9) };
+    await accept.execute(driverId, first, slot);
+
+    const pickup = new ConfirmPickup(orders, listings, users);
+    const deliver = new ConfirmDelivery(orders, listings, users);
+    await pickup.execute(driverId, first, 50);
+    await deliver.execute(driverId, first);
+
+    await expect(
+      accept.execute(driverId, await openOrder(), slot),
+    ).resolves.toMatchObject({ status: 'assigned' });
+  });
+});
+
+/**
+ * The board must not fetch listings one at a time.
+ *
+ * This is a shape test, not a timing test — a stopwatch in CI is flaky and says nothing about why.
+ * Counting repository calls says exactly what regressed: the loop went back to `findById` per
+ * order. Measured before the fix at 14.6s against 131 open orders, with the app's own request
+ * timeout at 15s; after, 0.52s.
+ */
+describe('the board does not fetch listings one at a time', () => {
+  it('asks the catalogue once, however many open orders there are', async () => {
+    const listings = new InMemoryListingRepository();
+    const orders = new InMemoryOrderRepository();
+    const users = new InMemoryUserRepository();
+
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000500',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'small-lorry',
+      registration: 'NW PERF-01',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+
+    for (let i = 0; i < 25; i++) {
+      const listing = await listings.seed({
+        ...listingFields,
+        quantityKg: 5000,
+      });
+      await orders.create({
+        buyerId: 'buyer-1',
+        farmerId: 'farmer-1',
+        farmerName: 'Nimal',
+        listingId: listing.id,
+        cropId: 'tomato',
+        quantityKg: 50,
+        pricePerKg: 180,
+        total: 9000,
+        status: 'open',
+      });
+    }
+
+    const byId = jest.spyOn(listings, 'findById');
+    const byIds = jest.spyOn(listings, 'findByIds');
+
+    const jobs = await new ListOpenJobs(orders, listings, users).execute(
+      driver.id,
+    );
+
+    expect(jobs).toHaveLength(25);
+    expect(byIds).toHaveBeenCalledTimes(1);
+    expect(byId).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * The board only offers work the driver could actually take (FARM-61).
+ *
+ * The point of checking here rather than at the Accept button: a driver should not learn what
+ * fits their day by tapping jobs one at a time and being refused. The information is identical
+ * either way, so it belongs where the list is built.
+ */
+describe('the board filters by whether the day still works', () => {
+  const DAY = '2026-11-12';
+  const at = (h: number) => h * 60;
+  const KURUNEGALA = { latitude: 7.4863, longitude: 80.3647 };
+  const JAFFNA = { latitude: 9.6615, longitude: 80.0255 };
+
+  let listings: InMemoryListingRepository;
+  let orders: InMemoryOrderRepository;
+  let users: InMemoryUserRepository;
+  let board: ListOpenJobs;
+  let accept: AcceptJob;
+  let driverId: string;
+
+  /** An open job at `point`, whose farmer can be ready inside `window`. */
+  const openJob = async (
+    point: { latitude: number; longitude: number },
+    window?: { date: string; from: number; to: number },
+  ) => {
+    const listing = await listings.seed({
+      ...listingFields,
+      quantityKg: 5000,
+      district: 'Kurunegala',
+      pickupPoint: point,
+      ...(window ? { collectionWindow: window } : {}),
+    });
+    const order = await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg: 100,
+      pricePerKg: 180,
+      total: 18000,
+      status: 'open',
+    });
+    return order.id;
+  };
+
+  beforeEach(async () => {
+    listings = new InMemoryListingRepository();
+    orders = new InMemoryOrderRepository();
+    users = new InMemoryUserRepository();
+    board = new ListOpenJobs(orders, listings, users);
+    accept = new AcceptJob(orders, listings, users);
+
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000400',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'small-lorry',
+      registration: 'NW ROUTE-01',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+    driverId = driver.id;
+  });
+
+  it('offers a job the driver could still fit around what they hold', async () => {
+    const held = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+    await accept.execute(driverId, held, { date: DAY, from: at(6), to: at(8) });
+
+    const later = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(14),
+      to: at(16),
+    });
+
+    const offered = await board.execute(driverId);
+    expect(offered.map((j) => j.id)).toContain(later);
+  });
+
+  /**
+   * The failure the overlap rule could never see: two windows that do not overlap and are still
+   * impossible, because 340 km of driving does not fit in the hour between them. Before this, the
+   * board offered it and the driver found out by tapping.
+   */
+  it('hides a job the driving cannot reach in time, even with no window overlap', async () => {
+    const held = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+    await accept.execute(driverId, held, { date: DAY, from: at(6), to: at(8) });
+
+    const unreachable = await openJob(JAFFNA, {
+      date: DAY,
+      from: at(8),
+      to: at(9),
+    });
+
+    const offered = await board.execute(driverId);
+    expect(offered.map((j) => j.id)).not.toContain(unreachable);
+  });
+
+  it('offers that same far job when the day has room for the drive', async () => {
+    const held = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(6),
+      to: at(7),
+    });
+    await accept.execute(driverId, held, { date: DAY, from: at(6), to: at(7) });
+
+    const reachable = await openJob(JAFFNA, {
+      date: DAY,
+      from: at(16),
+      to: at(18),
+    });
+
+    const offered = await board.execute(driverId);
+    expect(offered.map((j) => j.id)).toContain(reachable);
+  });
+
+  /* Older listings carry no window. There is no promise to test, so the job is always offered and
+     the time is agreed by phone as it always was. */
+  it('always offers a job whose listing promises no window', async () => {
+    const held = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+    await accept.execute(driverId, held, { date: DAY, from: at(6), to: at(8) });
+
+    const legacy = await openJob(JAFFNA);
+
+    const offered = await board.execute(driverId);
+    expect(offered.map((j) => j.id)).toContain(legacy);
+  });
+
+  it('shows everything to a driver who holds nothing yet', async () => {
+    const a = await openJob(KURUNEGALA, { date: DAY, from: at(6), to: at(8) });
+    const b = await openJob(JAFFNA, { date: DAY, from: at(7), to: at(9) });
+
+    const offered = await board.execute(driverId);
+    expect(offered.map((j) => j.id).sort()).toEqual([a, b].sort());
+  });
+});
+
+/**
+ * The day's run (FARM-61). Planned on the api so the route screen and the board cannot disagree
+ * about the same day.
+ */
+describe("the driver's route", () => {
+  const DAY = '2026-11-12';
+  const at = (h: number) => h * 60;
+  const KURUNEGALA = { latitude: 7.4863, longitude: 80.3647 };
+  const COLOMBO = { latitude: 6.9271, longitude: 79.8612 };
+
+  let listings: InMemoryListingRepository;
+  let orders: InMemoryOrderRepository;
+  let users: InMemoryUserRepository;
+  let accept: AcceptJob;
+  let route: GetDriverRoute;
+  let driverId: string;
+
+  const openJob = async (
+    point: { latitude: number; longitude: number },
+    window: { date: string; from: number; to: number },
+    quantityKg = 100,
+  ) => {
+    const listing = await listings.seed({
+      ...listingFields,
+      quantityKg: 5000,
+      pickupPoint: point,
+      collectionWindow: window,
+    });
+    const order = await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg,
+      pricePerKg: 180,
+      total: quantityKg * 180,
+      status: 'open',
+    });
+    return order.id;
+  };
+
+  beforeEach(async () => {
+    listings = new InMemoryListingRepository();
+    orders = new InMemoryOrderRepository();
+    users = new InMemoryUserRepository();
+    accept = new AcceptJob(orders, listings, users);
+    route = new GetDriverRoute(orders, listings);
+
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000300',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'small-lorry',
+      registration: 'NW RUN-01',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+    driverId = driver.id;
+  });
+
+  it('is empty, and feasible, for a driver holding nothing', async () => {
+    await expect(route.execute(driverId)).resolves.toMatchObject({
+      stops: [],
+      feasible: true,
+      totalKg: 0,
+    });
+  });
+
+  it('numbers the stops in the order the promises were made, not the order taken', async () => {
+    const afternoon = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(14),
+      to: at(16),
+    });
+    await accept.execute(driverId, afternoon, {
+      date: DAY,
+      from: at(14),
+      to: at(16),
+    });
+    const morning = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+    await accept.execute(driverId, morning, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+
+    const plan = await route.execute(driverId);
+
+    expect(plan.stops.map((s) => s.id)).toEqual([morning, afternoon]);
+    expect(plan.stops.map((s) => s.position)).toEqual([1, 2]);
+  });
+
+  it('says when each stop is reached and how much room is left against the promise', async () => {
+    const job = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(9),
+      to: at(11),
+    });
+    await accept.execute(driverId, job, { date: DAY, from: at(9), to: at(11) });
+
+    const [stop] = (await route.execute(driverId)).stops;
+
+    expect(stop.arrivalMinutes).toBe(at(9));
+    expect(stop.slackMinutes).toBe(120);
+    expect(stop.legMinutes).toBe(0);
+  });
+
+  it('totals the load and the driving across the run', async () => {
+    const first = await openJob(
+      KURUNEGALA,
+      { date: DAY, from: at(6), to: at(8) },
+      300,
+    );
+    await accept.execute(driverId, first, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+    const second = await openJob(
+      COLOMBO,
+      { date: DAY, from: at(14), to: at(17) },
+      200,
+    );
+    await accept.execute(driverId, second, {
+      date: DAY,
+      from: at(14),
+      to: at(17),
+    });
+
+    const plan = await route.execute(driverId);
+
+    expect(plan.totalKg).toBe(500);
+    // Kurunegala to Colombo is ~95 km by road; the estimate should be in that country.
+    expect(plan.totalKm).toBeGreaterThan(80);
+    expect(plan.stops[1].legMinutes).toBeGreaterThan(60);
+  });
+
+  /* A delivered load is off the lorry, so it is out of the day — the same rule capacity follows. */
+  it('drops a delivered job out of the run', async () => {
+    const job = await openJob(KURUNEGALA, {
+      date: DAY,
+      from: at(6),
+      to: at(8),
+    });
+    await accept.execute(driverId, job, { date: DAY, from: at(6), to: at(8) });
+    await new ConfirmPickup(orders, listings, users).execute(
+      driverId,
+      job,
+      100,
+    );
+    await new ConfirmDelivery(orders, listings, users).execute(driverId, job);
+
+    await expect(route.execute(driverId)).resolves.toMatchObject({ stops: [] });
+  });
+});
+
+/**
+ * Live work and finished work are different screens.
+ *
+ * A delivered load answers nothing about what the driver is doing now, and leaving it in the Jobs
+ * tab pushed today's work down the screen behind a growing history.
+ */
+describe('live jobs and history are separate', () => {
+  let listings: InMemoryListingRepository;
+  let orders: InMemoryOrderRepository;
+  let users: InMemoryUserRepository;
+  let accept: AcceptJob;
+  let mine: ListMyJobs;
+  let driverId: string;
+
+  const openJob = async () => {
+    const listing = await listings.seed({ ...listingFields, quantityKg: 5000 });
+    const order = await orders.create({
+      buyerId: 'buyer-1',
+      farmerId: 'farmer-1',
+      farmerName: 'Nimal',
+      listingId: listing.id,
+      cropId: 'tomato',
+      quantityKg: 100,
+      pricePerKg: 180,
+      total: 18000,
+      status: 'open',
+    });
+    return order.id;
+  };
+
+  beforeEach(async () => {
+    listings = new InMemoryListingRepository();
+    orders = new InMemoryOrderRepository();
+    users = new InMemoryUserRepository();
+    accept = new AcceptJob(orders, listings, users);
+    mine = new ListMyJobs(orders, listings);
+
+    const driver = await users.create({
+      displayName: 'Sunil',
+      phone: '+94770000200',
+      passwordHash: 'hash',
+      role: 'logistics',
+    });
+    await users.saveDriverProfile(driver.id, {
+      vehicleType: 'small-lorry',
+      registration: 'NW SPLIT-01',
+      capacityKg: 1500,
+      operatingDistrict: 'Kurunegala',
+      verification: 'pending',
+      updatedAt: new Date(),
+    });
+    driverId = driver.id;
+  });
+
+  it('keeps a delivered job out of the live list and puts it in history', async () => {
+    const job = await openJob();
+    await accept.execute(driverId, job);
+    await new ConfirmPickup(orders, listings, users).execute(
+      driverId,
+      job,
+      100,
+    );
+    await new ConfirmDelivery(orders, listings, users).execute(driverId, job);
+
+    await expect(mine.execute(driverId, LIVE_JOB_STATUSES)).resolves.toEqual(
+      [],
+    );
+    await expect(
+      mine.execute(driverId, FINISHED_JOB_STATUSES),
+    ).resolves.toMatchObject([{ id: job, status: 'delivered' }]);
+  });
+
+  it('keeps work still owed in the live list, and out of history', async () => {
+    const job = await openJob();
+    await accept.execute(driverId, job);
+
+    await expect(
+      mine.execute(driverId, LIVE_JOB_STATUSES),
+    ).resolves.toMatchObject([{ id: job, status: 'assigned' }]);
+    await expect(
+      mine.execute(driverId, FINISHED_JOB_STATUSES),
+    ).resolves.toEqual([]);
+  });
+
+  /* The same N+1 the board had. A driver with a long history is exactly who would have paid it. */
+  it('asks the catalogue once however long the history is', async () => {
+    for (let i = 0; i < 12; i++) {
+      const job = await openJob();
+      await accept.execute(driverId, job);
+      await new ConfirmPickup(orders, listings, users).execute(
+        driverId,
+        job,
+        100,
+      );
+      await new ConfirmDelivery(orders, listings, users).execute(driverId, job);
+    }
+    const byId = jest.spyOn(listings, 'findById');
+    const byIds = jest.spyOn(listings, 'findByIds');
+
+    const history = await mine.execute(driverId, FINISHED_JOB_STATUSES);
+
+    expect(history).toHaveLength(12);
+    expect(byIds).toHaveBeenCalledTimes(1);
+    expect(byId).not.toHaveBeenCalled();
   });
 });

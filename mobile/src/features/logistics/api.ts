@@ -1,9 +1,12 @@
 import {
   assignedDriverSchema,
+  driverRouteSchema,
   jobDetailSchema,
   jobListSchema,
   type AssignedDriver,
   type JobDetail,
+  type CollectionWindow as CommittedWindow,
+  type DriverRoute,
   type JobSummary
 } from "@farm-pool/shared";
 
@@ -23,9 +26,19 @@ export const logisticsApi = {
     return apiFetch("/logistics/jobs", { token, schema: jobListSchema });
   },
 
-  /** Jobs this driver has accepted, `assigned` through `delivered`. */
+  /** The day's run: the stops in order, with arrival estimates and slack (FARM-61). */
+  route(token: string): Promise<DriverRoute> {
+    return apiFetch("/logistics/route", { token, schema: driverRouteSchema });
+  },
+
+  /** Work the driver still owes someone — `assigned` and `in_transit`. */
   mine(token: string): Promise<JobSummary[]> {
     return apiFetch("/logistics/jobs/mine", { token, schema: jobListSchema });
+  },
+
+  /** What they have already delivered. History, so it lives under the profile. */
+  history(token: string): Promise<JobSummary[]> {
+    return apiFetch("/logistics/jobs/history", { token, schema: jobListSchema });
   },
 
   /** One job. `pickup` — the farmer's number — is present only once this driver holds it. */
@@ -34,9 +47,13 @@ export const logisticsApi = {
   },
 
   /** Take the job. `job_taken` when another driver got there first. */
-  accept(token: string, orderId: string): Promise<JobDetail> {
+  /** Take the job, promising a slot the farmer can plan around (FARM-61). `job_taken` when
+   *  another driver got there first; `window_clash` when the slot collides with one already
+   *  promised. The window is omitted for listings that offer none. */
+  accept(token: string, orderId: string, committedWindow?: CommittedWindow): Promise<JobDetail> {
     return apiFetch(`/logistics/jobs/${orderId}/accept`, {
       method: "POST",
+      body: { ...(committedWindow ? { committedWindow } : {}) },
       token,
       schema: jobDetailSchema
     });

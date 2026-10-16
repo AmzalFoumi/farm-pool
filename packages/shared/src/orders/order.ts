@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { cropIdSchema } from "../catalog/crops";
 import { sriLankaPointSchema } from "../geo/point";
+import { committedWindowSchema } from "../logistics/collection-window";
 import { kgSchema, pricePerKgSchema } from "../catalog/listing";
 
 /**
@@ -128,6 +129,12 @@ export const orderSchema = z.object({
    * what moved.
    */
   collectedKg: kgSchema.optional(),
+  /**
+   * The slot the driver committed to when they accepted (FARM-61). This is a promise to the
+   * farmer, not an estimate: nothing recomputes it, and a later job the driver takes cannot move
+   * it. Absent until a driver accepts, and on orders from before this existed.
+   */
+  committedWindow: committedWindowSchema.optional(),
   /** Where the buyer wants it delivered (FARM-26). Snapshotted at placement. */
   dropOff: dropOffSchema.optional(),
   /**

@@ -34,6 +34,24 @@ export class DropOffDocument {
 
 const DropOffSchema = SchemaFactory.createForClass(DropOffDocument);
 
+/** A collection window. `_id: false` because it is a value, not an entity. Minutes-of-day rather
+ *  than an instant, so no timezone conversion can shift a farmer's morning into their afternoon. */
+@Schema({ _id: false })
+export class CollectionWindowDocument {
+  @Prop({ required: true })
+  date: string;
+
+  @Prop({ required: true, min: 0, max: 24 * 60 - 1 })
+  from: number;
+
+  @Prop({ required: true, min: 0, max: 24 * 60 - 1 })
+  to: number;
+}
+
+const CollectionWindowSchema = SchemaFactory.createForClass(
+  CollectionWindowDocument,
+);
+
 @Schema({ collection: 'orders', timestamps: true })
 export class OrderDocument {
   @Prop({ required: true, index: true })
@@ -86,6 +104,10 @@ export class OrderDocument {
 
   @Prop({ type: DropOffSchema, required: false })
   dropOff?: DropOffDocument;
+
+  /** What the driver promised the farmer (FARM-61). */
+  @Prop({ type: CollectionWindowSchema, required: false })
+  committedWindow?: CollectionWindowDocument;
 
   /** When the buyer confirmed receipt (FARM-51). Absent until they do. */
   @Prop({ required: false })

@@ -26,6 +26,7 @@ import { logisticsApi } from "@/features/logistics/api";
 import { ContactCard } from "@/features/logistics/contact-card";
 import { JobActions } from "@/features/logistics/job-actions";
 import { JobMap } from "@/features/logistics/job-map";
+import { formatWindow } from "@/features/logistics/window-picker";
 import { OrderStatusPill } from "@/features/orders/status-pill";
 import { formatPrice } from "@/lib/format";
 import { useRequest } from "@/lib/use-request";
@@ -90,6 +91,24 @@ export default function JobDetailScreen() {
                     <DetailRow
                       label={t("jobs.detail.tripLength")}
                       value={t("jobs.detail.distance", { km: detail.distanceKm })}
+                    />
+                  </>
+                ) : null}
+                {/* The promise, where a driver will look for it — beside the load, not buried. */}
+                {detail.committedWindow ? (
+                  <>
+                    <Box className="h-px bg-border" />
+                    <DetailRow
+                      label={t("jobs.window.committed")}
+                      value={formatWindow(detail.committedWindow)}
+                    />
+                  </>
+                ) : detail.collectionWindow ? (
+                  <>
+                    <Box className="h-px bg-border" />
+                    <DetailRow
+                      label={t("jobs.window.farmerWindow")}
+                      value={formatWindow(detail.collectionWindow)}
                     />
                   </>
                 ) : null}

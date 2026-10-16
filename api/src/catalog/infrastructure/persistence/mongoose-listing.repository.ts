@@ -27,6 +27,15 @@ export class MongooseListingRepository implements ListingRepository {
     return doc ? toListing(doc) : null;
   }
 
+  async findByIds(ids: readonly string[]): Promise<Listing[]> {
+    /* Malformed ids are dropped rather than rejected: one bad row must not empty the board, which
+       is the same reason the caller skips an order whose listing has vanished. */
+    const valid = ids.filter((id) => OBJECT_ID.test(id));
+    if (valid.length === 0) return [];
+    const docs = await this.listings.find({ _id: { $in: valid } }).exec();
+    return docs.map(toListing);
+  }
+
   findVerified(filter: ListingFilter, limit: number): Promise<Listing[]> {
     return this.findWhere({ status: 'verified' }, filter, limit);
   }
@@ -197,6 +206,15 @@ function toListing(doc: ListingHydrated): Listing {
     district: doc.district,
     town: doc.town,
     address: doc.address,
+    ...(doc.collectionWindow
+      ? {
+          collectionWindow: {
+            date: doc.collectionWindow.date,
+            from: doc.collectionWindow.from,
+            to: doc.collectionWindow.to,
+          },
+        }
+      : {}),
     ...(doc.pickupPoint
       ? {
           pickupPoint: {

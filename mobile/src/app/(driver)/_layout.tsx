@@ -24,6 +24,9 @@ export default function DriverLayout() {
         {/* A job is only reachable with a vehicle on file: the board is filtered by its capacity
             and district, so without one there is nothing to open. */}
         <Stack.Screen name="job/[id]" />
+        {/* History, reached from the profile. Behind the same guard: a driver with no vehicle has
+            no deliveries to look back on. */}
+        <Stack.Screen name="deliveries" />
       </Stack.Protected>
       <Stack.Screen name="driver-vehicle" />
     </Stack>
