@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -53,6 +54,7 @@ export function WizardShell({
   overlay,
   children
 }: WizardShellProps) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [showHelp, setShowHelp] = useState(false);
 
@@ -63,7 +65,7 @@ export function WizardShell({
           <Pressable
             onPress={onBack}
             accessibilityRole="button"
-            accessibilityLabel="Go back"
+            accessibilityLabel={t("common.back")}
             className="h-tap w-tap items-center justify-center rounded-field border border-border bg-card"
           >
             <BackIcon />
@@ -71,7 +73,9 @@ export function WizardShell({
 
           <VStack className="flex-1 items-center">
             <Text className="type-body-sm-bold text-muted-foreground">
-              {step === "review" ? "Final check" : `Step ${step} of ${stepCount}`}
+              {step === "review"
+                ? t("listings.wizard.finalCheck")
+                : t("listings.wizard.stepOf", { step, count: stepCount })}
             </Text>
             <Text className="type-title text-center text-foreground">{title}</Text>
           </VStack>
@@ -80,7 +84,7 @@ export function WizardShell({
             <Pressable
               onPress={() => setShowHelp((v) => !v)}
               accessibilityRole="button"
-              accessibilityLabel={showHelp ? "Hide help" : "Help"}
+              accessibilityLabel={t(showHelp ? "listings.wizard.hideHelp" : "listings.wizard.help")}
               accessibilityState={{ expanded: showHelp }}
               className="h-tap w-tap items-center justify-center rounded-field bg-secondary"
             >
@@ -131,15 +135,23 @@ type WizardActionsProps = {
 /** Back (outline, one third) beside the step's primary action. */
 export function WizardActions({
   onBack,
-  backLabel = "Back",
+  backLabel,
   continueLabel,
   onContinue,
   continueDisabled
 }: WizardActionsProps) {
+  const { t } = useTranslation();
+
   return (
     <HStack className="gap-2">
       <View className="w-1/3">
-        <AppButton label={backLabel} variant="outline" onPress={onBack} />
+        {/* The default used to be the literal "Back"; it has to come from `t` now, and a caller
+            can still override it (step 1 of the vehicle wizard says Cancel). */}
+        <AppButton
+          label={backLabel ?? t("listings.wizard.back")}
+          variant="outline"
+          onPress={onBack}
+        />
       </View>
       <View className="flex-1">
         <AppButton label={continueLabel} disabled={continueDisabled} onPress={onContinue} />

@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 
@@ -7,9 +9,13 @@ import { Text } from "@/components/ui/text";
  * Place inside a photo frame; it pins to the top-left corner.
  */
 export function SampleBadge() {
+  const { t } = useTranslation();
+
   return (
     <Box className="absolute left-1 top-1 rounded-chip bg-brand-deep px-1.5 py-0.5">
-      <Text className="type-caption-bold text-primary-foreground">Sample</Text>
+      <Text className="type-caption-bold text-primary-foreground">
+        {t("listings.step3.sample")}
+      </Text>
     </Box>
   );
 }

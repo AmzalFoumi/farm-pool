@@ -50,9 +50,9 @@ type Step5LogisticsProps = {
 
 /** The quick choices and how many days from today each one means. */
 const QUICK_HARVEST_OPTIONS = [
-  { label: "Today", days: 0 },
-  { label: "In a Week", days: 7 },
-  { label: "In a Month", days: 30 }
+  { key: "today", days: 0 },
+  { key: "week", days: 7 },
+  { key: "month", days: 30 }
 ];
 
 /** Today plus `days`, as the `YYYY-MM-DD` the api expects, in the phone's own calendar. */
@@ -69,9 +69,9 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 /** Parts of the day a farmer actually thinks in, as minutes from midnight (FARM-61). Wide on
  *  purpose — the farmer says when they *can* be ready, and the driver narrows it. */
 const READY_PRESETS = [
-  { label: "Morning", from: 6 * 60, to: 12 * 60 },
-  { label: "Afternoon", from: 12 * 60, to: 17 * 60 },
-  { label: "All day", from: 6 * 60, to: 17 * 60 }
+  { key: "morning", from: 6 * 60, to: 12 * 60 },
+  { key: "afternoon", from: 12 * 60, to: 17 * 60 },
+  { key: "allDay", from: 6 * 60, to: 17 * 60 }
 ];
 
 export default function Step5Logistics({
@@ -89,7 +89,9 @@ export default function Step5Logistics({
   const [dateMode, setDateMode] = useState<"quick" | "calendar">(
     initialData?.harvestDate ? "calendar" : "quick"
   );
-  const [harvestDate, setHarvestDate] = useState<string>("Today");
+  /* Holds the option key, not its label: the label is translated at render, so storing it would
+     mean the selection stopped matching as soon as the language changed. */
+  const [harvestDate, setHarvestDate] = useState<string>("today");
   const [customDate, setCustomDate] = useState<string>(initialData?.harvestDate ?? "");
   const [district, setDistrict] = useState<string>(initialData?.district ?? "");
   const [districtError, setDistrictError] = useState<string | undefined>();
@@ -106,7 +108,7 @@ export default function Step5Logistics({
        has to be the farmer's own answer, not a default. */
     const parsedDistrict = districtSchema.safeParse(district);
     if (!parsedDistrict.success) {
-      setDistrictError(parsedDistrict.error.issues[0]?.message ?? "Enter a district");
+      setDistrictError(parsedDistrict.error.issues[0]?.message ?? t("listings.step5.dateError"));
       return;
     }
     setDistrictError(undefined);
@@ -114,11 +116,11 @@ export default function Step5Logistics({
     if (dateMode === "calendar") {
       finalDate = customDate.trim();
       if (!ISO_DATE.test(finalDate) || Number.isNaN(Date.parse(finalDate))) {
-        Alert.alert("Check the date", "Enter the ready date as YYYY-MM-DD, e.g. 2026-09-25.");
+        Alert.alert(t("listings.step5.dateAlertTitle"), t("listings.step5.dateAlertBody"));
         return;
       }
     } else {
-      const option = QUICK_HARVEST_OPTIONS.find((o) => o.label === harvestDate);
+      const option = QUICK_HARVEST_OPTIONS.find((o) => o.key === harvestDate);
       finalDate = isoDateFromToday(option?.days ?? 0);
     }
     onNext?.({
@@ -142,14 +144,14 @@ export default function Step5Logistics({
   return (
     <WizardShell
       step={5}
-      title="Schedule Transport"
+      title={t("listings.step5.title")}
       onBack={onBack}
-      help="Tell buyers where the produce is, when it is ready, and whether you want to share transport with nearby farms or arrange your own."
+      help={t("listings.step5.help")}
       footer={
         <>
           <WizardActions
             onBack={onBack}
-            continueLabel="Review Listing"
+            continueLabel={t("listings.step5.continueLabel")}
             onContinue={handleContinue}
           />
         </>
@@ -178,7 +180,7 @@ export default function Step5Logistics({
       <VStack className="elevation-card gap-4 rounded-card border border-border bg-card p-4">
         <VStack className="gap-0.5">
           <HStack className="items-center gap-2">
-            <Text className="type-h4 text-foreground">Harvest / Ready Date</Text>
+            <Text className="type-h4 text-foreground">{t("listings.step5.readyDateHeading")}</Text>
           </HStack>
           <Text className="type-caption text-muted-foreground">
             Select when crop will be ready for pickup
@@ -225,7 +227,7 @@ export default function Step5Logistics({
         {/* Quick Options Chips */}
         {dateMode === "quick" && (
           <HStack className="gap-2">
-            {QUICK_HARVEST_OPTIONS.map(({ label: opt }) => {
+            {QUICK_HARVEST_OPTIONS.map(({ key: opt }) => {
               const isSelected = harvestDate === opt;
               return (
                 <Pressable
@@ -240,7 +242,7 @@ export default function Step5Logistics({
                   <Text
                     className={`type-body-sm-bold ${isSelected ? "text-secondary-foreground" : "text-foreground"}`}
                   >
-                    {opt}
+                    {t(`listings.step5.presets.${opt}`)}
                   </Text>
                 </Pressable>
               );
@@ -255,7 +257,7 @@ export default function Step5Logistics({
               Enter Ready Date (YYYY-MM-DD):
             </Text>
             <AppTextField
-              label="Ready Date (YYYY-MM-DD)"
+              label={t("listings.step5.readyDateLabel")}
               placeholder="e.g. 2026-09-25"
               value={customDate}
               onChangeText={setCustomDate}
@@ -266,7 +268,9 @@ export default function Step5Logistics({
         {/* Selected Schedule Display Banner */}
         <HStack className="items-center justify-between rounded-field border border-border bg-secondary p-3">
           <HStack className="items-center gap-2">
-            <Text className="type-body-sm-bold text-secondary-foreground">Ready Timeframe:</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">
+              {t("listings.step5.readyTimeframe")}
+            </Text>
           </HStack>
           <Text className="type-body-bold text-foreground">{currentDisplayDate}</Text>
         </HStack>
@@ -275,7 +279,7 @@ export default function Step5Logistics({
       {/* Farm district */}
       <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
         <AppTextField
-          label="Farm district"
+          label={t("listings.step5.districtLabel")}
           value={district}
           onChangeText={setDistrict}
           placeholder="e.g. Kurunegala"
@@ -288,17 +292,17 @@ export default function Step5Logistics({
           a farmer knows "morning", and a driver promises a narrower slot inside it. */}
       <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
         <VStack className="gap-0.5">
-          <Text className="type-h4 text-foreground">When can a lorry come?</Text>
+          <Text className="type-h4 text-foreground">{t("listings.step5.lorryHeading")}</Text>
           <Text className="type-caption text-muted-foreground">
             The driver promises a time inside this, and you will see it before they arrive.
           </Text>
         </VStack>
         <HStack className="gap-2">
           {READY_PRESETS.map((preset) => {
-            const selected = readyFrom.label === preset.label;
+            const selected = readyFrom.key === preset.key;
             return (
               <Pressable
-                key={preset.label}
+                key={preset.key}
                 onPress={() => setReadyFrom(preset)}
                 accessibilityRole="radio"
                 accessibilityState={{ selected }}
@@ -311,7 +315,7 @@ export default function Step5Logistics({
                     selected ? "text-secondary-foreground" : "text-foreground"
                   }`}
                 >
-                  {preset.label}
+                  {t(`listings.step5.windows.${preset.key}`)}
                 </Text>
               </Pressable>
             );
@@ -322,9 +326,9 @@ export default function Step5Logistics({
       {/* Shown once the district resolves, because that is what the map centres on. */}
       <PointPicker
         district={district}
-        title="Farm gate"
-        help="Tap the map where a lorry should come. Optional — without it the driver sees the district only."
-        unsetNote={`Not set — drivers will see ${district} district`}
+        title={t("listings.step5.gateTitle")}
+        help={t("listings.step5.gateHelp")}
+        unsetNote={t("listings.step5.gateUnset", { district })}
         value={pickupPoint}
         onChange={setPickupPoint}
       />
@@ -333,7 +337,7 @@ export default function Step5Logistics({
       <VStack className="gap-3">
         <VStack className="gap-0.5 px-1">
           <HStack className="items-center gap-2">
-            <Text className="type-h4 text-foreground">Transport Method</Text>
+            <Text className="type-h4 text-foreground">{t("listings.step5.transportHeading")}</Text>
           </HStack>
           <Text className="type-caption text-muted-foreground">
             How would you like to move your crop?
@@ -357,7 +361,7 @@ export default function Step5Logistics({
                     transportType === "shared" ? "text-primary" : "text-foreground"
                   }`}
                 >
-                  Shared Transport
+                  {t("listings.step5.shared")}
                 </Text>
                 <Box
                   className={`h-5 w-5 items-center justify-center rounded-pill border ${
@@ -373,7 +377,7 @@ export default function Step5Logistics({
               </HStack>
 
               <Text className="type-caption text-muted-foreground">
-                Share truck space with nearby farms going the same way.
+                {t("listings.step5.sharedNote")}
               </Text>
             </VStack>
           </HStack>
@@ -396,7 +400,7 @@ export default function Step5Logistics({
                     transportType === "solo" ? "text-primary" : "text-foreground"
                   }`}
                 >
-                  Solo Transport
+                  {t("listings.step5.solo")}
                 </Text>
                 <Box
                   className={`h-5 w-5 items-center justify-center rounded-pill border ${
@@ -412,7 +416,7 @@ export default function Step5Logistics({
               </HStack>
 
               <Text className="type-caption text-muted-foreground">
-                Arrange your own vehicle from your farm gate.
+                {t("listings.step5.soloNote")}
               </Text>
             </VStack>
           </HStack>

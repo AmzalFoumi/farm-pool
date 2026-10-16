@@ -8,6 +8,7 @@ import enCoordinator from "./locales/en/coordinator.json";
 import enDriver from "./locales/en/driver.json";
 import enFarmer from "./locales/en/farmer.json";
 import enGeo from "./locales/en/geo.json";
+import enListings from "./locales/en/listings.json";
 import enLogistics from "./locales/en/logistics.json";
 import enOnboarding from "./locales/en/onboarding.json";
 import siBuyer from "./locales/si/buyer.json";
@@ -17,6 +18,7 @@ import siCoordinator from "./locales/si/coordinator.json";
 import siDriver from "./locales/si/driver.json";
 import siFarmer from "./locales/si/farmer.json";
 import siGeo from "./locales/si/geo.json";
+import siListings from "./locales/si/listings.json";
 import siLogistics from "./locales/si/logistics.json";
 import siOnboarding from "./locales/si/onboarding.json";
 import taBuyer from "./locales/ta/buyer.json";
@@ -26,6 +28,7 @@ import taCoordinator from "./locales/ta/coordinator.json";
 import taDriver from "./locales/ta/driver.json";
 import taFarmer from "./locales/ta/farmer.json";
 import taGeo from "./locales/ta/geo.json";
+import taListings from "./locales/ta/listings.json";
 import taLogistics from "./locales/ta/logistics.json";
 import taOnboarding from "./locales/ta/onboarding.json";
 
@@ -56,6 +59,7 @@ const en = bundle([
   enCatalog,
   enOnboarding,
   enDriver,
+  enListings,
   enLogistics,
   enGeo,
   enFarmer,
@@ -67,6 +71,7 @@ const si = bundle([
   siCatalog,
   siOnboarding,
   siDriver,
+  siListings,
   siLogistics,
   siGeo,
   siFarmer,
@@ -78,6 +83,7 @@ const ta = bundle([
   taCatalog,
   taOnboarding,
   taDriver,
+  taListings,
   taLogistics,
   taGeo,
   taFarmer,

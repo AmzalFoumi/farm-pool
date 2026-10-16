@@ -1,0 +1,201 @@
+{
+  "listings": {
+    "wizard": {
+      "back": "Back",
+      "finalCheck": "Final check",
+      "stepOf": "Step {{step}} of {{count}}",
+      "help": "Help",
+      "hideHelp": "Hide help"
+    },
+    "step1": {
+      "title": "Produce",
+      "help": "First choose a crop category (e.g. Vegetables), then tap the specific crop you want to sell from the list.",
+      "heading": "What would you like to sell?",
+      "note": "Choose a crop category",
+      "searchPlaceholder": "Search crops (e.g. Beans, Leeks)...",
+      "recent": "Recently Selected",
+      "cropsHeading": "Crops",
+      "topTraded": "Top Traded",
+      "noResults": "No crops found"
+    },
+    "grades": {
+      "A": {
+        "title": "Market Grade A (Fresh Premium)",
+        "text": "Flawless appearance, uniform size, firm texture, zero blemishes. Best suited for supermarket retail."
+      },
+      "B": {
+        "title": "Grade B (Commercial / Processing)",
+        "text": "Slight cosmetic blemishes or skin color variations. Firm texture. Ideal for restaurant prep & bulk kitchens."
+      },
+      "C": {
+        "title": "Grade C (Ripe / Processing Grade)",
+        "text": "Softer texture or irregular shapes. Best suited for paste, juices, purées, and sauces."
+      }
+    },
+    "packaging": {
+      "plastic-crate": "Reusable Plastic Crates (Standard 25kg)",
+      "wooden-box": "Ventilated Wooden Boxes",
+      "cardboard": "Heavy-Duty Corrugated Cartons",
+      "mesh-bag": "Net / Mesh Sacks"
+    },
+    "certifications": {
+      "Organic Certified": "Organic Certified",
+      "GAP Certified": "GAP Certified",
+      "Pesticide-Free": "Pesticide-Free"
+    },
+    "units": {
+      "kg": "Kilograms",
+      "crates": "Crates",
+      "sacks": "Sacks"
+    },
+    "step2": {
+      "title": "Batch & Quantity Details",
+      "help": "Specify your total supply quantity (type directly or use stepper), minimum order quantity (MOQ), crop variety, quality grade, and packaging parameters.",
+      "batchSummary": "Batch Summary:",
+      "enterTotal": "Enter Total Quantity",
+      "change": "Change",
+      "totalSupply": "Total Supply Quantity",
+      "keypad": "Keypad",
+      "decrease": "Decrease quantity",
+      "openKeypad": "Open keypad to edit quantity",
+      "increase": "Increase quantity",
+      "unitFormat": "Measurement Unit Format:",
+      "totalWeight": "Total Calculated Weight:",
+      "moq": "Minimum Order Quantity (MOQ)",
+      "noMinimum": "No minimum",
+      "min": "Min: {{kg}} kg",
+      "none": "None",
+      "customMoq": "Custom Minimum Order Quantity (kg)",
+      "enterSupply": "Enter Supply Quantity",
+      "belowMin": "Supply Below Minimum Order",
+      "defaultVariety": "Standard / Local",
+      "varietyHeading": "{{crop}} Variety",
+      "qualityGrade": "Quality Grade",
+      "packagingType": "Packaging Type",
+      "tapKeypad": "Tap to open keypad",
+      "summaryValue": "{{quantity}} {{unit}} • Grade {{grade}} ({{variety}})",
+      "unitSubKg": "(kg)",
+      "unitSubCrates": "~25 kg / crate",
+      "unitSubSacks": "~50 kg / sack",
+      "kgValue": "{{kg}} kg",
+      "gradeNote": "Classify based on firmness & appearance",
+      "gradeChip": "Grade {{grade}}",
+      "certifications": "Certifications",
+      "certificationsOptional": "Certifications (Optional)"
+    },
+    "step3": {
+      "title": "Add Harvest Photos",
+      "help": "Attach clear photos of your harvest. Buyers look for clear photos taken in natural light.",
+      "alertTitle": "Photos Required",
+      "alertBody": "Please attach both Wide shot and Close-up quality photos to proceed.",
+      "requiredFooter": "Required Photos:",
+      "ready": "2/2 Ready",
+      "progress": "{{done}}/2 Completed",
+      "requiredHeading": "Required Photos",
+      "readyChip": "2 of 2 ready",
+      "uploadedChip": "{{done}} of 2 Uploaded",
+      "sampleGuide": "Sample Guide",
+      "gotIt": "Got It, Thanks!",
+      "sampleNote": "The buttons below attach a sample photo so you can try the flow. Sample photos are not saved with your listing.",
+      "required": "Required",
+      "optional": "Optional",
+      "sample": "Sample",
+      "remove": "Remove",
+      "useSample": "Use sample photo",
+      "wideAttached": "Wide Shot Attached",
+      "closeupAttached": "Close-up Attached",
+      "packagingAttached": "Packaging Attached",
+      "guides": {
+        "wide": {
+          "title": "1. Field / Wide Harvest Shot",
+          "desc": "Stand 2-3 meters back from harvest pile or crate stack. Ensure natural sunlight is behind you so the whole yield is visible."
+        },
+        "closeup": {
+          "title": "2. Close-up Produce Quality",
+          "desc": "Hold camera 20cm away from individual produce. Focus clearly on skin texture, color firmness, and fresh condition."
+        },
+        "packaging": {
+          "title": "3. Packaging / Crates",
+          "desc": "Show produce neatly packed inside standard 25kg plastic crates, wooden boxes, or sacks ready for transport loading."
+        }
+      },
+      "tipsTitle": "Tips for Sri Lankan Farmers",
+      "tips": {
+        "sunLabel": "Use Sunlight:",
+        "sunBody": "Shoot outdoors under daylight instead of dim indoor rooms.",
+        "scaleLabel": "Show Real Scale:",
+        "scaleBody": "Place a 25kg crate next to produce for buyer scale context.",
+        "filterLabel": "No Filters:",
+        "filterBody": "Buyers need authentic photos without artificial color editing."
+      }
+    },
+    "step4": {
+      "title": "Set Asking Price",
+      "help": "The price range shown is a sample, not live market data. You choose your own price.",
+      "invalidTitle": "Invalid Price",
+      "invalidBody": "Please enter a valid asking price per kg.",
+      "keypadTitle": "Enter Asking Price",
+      "unitLabel": "Rs / kg",
+      "decrease": "Decrease price",
+      "openKeypad": "Open keypad to edit asking price",
+      "increase": "Increase price",
+      "below": "Below the reference range",
+      "within": "Within the reference range",
+      "above": "Above the reference range",
+      "negotiationLabel": "Let buyers offer their own price",
+      "negotiationOn": "Buyers can send you an offer. You can accept, decline or name another price.",
+      "negotiationOff": "Buyers can only order at your asking price.",
+      "on": "On",
+      "off": "Off"
+    },
+    "step5": {
+      "title": "Schedule Transport",
+      "help": "Tell buyers where the produce is, when it is ready, and whether you want to share transport with nearby farms or arrange your own.",
+      "continueLabel": "Review Listing",
+      "dateError": "Enter a district",
+      "dateAlertTitle": "Check the date",
+      "dateAlertBody": "Enter the ready date as YYYY-MM-DD, e.g. 2026-09-25.",
+      "readyDateHeading": "Harvest / Ready Date",
+      "readyDateLabel": "Ready Date (YYYY-MM-DD)",
+      "readyTimeframe": "Ready Timeframe:",
+      "districtLabel": "Farm district",
+      "lorryHeading": "When can a lorry come?",
+      "gateTitle": "Farm gate",
+      "gateHelp": "Tap the map where a lorry should come. Optional — without it the driver sees the district only.",
+      "gateUnset": "Not set — drivers will see {{district}} district",
+      "transportHeading": "Transport Method",
+      "shared": "Shared Transport",
+      "sharedNote": "Share truck space with nearby farms going the same way.",
+      "solo": "Solo Transport",
+      "soloNote": "Arrange your own vehicle from your farm gate.",
+      "presets": {
+        "today": "Today",
+        "week": "In a Week",
+        "month": "In a Month"
+      },
+      "windows": {
+        "morning": "Morning",
+        "afternoon": "Afternoon",
+        "allDay": "All day"
+      }
+    },
+    "review": {
+      "title": "Review & Publish",
+      "edit": "Edit",
+      "publish": "Publish Listing",
+      "publishing": "Publishing...",
+      "couldNotPublish": "Could not publish: {{error}}",
+      "ready": "Ready",
+      "qualityGrade": "Quality Grade",
+      "minimumOrder": "Minimum Order",
+      "noMinimum": "No minimum",
+      "scheduledDate": "Scheduled Date",
+      "packaging": "Packaging",
+      "transportation": "Transportation",
+      "district": "District",
+      "photos": "Harvest Photos",
+      "photosSamples": "Harvest Photos (samples)",
+      "noneAttached": "None attached"
+    }
+  }
+}
