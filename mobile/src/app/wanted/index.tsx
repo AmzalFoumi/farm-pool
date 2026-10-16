@@ -44,7 +44,7 @@ export default function WantedScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="My requests" />
+      <AppBar title={t("buyer.wanted.listTitle")} />
       <RequestView request={wanted}>
         {(rows) => (
           <FlatList
@@ -77,7 +77,9 @@ export default function WantedScreen() {
                     accessibilityLabel={`See responses to your request for ${t(cropLabelKey(crop.id))}`}
                     className="min-h-tap items-center justify-center rounded-field border border-brand-deep"
                   >
-                    <Text className="type-body-bold text-brand-deep">View responses</Text>
+                    <Text className="type-body-bold text-brand-deep">
+                      {t("buyer.wanted.viewResponses")}
+                    </Text>
                   </Pressable>
                   {item.status === "open" ? (
                     <Pressable
@@ -88,7 +90,7 @@ export default function WantedScreen() {
                       className="min-h-tap items-center justify-center rounded-field border border-border"
                     >
                       <Text className="type-body-bold text-muted-foreground">
-                        {closing === item.id ? "Closing…" : "Close request"}
+                        {closing === item.id ? "Closing…" : t("buyer.wanted.close")}
                       </Text>
                     </Pressable>
                   ) : null}
@@ -96,10 +98,7 @@ export default function WantedScreen() {
               );
             }}
             ListEmptyComponent={
-              <EmptyNote
-                title="No requests yet"
-                note="Tell farmers what you are looking for and they can respond."
-              />
+              <EmptyNote title={t("buyer.wanted.none")} note={t("buyer.wanted.noneBody")} />
             }
           />
         )}
@@ -108,7 +107,7 @@ export default function WantedScreen() {
         className="border-t border-border bg-card px-gutter pt-3"
         style={{ paddingBottom: Math.max(insets.bottom, 23) }}
       >
-        <AppButton label="New request" onPress={() => router.push("/wanted/new")} />
+        <AppButton label={t("buyer.wanted.new")} onPress={() => router.push("/wanted/new")} />
       </VStack>
     </View>
   );

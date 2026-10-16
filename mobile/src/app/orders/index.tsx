@@ -31,7 +31,7 @@ export default function OrdersScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="My orders" />
+      <AppBar title={t("buyer.orders.title")} />
       <RequestView request={orders}>
         {(rows) => (
           <FlatList
@@ -62,10 +62,7 @@ export default function OrdersScreen() {
               );
             }}
             ListEmptyComponent={
-              <EmptyNote
-                title="No orders yet"
-                note="Open a listing and tap Place order to send your first request."
-              />
+              <EmptyNote title={t("buyer.orders.none")} note={t("buyer.orders.noneBody")} />
             }
           />
         )}

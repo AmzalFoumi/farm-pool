@@ -29,7 +29,16 @@
     "checking": "Checking…",
     "notFound": "Not found",
     "search": "Search",
-    "filterA11y": "Filter: {{label}}"
+    "filterA11y": "Filter: {{label}}",
+    "close": "Close",
+    "home": "Home",
+    "orders": "Orders",
+    "calls": "Calls",
+    "listings": "Listings",
+    "showPassword": "Show password",
+    "confirmValue": "Confirm Value",
+    "enterValue": "Enter Value",
+    "stillHeld": "Still held"
   },
   "errors": {
     "network": "Can't reach the server. Check your connection and try again.",
@@ -75,5 +84,34 @@
     "verified": "Verified",
     "pending": "Pending",
     "suspended": "Suspended"
+  },
+  "wantedStatus": {
+    "open": "Open",
+    "closed": "Closed"
+  },
+  "offerStatus": {
+    "PENDING": "Sent",
+    "NEGOTIATING": "Negotiating",
+    "ACCEPTED": "Agreed",
+    "DECLINED": "Declined",
+    "EXPIRED": "Expired"
+  },
+  "listingStatus": {
+    "draft": "Draft",
+    "pending_approval": "Awaiting approval",
+    "verified": "Live",
+    "paused": "Paused",
+    "rejected": "Rejected",
+    "sold": "Sold"
+  },
+  "callStatus": {
+    "requested": "Requested",
+    "active": "Ready to join",
+    "declined": "Declined",
+    "ended": "Ended"
+  },
+  "paymentStatus": {
+    "in_escrow": "Held safely",
+    "released": "Paid in full"
   }
 }

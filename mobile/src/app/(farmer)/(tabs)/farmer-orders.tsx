@@ -30,7 +30,7 @@ export default function FarmerOrdersScreen() {
 
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
-      <Text className="type-h2 px-gutter pt-4 text-foreground">Incoming orders</Text>
+      <Text className="type-h2 px-gutter pt-4 text-foreground">{t("farmer.orders.heading")}</Text>
       <RequestView request={orders}>
         {(rows) => (
           <FlatList
@@ -60,10 +60,7 @@ export default function FarmerOrdersScreen() {
               );
             }}
             ListEmptyComponent={
-              <EmptyNote
-                title="No orders yet"
-                note="Orders buyers place on your listings will appear here."
-              />
+              <EmptyNote title={t("farmer.orders.none")} note={t("farmer.orders.noneBody")} />
             }
           />
         )}

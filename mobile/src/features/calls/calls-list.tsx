@@ -7,6 +7,7 @@
  */
 
 import type { Call } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useState } from "react";
 import { FlatList } from "react-native";
@@ -24,6 +25,7 @@ import { useReloadOnRefocus, useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export function CallsList({ bottomInset }: { bottomInset: number }) {
+  const { t } = useTranslation();
   const { token, user } = useAuth();
   const calls = useRequest(() => callsApi.mine(token ?? ""), token ?? "");
   useFocusEffect(useReloadOnRefocus(calls.reload));
@@ -46,12 +48,7 @@ export function CallsList({ bottomInset }: { bottomInset: number }) {
               onChanged={calls.reload}
             />
           )}
-          ListEmptyComponent={
-            <EmptyNote
-              title="No calls yet"
-              note="Buyers can request a video call from a listing to see the produce before ordering."
-            />
-          }
+          ListEmptyComponent={<EmptyNote title={t("calls.none")} note={t("calls.noneBody")} />}
         />
       )}
     </RequestView>
@@ -69,6 +66,7 @@ function CallRow({
   token: string;
   onChanged: () => void;
 }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +79,7 @@ function CallRow({
       await callsApi.answer(token, call.id, choice);
       onChanged();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not answer");
+      setError(e instanceof ApiError ? e.message : t("calls.answerError"));
     } finally {
       setBusy(false);
     }
@@ -113,13 +111,22 @@ function CallRow({
 
       {incoming && call.status === "requested" ? (
         <HStack className="gap-3">
-          <RowButton label="Decline" onPress={() => void answer("decline")} disabled={busy} />
-          <RowButton label="Accept" onPress={() => void answer("accept")} disabled={busy} primary />
+          <RowButton
+            label={t("common.decline")}
+            onPress={() => void answer("decline")}
+            disabled={busy}
+          />
+          <RowButton
+            label={t("common.accept")}
+            onPress={() => void answer("accept")}
+            disabled={busy}
+            primary
+          />
         </HStack>
       ) : null}
 
       {call.status === "active" ? (
-        <RowButton label="Join call" onPress={join} disabled={busy} primary />
+        <RowButton label={t("calls.join")} onPress={join} disabled={busy} primary />
       ) : null}
 
       {error ? <Text className="type-caption text-destructive">{error}</Text> : null}

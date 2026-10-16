@@ -1,1 +1,55 @@
-{}
+{
+  "farmer": {
+    "tabs": {
+      "home": "Home",
+      "listings": "Listings",
+      "orders": "Orders",
+      "profile": "Profile"
+    },
+    "home": {
+      "title": "Farmer Dashboard",
+      "heroTitle": "Sell Your Farm Harvest",
+      "post": "Post New Produce Batch",
+      "heroNote": "Sell directly to buyers, without a middleman.",
+      "benchmark": "Today’s Wholesale Benchmark",
+      "referencePrices": "Reference prices",
+      "quickActions": "Quick Actions",
+      "viewListings": "View My Listings",
+      "viewOrders": "View Orders",
+      "callRequests": "Call Requests",
+      "buyerRequests": "Buyer Requests",
+      "createListing": "Create listing"
+    },
+    "profile": {
+      "title": "Account & Farm",
+      "heading": "Farmer Profile",
+      "role": "Farmer",
+      "accountInfo": "Account Information",
+      "accountStatus": "Account Status",
+      "registeredRole": "Registered Role",
+      "producer": "Producer / Farmer",
+      "help": "Help & Support",
+      "coordinatorSupport": "Area Coordinator Support"
+    },
+    "orders": {
+      "heading": "Incoming orders",
+      "none": "No orders yet",
+      "noneBody": "Orders buyers place on your listings will appear here."
+    },
+    "requests": {
+      "title": "Buyer requests",
+      "none": "No requests right now",
+      "noneBody": "When a buyer asks for a crop, it shows here and you can answer with your price.",
+      "respond": "Respond",
+      "detailNote": "You answer a request from one of your own approved listings, so the driver knows where to collect. Create a listing for this crop, wait for your coordinator to approve it, then come back.",
+      "createListing": "Create a listing",
+      "priceLabel": "Your price per kg (Rs.)",
+      "quantityLabel": "Quantity you can supply (kg)",
+      "noteLabel": "Note to the buyer (optional)",
+      "sellFrom": "Sell from",
+      "selected": "Selected",
+      "buyerCan": "The buyer can accept, decline or name another price.",
+      "send": "Send response"
+    }
+  }
+}

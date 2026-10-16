@@ -29,7 +29,16 @@
     "checking": "පරීක්ෂා කරමින්…",
     "notFound": "හමු නොවිය",
     "search": "සොයන්න",
-    "filterA11y": "පෙරහන: {{label}}"
+    "filterA11y": "පෙරහන: {{label}}",
+    "close": "වසන්න",
+    "home": "මුල් පිටුව",
+    "orders": "ඇණවුම්",
+    "calls": "ඇමතුම්",
+    "listings": "දැන්වීම්",
+    "showPassword": "මුරපදය පෙන්වන්න",
+    "confirmValue": "අගය තහවුරු කරන්න",
+    "enterValue": "අගය ඇතුළත් කරන්න",
+    "stillHeld": "තවම රඳවා ඇත"
   },
   "errors": {
     "network": "සේවාදායකයට සම්බන්ධ විය නොහැක. ඔබේ සම්බන්ධතාවය පරීක්ෂා කර නැවත උත්සාහ කරන්න.",
@@ -75,5 +84,34 @@
     "verified": "සත්‍යාපිත",
     "pending": "බලාපොරොත්තුවෙන්",
     "suspended": "අත්හිටුවා ඇත"
+  },
+  "wantedStatus": {
+    "open": "විවෘත",
+    "closed": "වසා ඇත"
+  },
+  "offerStatus": {
+    "PENDING": "යවා ඇත",
+    "NEGOTIATING": "සාකච්ඡා කරමින්",
+    "ACCEPTED": "එකඟ විය",
+    "DECLINED": "ප්‍රතික්ෂේප කළා",
+    "EXPIRED": "කල් ඉකුත් විය"
+  },
+  "listingStatus": {
+    "draft": "අනිමි",
+    "pending_approval": "අනුමැතිය බලාපොරොත්තුවෙන්",
+    "verified": "සජීවී",
+    "paused": "නවතා ඇත",
+    "rejected": "ප්‍රතික්ෂේප කළා",
+    "sold": "විකුණා ඇත"
+  },
+  "callStatus": {
+    "requested": "ඉල්ලා ඇත",
+    "active": "සම්බන්ධ වීමට සූදානම්",
+    "declined": "ප්‍රතික්ෂේප කළා",
+    "ended": "අවසන් විය"
+  },
+  "paymentStatus": {
+    "in_escrow": "ආරක්ෂිතව රඳවා ඇත",
+    "released": "සම්පූර්ණයෙන් ගෙවා ඇත"
   }
 }

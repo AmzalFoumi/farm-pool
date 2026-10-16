@@ -1,0 +1,22 @@
+{
+  "calls": {
+    "title": "Calls",
+    "requestsTitle": "Call requests",
+    "none": "No calls yet",
+    "noneBody": "Buyers can request a video call from a listing to see the produce before ordering.",
+    "join": "Join call",
+    "answerError": "Could not answer",
+    "videoTitle": "Video call",
+    "devBuildOnly": "Video calls need the FarmPool development build",
+    "hangUp": "Hang up",
+    "startError": "Could not start the call",
+    "renewError": "The call pass could not be renewed.",
+    "rejected": "The call pass was rejected. Try again.",
+    "lost": "Lost the connection. Check your internet.",
+    "permissions": "FarmPool needs the camera and microphone for a video call. Allow them in Settings.",
+    "joinError": "Could not join",
+    "cameraOff": "Camera off",
+    "expoGoNote": "Expo Go cannot run the video library. Every other screen works here. See .plans/development-build/README.md to install the development build.",
+    "cameraOn": "Camera on"
+  }
+}

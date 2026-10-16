@@ -7,6 +7,7 @@
  */
 
 import { isRunningInExpoGo } from "expo";
+import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ComponentType } from "react";
 import { View } from "react-native";
@@ -20,6 +21,7 @@ import type { AgoraCallProps } from "@/features/calls/agora-call";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function CallScreen() {
+  const { t } = useTranslation();
   const { id, name } = useLocalSearchParams<{ id: string; name?: string }>();
   const router = useRouter();
   const { token } = useAuth();
@@ -38,16 +40,13 @@ export default function CallScreen() {
   if (isRunningInExpoGo()) {
     return (
       <View className="flex-1 bg-background">
-        <AppBar title="Video call" onBack={() => router.back()} />
+        <AppBar title={t("calls.videoTitle")} onBack={() => router.back()} />
         <VStack className="flex-1 items-center justify-center gap-4 p-gutter">
-          <Text className="type-h4 text-center text-foreground">
-            Video calls need the FarmPool development build
-          </Text>
+          <Text className="type-h4 text-center text-foreground">{t("calls.devBuildOnly")}</Text>
           <Text className="type-body text-center text-muted-foreground">
-            Expo Go cannot run the video library. Every other screen works here. See
-            .plans/development-build/README.md to install the development build.
+            {t("calls.expoGoNote")}
           </Text>
-          <AppButton label="Go back" variant="outline" onPress={() => router.back()} />
+          <AppButton label={t("common.back")} variant="outline" onPress={() => router.back()} />
         </VStack>
       </View>
     );

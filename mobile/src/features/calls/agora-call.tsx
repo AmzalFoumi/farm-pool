@@ -7,6 +7,7 @@
  */
 
 import type { CallToken } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { PermissionsAndroid, Platform, View } from "react-native";
 import {
@@ -31,7 +32,10 @@ type Phase =
   | { kind: "starting" }
   | { kind: "waiting" } // in the channel, the other person has not joined
   | { kind: "connected"; remoteUid: number }
-  | { kind: "failed"; message: string };
+  /* `messageKey` for our own copy, `message` for a server string we cannot translate.
+     Resolved at render so the effect below needs no `t` dependency — it joins and leaves the
+     Agora channel, and re-running it on a language change would drop a live call. */
+  | { kind: "failed"; messageKey?: string; message?: string };
 
 export type AgoraCallProps = {
   /** Fetches a fresh pass from our api. */
@@ -56,6 +60,7 @@ async function askForCameraAndMic(): Promise<boolean> {
 }
 
 export default function AgoraCall({ getToken, otherName, onHangUp, onClose }: AgoraCallProps) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const engine = useRef<IRtcEngine | null>(null);
   const [phase, setPhase] = useState<Phase>({ kind: "starting" });
@@ -82,16 +87,16 @@ export default function AgoraCall({ getToken, otherName, onHangUp, onClose }: Ag
           .then((t) => engine.current?.renewToken(t.token))
           .catch(() => {
             if (alive) {
-              setPhase({ kind: "failed", message: "The call pass could not be renewed." });
+              setPhase({ kind: "failed", messageKey: "calls.renewError" });
             }
           });
       },
       onConnectionStateChanged: (_c, state, reason) => {
         if (!alive) return;
         if (reason === ConnectionChangedReasonType.ConnectionChangedInvalidToken) {
-          setPhase({ kind: "failed", message: "The call pass was rejected. Try again." });
+          setPhase({ kind: "failed", messageKey: "calls.rejected" });
         } else if (state === ConnectionStateType.ConnectionStateFailed) {
-          setPhase({ kind: "failed", message: "Lost the connection. Check your internet." });
+          setPhase({ kind: "failed", messageKey: "calls.lost" });
         }
       }
     };
@@ -101,8 +106,7 @@ export default function AgoraCall({ getToken, otherName, onHangUp, onClose }: Ag
         if (alive) {
           setPhase({
             kind: "failed",
-            message:
-              "FarmPool needs the camera and microphone for a video call. Allow them in Settings."
+            messageKey: "calls.permissions"
           });
         }
         return;
@@ -112,7 +116,10 @@ export default function AgoraCall({ getToken, otherName, onHangUp, onClose }: Ag
         pass = await getTokenRef.current();
       } catch (e) {
         if (alive) {
-          setPhase({ kind: "failed", message: e instanceof Error ? e.message : "Could not join" });
+          setPhase({
+            kind: "failed",
+            ...(e instanceof Error ? { message: e.message } : { messageKey: "calls.joinError" })
+          });
         }
         return;
       }
@@ -160,9 +167,11 @@ export default function AgoraCall({ getToken, otherName, onHangUp, onClose }: Ag
   if (phase.kind === "failed") {
     return (
       <VStack className="flex-1 items-center justify-center gap-4 bg-background p-gutter">
-        <Text className="type-h4 text-center text-foreground">Could not start the call</Text>
-        <Text className="type-body text-center text-muted-foreground">{phase.message}</Text>
-        <AppButton label="Close" variant="outline" onPress={onClose} />
+        <Text className="type-h4 text-center text-foreground">{t("calls.startError")}</Text>
+        <Text className="type-body text-center text-muted-foreground">
+          {phase.messageKey ? t(phase.messageKey) : phase.message}
+        </Text>
+        <AppButton label={t("common.close")} variant="outline" onPress={onClose} />
       </VStack>
     );
   }
@@ -195,8 +204,11 @@ export default function AgoraCall({ getToken, otherName, onHangUp, onClose }: Ag
         style={{ paddingBottom: Math.max(insets.bottom, 23) }}
       >
         <CallControl label={muted ? "Unmute" : "Mute"} onPress={toggleMute} />
-        <CallControl label={cameraOff ? "Camera on" : "Camera off"} onPress={toggleCamera} />
-        <CallControl label="Hang up" onPress={onHangUp} destructive />
+        <CallControl
+          label={t(cameraOff ? "calls.cameraOn" : "calls.cameraOff")}
+          onPress={toggleCamera}
+        />
+        <CallControl label={t("calls.hangUp")} onPress={onHangUp} destructive />
       </HStack>
     </View>
   );

@@ -5,6 +5,7 @@ import {
   type PriceProposal
 } from "@farm-pool/shared";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppTextField } from "@/components/app/app-text-field";
@@ -65,10 +66,12 @@ function OpenProposal({
   token: string;
   onChanged: () => void;
 }) {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mine = proposal.proposedBy === viewer;
-  const other = proposal.proposedBy === "farmer" ? order.farmerName : "The buyer";
+  const other =
+    proposal.proposedBy === "farmer" ? order.farmerName : t("payments.proposal.theBuyer");
   const newTotal = order.quantityKg * proposal.pricePerKg;
 
   const answer = async (send: (token: string, orderId: string) => Promise<Order>) => {
@@ -78,7 +81,7 @@ function OpenProposal({
       await send(token, order.id);
       onChanged();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not send your answer");
+      setError(e instanceof ApiError ? e.message : t("payments.proposal.answerError"));
     } finally {
       setBusy(false);
     }
@@ -86,7 +89,7 @@ function OpenProposal({
 
   return (
     <VStack className="gap-2.5">
-      <Text className="type-body-bold text-foreground">New price proposed</Text>
+      <Text className="type-body-bold text-foreground">{t("payments.proposal.proposed")}</Text>
       <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
         <Text className="type-body-lg text-foreground">
           {mine ? "You" : other} proposed {formatPrice(proposal.pricePerKg)} / kg instead of{" "}
@@ -104,10 +107,10 @@ function OpenProposal({
         {mine ? (
           <>
             <Text className="type-caption text-muted-foreground">
-              Waiting for an answer. Nothing changes until they accept.
+              {t("payments.proposal.waiting")}
             </Text>
             <AppButton
-              label={busy ? "Withdrawing…" : "Withdraw"}
+              label={busy ? "Withdrawing…" : t("payments.proposal.withdraw")}
               variant="outline"
               onPress={() => void answer(paymentsApi.declinePrice)}
               disabled={busy}
@@ -121,7 +124,7 @@ function OpenProposal({
               disabled={busy}
             />
             <AppButton
-              label="Decline"
+              label={t("common.decline")}
               variant="outline"
               onPress={() => void answer(paymentsApi.declinePrice)}
               disabled={busy}
@@ -142,6 +145,7 @@ function ProposeForm({
   token: string;
   onChanged: () => void;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [price, setPrice] = useState("");
   const [reason, setReason] = useState("");
@@ -155,9 +159,7 @@ function ProposeForm({
         accessibilityRole="button"
         className="min-h-tap justify-center active:opacity-80"
       >
-        <Text className="type-body-bold text-primary">
-          Market price changed? Propose a new price
-        </Text>
+        <Text className="type-body-bold text-primary">{t("payments.proposal.cta")}</Text>
       </Pressable>
     );
   }
@@ -180,7 +182,7 @@ function ProposeForm({
       setError(
         e instanceof ApiError
           ? (e.fieldMessage("pricePerKg") ?? e.message)
-          : "Could not send the proposal"
+          : t("payments.proposal.sendError")
       );
     } finally {
       setSubmitting(false);
@@ -189,14 +191,13 @@ function ProposeForm({
 
   return (
     <VStack className="gap-2.5">
-      <Text className="type-body-bold text-foreground">Propose a new price</Text>
+      <Text className="type-body-bold text-foreground">{t("payments.proposal.propose")}</Text>
       <VStack className="elevation-card gap-4 rounded-card border border-border bg-card p-4">
         <Text className="type-caption text-muted-foreground">
-          The price now is {formatPrice(order.pricePerKg)} / kg. Nothing changes until the other
-          side accepts.
+          {t("payments.proposal.currentNote", { price: formatPrice(order.pricePerKg) })}
         </Text>
         <AppTextField
-          label="New price per kg (Rs)"
+          label={t("payments.proposal.newPriceLabel")}
           value={price}
           onChangeText={setPrice}
           keyboardType="decimal-pad"
@@ -204,19 +205,19 @@ function ProposeForm({
           error={error ?? undefined}
         />
         <AppTextField
-          label="Reason (optional)"
+          label={t("payments.proposal.reasonLabel")}
           value={reason}
           onChangeText={setReason}
           returnKeyType="done"
           onSubmitEditing={() => void submit()}
         />
         <AppButton
-          label={submitting ? "Sending…" : "Send proposal"}
+          label={submitting ? "Sending…" : t("payments.proposal.send")}
           onPress={() => void submit()}
           disabled={submitting}
         />
         <AppButton
-          label="Cancel"
+          label={t("common.cancel")}
           variant="outline"
           onPress={() => setOpen(false)}
           disabled={submitting}

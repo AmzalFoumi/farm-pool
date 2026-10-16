@@ -166,20 +166,20 @@ function ListingBody({
   };
 
   const rows = [
-    { label: "Unit price", value: `${formatPrice(listing.pricePerKg)} / kg` },
-    { label: "Available", value: `${listing.quantityKg} kg` },
-    { label: "Minimum order", value: `${listing.minOrderKg} kg` },
-    { label: "Harvest date", value: formatDate(listing.harvestDate) }
+    { label: t("listings.detail.unitPrice"), value: `${formatPrice(listing.pricePerKg)} / kg` },
+    { label: t("listings.detail.available"), value: `${listing.quantityKg} kg` },
+    { label: t("listings.detail.minimumOrder"), value: `${listing.minOrderKg} kg` },
+    { label: t("listings.detail.harvestDate"), value: formatDate(listing.harvestDate) }
   ];
 
   const details = [
-    listing.variety ? { label: "Variety", value: listing.variety } : null,
-    listing.grade ? { label: "Grade", value: `Grade ${listing.grade}` } : null,
+    listing.variety ? { label: t("listings.detail.variety"), value: listing.variety } : null,
+    listing.grade ? { label: t("listings.detail.grade"), value: `Grade ${listing.grade}` } : null,
     listing.packaging
-      ? { label: "Packaging", value: t(packagingLabelKey(listing.packaging)) }
+      ? { label: t("listings.detail.packaging"), value: t(packagingLabelKey(listing.packaging)) }
       : null,
     listing.certifications?.length
-      ? { label: "Certifications", value: listing.certifications.join(", ") }
+      ? { label: t("listings.detail.certifications"), value: listing.certifications.join(", ") }
       : null
   ].filter((row) => row !== null);
 
@@ -235,13 +235,15 @@ function ListingBody({
 
         {listing.acceptNegotiation ? (
           <Box className="self-start rounded-pill bg-info-subtle px-3 py-1">
-            <Text className="type-body-sm-bold text-info">Price negotiable</Text>
+            <Text className="type-body-sm-bold text-info">{t("listings.detail.negotiable")}</Text>
           </Box>
         ) : null}
 
-        <DetailCard title="Quantity & price" rows={rows} />
+        <DetailCard title={t("listings.detail.quantityAndPrice")} rows={rows} />
 
-        {details.length > 0 ? <DetailCard title="Produce details" rows={details} /> : null}
+        {details.length > 0 ? (
+          <DetailCard title={t("listings.detail.produceDetails")} rows={details} />
+        ) : null}
 
         <VStack className="gap-1 rounded-card border border-border bg-card p-4">
           <Text className="type-h4 text-foreground">{listing.farmerName}</Text>
@@ -273,7 +275,7 @@ function ListingBody({
             accessibilityLabel={`Offer your own price to ${listing.farmerName}`}
             className="min-h-tap flex-row items-center justify-center rounded-field border border-border bg-card active:opacity-80"
           >
-            <Text className="type-body-bold text-foreground">Make an offer</Text>
+            <Text className="type-body-bold text-foreground">{t("listings.detail.makeOffer")}</Text>
           </Pressable>
         </VStack>
       ) : null}
@@ -307,7 +309,9 @@ function ListingBody({
             accessibilityLabel={t("listings.detail.placeOrderFor")}
             className="h-control flex-1 flex-row items-center justify-center rounded-field bg-primary active:opacity-80"
           >
-            <Text className="type-h4 text-primary-foreground">Place order</Text>
+            <Text className="type-h4 text-primary-foreground">
+              {t("listings.detail.placeOrder")}
+            </Text>
           </Pressable>
         ) : null}
       </HStack>
@@ -436,7 +440,7 @@ function PlaceOrderSheet({
           showsVerticalScrollIndicator={false}
         >
           <VStack className="w-full gap-4 pt-2">
-            <Text className="type-h3 text-foreground">Place order</Text>
+            <Text className="type-h3 text-foreground">{t("listings.detail.placeOrder")}</Text>
             <AppTextField
               testID="order-quantity"
               label={t("listings.detail.quantityKg")}

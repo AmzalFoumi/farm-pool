@@ -51,7 +51,7 @@ export default function WantedResponsesScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Responses" />
+      <AppBar title={t("buyer.wanted.responses")} />
       <RequestView request={loaded}>
         {({ request, responses }) => {
           const crop = cropById(request.cropId);
@@ -96,7 +96,9 @@ export default function WantedResponsesScreen() {
                         {formatPrice(item.total)}
                       </Text>
                       {yourTurn ? (
-                        <Text className="type-body-sm-bold text-warning">Your turn to answer</Text>
+                        <Text className="type-body-sm-bold text-warning">
+                          {t("buyer.wanted.yourTurn")}
+                        </Text>
                       ) : null}
                     </VStack>
                     <OfferStatusPill status={item.status} />
@@ -105,11 +107,11 @@ export default function WantedResponsesScreen() {
               }}
               ListEmptyComponent={
                 <EmptyNote
-                  title={request.status === "open" ? "No responses yet" : "Request closed"}
+                  title={request.status === "open" ? "No responses yet" : t("buyer.wanted.closed")}
                   note={
                     request.status === "open"
                       ? "Farmers who can supply this will answer with their price. Check back soon."
-                      : "This request is closed, so farmers can no longer answer it."
+                      : t("buyer.wanted.closedBody")
                   }
                 />
               }

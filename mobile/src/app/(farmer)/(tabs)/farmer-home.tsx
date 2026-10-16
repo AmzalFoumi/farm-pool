@@ -31,7 +31,7 @@ export default function FarmerHomeScreen() {
           <VStack className="gap-0.5">
             <HStack className="items-center gap-2">
               <Text className="type-caption-bold text-muted-foreground uppercase">
-                Farmer Dashboard
+                {t("farmer.home.title")}
               </Text>
             </HStack>
             <Heading className="type-title text-foreground">Ayubowan, {displayName}!</Heading>
@@ -50,14 +50,12 @@ export default function FarmerHomeScreen() {
               <Text className="type-caption-bold text-brand-deep-muted uppercase">
                 Sell Your Farm Harvest
               </Text>
-              <Text className="type-h3 text-brand-deep-foreground">Post New Produce Batch</Text>
-              <Text className="type-body text-brand-deep-muted">
-                Sell directly to buyers, without a middleman.
-              </Text>
+              <Text className="type-h3 text-brand-deep-foreground">{t("farmer.home.post")}</Text>
+              <Text className="type-body text-brand-deep-muted">{t("farmer.home.heroNote")}</Text>
             </VStack>
 
             <AppButton
-              label="Create listing"
+              label={t("farmer.home.createListing")}
               icon={<PlusIcon />}
               onPress={() => router.push("/(farmer)/create-listing/create")}
             />
@@ -67,8 +65,10 @@ export default function FarmerHomeScreen() {
         {/* ── Wholesale Market Price Ticker ──────────────────────── */}
         <VStack className="gap-2.5">
           <HStack className="items-center justify-between">
-            <Text className="type-body-bold text-foreground">Today’s Wholesale Benchmark</Text>
-            <Text className="type-caption-bold text-muted-foreground">Reference prices</Text>
+            <Text className="type-body-bold text-foreground">{t("farmer.home.benchmark")}</Text>
+            <Text className="type-caption-bold text-muted-foreground">
+              {t("farmer.home.referencePrices")}
+            </Text>
           </HStack>
 
           <VStack className="gap-2">
@@ -104,20 +104,22 @@ export default function FarmerHomeScreen() {
 
         {/* ── Quick Navigation shortcuts ────────────────────────── */}
         <VStack className="gap-2 pt-2">
-          <Text className="type-body-bold text-foreground">Quick Actions</Text>
+          <Text className="type-body-bold text-foreground">{t("farmer.home.quickActions")}</Text>
           <HStack className="gap-3">
             <Pressable
               onPress={() => router.push("/(farmer)/(tabs)/farmer-listings")}
               className="min-h-tap flex-1 rounded-card border border-border bg-card p-3.5 items-center justify-center"
             >
-              <Text className="type-body-bold text-foreground">View My Listings</Text>
+              <Text className="type-body-bold text-foreground">
+                {t("farmer.home.viewListings")}
+              </Text>
             </Pressable>
 
             <Pressable
               onPress={() => router.push("/(farmer)/(tabs)/farmer-orders")}
               className="min-h-tap flex-1 rounded-card border border-border bg-card p-3.5 items-center justify-center"
             >
-              <Text className="type-body-bold text-foreground">View Orders</Text>
+              <Text className="type-body-bold text-foreground">{t("farmer.home.viewOrders")}</Text>
             </Pressable>
           </HStack>
           {/* Video call requests from buyers (FARM-24). Not a tab: the bar is at five. */}
@@ -126,7 +128,7 @@ export default function FarmerHomeScreen() {
             accessibilityRole="button"
             className="min-h-tap rounded-card border border-border bg-card p-3.5 items-center justify-center"
           >
-            <Text className="type-body-bold text-foreground">Call Requests</Text>
+            <Text className="type-body-bold text-foreground">{t("farmer.home.callRequests")}</Text>
           </Pressable>
           {/* What buyers are asking for (FARM-47). A farmer answers from one of their listings. */}
           <Pressable
@@ -134,7 +136,7 @@ export default function FarmerHomeScreen() {
             accessibilityRole="button"
             className="min-h-tap rounded-card border border-border bg-card p-3.5 items-center justify-center"
           >
-            <Text className="type-body-bold text-foreground">Buyer Requests</Text>
+            <Text className="type-body-bold text-foreground">{t("farmer.home.buyerRequests")}</Text>
           </Pressable>
         </VStack>
       </ScrollView>

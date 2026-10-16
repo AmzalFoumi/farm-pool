@@ -1,4 +1,5 @@
 import type { Role } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -9,11 +10,13 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { useAuth } from "@/providers/auth-provider";
 
-const ROLE_LABEL: Record<Role, string> = {
-  farmer: "Farmer",
-  buyer: "Wholesale buyer",
-  coordinator: "Area coordinator",
-  logistics: "Delivery partner"
+/* Key paths, not resolved strings — a module-level `t()` would run before i18next has a
+   language and never change when the user switches one. */
+const ROLE_LABEL_KEY: Record<Role, string> = {
+  farmer: "buyer.profile.roles.farmer",
+  buyer: "buyer.profile.roles.buyer",
+  coordinator: "buyer.profile.roles.coordinator",
+  logistics: "buyer.profile.roles.driver"
 };
 
 /**
@@ -25,6 +28,7 @@ const ROLE_LABEL: Record<Role, string> = {
  * out clears the device token only; the api has no session to end.
  */
 export default function ProfileScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const auth = useAuth();
 
@@ -35,7 +39,7 @@ export default function ProfileScreen() {
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
       <VStack className="flex-1 gap-4 px-gutter pt-4">
-        <Text className="type-h2 text-foreground">Profile</Text>
+        <Text className="type-h2 text-foreground">{t("buyer.profile.title")}</Text>
 
         <HStack className="elevation-card items-center gap-3 rounded-card bg-card p-4">
           <Box className="h-13 w-13 items-center justify-center rounded-pill bg-secondary">
@@ -49,18 +53,20 @@ export default function ProfileScreen() {
           </VStack>
           <Box className="rounded-pill bg-secondary px-3 py-1">
             <Text className="type-body-sm-bold text-secondary-foreground">
-              {ROLE_LABEL[user.role]}
+              {t(ROLE_LABEL_KEY[user.role])}
             </Text>
           </Box>
         </HStack>
 
-        <Text className="type-body text-muted-foreground">
-          Your business details, saved contacts and order history will appear here.
-        </Text>
+        <Text className="type-body text-muted-foreground">{t("buyer.profile.note")}</Text>
       </VStack>
 
       <View className="px-gutter" style={{ paddingBottom: Math.max(insets.bottom, 23) }}>
-        <AppButton label="Log out" variant="outline" onPress={() => void auth.signOut()} />
+        <AppButton
+          label={t("profile.logOut")}
+          variant="outline"
+          onPress={() => void auth.signOut()}
+        />
       </View>
     </View>
   );

@@ -1,4 +1,5 @@
 import type { Payment } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 
 import { HStack } from "@/components/ui/hstack";
 import { ChevronRightIcon, Icon } from "@/components/ui/icon";
@@ -27,13 +28,17 @@ export function PaymentCard({
   farmerName: string;
   onViewReceipt: () => void;
 }) {
+  const { t } = useTranslation();
   const paidOut = payment.total - payment.heldAmount;
   const farmer = viewer === "farmer";
 
   const rows = [
-    { label: farmer ? "Buyer paid" : "You paid", value: formatPrice(payment.total) },
+    {
+      label: farmer ? "Buyer paid" : t("payments.card.youPaid"),
+      value: formatPrice(payment.total)
+    },
     { label: farmer ? "Paid to you" : `Paid to ${farmerName}`, value: formatPrice(paidOut) },
-    { label: "Still held", value: formatPrice(payment.heldAmount) }
+    { label: t("common.stillHeld"), value: formatPrice(payment.heldAmount) }
   ];
 
   const held = formatPrice(payment.heldAmount);
@@ -49,7 +54,7 @@ export function PaymentCard({
   return (
     <VStack className="gap-2.5">
       <HStack className="items-center justify-between">
-        <Text className="type-body-bold text-foreground">Payment</Text>
+        <Text className="type-body-bold text-foreground">{t("payments.card.title")}</Text>
         <PaymentStatusPill status={payment.status} />
       </HStack>
 
@@ -69,7 +74,7 @@ export function PaymentCard({
           accessibilityRole="button"
           className="min-h-tap flex-row items-center justify-between border-t border-border pt-3 active:opacity-80"
         >
-          <Text className="type-body-bold text-primary">View receipt</Text>
+          <Text className="type-body-bold text-primary">{t("payments.card.viewReceipt")}</Text>
           <Icon as={ChevronRightIcon} className="h-5 w-5 text-primary" />
         </Pressable>
       </VStack>

@@ -1,4 +1,5 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
+import { useTranslation } from "react-i18next";
 import { useColorScheme } from "react-native";
 
 import { Colors } from "@/constants/theme";
@@ -7,6 +8,7 @@ import { Colors } from "@/constants/theme";
    (`coordinator-tabs.tsx`) shells — platform symbol sets, theme colours, nothing here bypasses
    the design system. "Add" opens the create-listing wizard (see `(farmer)/(tabs)/add.tsx`). */
 export default function FarmerTabs() {
+  const { t } = useTranslation();
   const scheme = useColorScheme();
   const colors = Colors[scheme === "unspecified" ? "light" : scheme];
 
@@ -17,12 +19,12 @@ export default function FarmerTabs() {
       labelStyle={{ selected: { color: colors.text } }}
     >
       <NativeTabs.Trigger name="farmer-home">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("farmer.tabs.home")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: "house", selected: "house.fill" }} md="home" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="farmer-listings">
-        <NativeTabs.Trigger.Label>Listings</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("farmer.tabs.listings")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: "leaf", selected: "leaf.fill" }} md="eco" />
       </NativeTabs.Trigger>
 
@@ -32,7 +34,7 @@ export default function FarmerTabs() {
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="farmer-orders">
-        <NativeTabs.Trigger.Label>Orders</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("farmer.tabs.orders")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf={{ default: "shippingbox", selected: "shippingbox.fill" }}
           md="inventory_2"
@@ -40,7 +42,7 @@ export default function FarmerTabs() {
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="farmer-profile">
-        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("farmer.tabs.profile")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: "person", selected: "person.fill" }} md="person" />
       </NativeTabs.Trigger>
     </NativeTabs>

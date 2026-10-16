@@ -29,7 +29,7 @@ export default function BuyerRequestsScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Buyer requests" />
+      <AppBar title={t("farmer.requests.title")} />
       <RequestView request={requests}>
         {(rows) => (
           <FlatList
@@ -58,15 +58,14 @@ export default function BuyerRequestsScreen() {
                       {item.maxPricePerKg ? ` · up to ${formatPrice(item.maxPricePerKg)}/kg` : ""}
                     </Text>
                   </VStack>
-                  <Text className="type-body-sm-bold text-primary">Respond</Text>
+                  <Text className="type-body-sm-bold text-primary">
+                    {t("farmer.requests.respond")}
+                  </Text>
                 </Pressable>
               );
             }}
             ListEmptyComponent={
-              <EmptyNote
-                title="No requests right now"
-                note="When a buyer asks for a crop, it shows here and you can answer with your price."
-              />
+              <EmptyNote title={t("farmer.requests.none")} note={t("farmer.requests.noneBody")} />
             }
           />
         )}

@@ -37,6 +37,7 @@ import { useAuth } from "@/providers/auth-provider";
 type Viewer = "buyer" | "farmer";
 
 export default function ReceiptScreen() {
+  const { t } = useTranslation();
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -53,7 +54,7 @@ export default function ReceiptScreen() {
   return (
     <View className="flex-1 bg-background">
       <AppBar
-        title="Receipt"
+        title={t("payments.receipt.title")}
         onBack={() => (router.canGoBack() ? router.back() : router.replace("/orders"))}
       />
       <RequestView request={receipt}>
@@ -120,7 +121,7 @@ function ReceiptBody({
       label: farmer ? "Paid to you" : `Paid to ${order.farmerName}`,
       value: formatPrice(payment.total - payment.heldAmount)
     },
-    { label: "Still held", value: formatPrice(payment.heldAmount) }
+    { label: t("common.stillHeld"), value: formatPrice(payment.heldAmount) }
   ];
 
   return (
@@ -151,7 +152,7 @@ function ReceiptBody({
         ))}
       </VStack>
 
-      <Text className="type-body-bold text-foreground">What happened</Text>
+      <Text className="type-body-bold text-foreground">{t("payments.receipt.whatHappened")}</Text>
       {payment.entries.map((entry) => (
         <EntryCard
           key={entry.receiptNo}
@@ -162,9 +163,7 @@ function ReceiptBody({
       ))}
 
       <Box className="rounded-field bg-muted p-3">
-        <Text className="type-caption text-muted-foreground">
-          This was a demo payment. No real money moved.
-        </Text>
+        <Text className="type-caption text-muted-foreground">{t("payments.receipt.demo")}</Text>
       </Box>
     </ScrollView>
   );

@@ -3,6 +3,8 @@ import { initReactI18next } from "react-i18next";
 
 import enBuyer from "./locales/en/buyer.json";
 import enCatalog from "./locales/en/catalog.json";
+import enPayments from "./locales/en/payments.json";
+import enCalls from "./locales/en/calls.json";
 import enCommon from "./locales/en/common.json";
 import enCoordinator from "./locales/en/coordinator.json";
 import enDriver from "./locales/en/driver.json";
@@ -14,6 +16,8 @@ import enOffers from "./locales/en/offers.json";
 import enOnboarding from "./locales/en/onboarding.json";
 import siBuyer from "./locales/si/buyer.json";
 import siCatalog from "./locales/si/catalog.json";
+import siPayments from "./locales/si/payments.json";
+import siCalls from "./locales/si/calls.json";
 import siCommon from "./locales/si/common.json";
 import siCoordinator from "./locales/si/coordinator.json";
 import siDriver from "./locales/si/driver.json";
@@ -25,6 +29,8 @@ import siOffers from "./locales/si/offers.json";
 import siOnboarding from "./locales/si/onboarding.json";
 import taBuyer from "./locales/ta/buyer.json";
 import taCatalog from "./locales/ta/catalog.json";
+import taPayments from "./locales/ta/payments.json";
+import taCalls from "./locales/ta/calls.json";
 import taCommon from "./locales/ta/common.json";
 import taCoordinator from "./locales/ta/coordinator.json";
 import taDriver from "./locales/ta/driver.json";
@@ -60,6 +66,8 @@ const bundle = (parts: Record<string, unknown>[]) => Object.assign({}, ...parts)
 const en = bundle([
   enCommon,
   enCatalog,
+  enCalls,
+  enPayments,
   enOffers,
   enOnboarding,
   enDriver,
@@ -73,6 +81,8 @@ const en = bundle([
 const si = bundle([
   siCommon,
   siCatalog,
+  siCalls,
+  siPayments,
   siOffers,
   siOnboarding,
   siDriver,
@@ -86,6 +96,8 @@ const si = bundle([
 const ta = bundle([
   taCommon,
   taCatalog,
+  taCalls,
+  taPayments,
   taOffers,
   taOnboarding,
   taDriver,

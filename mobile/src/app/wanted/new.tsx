@@ -72,7 +72,7 @@ export default function NewWantedScreen() {
         for (const issue of e.issues) next[issue.path as Field] ??= issue.message;
         setErrors(next);
       } else {
-        setFormError(e instanceof ApiError ? e.message : "Could not save the request");
+        setFormError(e instanceof ApiError ? e.message : t("buyer.wanted.saveError"));
       }
     } finally {
       setSubmitting(false);
@@ -81,7 +81,7 @@ export default function NewWantedScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="New request" />
+      <AppBar title={t("buyer.wanted.new")} />
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -92,7 +92,7 @@ export default function NewWantedScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <VStack className="gap-2">
-            <Text className="type-body-bold text-foreground">Crop</Text>
+            <Text className="type-body-bold text-foreground">{t("buyer.wanted.cropLabel")}</Text>
             <HStack className="flex-wrap gap-2">
               {CROPS.map((crop) => {
                 const selected = crop.id === cropId;
@@ -126,14 +126,14 @@ export default function NewWantedScreen() {
           </VStack>
 
           <AppTextField
-            label="Quantity (kg)"
+            label={t("buyer.wanted.quantityLabel")}
             value={quantity}
             onChangeText={setQuantity}
             keyboardType="number-pad"
             error={errors.quantityKg}
           />
           <AppTextField
-            label="Max price per kg (optional)"
+            label={t("buyer.wanted.maxPriceLabel")}
             value={maxPrice}
             onChangeText={setMaxPrice}
             keyboardType="decimal-pad"
@@ -141,15 +141,15 @@ export default function NewWantedScreen() {
             error={errors.maxPricePerKg}
           />
           <AppTextField
-            label="Needed by"
+            label={t("buyer.wanted.neededBy")}
             value={neededBy}
             onChangeText={setNeededBy}
-            placeholder="YYYY-MM-DD"
+            placeholder={t("buyer.wanted.datePlaceholder")}
             autoCapitalize="none"
             error={errors.neededBy}
           />
           <AppTextField
-            label="District"
+            label={t("buyer.wanted.districtLabel")}
             value={district}
             onChangeText={setDistrict}
             placeholder={t("buyer.wanted.districtPlaceholder")}
@@ -162,7 +162,7 @@ export default function NewWantedScreen() {
           {formError ? <Text className="type-caption text-destructive">{formError}</Text> : null}
 
           <AppButton
-            label={submitting ? "Saving…" : "Post request"}
+            label={submitting ? "Saving…" : t("buyer.wanted.post")}
             onPress={() => void submit()}
             disabled={submitting}
           />

@@ -7,6 +7,7 @@ import {
   TabListProps
 } from "expo-router/ui";
 import { Pressable, View, StyleSheet } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { ThemedText } from "./themed-text";
 import { ThemedView } from "./themed-view";
@@ -15,25 +16,26 @@ import { MaxContentWidth, Spacing } from "@/constants/theme";
 
 /** Web fallback for the five farmer tabs — same structure as `app-tabs.web.tsx`. */
 export default function FarmerTabs() {
+  const { t } = useTranslation();
   return (
     <Tabs>
       <TabSlot style={{ height: "100%" }} />
       <TabList asChild>
         <CustomTabList>
           <TabTrigger name="farmer-home" href="/farmer-home" asChild>
-            <TabButton>Home</TabButton>
+            <TabButton>{t("farmer.tabs.home")}</TabButton>
           </TabTrigger>
           <TabTrigger name="farmer-listings" href="/farmer-listings" asChild>
-            <TabButton>Listings</TabButton>
+            <TabButton>{t("farmer.tabs.listings")}</TabButton>
           </TabTrigger>
           <TabTrigger name="add" href="/add" asChild>
             <TabButton>Add</TabButton>
           </TabTrigger>
           <TabTrigger name="farmer-orders" href="/farmer-orders" asChild>
-            <TabButton>Orders</TabButton>
+            <TabButton>{t("farmer.tabs.orders")}</TabButton>
           </TabTrigger>
           <TabTrigger name="farmer-profile" href="/farmer-profile" asChild>
-            <TabButton>Profile</TabButton>
+            <TabButton>{t("farmer.tabs.profile")}</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>

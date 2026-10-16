@@ -1,7 +1,75 @@
 {
   "buyer": {
     "wanted": {
-      "districtPlaceholder": "e.g. Kurunegala"
+      "districtPlaceholder": "e.g. Kurunegala",
+      "listTitle": "My requests",
+      "none": "No requests yet",
+      "noneBody": "Tell farmers what you are looking for and they can respond.",
+      "new": "New request",
+      "viewResponses": "View responses",
+      "close": "Close request",
+      "quantityLabel": "Quantity (kg)",
+      "maxPriceLabel": "Max price per kg (optional)",
+      "neededBy": "Needed by",
+      "datePlaceholder": "YYYY-MM-DD",
+      "districtLabel": "District",
+      "cropLabel": "Crop",
+      "saveError": "Could not save the request",
+      "post": "Post request",
+      "responses": "Responses",
+      "yourTurn": "Your turn to answer",
+      "closed": "Request closed",
+      "closedBody": "This request is closed, so farmers can no longer answer it."
+    },
+    "tabs": {
+      "home": "Home",
+      "listings": "Listings",
+      "calls": "Calls",
+      "profile": "Profile",
+      "map": "Map"
+    },
+    "home": {
+      "role": "Buyer",
+      "browse": "Browse today’s listings",
+      "browseNote": "Verified produce, priced per kilo",
+      "orders": "My orders",
+      "ordersNote": "Requests you have sent to farmers",
+      "offers": "My offers",
+      "offersNote": "Prices you are negotiating with farmers",
+      "requests": "My requests",
+      "requestsNote": "Crops you are looking for"
+    },
+    "profile": {
+      "title": "Profile",
+      "note": "Your business details, saved contacts and order history will appear here.",
+      "roles": {
+        "farmer": "Farmer",
+        "buyer": "Wholesale buyer",
+        "coordinator": "Area coordinator",
+        "driver": "Delivery partner"
+      }
+    },
+    "map": {
+      "title": "Map",
+      "note": "Farm locations and pickup routes will appear here."
+    },
+    "orders": {
+      "title": "My orders",
+      "none": "No orders yet",
+      "noneBody": "Open a listing and tap Place order to send your first request.",
+      "detailTitle": "Order",
+      "confirmReceived": "Confirm I received it",
+      "cancelError": "Could not cancel",
+      "genericError": "Could not do that",
+      "quantity": "Quantity",
+      "collected": "Collected",
+      "collection": "Collection",
+      "unitPrice": "Unit price",
+      "farmer": "Farmer",
+      "requestedOn": "Requested on",
+      "acceptedNote": "You accepted. A driver is booked once the buyer pays.",
+      "accept": "Accept order",
+      "cancelRequest": "Cancel request"
     }
   }
 }

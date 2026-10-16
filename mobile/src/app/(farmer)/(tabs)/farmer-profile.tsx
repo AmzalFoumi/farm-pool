@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -14,6 +15,7 @@ import { VStack } from "@/components/ui/vstack";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function FarmerProfileScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const auth = useAuth();
   const [signingOut, setSigningOut] = useState(false);
@@ -34,8 +36,10 @@ export default function FarmerProfileScreen() {
       {/* ── App Header ────────────────────────────────────────────── */}
       <View className="border-b border-border bg-card px-gutter py-3.5">
         <VStack>
-          <Text className="type-caption-bold text-muted-foreground uppercase">Account & Farm</Text>
-          <Heading className="type-title text-foreground">Farmer Profile</Heading>
+          <Text className="type-caption-bold text-muted-foreground uppercase">
+            {t("farmer.profile.title")}
+          </Text>
+          <Heading className="type-title text-foreground">{t("farmer.profile.heading")}</Heading>
         </VStack>
       </View>
 
@@ -52,7 +56,7 @@ export default function FarmerProfileScreen() {
                   {user?.displayName ?? "Farmer User"}
                 </Text>
                 <Badge variant="outline" className="bg-secondary border-border">
-                  <Text className="type-caption-bold text-primary">Farmer</Text>
+                  <Text className="type-caption-bold text-primary">{t("farmer.profile.role")}</Text>
                 </Badge>
               </HStack>
               <Text className="type-body text-muted-foreground">{user?.phone ?? "No phone"}</Text>
@@ -62,10 +66,12 @@ export default function FarmerProfileScreen() {
 
         {/* ── Farm & Account Details ──────────────────────────────── */}
         <VStack className="gap-2.5">
-          <Text className="type-body-bold text-foreground">Account Information</Text>
+          <Text className="type-body-bold text-foreground">{t("farmer.profile.accountInfo")}</Text>
           <Card className="bg-card p-4 border-border gap-3">
             <HStack className="items-center justify-between">
-              <Text className="type-body text-muted-foreground">Account Status</Text>
+              <Text className="type-body text-muted-foreground">
+                {t("farmer.profile.accountStatus")}
+              </Text>
               <Badge variant="outline" className="bg-success-subtle border-transparent">
                 <Text className="type-caption-bold text-success">
                   {user?.status ? user.status.toUpperCase() : "ACTIVE"}
@@ -76,17 +82,21 @@ export default function FarmerProfileScreen() {
             <View className="h-px bg-border" />
 
             <HStack className="items-center justify-between">
-              <Text className="type-body text-muted-foreground">Registered Role</Text>
-              <Text className="type-body-bold text-foreground">Producer / Farmer</Text>
+              <Text className="type-body text-muted-foreground">
+                {t("farmer.profile.registeredRole")}
+              </Text>
+              <Text className="type-body-bold text-foreground">{t("farmer.profile.producer")}</Text>
             </HStack>
           </Card>
         </VStack>
 
         {/* ── Support & Direct Contact ───────────────────────────── */}
         <VStack className="gap-2.5">
-          <Text className="type-body-bold text-foreground">Help & Support</Text>
+          <Text className="type-body-bold text-foreground">{t("farmer.profile.help")}</Text>
           <Card className="bg-card p-4 border-border gap-2">
-            <Text className="type-body-bold text-foreground">Area Coordinator Support</Text>
+            <Text className="type-body-bold text-foreground">
+              {t("farmer.profile.coordinatorSupport")}
+            </Text>
             <Text className="type-body text-muted-foreground">
               Need help with crop transport or buyers? Contact your regional coordinator directly.
             </Text>
@@ -96,7 +106,7 @@ export default function FarmerProfileScreen() {
         {/* ── Sign Out Button ────────────────────────────────────── */}
         <VStack className="pt-4">
           <AppButton
-            label={signingOut ? "Logging out…" : "Log out"}
+            label={signingOut ? "Logging out…" : t("profile.logOut")}
             variant="outline"
             disabled={signingOut}
             onPress={handleSignOut}

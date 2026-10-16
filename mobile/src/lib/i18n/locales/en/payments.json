@@ -1,0 +1,40 @@
+{
+  "payments": {
+    "pay": {
+      "title": "Pay for this order",
+      "youPay": "You pay",
+      "demo": "This is a demo payment. No real money moves.",
+      "error": "Could not make the payment",
+      "held": "Held until you confirm it arrived"
+    },
+    "card": {
+      "title": "Payment",
+      "viewReceipt": "View receipt",
+      "youPaid": "You paid"
+    },
+    "receipt": {
+      "title": "Receipt",
+      "whatHappened": "What happened",
+      "demo": "This was a demo payment. No real money moved."
+    },
+    "confirm": {
+      "notYet": "Not yet",
+      "error": "Could not confirm",
+      "yes": "Yes, it arrived"
+    },
+    "proposal": {
+      "newPriceLabel": "New price per kg (Rs)",
+      "reasonLabel": "Reason (optional)",
+      "proposed": "New price proposed",
+      "waiting": "Waiting for an answer. Nothing changes until they accept.",
+      "propose": "Propose a new price",
+      "theBuyer": "The buyer",
+      "answerError": "Could not send your answer",
+      "withdraw": "Withdraw",
+      "sendError": "Could not send the proposal",
+      "send": "Send proposal",
+      "cta": "Market price changed? Propose a new price",
+      "currentNote": "The price now is {{price}} / kg. Nothing changes until the other side accepts."
+    }
+  }
+}
