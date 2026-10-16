@@ -21,6 +21,7 @@ import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { DetailRow } from "@/features/driver/components/profile/detail-row";
 import { logisticsApi } from "@/features/logistics/api";
 import { ContactCard } from "@/features/logistics/contact-card";
@@ -185,7 +186,8 @@ function JobHeader({ detail }: { detail: JobDetail }) {
     <VStack className="gap-2">
       <HStack className="items-center justify-between gap-3">
         <Text className="type-h3 flex-1 text-foreground" numberOfLines={2}>
-          {crop.emoji} {t("jobs.detail.heading", { count: detail.quantityKg, crop: crop.name })}
+          {crop.emoji}{" "}
+          {t("jobs.detail.heading", { count: detail.quantityKg, crop: t(cropLabelKey(crop.id)) })}
         </Text>
         <OrderStatusPill status={detail.status} />
       </HStack>

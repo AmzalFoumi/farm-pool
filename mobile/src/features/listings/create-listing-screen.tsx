@@ -8,6 +8,7 @@ import {
   type Listing
 } from "@farm-pool/shared";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -19,6 +20,7 @@ import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { listingsApi } from "@/features/listings/api";
 import { toKg } from "@/features/listings/units";
@@ -38,6 +40,7 @@ import Step5Logistics, {
 import StepReview from "./components/create-listing/step-review";
 
 export function CreateListingScreen({ initialData }: { initialData?: Listing }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const auth = useAuth();
   const insets = useSafeAreaInsets();
@@ -219,7 +222,7 @@ export function CreateListingScreen({ initialData }: { initialData?: Listing }) 
               <CropTile emoji={selectedCrop?.emoji ?? "🍅"} />
               <VStack className="flex-1">
                 <Text className="type-title text-foreground">
-                  Fresh {selectedCrop?.name ?? listingData.cropId}
+                  Fresh {t(cropLabelKey(selectedCrop.id)) ?? listingData.cropId}
                 </Text>
                 <Text className="type-caption text-muted-foreground">
                   {listingData.step5?.district} District

@@ -7,6 +7,7 @@
  */
 
 import { can, cropById, type Order } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -18,6 +19,7 @@ import { RequestView } from "@/components/app/request-view";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { AssignedDriverCard } from "@/features/logistics/assigned-driver-card";
 import { ordersApi } from "@/features/orders/api";
@@ -73,6 +75,7 @@ function OrderBody({
   bottomInset: number;
   onChanged: () => void;
 }) {
+  const { t } = useTranslation();
   const crop = cropById(order.cropId);
   const { user } = useAuth();
   const router = useRouter();
@@ -166,7 +169,7 @@ function OrderBody({
         <HStack className="items-center gap-3">
           <CropTile emoji={crop.emoji} />
           <VStack className="flex-1">
-            <Text className="type-h3 text-foreground">{crop.name}</Text>
+            <Text className="type-h3 text-foreground">{t(cropLabelKey(crop.id))}</Text>
             <Text className="type-caption text-muted-foreground">
               {orderStatusLabel(order.status)}
             </Text>

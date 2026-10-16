@@ -1,11 +1,12 @@
 import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useState, useCallback } from "react";
 import { View, ScrollView, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { cropById } from "@farm-pool/shared";
 
 import { useAuth } from "@/providers/auth-provider";
 import { useRequest } from "@/lib/use-request";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { listingsApi } from "@/features/listings/api";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
@@ -22,6 +23,7 @@ import { offerErrorMessage } from "@/features/offers/error-message";
 import { toUiOffer } from "@/features/offers/to-ui-offer";
 
 export default function OffersScreen() {
+  const { t } = useTranslation();
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -98,7 +100,7 @@ export default function OffersScreen() {
           {req.status === "ready" && (
             <HStack className="items-center gap-1.5 mt-0.5">
               <Text className="text-[12px] font-medium text-muted-foreground">
-                {cropById(req.data.cropId)?.name ?? "Unknown crop"}
+                {t(cropLabelKey(req.data.cropId)) ?? "Unknown crop"}
               </Text>
               <View className="w-1 h-1 rounded-full bg-border" />
               <Text className="text-[12px] font-medium text-muted-foreground">

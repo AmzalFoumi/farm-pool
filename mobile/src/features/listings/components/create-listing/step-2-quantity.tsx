@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { cropById, type CropId, type ListingGrade, type ListingPackaging } from "@farm-pool/shared";
 
@@ -10,6 +11,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { toKg, type BatchUnit } from "@/features/listings/units";
 
@@ -64,6 +66,7 @@ export default function Step2Quantity({
   onBack,
   onChangeCrop
 }: Step2QuantityProps) {
+  const { t } = useTranslation();
   const crop = cropById(cropId) || cropById("tomato");
   const defaultVariety = crop.varieties?.[0] || "Standard / Local";
 
@@ -183,7 +186,7 @@ export default function Step2Quantity({
           <VStack className="flex-1 min-w-0">
             <HStack className="items-center gap-2 flex-wrap">
               <Text className="type-body-bold text-foreground" numberOfLines={1}>
-                Fresh {crop.name}
+                Fresh {t(cropLabelKey(crop.id))}
               </Text>
               <Box className="rounded-chip bg-secondary px-2 py-0.5">
                 <Text className="type-body-sm-bold text-secondary-foreground">{crop.category}</Text>
@@ -405,7 +408,7 @@ export default function Step2Quantity({
 
       {/* Variety Section (Dynamic based on selected Crop!) */}
       <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
-        <Text className="type-h4 text-foreground">{crop.name} Variety</Text>
+        <Text className="type-h4 text-foreground">{t(cropLabelKey(crop.id))} Variety</Text>
 
         <View className="flex-row flex-wrap gap-2">
           {(crop.varieties || ["Standard / Local"]).map((v) => {

@@ -25,6 +25,7 @@ import {
   type SavedLocation
 } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Dimensions, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -47,6 +48,7 @@ import { Image } from "@/components/ui/image";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { callsApi } from "@/features/calls/api";
 import { listingsApi } from "@/features/listings/api";
 import { CropTile } from "@/features/listings/crop-tile";
@@ -147,6 +149,7 @@ function ListingBody({
   topInset: number;
   bottomInset: number;
 }) {
+  const { t } = useTranslation();
   const crop = cropById(listing.cropId);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [offerOpen, setOfferOpen] = useState(false);
@@ -203,7 +206,7 @@ function ListingBody({
         </Pressable>
         <VStack className="flex-1">
           <Text className="type-title text-foreground" numberOfLines={1}>
-            {crop.name}
+            {t(cropLabelKey(crop.id))}
           </Text>
           <Text className="type-caption text-muted-foreground" numberOfLines={1}>
             {listing.farmerName} · {place}
@@ -226,7 +229,7 @@ function ListingBody({
                 source={{ uri }}
                 size="2xl"
                 className="rounded-card bg-muted"
-                alt={`${crop.name} photo ${i + 1}`}
+                alt={`${t(cropLabelKey(crop.id))} photo ${i + 1}`}
               />
             ))}
           </ScrollView>

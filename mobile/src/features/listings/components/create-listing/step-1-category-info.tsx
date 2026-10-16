@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import {
   CROPS,
@@ -18,6 +19,7 @@ import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 
 import { WizardShell } from "./wizard-shell";
@@ -34,6 +36,7 @@ const RECENT_CROP_IDS: CropId[] = ["beans", "carrot", "leeks"];
 type CategoryFilter = CropCategory | "All";
 
 export default function Step1CategoryInfo({ initialData, onNext, onBack }: Step1CategoryInfoProps) {
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>(
     initialData?.category ?? "Vegetables"
   );
@@ -44,7 +47,10 @@ export default function Step1CategoryInfo({ initialData, onNext, onBack }: Step1
 
   const filteredCrops = CROPS.filter((crop) => {
     const matchesCategory = selectedCategory === "All" || crop.category === selectedCategory;
-    const matchesSearch = crop.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
+    const needle = searchQuery.trim().toLowerCase();
+    const matchesSearch =
+      crop.name.toLowerCase().includes(needle) ||
+      t(cropLabelKey(crop.id)).toLowerCase().includes(needle);
     return matchesCategory && matchesSearch;
   });
 
@@ -161,7 +167,7 @@ export default function Step1CategoryInfo({ initialData, onNext, onBack }: Step1
                       isSelected ? "text-primary" : "text-foreground"
                     }`}
                   >
-                    {crop.name}
+                    {t(cropLabelKey(crop.id))}
                   </Text>
                 </Pressable>
               );
@@ -206,7 +212,9 @@ export default function Step1CategoryInfo({ initialData, onNext, onBack }: Step1
                     <CropTile emoji={crop.emoji} />
                     <VStack className="flex-1 gap-0.5">
                       <HStack className="items-center gap-2">
-                        <Text className="type-body-bold text-foreground">{crop.name}</Text>
+                        <Text className="type-body-bold text-foreground">
+                          {t(cropLabelKey(crop.id))}
+                        </Text>
                       </HStack>
                       <Text className="type-caption text-muted-foreground">
                         Sample price:{" "}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { cropById, getBenchmarkForCrop, type CropId } from "@farm-pool/shared";
 
@@ -8,6 +9,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { formatPrice } from "@/lib/format";
 import { toKg, type BatchUnit } from "@/features/listings/units";
@@ -41,6 +43,7 @@ export default function Step4Price({
   onNext,
   onBack
 }: Step4PriceProps) {
+  const { t } = useTranslation();
   const crop = cropById(cropId) || cropById("tomato");
   const benchmark = getBenchmarkForCrop(cropId);
 
@@ -127,7 +130,7 @@ export default function Step4Price({
           <CropTile emoji={crop.emoji} />
           <VStack className="flex-1 min-w-0">
             <Text className="type-body-bold text-foreground" numberOfLines={1}>
-              Fresh {crop.name}
+              Fresh {t(cropLabelKey(crop.id))}
             </Text>
             <Text className="type-caption text-muted-foreground" numberOfLines={1}>
               Batch: {quantity} {batchInfo.unit} • Grade {batchInfo.grade} • {batchInfo.variety}

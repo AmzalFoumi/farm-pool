@@ -1,0 +1,25 @@
+{
+  "crops": {
+    "onion": "ලොකු ළූණු",
+    "carrot": "කැරට්",
+    "tomato": "තක්කාලි",
+    "green-chilli": "අමු මිරිස්",
+    "leeks": "ලීක්ස්",
+    "beans": "බෝංචි",
+    "brinjal": "වම්බටු",
+    "pumpkin": "වට්ටක්කා",
+    "potato": "අර්තාපල්",
+    "mango": "අඹ",
+    "banana": "කෙසෙල්",
+    "papaya": "පැපොල්",
+    "rice": "වී",
+    "coconut": "පොල්"
+  },
+  "cropCategories": {
+    "Vegetables": "එළවළු",
+    "Fruits": "පලතුරු",
+    "Grains": "ධාන්‍ය",
+    "Other": "වෙනත්",
+    "All": "සියල්ල"
+  }
+}

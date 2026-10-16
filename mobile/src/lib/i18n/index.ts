@@ -2,6 +2,7 @@ import { createInstance } from "i18next";
 import { initReactI18next } from "react-i18next";
 
 import enBuyer from "./locales/en/buyer.json";
+import enCatalog from "./locales/en/catalog.json";
 import enCommon from "./locales/en/common.json";
 import enCoordinator from "./locales/en/coordinator.json";
 import enDriver from "./locales/en/driver.json";
@@ -10,6 +11,7 @@ import enGeo from "./locales/en/geo.json";
 import enLogistics from "./locales/en/logistics.json";
 import enOnboarding from "./locales/en/onboarding.json";
 import siBuyer from "./locales/si/buyer.json";
+import siCatalog from "./locales/si/catalog.json";
 import siCommon from "./locales/si/common.json";
 import siCoordinator from "./locales/si/coordinator.json";
 import siDriver from "./locales/si/driver.json";
@@ -18,6 +20,7 @@ import siGeo from "./locales/si/geo.json";
 import siLogistics from "./locales/si/logistics.json";
 import siOnboarding from "./locales/si/onboarding.json";
 import taBuyer from "./locales/ta/buyer.json";
+import taCatalog from "./locales/ta/catalog.json";
 import taCommon from "./locales/ta/common.json";
 import taCoordinator from "./locales/ta/coordinator.json";
 import taDriver from "./locales/ta/driver.json";
@@ -50,6 +53,7 @@ const bundle = (parts: Record<string, unknown>[]) => Object.assign({}, ...parts)
 
 const en = bundle([
   enCommon,
+  enCatalog,
   enOnboarding,
   enDriver,
   enLogistics,
@@ -60,6 +64,7 @@ const en = bundle([
 ]);
 const si = bundle([
   siCommon,
+  siCatalog,
   siOnboarding,
   siDriver,
   siLogistics,
@@ -70,6 +75,7 @@ const si = bundle([
 ]);
 const ta = bundle([
   taCommon,
+  taCatalog,
   taOnboarding,
   taDriver,
   taLogistics,

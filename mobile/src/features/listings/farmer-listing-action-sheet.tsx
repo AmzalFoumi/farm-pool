@@ -1,4 +1,5 @@
 import { type Listing, cropById } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { formatPrice } from "@/lib/format";
 
@@ -15,6 +16,7 @@ import { Text } from "@/components/ui/text";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "./crop-tile";
+import { cropLabelKey } from "@/features/listings/crop-label";
 
 import {
   EditIcon,
@@ -52,6 +54,7 @@ export function FarmerListingActionSheet({
   onMarkAsSold,
   onDelete
 }: FarmerListingActionSheetProps) {
+  const { t } = useTranslation();
   if (!listing) return null;
 
   const crop = cropById(listing.cropId);
@@ -81,7 +84,9 @@ export function FarmerListingActionSheet({
             </View>
             <VStack className="flex-1 min-w-0">
               <HStack className="items-center gap-2">
-                <Text className="type-body-sm-bold text-foreground truncate">{crop.name}</Text>
+                <Text className="type-body-sm-bold text-foreground truncate">
+                  {t(cropLabelKey(crop.id))}
+                </Text>
                 <View className="px-1.5 py-0.5 bg-success-subtle rounded-md">
                   <Text className="text-[10px] font-bold text-success whitespace-nowrap">
                     {formatPrice(listing.pricePerKg)}/kg

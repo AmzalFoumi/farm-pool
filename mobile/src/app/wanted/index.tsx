@@ -1,6 +1,7 @@
 /** My requests — the crops this buyer has asked for, the responses to each, and a way to close one. */
 
 import { cropById, type WantedListing } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useState } from "react";
 import { FlatList, View } from "react-native";
@@ -13,6 +14,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { WantedStatusPill } from "@/features/orders/status-pill";
 import { wantedApi } from "@/features/wanted/api";
@@ -21,6 +23,7 @@ import { useReloadOnRefocus, useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function WantedScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
@@ -57,7 +60,7 @@ export default function WantedScreen() {
                     <CropTile emoji={crop.emoji} />
                     <VStack className="flex-1 gap-0.5">
                       <Text className="type-body-bold text-foreground" numberOfLines={1}>
-                        {crop.name} · {item.quantityKg} kg
+                        {t(cropLabelKey(crop.id))} · {item.quantityKg} kg
                       </Text>
                       <Text className="type-caption text-muted-foreground" numberOfLines={2}>
                         By {formatDate(item.neededBy)} · {item.district}
@@ -71,7 +74,7 @@ export default function WantedScreen() {
                       router.push({ pathname: "/wanted/[id]", params: { id: item.id } })
                     }
                     accessibilityRole="button"
-                    accessibilityLabel={`See responses to your request for ${crop.name}`}
+                    accessibilityLabel={`See responses to your request for ${t(cropLabelKey(crop.id))}`}
                     className="min-h-tap items-center justify-center rounded-field border border-brand-deep"
                   >
                     <Text className="type-body-bold text-brand-deep">View responses</Text>
@@ -81,7 +84,7 @@ export default function WantedScreen() {
                       onPress={() => void close(item)}
                       disabled={closing === item.id}
                       accessibilityRole="button"
-                      accessibilityLabel={`Close request for ${crop.name}`}
+                      accessibilityLabel={`Close request for ${t(cropLabelKey(crop.id))}`}
                       className="min-h-tap items-center justify-center rounded-field border border-border"
                     >
                       <Text className="type-body-bold text-muted-foreground">

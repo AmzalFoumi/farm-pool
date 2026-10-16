@@ -1,4 +1,5 @@
 import { CROPS, formatBenchmarkPriceRange, getBenchmarkForCrop } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,8 +14,10 @@ import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { useAuth } from "@/providers/auth-provider";
+import { cropLabelKey } from "@/features/listings/crop-label";
 
 export default function FarmerHomeScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const auth = useAuth();
@@ -81,7 +84,9 @@ export default function FarmerHomeScreen() {
                         </Text>
                       </Box>
                       <VStack>
-                        <Text className="type-body-bold text-foreground">{crop.name}</Text>
+                        <Text className="type-body-bold text-foreground">
+                          {t(cropLabelKey(crop.id))}
+                        </Text>
                         <Text className="type-caption text-muted-foreground">{crop.category}</Text>
                       </VStack>
                     </HStack>

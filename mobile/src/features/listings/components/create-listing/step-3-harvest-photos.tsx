@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Image } from "react-native";
 import { cropById, type CropId } from "@farm-pool/shared";
 
@@ -17,6 +18,7 @@ import {
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 
 import { SampleBadge } from "./sample-badge";
@@ -72,6 +74,7 @@ export default function Step3HarvestPhotos({
   onNext,
   onBack
 }: Step3HarvestPhotosProps) {
+  const { t } = useTranslation();
   const crop = cropById(cropId) || cropById("tomato");
 
   const [widePhoto, setWidePhoto] = useState<string | null>(initialData?.widePhotoUri ?? null);
@@ -183,7 +186,7 @@ export default function Step3HarvestPhotos({
           <CropTile emoji={crop.emoji} />
           <VStack className="flex-1 min-w-0">
             <Text className="type-body-bold text-foreground" numberOfLines={1}>
-              Fresh {crop.name}
+              Fresh {t(cropLabelKey(crop.id))}
             </Text>
             <Text className="type-caption text-muted-foreground" numberOfLines={1}>
               Batch: {batchInfo.quantity} {batchInfo.unit} • Grade {batchInfo.grade} •{" "}

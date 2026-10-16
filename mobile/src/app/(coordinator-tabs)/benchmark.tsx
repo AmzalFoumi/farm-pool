@@ -10,6 +10,7 @@
  */
 
 import type { CropPriceContext } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { cropById, isBenchmarkPriceStale } from "@farm-pool/shared";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useState } from "react";
@@ -24,6 +25,7 @@ import { SearchIcon } from "@/components/ui/icon";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { coordinationApi } from "@/features/coordination/api";
 import { CoordinatorHeader } from "@/features/coordination/coordinator-header";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -45,11 +47,16 @@ function statusOf(context: CropPriceContext): Status {
   return isBenchmarkPriceStale(context.current.publishedAt) ? "stale" : "set";
 }
 
-function matchesSearch(context: CropPriceContext, needle: string) {
-  return cropById(context.cropId).name.toLowerCase().includes(needle);
+function matchesSearch(context: CropPriceContext, needle: string, t: (key: string) => string) {
+  const crop = cropById(context.cropId);
+  return (
+    crop.name.toLowerCase().includes(needle) ||
+    t(cropLabelKey(crop.id)).toLowerCase().includes(needle)
+  );
 }
 
 export default function BenchmarkScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
   const prices = useRequest(() => coordinationApi.benchmarks(token ?? ""), token ?? "");
@@ -74,7 +81,7 @@ export default function BenchmarkScreen() {
       <RequestView request={prices}>
         {(rows) => {
           const filtered = rows.filter(
-            (row) => (filter === "all" || statusOf(row) === filter) && matchesSearch(row, needle)
+            (row) => (filter === "all" || statusOf(row) === filter) && matchesSearch(row, needle, t)
           );
           return (
             <FlatList
@@ -137,6 +144,7 @@ export default function BenchmarkScreen() {
 }
 
 function CropPriceRow({ context }: { context: CropPriceContext }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const crop = cropById(context.cropId);
   const stale = context.current ? isBenchmarkPriceStale(context.current.publishedAt) : false;
@@ -145,12 +153,12 @@ function CropPriceRow({ context }: { context: CropPriceContext }) {
     <Pressable
       onPress={() => router.push(`/benchmark/${context.cropId}`)}
       accessibilityRole="button"
-      accessibilityLabel={`Set price for ${crop.name}`}
+      accessibilityLabel={`Set price for ${t(cropLabelKey(crop.id))}`}
       className="elevation-card min-h-tap gap-2 rounded-card border border-border bg-card p-3"
     >
       <HStack className="items-center justify-between">
         <Text className="type-body-bold text-foreground">
-          {crop.emoji} {crop.name}
+          {crop.emoji} {t(cropLabelKey(crop.id))}
         </Text>
         {context.current ? (
           <Text className="type-body-bold text-foreground">

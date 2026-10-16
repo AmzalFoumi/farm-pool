@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Image, View } from "react-native";
 import { cropById, type CropId } from "@farm-pool/shared";
 
@@ -6,6 +7,7 @@ import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { formatPrice } from "@/lib/format";
 import { toKg } from "@/features/listings/units";
@@ -53,6 +55,7 @@ export default function StepReview({
   error,
   onBack
 }: StepReviewProps) {
+  const { t } = useTranslation();
   const crop = cropById(cropId) || cropById("tomato");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -136,7 +139,7 @@ export default function StepReview({
           <VStack className="flex-1 min-w-0 gap-1">
             <HStack className="items-center justify-between">
               <Text className="type-h3 text-foreground flex-1" numberOfLines={1}>
-                Fresh {crop.name}
+                Fresh {t(cropLabelKey(crop.id))}
               </Text>
               <Box className="rounded-chip bg-secondary border border-border px-2 py-0.5">
                 <Text className="type-caption-bold text-primary">Ready</Text>
@@ -190,7 +193,9 @@ export default function StepReview({
           {/* Variety */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">{crop.name} Variety</Text>
+              <Text className="type-caption text-muted-foreground">
+                {t(cropLabelKey(crop.id))} Variety
+              </Text>
             </HStack>
             <Text className="type-body-sm-bold text-foreground">
               {step2.variety || "Roma / Plum"}

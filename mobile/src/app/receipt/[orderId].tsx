@@ -15,6 +15,7 @@ import {
   type PaymentEntryKind
 } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -24,6 +25,7 @@ import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { ordersApi } from "@/features/orders/api";
 import { PaymentStatusPill } from "@/features/orders/status-pill";
@@ -107,6 +109,7 @@ function ReceiptBody({
   viewer: Viewer;
   bottomInset: number;
 }) {
+  const { t } = useTranslation();
   const crop = cropById(order.cropId);
   const farmer = viewer === "farmer";
 
@@ -128,7 +131,7 @@ function ReceiptBody({
       <HStack className="items-center gap-3">
         <CropTile emoji={crop.emoji} />
         <VStack className="flex-1">
-          <Text className="type-h3 text-foreground">{crop.name}</Text>
+          <Text className="type-h3 text-foreground">{t(cropLabelKey(crop.id))}</Text>
           <Text className="type-caption text-muted-foreground">
             {farmer ? "Sold by you" : `From ${order.farmerName}`}
           </Text>

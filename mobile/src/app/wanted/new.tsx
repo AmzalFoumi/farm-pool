@@ -6,6 +6,7 @@
  */
 
 import { CROPS, createWantedSchema, type CropId } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
@@ -18,6 +19,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { wantedApi } from "@/features/wanted/api";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
@@ -26,6 +28,7 @@ type Field = "cropId" | "quantityKg" | "maxPricePerKg" | "neededBy" | "district"
 type FieldErrors = Partial<Record<Field, string>>;
 
 export default function NewWantedScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
@@ -99,7 +102,7 @@ export default function NewWantedScreen() {
                     onPress={() => setCropId(crop.id)}
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
-                    accessibilityLabel={crop.name}
+                    accessibilityLabel={t(cropLabelKey(crop.id))}
                     className={[
                       "min-h-tap flex-row items-center gap-1.5 rounded-chip border px-4",
                       selected ? "border-primary bg-primary" : "border-border bg-card"
@@ -111,7 +114,7 @@ export default function NewWantedScreen() {
                         selected ? "text-primary-foreground" : "text-foreground"
                       }`}
                     >
-                      {crop.name}
+                      {t(cropLabelKey(crop.id))}
                     </Text>
                   </Pressable>
                 );

@@ -17,6 +17,7 @@ import {
   type ListingPackaging
 } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -37,6 +38,7 @@ import {
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { coordinationApi } from "@/features/coordination/api";
 import {
   compareToBenchmark,
@@ -109,6 +111,7 @@ function ListingReview({
   benchmarks: ReturnType<typeof useRequest<CropPriceContext[]>>;
   onDecided: () => void;
 }) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const crop = cropById(listing.cropId);
   const [reason, setReason] = useState("");
@@ -196,13 +199,13 @@ function ListingReview({
                 key={uri}
                 onPress={() => setZoomedPhoto(uri)}
                 accessibilityRole="button"
-                accessibilityLabel={`View ${crop.name} photo ${i + 1} larger`}
+                accessibilityLabel={`View ${t(cropLabelKey(crop.id))} photo ${i + 1} larger`}
               >
                 <Image
                   source={{ uri }}
                   size="2xl"
                   className="rounded-card bg-muted"
-                  alt={`${crop.name} photo ${i + 1}`}
+                  alt={`${t(cropLabelKey(crop.id))} photo ${i + 1}`}
                 />
               </Pressable>
             ))}
@@ -214,7 +217,7 @@ function ListingReview({
         <VStack className="gap-3 rounded-card border border-border bg-card p-4">
           <HStack className="items-center justify-between">
             <Text className="type-h3 text-foreground" numberOfLines={1}>
-              {crop.name}
+              {t(cropLabelKey(crop.id))}
             </Text>
             <ListingStatusPill status={listing.status} />
           </HStack>
@@ -371,7 +374,7 @@ function ListingReview({
               <Image
                 source={{ uri: zoomedPhoto }}
                 className="aspect-square w-full rounded-card"
-                alt={`${crop.name} photo, full size`}
+                alt={`${t(cropLabelKey(crop.id))} photo, full size`}
               />
             ) : null}
           </ModalBody>

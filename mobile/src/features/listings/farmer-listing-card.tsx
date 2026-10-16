@@ -1,4 +1,5 @@
 import { cropById, type Listing } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 
 import {
@@ -15,6 +16,7 @@ import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { formatPrice } from "@/lib/format";
 import { CropTile } from "./crop-tile";
+import { cropLabelKey } from "@/features/listings/crop-label";
 
 interface FarmerListingCardProps {
   listing: Listing;
@@ -35,6 +37,7 @@ export function FarmerListingCard({
   onCompletePress,
   offersCount = 0
 }: FarmerListingCardProps) {
+  const { t } = useTranslation();
   const crop = cropById(listing.cropId);
   const estimatedTotal = listing.pricePerKg * listing.quantityKg;
 
@@ -183,7 +186,7 @@ export function FarmerListingCard({
         <VStack className="flex-1">
           <HStack className="items-center gap-2 flex-wrap">
             <Text className="type-body-bold text-foreground leading-tight" numberOfLines={1}>
-              {crop.name}
+              {t(cropLabelKey(crop.id))}
             </Text>
             {listing.status === "paused" && (
               <View className="bg-muted px-1.5 py-0.5 rounded">

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import {
   cropById,
@@ -15,6 +16,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { PointPicker } from "@/features/geo/point-picker";
 import { CropTile } from "@/features/listings/crop-tile";
 
@@ -79,6 +81,7 @@ export default function Step5Logistics({
   onNext,
   onBack
 }: Step5LogisticsProps) {
+  const { t } = useTranslation();
   const crop = cropById(cropId) || cropById("tomato");
 
   /* Coming back to this step, the date already chosen is a real date, so reopen it in the
@@ -158,7 +161,7 @@ export default function Step5Logistics({
           <CropTile emoji={crop.emoji} />
           <VStack className="flex-1 min-w-0">
             <Text className="type-body-bold text-foreground" numberOfLines={1}>
-              {crop.name} • {batchInfo.quantity} {batchInfo.unit}
+              {t(cropLabelKey(crop.id))} • {batchInfo.quantity} {batchInfo.unit}
             </Text>
             <Text className="type-caption text-muted-foreground" numberOfLines={1}>
               Grade {batchInfo.grade} • {batchInfo.variety}

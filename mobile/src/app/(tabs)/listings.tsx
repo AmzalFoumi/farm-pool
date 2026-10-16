@@ -7,6 +7,7 @@
  */
 
 import { CROPS, cropById, type CropId, type Listing } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { FlatList, ScrollView, View } from "react-native";
@@ -25,6 +26,7 @@ import { FilterChip } from "@/features/listings/filter-chip";
 import { ListingGridCard, ListingListRow } from "@/features/listings/listing-card";
 import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
+import { cropLabelKey } from "@/features/listings/crop-label";
 
 type ViewMode = "grid" | "list";
 
@@ -58,16 +60,20 @@ function NoFilterMatches({ onClear }: { onClear: () => void }) {
   );
 }
 
-function matches(listing: Listing, needle: string) {
-  const crop = cropById(listing.cropId).name.toLowerCase();
+function matches(listing: Listing, needle: string, t: (key: string) => string) {
+  /* Both names: a Sinhala user types Sinhala, but someone who knows the crop by its English
+     name should still find it. */
+  const crop = cropById(listing.cropId);
   return (
-    crop.includes(needle) ||
+    crop.name.toLowerCase().includes(needle) ||
+    t(cropLabelKey(crop.id)).toLowerCase().includes(needle) ||
     listing.farmerName.toLowerCase().includes(needle) ||
     listing.district.toLowerCase().includes(needle)
   );
 }
 
 export default function ListingsScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
@@ -202,7 +208,7 @@ export default function ListingsScreen() {
 
       <RequestView request={listings}>
         {(all) => {
-          const results = needle ? all.filter((l) => matches(l, needle)) : all;
+          const results = needle ? all.filter((l) => matches(l, needle, t)) : all;
           return (
             /* `key={view}` is load-bearing: FlatList caches its layout and will
                not re-measure when `numColumns` changes. */

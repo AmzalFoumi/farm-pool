@@ -20,6 +20,7 @@
  */
 
 import type { CoordinatorTask } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { cropById } from "@farm-pool/shared";
 import { useFocusEffect, useRouter } from "expo-router";
 import { ScrollView, View } from "react-native";
@@ -34,6 +35,7 @@ import { Pressable } from "@/components/ui/pressable";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { coordinationApi } from "@/features/coordination/api";
 import { CoordinatorHeader } from "@/features/coordination/coordinator-header";
 import { FarmerSpotlight } from "@/features/coordination/farmer-spotlight";
@@ -184,6 +186,7 @@ function TasksSection({ tasks }: { tasks: ReturnType<typeof useRequest<Coordinat
 }
 
 function TaskRow({ task }: { task: CoordinatorTask }) {
+  const { t } = useTranslation();
   const router = useRouter();
 
   if (task.kind === "benchmark_missing" || task.kind === "benchmark_stale") {
@@ -196,13 +199,13 @@ function TaskRow({ task }: { task: CoordinatorTask }) {
       <Pressable
         onPress={() => router.push(`/benchmark/${task.cropId}`)}
         accessibilityRole="button"
-        accessibilityLabel={`Set price for ${crop.name}`}
+        accessibilityLabel={`Set price for ${t(cropLabelKey(crop.id))}`}
         className="min-h-tap flex-row items-center gap-3"
       >
         <CropTile emoji={crop.emoji} />
         <VStack className="flex-1 gap-0.5">
           <Text className="type-body-bold text-foreground" numberOfLines={1}>
-            {crop.name}
+            {t(cropLabelKey(crop.id))}
           </Text>
           <Text className="type-caption text-muted-foreground" numberOfLines={1}>
             {subtitle}
@@ -249,13 +252,13 @@ function TaskRow({ task }: { task: CoordinatorTask }) {
     <Pressable
       onPress={() => router.push(`/listing-review/${task.listingId}`)}
       accessibilityRole="button"
-      accessibilityLabel={`Review ${crop.name} listing from ${task.farmerName}`}
+      accessibilityLabel={`Review ${t(cropLabelKey(crop.id))} listing from ${task.farmerName}`}
       className="min-h-tap flex-row items-center gap-3"
     >
       <CropTile emoji={crop.emoji} />
       <VStack className="flex-1 gap-0.5">
         <Text className="type-body-bold text-foreground" numberOfLines={1}>
-          {`${crop.name} · ${task.quantityKg} kg`}
+          {`${t(cropLabelKey(crop.id))} · ${task.quantityKg} kg`}
         </Text>
         <Text className="type-caption text-muted-foreground" numberOfLines={1}>
           {`From ${task.farmerName}`}

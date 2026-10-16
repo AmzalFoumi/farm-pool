@@ -4,6 +4,7 @@
  */
 
 import { createOfferSchema, cropById, type Listing, type WantedListing } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -17,6 +18,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { listingsApi } from "@/features/listings/api";
 import { offersApi } from "@/features/offers/api";
 import { offerErrorMessage } from "@/features/offers/error-message";
@@ -86,6 +88,7 @@ function RespondForm({
   onCreateListing: () => void;
   onSent: (offerId: string) => void;
 }) {
+  const { t } = useTranslation();
   const crop = cropById(request.cropId);
   const [listingId, setListingId] = useState(listings[0]?.id ?? "");
   const listing = listings.find((l) => l.id === listingId);
@@ -103,7 +106,7 @@ function RespondForm({
   const summary = (
     <VStack className="gap-1 rounded-card border border-border bg-card p-4">
       <Text className="type-h4 text-foreground">
-        {crop.name} · {request.quantityKg} kg
+        {t(cropLabelKey(crop.id))} · {request.quantityKg} kg
       </Text>
       <Text className="type-caption text-muted-foreground">
         Needed by {formatDate(request.neededBy)} · deliver to {request.district}
@@ -122,7 +125,7 @@ function RespondForm({
       <ScrollView contentContainerClassName="gap-4 p-gutter">
         {summary}
         <EmptyNote
-          title={`No approved ${crop.name.toLowerCase()} listing`}
+          title={`No approved ${t(cropLabelKey(crop.id)).toLowerCase()} listing`}
           note="You answer a request from one of your own approved listings, so the driver knows where to collect. Create a listing for this crop, wait for your coordinator to approve it, then come back."
         />
         <AppButton label="Create a listing" onPress={onCreateListing} />

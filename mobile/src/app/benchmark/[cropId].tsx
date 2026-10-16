@@ -6,7 +6,8 @@
  * invented. `source` is always `"manual"`, see `benchmark-price.ts` in `packages/shared` for why.
  */
 
-import { cropById, cropIdSchema, setBenchmarkPriceSchema } from "@farm-pool/shared";
+import { cropIdSchema, setBenchmarkPriceSchema } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import type { BenchmarkPrice, CropId, CropPriceContext } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -23,6 +24,7 @@ import { Pressable } from "@/components/ui/pressable";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { coordinationApi } from "@/features/coordination/api";
 import { ApiError } from "@/lib/api";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -30,6 +32,7 @@ import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function SetCropPriceScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { cropId: rawCropId } = useLocalSearchParams<{ cropId: string }>();
   const { token } = useAuth();
@@ -40,7 +43,7 @@ export default function SetCropPriceScreen() {
   return (
     <View className="flex-1 bg-background">
       <AppBar
-        title={parsedCropId.success ? cropById(parsedCropId.data).name : "Set price"}
+        title={parsedCropId.success ? t(cropLabelKey(parsedCropId.data)) : "Set price"}
         onBack={() => router.back()}
       />
 
@@ -73,9 +76,10 @@ function SetCropPriceForm({
   context: CropPriceContext | null;
   onSaved: () => void;
 }) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
-  const cropName = cropById(cropId).name;
+  const cropName = t(cropLabelKey(cropId));
   const history = useRequest(
     () => coordinationApi.benchmarkHistory(token ?? "", cropId),
     `${token ?? ""}|${cropId}`

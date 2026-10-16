@@ -20,6 +20,7 @@ import { EmptyNote, RequestView } from "@/components/app/request-view";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { logisticsApi } from "@/features/logistics/api";
 import { formatPrice } from "@/lib/format";
@@ -56,7 +57,7 @@ export default function DeliveriesScreen() {
                   <CropTile emoji={crop.emoji} />
                   <VStack className="flex-1 gap-0.5">
                     <Text className="type-body-bold text-foreground" numberOfLines={1}>
-                      {carried} kg · {crop.name}
+                      {carried} kg · {t(cropLabelKey(crop.id))}
                     </Text>
                     <Text className="type-caption text-muted-foreground" numberOfLines={1}>
                       {item.farmerName} · {place}
