@@ -115,7 +115,7 @@ export default function ListingsScreen() {
         style={{ paddingTop: insets.top + 16 }}
       >
         <HStack className="items-center justify-between">
-          <Text className="type-title text-brand-deep-foreground">Listings</Text>
+          <Text className="type-title text-brand-deep-foreground">{t("buyer.listingsTitle")}</Text>
 
           {/* View toggle. Each half is 40dp tall to match the wireframe, and
               `hitSlop={4}` extends the touch area to the 48dp rule 4 requires. */}

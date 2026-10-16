@@ -81,7 +81,9 @@ export function NegotiateSheet({
             {/* Header */}
             <HStack className="items-start justify-between mb-4">
               <VStack>
-                <Text className="text-[17px] font-bold text-primary">Submit Counter-Offer</Text>
+                <Text className="text-[17px] font-bold text-primary">
+                  {t("listings.negotiate.submit")}
+                </Text>
                 <Text className="mt-0.5 text-[12px] text-muted-foreground">
                   Negotiating with {offer.counterparty.name}
                 </Text>
@@ -100,7 +102,7 @@ export function NegotiateSheet({
               <VStack>
                 <HStack className="items-center justify-between">
                   <Text className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Counter Rate
+                    {t("listings.negotiate.counterRate")}
                   </Text>
                 </HStack>
                 <HStack className="mt-2 items-center justify-between gap-3">
@@ -133,7 +135,7 @@ export function NegotiateSheet({
               <VStack className="border-t border-border pt-3">
                 <HStack className="items-center justify-between">
                   <Text className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Quantity
+                    {t("listings.history.quantity")}
                   </Text>
                   <Text className="text-[11px] text-muted-foreground">
                     {minKg}–{maxKg} kg
@@ -196,7 +198,9 @@ export function NegotiateSheet({
 
             {/* Notes & Actions */}
             <VStack className="mb-4">
-              <Text className="text-[12px] font-semibold text-primary">Add a note</Text>
+              <Text className="text-[12px] font-semibold text-primary">
+                {t("listings.negotiate.addNote")}
+              </Text>
               <TextInput
                 value={note}
                 onChangeText={setNote}
@@ -218,7 +222,9 @@ export function NegotiateSheet({
                 onPress={onClose}
                 className="flex-1 rounded-xl bg-muted px-3 py-3 items-center justify-center active:scale-95"
               >
-                <Text className="text-[13px] font-semibold text-muted-foreground">Cancel</Text>
+                <Text className="text-[13px] font-semibold text-muted-foreground">
+                  {t("common.cancel")}
+                </Text>
               </Pressable>
               <Pressable
                 onPress={() => onSubmit(parsedRate, parsedQty, note)}
@@ -228,7 +234,7 @@ export function NegotiateSheet({
                 className={`flex-[2] flex-row items-center justify-center gap-1.5 rounded-xl bg-brand-deep px-3 py-3 shadow-sm active:scale-95 ${canSend ? "" : "opacity-60"}`}
               >
                 <Text className="text-[13px] font-semibold text-brand-deep-foreground">
-                  Send Counter
+                  {t("listings.negotiate.sendCounter")}
                 </Text>
               </Pressable>
             </HStack>

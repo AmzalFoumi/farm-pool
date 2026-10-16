@@ -91,11 +91,13 @@ export default function OffersScreen() {
         </Pressable>
         <VStack className="min-w-0">
           <Heading className="text-[17px] font-bold leading-tight tracking-tight text-foreground">
-            Offers & Negotiations
+            {t("offers.detail.pageTitle")}
           </Heading>
           {req.status === "loading" && <View className="h-4 w-32 mt-1 rounded bg-muted" />}
           {req.status === "error" && (
-            <Text className="text-[12px] text-destructive mt-1">Failed to load listing</Text>
+            <Text className="text-[12px] text-destructive mt-1">
+              {t("offers.detail.listingError")}
+            </Text>
           )}
           {req.status === "ready" && (
             <HStack className="items-center gap-1.5 mt-0.5">
@@ -164,13 +166,15 @@ export default function OffersScreen() {
       {/* Content */}
       <ScrollView className="flex-1" contentContainerClassName="px-4 py-4 gap-3.5 pb-28">
         {offersReq.status === "loading" && (
-          <Text className="text-center text-muted-foreground mt-4">Loading offers...</Text>
+          <Text className="text-center text-muted-foreground mt-4">
+            {t("offers.detail.loading")}
+          </Text>
         )}
         {offersReq.status === "error" && (
-          <Text className="text-center text-destructive mt-4">Failed to load offers.</Text>
+          <Text className="text-center text-destructive mt-4">{t("offers.detail.loadError")}</Text>
         )}
         {offersReq.status === "ready" && allOffers.length === 0 && (
-          <Text className="text-center text-muted-foreground mt-4">No offers yet.</Text>
+          <Text className="text-center text-muted-foreground mt-4">{t("offers.detail.none")}</Text>
         )}
         {allOffers
           .filter((offer) => {

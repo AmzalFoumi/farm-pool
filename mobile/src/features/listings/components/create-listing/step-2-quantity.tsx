@@ -188,7 +188,7 @@ export default function Step2Quantity({
               </Box>
             </HStack>
             <Text className="type-caption text-muted-foreground" numberOfLines={1}>
-              Specify quantity & batch parameters
+              {t("listings.step2.specify")}
             </Text>
           </VStack>
         </HStack>
@@ -319,7 +319,7 @@ export default function Step2Quantity({
           <VStack className="flex-1">
             <Text className="type-h4 text-foreground">{t("listings.step2.moq")}</Text>
             <Text className="type-caption text-muted-foreground">
-              Smallest volume buyers can order
+              {t("listings.step2.smallestVolume")}
             </Text>
           </VStack>
 
@@ -335,7 +335,7 @@ export default function Step2Quantity({
         {/* Presets Grid */}
         <VStack className="gap-2">
           <Text className="type-caption-bold uppercase text-muted-foreground">
-            Quick Volume Presets
+            {t("listings.step2.quickPresets")}
           </Text>
           <HStack className="flex-row flex-wrap gap-2">
             {[undefined, 20, 50, 100].map((preset) => {
@@ -380,7 +380,7 @@ export default function Step2Quantity({
                   isCustomMoq ? "text-primary-foreground" : "text-foreground"
                 }`}
               >
-                Custom
+                {t("listings.step2.custom")}
               </Text>
             </Pressable>
           </HStack>
@@ -404,7 +404,7 @@ export default function Step2Quantity({
               {t("listings.step2.enterSupply")}
             </Text>
             <Text className="type-caption text-foreground">
-              Please enter a supply quantity greater than 0.
+              {t("listings.step2.quantityError")}
             </Text>
           </VStack>
         ) : isBelowMoq ? (

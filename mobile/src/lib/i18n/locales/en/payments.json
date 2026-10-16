@@ -20,7 +20,8 @@
     "confirm": {
       "notYet": "Not yet",
       "error": "Could not confirm",
-      "yes": "Yes, it arrived"
+      "yes": "Yes, it arrived",
+      "title": "Did your order arrive?"
     },
     "proposal": {
       "newPriceLabel": "New price per kg (Rs)",

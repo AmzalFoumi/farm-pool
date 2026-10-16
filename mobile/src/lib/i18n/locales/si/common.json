@@ -113,5 +113,9 @@
   "paymentStatus": {
     "in_escrow": "ආරක්ෂිතව රඳවා ඇත",
     "released": "සම්පූර්ණයෙන් ගෙවා ඇත"
+  },
+  "brand": {
+    "coordinator": "FarmPool · සම්බන්ධීකාරක",
+    "farmer": "FarmPool · ගොවියා"
   }
 }

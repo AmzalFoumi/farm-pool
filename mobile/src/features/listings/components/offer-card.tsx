@@ -164,13 +164,15 @@ export function OfferCard({
               <View className="text-foreground">
                 <EditIcon />
               </View>
-              <Text className="text-[12px] font-bold text-foreground">Negotiate</Text>
+              <Text className="text-[12px] font-bold text-foreground">
+                {t("listings.offerCard.negotiate")}
+              </Text>
             </Pressable>
             <Pressable
               onPress={onDecline}
               className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-destructive-subtle px-3 py-2.5 active:scale-95"
             >
-              <Text className="text-[12px] font-bold text-destructive">Decline</Text>
+              <Text className="text-[12px] font-bold text-destructive">{t("common.decline")}</Text>
             </Pressable>
           </HStack>
         </VStack>
@@ -184,7 +186,7 @@ export function OfferCard({
         <HStack className="items-center justify-between gap-3">
           <View className="flex-row items-center gap-1.5 rounded-full bg-warning-subtle px-2.5 py-1">
             <Text className="text-[11px] font-bold text-warning tracking-wide">
-              Your Turn to Respond
+              {t("listings.offerCard.yourTurn")}
             </Text>
           </View>
           {offer.round && <Text className="text-[11px] text-muted-foreground">{offer.round}</Text>}
@@ -221,7 +223,7 @@ export function OfferCard({
           </VStack>
           <VStack className="items-end">
             <Text className="text-[11px] font-medium text-muted-foreground">
-              Your Previous Counter
+              {t("listings.offerCard.previousCounter")}
             </Text>
             <Text className="mt-0.5 text-[14px] font-bold text-muted-foreground">
               Rs. {offer.yourCounter}/kg
@@ -232,7 +234,7 @@ export function OfferCard({
         {offer.latestMessage && (
           <View className="rounded-xl bg-background p-3 shadow-sm border border-border">
             <Text className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Latest message
+              {t("listings.offerCard.latestMessage")}
             </Text>
             <Text className="mt-1 text-[12px] leading-5 text-foreground">
               “{offer.latestMessage}”
@@ -245,7 +247,7 @@ export function OfferCard({
           className="flex-row items-center justify-center rounded-xl bg-brand-deep/10 px-3 py-2.5 active:scale-95"
         >
           <Text className="text-[12px] font-bold text-brand-deep">
-            View Full Negotiation History
+            {t("listings.offerCard.viewFullHistory")}
           </Text>
         </Pressable>
 
@@ -254,19 +256,23 @@ export function OfferCard({
             onPress={onAccept}
             className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-primary px-2 py-2.5 active:scale-95"
           >
-            <Text className="text-[12px] font-bold text-primary-foreground">Accept</Text>
+            <Text className="text-[12px] font-bold text-primary-foreground">
+              {t("common.accept")}
+            </Text>
           </Pressable>
           <Pressable
             onPress={onNegotiate}
             className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-muted px-2 py-2.5 active:scale-95"
           >
-            <Text className="text-[12px] font-bold text-foreground">Negotiate</Text>
+            <Text className="text-[12px] font-bold text-foreground">
+              {t("listings.offerCard.negotiate")}
+            </Text>
           </Pressable>
           <Pressable
             onPress={onDecline}
             className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-destructive-subtle px-2 py-2.5 active:scale-95"
           >
-            <Text className="text-[12px] font-bold text-destructive">Decline</Text>
+            <Text className="text-[12px] font-bold text-destructive">{t("common.decline")}</Text>
           </Pressable>
         </HStack>
       </Card>
@@ -340,7 +346,7 @@ export function OfferCard({
               className="flex-[3] flex-row items-center justify-center rounded-xl bg-brand-deep px-3 py-2.5 active:scale-95"
             >
               <Text className="text-[13px] font-bold text-brand-deep-foreground">
-                View Negotiation
+                {t("listings.offerCard.viewNegotiation")}
               </Text>
             </Pressable>
             <Pressable className="flex-1 h-11 items-center justify-center rounded-xl bg-muted active:scale-95">
@@ -360,7 +366,7 @@ export function OfferCard({
         <HStack className="items-center justify-between gap-3">
           <View className="flex-row items-center gap-1.5 rounded-full bg-success-subtle px-2.5 py-1">
             <Text className="text-[11px] font-bold text-success tracking-wide">
-              Contract Confirmed
+              {t("listings.offerCard.contractConfirmed")}
             </Text>
           </View>
           {offer.contractId && (
@@ -414,7 +420,7 @@ export function OfferCard({
         <VStack className="pt-1 gap-2">
           <Pressable className="w-full flex-row items-center justify-center gap-1.5 rounded-xl bg-brand-deep px-3 py-2.5 active:scale-95">
             <Text className="text-[13px] font-bold text-brand-deep-foreground">
-              View Contract & QR
+              {t("listings.offerCard.viewContract")}
             </Text>
           </Pressable>
           <HStack className="gap-2">
@@ -441,7 +447,7 @@ export function OfferCard({
       <HStack className="items-center justify-between gap-3">
         <View className="flex-row items-center gap-1.5 rounded-full bg-destructive-subtle px-2.5 py-1">
           <Text className="text-[11px] font-bold text-destructive tracking-wide">
-            Offer Declined
+            {t("listings.offerCard.offerDeclined")}
           </Text>
         </View>
         {offer.timeAgo && (
@@ -497,7 +503,7 @@ export function OfferCard({
         </Pressable>
         <Pressable className="flex-1 rounded-xl bg-brand-deep px-3 py-2.5 items-center justify-center active:scale-95">
           <Text className="text-[12px] font-bold text-brand-deep-foreground">
-            View Other Offers
+            {t("listings.offerCard.viewOtherOffers")}
           </Text>
         </Pressable>
       </HStack>

@@ -1,4 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { View, Text } from "react-native";
 import { useRequest } from "@/lib/use-request";
 import { listingsApi } from "@/features/listings/api";
@@ -6,6 +7,7 @@ import { useAuth } from "@/providers/auth-provider";
 import { CreateListingScreen } from "@/features/listings/create-listing-screen";
 
 export default function EditListingRoute() {
+  const { t } = useTranslation();
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
   const { token } = useAuth();
 
@@ -20,7 +22,7 @@ export default function EditListingRoute() {
   if (req.status === "loading") {
     return (
       <View className="flex-1 items-center justify-center bg-background">
-        <Text className="text-muted-foreground">Loading listing data...</Text>
+        <Text className="text-muted-foreground">{t("listings.farmerListings.loadingEdit")}</Text>
       </View>
     );
   }
@@ -29,7 +31,7 @@ export default function EditListingRoute() {
     return (
       <View className="flex-1 items-center justify-center bg-background p-4">
         <Text className="text-destructive text-center mb-4">
-          Failed to load listing for editing.
+          {t("listings.farmerListings.editError")}
         </Text>
       </View>
     );

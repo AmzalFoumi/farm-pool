@@ -17,7 +17,8 @@
       "nothingYet": "Nothing needs your attention yet.",
       "noBenchmark": "No benchmark price set",
       "setPrice": "Set price",
-      "updatePrice": "Update price"
+      "updatePrice": "Update price",
+      "newFarmer": "New farmer"
     },
     "benchmarkTab": {
       "title": "Daily benchmark",
@@ -42,7 +43,8 @@
       "thisMonth": "This month",
       "allTime": "All time",
       "noMismatches": "No mismatches",
-      "allCompleted": "All completed"
+      "allCompleted": "All completed",
+      "noCompare": "Can’t compare — nothing earned last month"
     },
     "farmersTab": {
       "title": "Farmers",
@@ -78,7 +80,8 @@
       "reasonPlaceholder": "What needs to change before this can be approved?",
       "approveAnyway": "Yes, approve anyway",
       "marketPrice": "Market price",
-      "checkingBenchmark": "Checking the benchmark…"
+      "checkingBenchmark": "Checking the benchmark…",
+      "approveAnywayTitle": "Approve this listing anyway?"
     },
     "farmerDetail": {
       "title": "Farmer",

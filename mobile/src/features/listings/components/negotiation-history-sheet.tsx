@@ -39,8 +39,12 @@ export function NegotiationHistorySheet({
 
         <HStack className="items-start justify-between w-full mb-6">
           <VStack>
-            <Text className="text-[17px] font-bold text-primary">Negotiation History</Text>
-            <Text className="mt-0.5 text-[12px] text-muted-foreground">Timeline of offers</Text>
+            <Text className="text-[17px] font-bold text-primary">
+              {t("listings.history.title")}
+            </Text>
+            <Text className="mt-0.5 text-[12px] text-muted-foreground">
+              {t("listings.history.subtitle")}
+            </Text>
           </VStack>
           <Pressable
             onPress={onClose}

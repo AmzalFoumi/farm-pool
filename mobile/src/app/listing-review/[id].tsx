@@ -346,7 +346,7 @@ function ListingReview({
                     : "type-caption text-info"
                 }
               >
-                Approve this listing anyway?
+                {t("coordinator.review.approveAnywayTitle")}
               </Text>
               <HStack className="gap-2">
                 <View className="flex-1">

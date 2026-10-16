@@ -98,7 +98,7 @@ export default function FarmerProfileScreen() {
               {t("farmer.profile.coordinatorSupport")}
             </Text>
             <Text className="type-body text-muted-foreground">
-              Need help with crop transport or buyers? Contact your regional coordinator directly.
+              {t("farmer.profile.coordinatorNote")}
             </Text>
           </Card>
         </VStack>

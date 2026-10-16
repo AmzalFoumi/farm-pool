@@ -142,7 +142,9 @@ function SetCropPriceForm({
         keyboardShouldPersistTaps="handled"
       >
         <VStack className="gap-1 rounded-card border border-border bg-card p-4">
-          <Text className="type-body-bold text-foreground">What you already have to go on</Text>
+          <Text className="type-body-bold text-foreground">
+            {t("listings.benchmark.whatYouHave")}
+          </Text>
           <Text className="type-caption text-muted-foreground">
             {context?.current
               ? `Last published ${formatDate(context.current.publishedAt)}: ${formatPrice(
@@ -160,7 +162,7 @@ function SetCropPriceForm({
               : t("listings.benchmark.noActiveListing")}
           </Text>
           <Text className="type-caption text-muted-foreground">
-            No live market feed exists yet — this is set from what you already know.
+            {t("listings.benchmark.noFeed")}
           </Text>
         </VStack>
 
@@ -182,7 +184,9 @@ function SetCropPriceForm({
         >
           <Icon as={GlobeIcon} className="text-muted-foreground" size="md" />
           <VStack className="flex-1 gap-0.5">
-            <Text className="type-body-bold text-foreground">Check other sources</Text>
+            <Text className="type-body-bold text-foreground">
+              {t("listings.benchmark.checkOther")}
+            </Text>
             <Text className="type-caption text-muted-foreground">
               See what {cropName} is selling for elsewhere today
             </Text>
@@ -232,16 +236,23 @@ function PriceHistorySection({
 }: {
   history: ReturnType<typeof useRequest<BenchmarkPrice[]>>;
 }) {
+  const { t } = useTranslation();
   if (history.status === "loading") {
     return (
       <HStack className="items-center gap-2 py-2">
         <Spinner size="small" />
-        <Text className="type-body text-muted-foreground">Loading history…</Text>
+        <Text className="type-body text-muted-foreground">
+          {t("listings.benchmark.loadingHistory")}
+        </Text>
       </HStack>
     );
   }
   if (history.status === "error") {
-    return <Text className="type-body text-muted-foreground">Could not load price history.</Text>;
+    return (
+      <Text className="type-body text-muted-foreground">
+        {t("listings.benchmark.historyError")}
+      </Text>
+    );
   }
   return <PriceHistoryChart history={history.data} />;
 }
@@ -252,13 +263,12 @@ const CHART_POINTS = 12;
 const MIN_BAR_HEIGHT_PCT = 6;
 
 function PriceHistoryChart({ history }: { history: BenchmarkPrice[] }) {
+  const { t } = useTranslation();
   const points = [...history].reverse().slice(-CHART_POINTS);
 
   if (points.length < 2) {
     return (
-      <Text className="type-body text-muted-foreground">
-        Not enough history yet to show a trend.
-      </Text>
+      <Text className="type-body text-muted-foreground">{t("listings.benchmark.noTrend")}</Text>
     );
   }
 

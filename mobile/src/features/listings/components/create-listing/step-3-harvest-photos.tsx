@@ -191,7 +191,7 @@ export default function Step3HarvestPhotos({
       <HStack className="rounded-card bg-brand-deep p-4 items-start gap-3">
         <VStack className="flex-1 gap-0.5">
           <Text className="type-body-bold text-brand-deep-foreground">
-            Photo upload is not built yet
+            {t("listings.step3.uploadNotBuilt")}
           </Text>
           <Text className="type-caption text-brand-deep-muted">
             {t("listings.step3.sampleNote")}
@@ -234,7 +234,7 @@ export default function Step3HarvestPhotos({
               </Box>
             </HStack>
             <Text className="type-caption text-muted-foreground">
-              Capture the entire crop pile, crates, or scale of harvest.
+              {t("listings.step3.wideHint")}
             </Text>
           </VStack>
 
@@ -308,7 +308,7 @@ export default function Step3HarvestPhotos({
               </Box>
             </HStack>
             <Text className="type-caption text-muted-foreground">
-              Show skin color, firmness, texture & absence of rot.
+              {t("listings.step3.closeupHint")}
             </Text>
           </VStack>
 
@@ -382,7 +382,7 @@ export default function Step3HarvestPhotos({
               </Box>
             </HStack>
             <Text className="type-caption text-muted-foreground">
-              Show how produce is stacked or packed in crates.
+              {t("listings.step3.packagingHint")}
             </Text>
           </VStack>
 

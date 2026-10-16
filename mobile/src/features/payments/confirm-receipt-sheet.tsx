@@ -69,7 +69,7 @@ export function ConfirmReceiptSheet({
           <ActionsheetDragIndicator />
         </ActionsheetDragIndicatorWrapper>
         <VStack className="w-full gap-4 pt-2">
-          <Text className="type-h3 text-foreground">Did your order arrive?</Text>
+          <Text className="type-h3 text-foreground">{t("payments.confirm.title")}</Text>
           <Text className="type-body text-muted-foreground">
             Confirming sends the {formatPrice(payment.heldAmount)} still held to {order.farmerName}.
             This cannot be undone.

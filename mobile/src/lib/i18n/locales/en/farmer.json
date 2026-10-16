@@ -29,7 +29,8 @@
       "registeredRole": "Registered Role",
       "producer": "Producer / Farmer",
       "help": "Help & Support",
-      "coordinatorSupport": "Area Coordinator Support"
+      "coordinatorSupport": "Area Coordinator Support",
+      "coordinatorNote": "Need help with crop transport or buyers? Contact your regional coordinator directly."
     },
     "orders": {
       "heading": "Incoming orders",

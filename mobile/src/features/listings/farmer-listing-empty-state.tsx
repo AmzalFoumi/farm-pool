@@ -27,9 +27,11 @@ export function FarmerListingEmptyState({ filter }: FarmerListingEmptyStateProps
             <SvgXml xml={EMPTY_PAUSED_ICON} width={28} height={28} color="currentColor" />
           </View>
         </View>
-        <Text className="type-body-lg-bold text-foreground mb-1">No paused listings</Text>
+        <Text className="type-body-lg-bold text-foreground mb-1">
+          {t("listings.empty.noPaused")}
+        </Text>
         <Text className="type-body-sm text-muted-foreground text-center">
-          All your crops are active or sold in the marketplace!
+          {t("listings.empty.allActive")}
         </Text>
       </Card>
     );
@@ -37,9 +39,9 @@ export function FarmerListingEmptyState({ filter }: FarmerListingEmptyStateProps
 
   return (
     <Card className="items-center justify-center py-10 px-4 bg-card border-border mt-2">
-      <Text className="type-body-bold text-foreground">No listings found</Text>
+      <Text className="type-body-bold text-foreground">{t("listings.empty.noneFound")}</Text>
       <Text className="type-body text-muted-foreground text-center mt-1 mb-4">
-        You have not posted any produce batches under this tab yet.
+        {t("listings.empty.noneBody")}
       </Text>
       <AppButton
         label={t("listings.empty.create")}

@@ -17,7 +17,8 @@
       "nothingYet": "තවම ඔබේ අවධානය අවශ්‍ය කිසිවක් නැත.",
       "noBenchmark": "මූලික මිලක් සකසා නැත",
       "setPrice": "මිල සකසන්න",
-      "updatePrice": "මිල යාවත්කාලීන කරන්න"
+      "updatePrice": "මිල යාවත්කාලීන කරන්න",
+      "newFarmer": "නව ගොවියා"
     },
     "benchmarkTab": {
       "title": "දෛනික මූලික මිල",
@@ -42,7 +43,8 @@
       "thisMonth": "මෙම මාසය",
       "allTime": "සියලු කාලය",
       "noMismatches": "නොගැළපීම් නැත",
-      "allCompleted": "සියල්ල සම්පූර්ණ"
+      "allCompleted": "සියල්ල සම්පූර්ණ",
+      "noCompare": "සැසඳිය නොහැක — පසුගිය මාසයේ ආදායමක් නැත"
     },
     "farmersTab": {
       "title": "ගොවීන්",
@@ -78,7 +80,8 @@
       "reasonPlaceholder": "අනුමත කිරීමට පෙර වෙනස් විය යුත්තේ කුමක්ද?",
       "approveAnyway": "ඔව්, කෙසේ වෙතත් අනුමත කරන්න",
       "marketPrice": "වෙළඳපොල මිල",
-      "checkingBenchmark": "මූලික මිල පරීක්ෂා කරමින්…"
+      "checkingBenchmark": "මූලික මිල පරීක්ෂා කරමින්…",
+      "approveAnywayTitle": "කෙසේ වෙතත් මෙම දැන්වීම අනුමත කරන්නද?"
     },
     "farmerDetail": {
       "title": "ගොවියා",

@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { SvgXml } from "react-native-svg";
 
 import { Text } from "@/components/ui/text";
@@ -14,6 +15,7 @@ const CHEVRON_ICON = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none
 </svg>`;
 
 export function RegionalDemandAlert() {
+  const { t } = useTranslation();
   return (
     <View className="bg-brand-deep p-3.5 rounded-card flex-row items-center justify-between shadow-sm overflow-hidden mb-3 gap-3">
       <HStack className="items-center gap-3 flex-1">
@@ -23,11 +25,11 @@ export function RegionalDemandAlert() {
         <VStack className="flex-1">
           <HStack className="items-center gap-1.5 flex-wrap">
             <Text className="type-caption-bold text-brand-deep-foreground">
-              Regional Demand Alert
+              {t("listings.demandAlert.title")}
             </Text>
             <View className="bg-success px-1.5 py-0.5 rounded-full">
               <Text className="text-[9px] font-bold uppercase tracking-wider text-primary-foreground">
-                High
+                {t("listings.demandAlert.high")}
               </Text>
             </View>
           </HStack>

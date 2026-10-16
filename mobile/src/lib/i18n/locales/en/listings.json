@@ -82,7 +82,12 @@
       "gradeChip": "Grade {{grade}}",
       "certifications": "Certifications",
       "certificationsOptional": "Certifications (Optional)",
-      "moqPlaceholder": "e.g. 15"
+      "moqPlaceholder": "e.g. 15",
+      "specify": "Specify quantity & batch parameters",
+      "smallestVolume": "Smallest volume buyers can order",
+      "quickPresets": "Quick Volume Presets",
+      "custom": "Custom",
+      "quantityError": "Please enter a supply quantity greater than 0."
     },
     "step3": {
       "title": "Add Harvest Photos",
@@ -128,7 +133,11 @@
         "scaleBody": "Place a 25kg crate next to produce for buyer scale context.",
         "filterLabel": "No Filters:",
         "filterBody": "Buyers need authentic photos without artificial color editing."
-      }
+      },
+      "uploadNotBuilt": "Photo upload is not built yet",
+      "wideHint": "Capture the entire crop pile, crates, or scale of harvest.",
+      "closeupHint": "Show skin color, firmness, texture & absence of rot.",
+      "packagingHint": "Show how produce is stacked or packed in crates."
     },
     "step4": {
       "title": "Set Asking Price",
@@ -147,7 +156,13 @@
       "negotiationOn": "Buyers can send you an offer. You can accept, decline or name another price.",
       "negotiationOff": "Buyers can only order at your asking price.",
       "on": "On",
-      "off": "Off"
+      "off": "Off",
+      "sampleRange": "Sample price range",
+      "sampleNote": "Example figures until real market prices are available. Not live data.",
+      "askingPrice": "Your Asking Price",
+      "perKilogram": "per Kilogram",
+      "tapToType": "Tap to type",
+      "totalEarnings": "Total Est. Earnings"
     },
     "step5": {
       "title": "Schedule Transport",
@@ -180,7 +195,13 @@
         "allDay": "All day"
       },
       "datePlaceholder": "e.g. 2026-09-25",
-      "districtPlaceholder": "e.g. Kurunegala"
+      "districtPlaceholder": "e.g. Kurunegala",
+      "selectReady": "Select when crop will be ready for pickup",
+      "quickOptions": "Quick Options",
+      "customCalendar": "Custom Calendar",
+      "enterReadyDate": "Enter Ready Date (YYYY-MM-DD):",
+      "windowNote": "The driver promises a time inside this, and you will see it before they arrive.",
+      "moveCrop": "How would you like to move your crop?"
     },
     "review": {
       "title": "Review & Publish",
@@ -214,14 +235,25 @@
       "quantity": "Quantity",
       "inactiveFarmer": "This offer is no longer active. Your listing can continue receiving offers from other buyers.",
       "inactiveBuyer": "This offer is no longer active. You can make a new offer from the listing.",
-      "viewHistory": "View Negotiation History"
+      "viewHistory": "View Negotiation History",
+      "yourTurn": "Your Turn to Respond",
+      "previousCounter": "Your Previous Counter",
+      "latestMessage": "Latest message",
+      "viewFullHistory": "View Full Negotiation History",
+      "viewNegotiation": "View Negotiation",
+      "contractConfirmed": "Contract Confirmed",
+      "viewContract": "View Contract & QR",
+      "offerDeclined": "Offer Declined",
+      "viewOtherOffers": "View Other Offers"
     },
     "negotiate": {
       "submit": "Submit Counter-Offer",
       "grossPayout": "Gross payout",
       "youPay": "You pay",
       "total": "Total",
-      "addNote": "Add a note"
+      "addNote": "Add a note",
+      "counterRate": "Counter Rate",
+      "sendCounter": "Send Counter"
     },
     "history": {
       "title": "Negotiation History",
@@ -235,7 +267,15 @@
       "markSold": "Mark as Sold",
       "offlineReceipt": "Record offline / direct settlement receipt",
       "escrowReceipt": "Conclude crop escrow & record settlement receipt",
-      "deleteListing": "Delete Listing"
+      "deleteListing": "Delete Listing",
+      "inactive": "Listing is currently inactive.",
+      "inactiveNote": "Buyers and wholesale aggregators cannot discover or place bids on this batch.",
+      "resume": "Resume / Reactivate Listing",
+      "resumeNote": "Make visible to buyers again to start receiving bids",
+      "editNote": "Adjust price, batch quantity, grade & harvest date",
+      "pause": "Pause / Hide from Marketplace",
+      "pauseNote": "Temporarily hide from buyers without deleting batch data",
+      "deleteNote": "Permanently remove this batch from FarmPool LK"
     },
     "farmerCard": {
       "noOffers": "No offers yet",
@@ -247,12 +287,18 @@
       "escrowReleased": "Escrow Released",
       "rejected": "Rejected",
       "paused": "Paused",
-      "incomplete": "Incomplete"
+      "incomplete": "Incomplete",
+      "hidden": "Hidden from marketplace",
+      "draftBadge": "DRAFT",
+      "rejectedBadge": "REJECTED",
+      "soldBadge": "SOLD"
     },
     "empty": {
       "noPaused": "No paused listings",
       "noneFound": "No listings found",
-      "create": "Create listing"
+      "create": "Create listing",
+      "noneBody": "You have not posted any produce batches under this tab yet.",
+      "allActive": "All your crops are active or sold in the marketplace!"
     },
     "detail": {
       "callError": "Could not request a call",
@@ -309,13 +355,33 @@
       "saving": "Saving…",
       "publishPrice": "Publish price",
       "loadingHistory": "Loading history…",
-      "historyError": "Could not load price history."
+      "historyError": "Could not load price history.",
+      "noTrend": "Not enough history yet to show a trend.",
+      "noFeed": "No live market feed exists yet — this is set from what you already know."
     },
     "packagingShort": {
       "plastic-crate": "Plastic crates",
       "wooden-box": "Wooden boxes",
       "cardboard": "Cardboard cartons",
       "mesh-bag": "Mesh bags"
+    },
+    "done": {
+      "pendingApproval": "PENDING COORDINATOR APPROVAL",
+      "totalSupply": "Total Supply",
+      "askingPrice": "Asking Price",
+      "nextSteps": "Next Steps & Marketplace Verification",
+      "viewListings": "View My Listings",
+      "returnHome": "Return to Dashboard"
+    },
+    "farmerListings": {
+      "title": "My Listings",
+      "note": "Manage crop batches, live offers & escrow",
+      "loadingEdit": "Loading listing data...",
+      "editError": "Failed to load listing for editing."
+    },
+    "demandAlert": {
+      "title": "Regional Demand Alert",
+      "high": "High"
     }
   }
 }

@@ -145,7 +145,7 @@ export default function RegionScreen() {
             <VStack className="mx-gutter gap-3 rounded-card border border-border bg-card p-4">
               <HStack className="items-center gap-2">
                 <Icon as={ClockIcon} className="text-muted-foreground" size="sm" />
-                <Text className="type-h4 text-foreground">Needs you today</Text>
+                <Text className="type-h4 text-foreground">{t("coordinator.region.needsYou")}</Text>
               </HStack>
               <TasksSection tasks={tasks} />
             </VStack>
@@ -161,6 +161,7 @@ export default function RegionScreen() {
  * fill a whole screen (`flex-1`), which collapses to nothing inside a card this size.
  */
 function TasksSection({ tasks }: { tasks: ReturnType<typeof useRequest<CoordinatorTask[]>> }) {
+  const { t } = useTranslation();
   if (tasks.status === "loading") {
     return (
       <HStack className="items-center gap-2 py-2">
@@ -170,11 +171,13 @@ function TasksSection({ tasks }: { tasks: ReturnType<typeof useRequest<Coordinat
     );
   }
   if (tasks.status === "error") {
-    return <Text className="type-body text-muted-foreground">Could not check right now.</Text>;
+    return (
+      <Text className="type-body text-muted-foreground">{t("coordinator.region.checkError")}</Text>
+    );
   }
   if (tasks.data.length === 0) {
     return (
-      <Text className="type-body text-muted-foreground">Nothing needs your attention yet.</Text>
+      <Text className="type-body text-muted-foreground">{t("coordinator.region.nothingYet")}</Text>
     );
   }
   return (
@@ -240,7 +243,7 @@ function TaskRow({ task }: { task: CoordinatorTask }) {
             {task.farmerName}
           </Text>
           <Text className="type-caption text-muted-foreground" numberOfLines={1}>
-            New farmer
+            {t("coordinator.region.newFarmer")}
           </Text>
         </VStack>
         <Box className="rounded-pill bg-info-subtle px-3 py-1">

@@ -140,7 +140,7 @@ export function MakeOfferSheet({
         >
           <VStack className="w-full gap-4 pt-2">
             <VStack className="gap-1">
-              <Text className="type-h3 text-foreground">Make an offer</Text>
+              <Text className="type-h3 text-foreground">{t("offers.make.title")}</Text>
               <Text className="type-caption text-muted-foreground">
                 {listing.farmerName} is asking {formatPrice(listing.pricePerKg)} per kg.
               </Text>

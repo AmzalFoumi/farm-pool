@@ -30,7 +30,14 @@
       "declineConfirm": "Yes, decline",
       "declineError": "Could not decline",
       "viewOrder": "View the order",
-      "sendError": "Could not send"
+      "sendError": "Could not send",
+      "title": "Offer",
+      "agreedNote": "This offer was agreed and is now an order.",
+      "pageTitle": "Offers & Negotiations",
+      "listingError": "Failed to load listing",
+      "loading": "Loading offers...",
+      "loadError": "Failed to load offers.",
+      "none": "No offers yet."
     }
   }
 }

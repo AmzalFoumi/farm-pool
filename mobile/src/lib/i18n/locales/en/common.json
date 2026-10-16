@@ -113,5 +113,9 @@
   "paymentStatus": {
     "in_escrow": "Held safely",
     "released": "Paid in full"
+  },
+  "brand": {
+    "coordinator": "FarmPool · Coordinator",
+    "farmer": "FarmPool · Farmer"
   }
 }

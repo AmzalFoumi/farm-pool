@@ -158,7 +158,7 @@ export default function DisputesScreen() {
                       </Text>
                     ) : (
                       <Text className="type-caption pl-1 text-muted-foreground">
-                        Can’t compare — nothing earned last month
+                        {t("coordinator.disputes.noCompare")}
                       </Text>
                     )
                   ) : null}

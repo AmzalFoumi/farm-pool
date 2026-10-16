@@ -172,7 +172,7 @@ function CropPriceRow({ context }: { context: CropPriceContext }) {
           </Text>
         ) : (
           <Box className="rounded-pill bg-warning-subtle px-3 py-1">
-            <Text className="type-body-sm-bold text-warning">Not set</Text>
+            <Text className="type-body-sm-bold text-warning">{t("common.notSet")}</Text>
           </Box>
         )}
       </HStack>

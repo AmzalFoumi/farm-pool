@@ -66,7 +66,9 @@ export default function MyOffersScreen() {
                       {other} · {formatPrice(item.pricePerKg)}/kg
                     </Text>
                     {yourTurn ? (
-                      <Text className="type-body-sm-bold text-warning">Your turn to answer</Text>
+                      <Text className="type-body-sm-bold text-warning">
+                        {t("offers.mine.yourTurn")}
+                      </Text>
                     ) : null}
                   </VStack>
                   <OfferStatusPill status={item.status} />

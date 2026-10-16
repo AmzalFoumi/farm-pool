@@ -147,7 +147,7 @@ export default function Step4Price({
       <VStack className="elevation-card gap-2 rounded-card border border-border bg-secondary p-4">
         <HStack className="items-center justify-between">
           <HStack className="items-center gap-1.5">
-            <Text className="type-body-bold text-primary">Sample price range</Text>
+            <Text className="type-body-bold text-primary">{t("listings.step4.sampleRange")}</Text>
           </HStack>
 
           <Box className="rounded-pill bg-card border border-border px-2.5 py-1">
@@ -162,14 +162,14 @@ export default function Step4Price({
           <Text className="type-caption text-muted-foreground">/ kg</Text>
         </HStack>
 
-        <Text className="type-caption text-muted-foreground">
-          Example figures until real market prices are available. Not live data.
-        </Text>
+        <Text className="type-caption text-muted-foreground">{t("listings.step4.sampleNote")}</Text>
       </VStack>
 
       {/* Asking Price Input Card */}
       <VStack className="elevation-card gap-5 rounded-card border border-border bg-card p-6 items-center">
-        <Text className="type-caption-bold uppercase text-muted-foreground">Your Asking Price</Text>
+        <Text className="type-caption-bold uppercase text-muted-foreground">
+          {t("listings.step4.askingPrice")}
+        </Text>
 
         {/* Stepper Controls & Large Display */}
         <HStack className="w-full items-center justify-between gap-3">
@@ -194,8 +194,12 @@ export default function Step4Price({
               <Text className="type-display text-primary">{pricePerKg}</Text>
             </HStack>
             <Box className="my-1.5 h-0.5 w-16 bg-border" />
-            <Text className="type-caption text-muted-foreground">per Kilogram</Text>
-            <Text className="type-caption text-secondary-foreground pt-0.5">Tap to type</Text>
+            <Text className="type-caption text-muted-foreground">
+              {t("listings.step4.perKilogram")}
+            </Text>
+            <Text className="type-caption text-secondary-foreground pt-0.5">
+              {t("listings.step4.tapToType")}
+            </Text>
           </Pressable>
 
           <Pressable
@@ -253,7 +257,7 @@ export default function Step4Price({
         <HStack className="items-center gap-3">
           <VStack className="gap-0.5">
             <Text className="type-caption-bold uppercase text-brand-deep-muted">
-              Total Est. Earnings
+              {t("listings.step4.totalEarnings")}
             </Text>
             <Text className="type-body-sm text-brand-deep-foreground">
               {totalQuantityKg} kg × {formatPrice(pricePerKg)}

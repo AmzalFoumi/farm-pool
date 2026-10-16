@@ -202,7 +202,9 @@ export function CreateListingScreen({ initialData }: { initialData?: Listing }) 
           {/* Status Icon Header */}
           <VStack className="items-center text-center gap-3">
             <Badge variant="outline" className="bg-warning-subtle border-transparent px-3 py-1">
-              <Text className="type-caption-bold text-warning">PENDING COORDINATOR APPROVAL</Text>
+              <Text className="type-caption-bold text-warning">
+                {t("listings.done.pendingApproval")}
+              </Text>
             </Badge>
 
             <Heading className="type-h3 text-foreground text-center">
@@ -234,12 +236,16 @@ export function CreateListingScreen({ initialData }: { initialData?: Listing }) 
 
             <HStack className="items-center justify-between">
               <VStack>
-                <Text className="type-caption text-muted-foreground">Total Supply</Text>
+                <Text className="type-caption text-muted-foreground">
+                  {t("listings.done.totalSupply")}
+                </Text>
                 <Text className="type-body-bold text-foreground">{totalKg} kg</Text>
               </VStack>
 
               <VStack className="items-end">
-                <Text className="type-caption text-muted-foreground">Asking Price</Text>
+                <Text className="type-caption text-muted-foreground">
+                  {t("listings.done.askingPrice")}
+                </Text>
                 <Text className="type-title text-primary">
                   {formatPrice(listingData.step4?.pricePerKg ?? 0)} / kg
                 </Text>
@@ -250,7 +256,7 @@ export function CreateListingScreen({ initialData }: { initialData?: Listing }) 
 
             <VStack className="gap-1">
               <Text className="type-caption-bold text-muted-foreground">
-                Next Steps & Marketplace Verification
+                {t("listings.done.nextSteps")}
               </Text>
               <Text className="type-caption text-muted-foreground">
                 1. Area coordinator verifies quality & harvest date.
@@ -267,11 +273,11 @@ export function CreateListingScreen({ initialData }: { initialData?: Listing }) 
           style={{ paddingBottom: Math.max(insets.bottom, 16) }}
         >
           <AppButton
-            label="View My Listings"
+            label={t("listings.done.viewListings")}
             onPress={() => router.replace("/(farmer)/(tabs)/farmer-listings")}
           />
           <AppButton
-            label="Return to Dashboard"
+            label={t("listings.done.returnHome")}
             variant="outline"
             onPress={() => router.replace("/(farmer)/(tabs)/farmer-home")}
           />

@@ -54,7 +54,7 @@ export function PriceOutlierAlert({
     <VStack className="mx-gutter gap-3 rounded-card border border-border bg-card p-4">
       <HStack className="items-center gap-2">
         <Icon as={InfoIcon} className="text-muted-foreground" size="sm" />
-        <Text className="type-h4 text-foreground">Priced outside benchmark</Text>
+        <Text className="type-h4 text-foreground">{t("coordinator.outlier.title")}</Text>
       </HStack>
       {outliers.map(({ listing, comparison }) => {
         const crop = cropById(listing.cropId);

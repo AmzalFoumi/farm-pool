@@ -27,6 +27,7 @@ import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function OfferScreen() {
+  const { t } = useTranslation();
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
   const router = useRouter();
@@ -46,7 +47,7 @@ export default function OfferScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Offer" />
+      <AppBar title={t("offers.detail.title")} />
       <RequestView request={offer}>
         {(data) => (
           <OfferBody
@@ -142,7 +143,7 @@ function OfferBody({
         {offer.orderId ? (
           <VStack className="gap-2">
             <Text className="type-caption text-muted-foreground">
-              This offer was agreed and is now an order.
+              {t("offers.detail.agreedNote")}
             </Text>
             <AppButton
               label={t("offers.detail.viewOrder")}

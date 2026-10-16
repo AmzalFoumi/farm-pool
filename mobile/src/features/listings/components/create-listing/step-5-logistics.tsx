@@ -183,7 +183,7 @@ export default function Step5Logistics({
             <Text className="type-h4 text-foreground">{t("listings.step5.readyDateHeading")}</Text>
           </HStack>
           <Text className="type-caption text-muted-foreground">
-            Select when crop will be ready for pickup
+            {t("listings.step5.selectReady")}
           </Text>
         </VStack>
 
@@ -202,7 +202,7 @@ export default function Step5Logistics({
                 dateMode === "quick" ? "text-primary" : "text-muted-foreground"
               }`}
             >
-              Quick Options
+              {t("listings.step5.quickOptions")}
             </Text>
           </Pressable>
 
@@ -219,7 +219,7 @@ export default function Step5Logistics({
                 dateMode === "calendar" ? "text-primary" : "text-muted-foreground"
               }`}
             >
-              Custom Calendar
+              {t("listings.step5.customCalendar")}
             </Text>
           </Pressable>
         </HStack>
@@ -254,7 +254,7 @@ export default function Step5Logistics({
         {dateMode === "calendar" && (
           <VStack className="gap-2 rounded-field bg-muted p-3 border border-border">
             <Text className="type-caption-bold text-secondary-foreground">
-              Enter Ready Date (YYYY-MM-DD):
+              {t("listings.step5.enterReadyDate")}
             </Text>
             <AppTextField
               label={t("listings.step5.readyDateLabel")}
@@ -294,7 +294,7 @@ export default function Step5Logistics({
         <VStack className="gap-0.5">
           <Text className="type-h4 text-foreground">{t("listings.step5.lorryHeading")}</Text>
           <Text className="type-caption text-muted-foreground">
-            The driver promises a time inside this, and you will see it before they arrive.
+            {t("listings.step5.windowNote")}
           </Text>
         </VStack>
         <HStack className="gap-2">
@@ -339,9 +339,7 @@ export default function Step5Logistics({
           <HStack className="items-center gap-2">
             <Text className="type-h4 text-foreground">{t("listings.step5.transportHeading")}</Text>
           </HStack>
-          <Text className="type-caption text-muted-foreground">
-            How would you like to move your crop?
-          </Text>
+          <Text className="type-caption text-muted-foreground">{t("listings.step5.moveCrop")}</Text>
         </VStack>
 
         {/* Shared Transport Radio Card (Recommended) */}

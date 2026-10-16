@@ -47,7 +47,9 @@ export default function CoordinatorProfileScreen() {
           </Box>
           <VStack className="flex-1 gap-0.5">
             <Text className="type-h4 text-foreground">{user.displayName}</Text>
-            <Text className="type-caption text-muted-foreground">Area coordinator</Text>
+            <Text className="type-caption text-muted-foreground">
+              {t("coordinator.profile.role")}
+            </Text>
           </VStack>
         </HStack>
 

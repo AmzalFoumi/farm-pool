@@ -89,7 +89,7 @@ export function AcceptOfferSheet({
         >
           <VStack className="w-full gap-4 pt-2">
             <VStack className="gap-1">
-              <Text className="type-h3 text-foreground">Accept this offer?</Text>
+              <Text className="type-h3 text-foreground">{t("offers.accept.title")}</Text>
               <Text className="type-body text-muted-foreground">
                 {t(cropLabelKey(offer.cropId))} · {offer.quantityKg} kg at{" "}
                 {formatPrice(offer.pricePerKg)} per kg — {formatPrice(offer.total)} in all.

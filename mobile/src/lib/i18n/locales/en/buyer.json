@@ -70,6 +70,7 @@
       "acceptedNote": "You accepted. A driver is booked once the buyer pays.",
       "accept": "Accept order",
       "cancelRequest": "Cancel request"
-    }
+    },
+    "listingsTitle": "Listings"
   }
 }

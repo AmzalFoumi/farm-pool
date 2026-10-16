@@ -48,7 +48,7 @@ export default function FarmerHomeScreen() {
           <VStack className="gap-3">
             <VStack className="gap-1">
               <Text className="type-caption-bold text-brand-deep-muted uppercase">
-                Sell Your Farm Harvest
+                {t("farmer.home.heroTitle")}
               </Text>
               <Text className="type-h3 text-brand-deep-foreground">{t("farmer.home.post")}</Text>
               <Text className="type-body text-brand-deep-muted">{t("farmer.home.heroNote")}</Text>

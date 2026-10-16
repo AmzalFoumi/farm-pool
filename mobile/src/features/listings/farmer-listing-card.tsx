@@ -93,13 +93,15 @@ export function FarmerListingCard({
         onPress={onResumePress}
         className="flex-[3] bg-primary rounded-xl py-2.5 px-3 flex-row items-center justify-center gap-1.5 active:opacity-80"
       >
-        <Text className="type-body-sm-bold text-primary-foreground">Resume / Unhide</Text>
+        <Text className="type-body-sm-bold text-primary-foreground">
+          {t("listings.farmerCard.resume")}
+        </Text>
       </Pressable>
       <Pressable
         onPress={onEditPress}
         className="flex-1 bg-secondary rounded-xl py-2.5 px-3 flex-row items-center justify-center gap-1 active:opacity-80"
       >
-        <Text className="type-body-sm-bold text-secondary-foreground">Edit</Text>
+        <Text className="type-body-sm-bold text-secondary-foreground">{t("common.edit")}</Text>
       </Pressable>
     </HStack>
   );
@@ -110,7 +112,9 @@ export function FarmerListingCard({
         onPress={onCompletePress}
         className="flex-1 bg-brand-deep rounded-xl px-3 py-2 flex-row items-center justify-center gap-1.5 active:opacity-80"
       >
-        <Text className="type-body-sm-bold text-brand-deep-foreground">Complete Listing</Text>
+        <Text className="type-body-sm-bold text-brand-deep-foreground">
+          {t("listings.farmerCard.complete")}
+        </Text>
         <View className="text-brand-deep-foreground">
           <ChevronRightIcon />
         </View>
@@ -120,12 +124,16 @@ export function FarmerListingCard({
 
   const renderSoldActions = () => (
     <HStack className="items-center justify-between pt-1 border-t border-border mt-1">
-      <Text className="type-body-sm text-muted-foreground">Completed recently</Text>
+      <Text className="type-body-sm text-muted-foreground">
+        {t("listings.farmerCard.completedRecently")}
+      </Text>
       <HStack className="items-center gap-1">
         <View className="text-success">
           <CheckMarkIcon />
         </View>
-        <Text className="type-body-sm-bold text-success">Escrow Released</Text>
+        <Text className="type-body-sm-bold text-success">
+          {t("listings.farmerCard.escrowReleased")}
+        </Text>
       </HStack>
     </HStack>
   );
@@ -138,7 +146,7 @@ export function FarmerListingCard({
       {listing.status === "paused" && (
         <View className="bg-muted rounded-xl px-3 py-1.5 flex-row items-center justify-between mb-1">
           <Text className="type-body-sm-bold text-muted-foreground uppercase tracking-wider text-[10px]">
-            Hidden from marketplace
+            {t("listings.farmerCard.hidden")}
           </Text>
         </View>
       )}
@@ -172,17 +180,23 @@ export function FarmerListingCard({
           )}
           {listing.status === "draft" && (
             <View className="absolute bottom-1 right-1 bg-warning px-1 rounded shadow">
-              <Text className="text-[9px] font-black text-warning-foreground">DRAFT</Text>
+              <Text className="text-[9px] font-black text-warning-foreground">
+                {t("listings.farmerCard.draftBadge")}
+              </Text>
             </View>
           )}
           {listing.status === "sold" && (
             <View className="absolute bottom-1 right-1 bg-muted-foreground px-1 rounded shadow">
-              <Text className="text-[9px] font-black text-card">SOLD</Text>
+              <Text className="text-[9px] font-black text-card">
+                {t("listings.farmerCard.soldBadge")}
+              </Text>
             </View>
           )}
           {listing.status === "rejected" && (
             <View className="absolute bottom-1 right-1 bg-destructive px-1 rounded shadow">
-              <Text className="text-[9px] font-black text-destructive-foreground">REJECTED</Text>
+              <Text className="text-[9px] font-black text-destructive-foreground">
+                {t("listings.farmerCard.rejectedBadge")}
+              </Text>
             </View>
           )}
         </View>
@@ -194,7 +208,9 @@ export function FarmerListingCard({
             </Text>
             {listing.status === "paused" && (
               <View className="bg-muted px-1.5 py-0.5 rounded">
-                <Text className="text-[10px] font-bold text-muted-foreground">Paused</Text>
+                <Text className="text-[10px] font-bold text-muted-foreground">
+                  {t("listings.farmerCard.paused")}
+                </Text>
               </View>
             )}
           </HStack>
@@ -216,11 +232,15 @@ export function FarmerListingCard({
               </View>
             ) : listing.status === "draft" ? (
               <View className="bg-warning-subtle px-2 py-0.5 rounded-md">
-                <Text className="type-body-sm-bold text-warning">Incomplete</Text>
+                <Text className="type-body-sm-bold text-warning">
+                  {t("listings.farmerCard.incomplete")}
+                </Text>
               </View>
             ) : listing.status === "rejected" ? (
               <View className="bg-destructive-subtle px-2 py-0.5 rounded-md">
-                <Text className="type-body-sm-bold text-destructive">Rejected</Text>
+                <Text className="type-body-sm-bold text-destructive">
+                  {t("listings.farmerCard.rejected")}
+                </Text>
               </View>
             ) : (
               <View className="bg-secondary px-2 py-0.5 rounded-md">
