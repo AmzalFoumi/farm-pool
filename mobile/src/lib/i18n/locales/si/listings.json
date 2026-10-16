@@ -81,7 +81,8 @@
       "gradeNote": "තද බව සහ පෙනුම අනුව වර්ග කරන්න",
       "gradeChip": "{{grade}} ශ්‍රේණිය",
       "certifications": "සහතික",
-      "certificationsOptional": "සහතික (අත්‍යවශ්‍ය නොවේ)"
+      "certificationsOptional": "සහතික (අත්‍යවශ්‍ය නොවේ)",
+      "moqPlaceholder": "උදා. 15"
     },
     "step3": {
       "title": "අස්වනු ඡායාරූප එක් කරන්න",
@@ -177,7 +178,9 @@
         "morning": "උදේ",
         "afternoon": "දහවල්",
         "allDay": "දවස පුරා"
-      }
+      },
+      "datePlaceholder": "උදා. 2026-09-25",
+      "districtPlaceholder": "උදා. කුරුණෑගල"
     },
     "review": {
       "title": "සමාලෝචනය සහ ප්‍රකාශය",

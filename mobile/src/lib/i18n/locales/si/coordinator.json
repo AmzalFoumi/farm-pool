@@ -1,1 +1,123 @@
-{}
+{
+  "coordinator": {
+    "tabs": {
+      "region": "ප්‍රදේශය",
+      "farmers": "ගොවීන්",
+      "listings": "දැන්වීම්",
+      "disputes": "ගැටලු",
+      "prices": "මිල"
+    },
+    "region": {
+      "hello": "ආයුබෝවන්",
+      "farmersToVerify": "සත්‍යාපනය කළ යුතු ගොවීන්",
+      "allVerified": "සියල්ල සත්‍යාපිත",
+      "noDisputes": "ගැටලු නැත",
+      "needsYou": "අද ඔබේ අවධානය අවශ්‍යයි",
+      "checkError": "මේ මොහොතේ පරීක්ෂා කළ නොහැක.",
+      "nothingYet": "තවම ඔබේ අවධානය අවශ්‍ය කිසිවක් නැත.",
+      "noBenchmark": "මූලික මිලක් සකසා නැත",
+      "setPrice": "මිල සකසන්න",
+      "updatePrice": "මිල යාවත්කාලීන කරන්න"
+    },
+    "benchmarkTab": {
+      "title": "දෛනික මූලික මිල",
+      "stale": "පැරණි",
+      "searchCrop": "බෝගය සොයන්න",
+      "noCrops": "මෙහි බෝග නැත",
+      "noCropsBody": "මෙම සෙවීම හෝ පෙරහනට කිසිවක් නොගැළපේ.",
+      "noPricePublished": "තවම මිලක් ප්‍රකාශ කර නැත"
+    },
+    "listingsTab": {
+      "title": "දැන්වීම්",
+      "pending": "බලාපොරොත්තුවෙන්",
+      "verified": "සත්‍යාපිත",
+      "rejected": "ප්‍රතික්ෂේප කළා",
+      "thisFarmer": "මෙම ගොවියා",
+      "search": "බෝගය හෝ ගොවියා සොයන්න",
+      "none": "මෙහි දැන්වීම් නැත",
+      "noneBody": "තවම මෙම පෙරහනට කිසිවෙක් නොගැළපේ."
+    },
+    "disputes": {
+      "title": "ගැටලු",
+      "thisMonth": "මෙම මාසය",
+      "allTime": "සියලු කාලය",
+      "noMismatches": "නොගැළපීම් නැත",
+      "allCompleted": "සියල්ල සම්පූර්ණ"
+    },
+    "farmersTab": {
+      "title": "ගොවීන්",
+      "none": "මෙහි ගොවීන් නැත",
+      "noneBody": "තවම මෙම පෙරහනට කිසිවෙක් නොගැළපේ.",
+      "pendingReview": "සමාලෝචනය බලාපොරොත්තුවෙන්",
+      "noListings": "තවම දැන්වීම් නැත"
+    },
+    "review": {
+      "title": "දැන්වීම",
+      "notFoundBody": "මෙම දැන්වීම තවදුරටත් ඔබේ සමූපකාරයේ නැත.",
+      "approveError": "මෙම දැන්වීම අනුමත කළ නොහැකි විය",
+      "rejectError": "මෙම දැන්වීම ප්‍රතික්ෂේප කළ නොහැකි විය",
+      "variety": "ප්‍රභේදය",
+      "grade": "ශ්‍රේණිය",
+      "packaging": "ඇසුරුම",
+      "certifications": "සහතික",
+      "farmer": "ගොවියා",
+      "quantity": "ප්‍රමාණය",
+      "unitPrice": "ඒකක මිල",
+      "minimumOrder": "අවම ඇණවුම",
+      "harvestDate": "අස්වනු දිනය",
+      "freshness": "නැවුම් බව",
+      "produceDetails": "අස්වනු විස්තර",
+      "pickup": "එකතු කිරීම",
+      "location": "ස්ථානය",
+      "address": "ලිපිනය",
+      "farmGatePin": "ගොවිපල ගේට්ටු සලකුණ",
+      "dropped": "තබා ඇත",
+      "transport": "ප්‍රවාහනය",
+      "rejected": "ප්‍රතික්ෂේප කළා",
+      "reasonLabel": "ප්‍රතික්ෂේප කිරීමට හේතුව",
+      "reasonPlaceholder": "අනුමත කිරීමට පෙර වෙනස් විය යුත්තේ කුමක්ද?",
+      "approveAnyway": "ඔව්, කෙසේ වෙතත් අනුමත කරන්න",
+      "marketPrice": "වෙළඳපොල මිල",
+      "checkingBenchmark": "මූලික මිල පරීක්ෂා කරමින්…"
+    },
+    "farmerDetail": {
+      "title": "ගොවියා",
+      "notFoundBody": "මෙම ගොවියා තවදුරටත් ඔබේ සමූපකාරයේ නැත.",
+      "approveError": "මෙම ගොවියා අනුමත කළ නොහැකි විය",
+      "rejectError": "මෙම ගොවියා ප්‍රතික්ෂේප කළ නොහැකි විය",
+      "phone": "දුරකථන අංකය",
+      "district": "දිස්ත්‍රික්කය",
+      "registered": "ලියාපදිංචි වූ",
+      "listings": "දැන්වීම්",
+      "reasonLabel": "ප්‍රතික්ෂේප කිරීමට හේතුව",
+      "reasonPlaceholder": "මෙම ගොවියා අනුමත නොකරන්නේ ඇයි?"
+    },
+    "profile": {
+      "role": "ප්‍රදේශ සම්බන්ධීකාරක",
+      "region": "ප්‍රදේශය",
+      "contact": "සම්බන්ධ වීමේ අංකය"
+    },
+    "spotlight": {
+      "checking": "මෙම මාසයේ විකුණුම් පරීක්ෂා කරමින්…",
+      "error": "මේ මොහොතේ විකුණුම් පරීක්ෂා කළ නොහැක."
+    },
+    "outlier": {
+      "title": "මූලික මිලෙන් පිටත මිල"
+    },
+    "filters": {
+      "all": "සියල්ල",
+      "set": "සකසා ඇත"
+    },
+    "stats": {
+      "earnedByFarmers": "ගොවීන් උපයා ඇත",
+      "completedCleanly": "නිවැරදිව සම්පූර්ණ",
+      "completedWithMismatch": "නොගැළපීමක් සමඟ සම්පූර්ණ",
+      "stillInProgress": "තවම ක්‍රියාත්මක",
+      "didNotGoThrough": "සිදු නොවිය",
+      "totalFarmers": "මුළු ගොවීන්",
+      "farmersToVerify": "සත්‍යාපනය කළ යුතු ගොවීන්",
+      "currentDisputes": "වත්මන් ගැටලු",
+      "cropListings": "බෝග දැන්වීම්"
+    }
+  }
+}

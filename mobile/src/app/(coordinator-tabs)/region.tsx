@@ -2,7 +2,7 @@
  * Region — the coordinator's tab-shell home. Header greets the signed-in coordinator by last
  * name, with their region as the subtitle (`data.cooperative.district`, the same field the
  * header used to lead with) — personal first, place second. Farmer count, active listing count,
- * and "Needs you today" — all real. Figma (node 202:139) also draws a full per-listing list here;
+ * and t("coordinator.region.needsYou") — all real. Figma (node 202:139) also draws a full per-listing list here;
  * that belongs on a farmer's own detail screen instead (not built yet), not duplicated on a
  * dashboard. A disputes count is drawn too — disputes has no backend at all yet
  * (`.plans/coordination/OPEN.md`), so it stays at an honest zero rather than being hidden or
@@ -48,6 +48,7 @@ import { useReloadOnRefocus, useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function RegionScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token, user } = useAuth();
@@ -90,12 +91,12 @@ export default function RegionScreen() {
             contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
           >
             <CoordinatorHeader
-              title={user ? `Hello, ${lastName(user.displayName)}` : "Hello"}
+              title={user ? `Hello, ${lastName(user.displayName)}` : t("coordinator.region.hello")}
               subtitle={`${data.cooperative.district} region`}
             />
 
             {/* 2×2. Info for a headcount, warning for something pending your action, destructive
-                for a problem, success for supply that is live. "Farmers to verify" is real
+                for a problem, success for supply that is live. t("coordinator.region.farmersToVerify") is real
                 (pending-review accounts); "disputes" has no backend at all, so it stays at an
                 honest zero rather than being hidden or invented. */}
             <VStack className="gap-3 px-gutter">
@@ -103,16 +104,16 @@ export default function RegionScreen() {
                 <StatCard
                   tone="info"
                   value={data.farmerCount}
-                  label="total farmers"
+                  label={t("coordinator.stats.totalFarmers")}
                   icon={<FarmerIcon size={22} />}
                   onPress={() => router.push("/farmers")}
                 />
                 <StatCard
                   tone="warning"
                   value={farmersToVerify ?? "–"}
-                  label="farmers to verify"
+                  label={t("coordinator.stats.farmersToVerify")}
                   icon={<Icon as={ClockIcon} className="text-warning" size="md" />}
-                  zeroLabel="All verified"
+                  zeroLabel={t("coordinator.region.allVerified")}
                   onPress={() =>
                     router.push({ pathname: "/farmers", params: { filter: "pending_review" } })
                   }
@@ -122,15 +123,15 @@ export default function RegionScreen() {
                 <StatCard
                   tone="destructive"
                   value={0}
-                  label="current disputes"
+                  label={t("coordinator.stats.currentDisputes")}
                   icon={<Icon as={AlertCircleIcon} className="text-destructive" size="md" />}
-                  zeroLabel="No disputes"
+                  zeroLabel={t("coordinator.region.noDisputes")}
                   onPress={() => router.push("/disputes")}
                 />
                 <StatCard
                   tone="success"
                   value={data.listingCount}
-                  label="crop listings"
+                  label={t("coordinator.stats.cropListings")}
                   icon={<LeafIcon />}
                   onPress={() => router.push("/cooperative-listings")}
                 />
@@ -193,7 +194,7 @@ function TaskRow({ task }: { task: CoordinatorTask }) {
     const crop = cropById(task.cropId);
     const subtitle =
       task.kind === "benchmark_missing"
-        ? "No benchmark price set"
+        ? t("coordinator.region.noBenchmark")
         : `Set ${formatDate(task.publishedAt)} · due for a refresh`;
     return (
       <Pressable
@@ -213,7 +214,9 @@ function TaskRow({ task }: { task: CoordinatorTask }) {
         </VStack>
         <Box className="rounded-pill bg-info-subtle px-3 py-1">
           <Text className="type-body-sm-bold text-info">
-            {task.kind === "benchmark_missing" ? "Set price" : "Update price"}
+            {task.kind === "benchmark_missing"
+              ? t("coordinator.region.setPrice")
+              : t("coordinator.region.updatePrice")}
           </Text>
         </Box>
       </Pressable>
@@ -241,7 +244,7 @@ function TaskRow({ task }: { task: CoordinatorTask }) {
           </Text>
         </VStack>
         <Box className="rounded-pill bg-info-subtle px-3 py-1">
-          <Text className="type-body-sm-bold text-info">Review</Text>
+          <Text className="type-body-sm-bold text-info">{t("common.review")}</Text>
         </Box>
       </Pressable>
     );
@@ -265,7 +268,7 @@ function TaskRow({ task }: { task: CoordinatorTask }) {
         </Text>
       </VStack>
       <Box className="rounded-pill bg-info-subtle px-3 py-1">
-        <Text className="type-body-sm-bold text-info">Review</Text>
+        <Text className="type-body-sm-bold text-info">{t("common.review")}</Text>
       </Box>
     </Pressable>
   );

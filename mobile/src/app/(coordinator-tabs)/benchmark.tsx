@@ -35,11 +35,13 @@ import { useAuth } from "@/providers/auth-provider";
 type Status = "set" | "stale" | "not_set";
 type Filter = "all" | Status;
 
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "set", label: "Set" },
-  { id: "stale", label: "Stale" },
-  { id: "not_set", label: "Not set" }
+/* Ids and key paths only — a `label` here would be evaluated at module load, before i18next
+   has a language, and would never change when the user switches one. */
+const FILTERS: { id: Filter; labelKey: string }[] = [
+  { id: "all", labelKey: "coordinator.filters.all" },
+  { id: "set", labelKey: "coordinator.filters.set" },
+  { id: "stale", labelKey: "coordinator.benchmarkTab.stale" },
+  { id: "not_set", labelKey: "common.notSet" }
 ];
 
 function statusOf(context: CropPriceContext): Status {
@@ -74,7 +76,7 @@ export default function BenchmarkScreen() {
   return (
     <View className="flex-1 bg-background">
       <CoordinatorHeader
-        title="Daily benchmark"
+        title={t("coordinator.benchmarkTab.title")}
         subtitle={stats && `${stats.priced}/${stats.total} priced`}
       />
 
@@ -98,14 +100,14 @@ export default function BenchmarkScreen() {
                     <InputField
                       value={query}
                       onChangeText={setQuery}
-                      placeholder="Search crop"
+                      placeholder={t("coordinator.benchmarkTab.searchCrop")}
                       returnKeyType="search"
                       autoCorrect={false}
                       className="type-body"
                     />
                   </Input>
                   <HStack className="gap-2">
-                    {FILTERS.map(({ id, label }) => {
+                    {FILTERS.map(({ id, labelKey }) => {
                       const selected = filter === id;
                       return (
                         <Pressable
@@ -123,7 +125,7 @@ export default function BenchmarkScreen() {
                               selected ? "text-primary-foreground" : "text-foreground"
                             }`}
                           >
-                            {label}
+                            {t(labelKey)}
                           </Text>
                         </Pressable>
                       );
@@ -133,7 +135,10 @@ export default function BenchmarkScreen() {
               }
               renderItem={({ item }) => <CropPriceRow context={item} />}
               ListEmptyComponent={
-                <EmptyNote title="No crops here" note="Nothing matches this search or filter." />
+                <EmptyNote
+                  title={t("coordinator.benchmarkTab.noCrops")}
+                  note={t("coordinator.benchmarkTab.noCropsBody")}
+                />
               }
             />
           );
@@ -175,7 +180,7 @@ function CropPriceRow({ context }: { context: CropPriceContext }) {
       <Text className={`type-caption ${stale ? "text-warning" : "text-muted-foreground"}`}>
         {context.current
           ? `Set ${formatDate(context.current.publishedAt)}${stale ? " · due for a refresh" : ""}`
-          : "No price published yet"}
+          : t("coordinator.benchmarkTab.noPricePublished")}
       </Text>
 
       {context.activeListingRange && (

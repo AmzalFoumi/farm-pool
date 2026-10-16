@@ -81,7 +81,8 @@
       "gradeNote": "இறுக்கம் மற்றும் தோற்றத்தின் அடிப்படையில் வகைப்படுத்தவும்",
       "gradeChip": "{{grade}} தரம்",
       "certifications": "சான்றிதழ்கள்",
-      "certificationsOptional": "சான்றிதழ்கள் (கட்டாயமில்லை)"
+      "certificationsOptional": "சான்றிதழ்கள் (கட்டாயமில்லை)",
+      "moqPlaceholder": "எ.கா. 15"
     },
     "step3": {
       "title": "அறுவடை புகைப்படங்களைச் சேர்க்கவும்",
@@ -177,7 +178,9 @@
         "morning": "காலை",
         "afternoon": "மதியம்",
         "allDay": "நாள் முழுவதும்"
-      }
+      },
+      "datePlaceholder": "எ.கா. 2026-09-25",
+      "districtPlaceholder": "எ.கா. குருணாகல்"
     },
     "review": {
       "title": "மதிப்பாய்வு & வெளியீடு",

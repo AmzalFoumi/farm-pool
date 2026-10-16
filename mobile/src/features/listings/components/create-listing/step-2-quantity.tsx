@@ -392,7 +392,7 @@ export default function Step2Quantity({
               value={customMoqText}
               onChangeText={handleCustomMoqChange}
               keyboardType="numeric"
-              placeholder="e.g. 15"
+              placeholder={t("listings.step2.moqPlaceholder")}
             />
           )}
         </VStack>

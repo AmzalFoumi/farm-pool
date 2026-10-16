@@ -16,7 +16,20 @@
     "edit": "Edit",
     "decline": "Decline",
     "accept": "Accept",
-    "tryAgain2": "Please try again."
+    "tryAgain2": "Please try again.",
+    "profile": "Profile",
+    "reject": "Reject",
+    "approve": "Approve",
+    "approving": "Approving…",
+    "rejecting": "Rejecting…",
+    "confirmReject": "Confirm reject",
+    "notSet": "Not set",
+    "notGiven": "Not given",
+    "review": "Review",
+    "checking": "Checking…",
+    "notFound": "Not found",
+    "search": "Search",
+    "filterA11y": "Filter: {{label}}"
   },
   "errors": {
     "network": "Can't reach the server. Check your connection and try again.",
@@ -57,5 +70,10 @@
   "party": {
     "buyer": "Buyer",
     "farmer": "Farmer"
+  },
+  "farmerStatus": {
+    "verified": "Verified",
+    "pending": "Pending",
+    "suspended": "Suspended"
   }
 }

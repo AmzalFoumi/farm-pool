@@ -85,7 +85,7 @@ export function PriceOutlierAlert({
               </Text>
             </VStack>
             <Box className={badgeClass}>
-              <Text className={badgeTextClass}>Review</Text>
+              <Text className={badgeTextClass}>{t("common.review")}</Text>
             </Box>
           </Pressable>
         );

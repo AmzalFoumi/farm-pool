@@ -152,7 +152,7 @@ export default function NewWantedScreen() {
             label="District"
             value={district}
             onChangeText={setDistrict}
-            placeholder="e.g. Kurunegala"
+            placeholder={t("buyer.wanted.districtPlaceholder")}
             autoCapitalize="words"
             returnKeyType="done"
             onSubmitEditing={() => void submit()}

@@ -81,7 +81,8 @@
       "gradeNote": "Classify based on firmness & appearance",
       "gradeChip": "Grade {{grade}}",
       "certifications": "Certifications",
-      "certificationsOptional": "Certifications (Optional)"
+      "certificationsOptional": "Certifications (Optional)",
+      "moqPlaceholder": "e.g. 15"
     },
     "step3": {
       "title": "Add Harvest Photos",
@@ -177,7 +178,9 @@
         "morning": "Morning",
         "afternoon": "Afternoon",
         "allDay": "All day"
-      }
+      },
+      "datePlaceholder": "e.g. 2026-09-25",
+      "districtPlaceholder": "e.g. Kurunegala"
     },
     "review": {
       "title": "Review & Publish",

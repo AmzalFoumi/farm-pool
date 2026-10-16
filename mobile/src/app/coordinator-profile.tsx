@@ -9,6 +9,7 @@
  */
 
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -24,6 +25,7 @@ import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function CoordinatorProfileScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const auth = useAuth();
@@ -34,7 +36,7 @@ export default function CoordinatorProfileScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Profile" onBack={() => router.back()} />
+      <AppBar title={t("common.profile")} onBack={() => router.back()} />
 
       <VStack className="flex-1 gap-3 px-gutter pt-4">
         <HStack className="elevation-card items-center gap-3 rounded-card bg-card p-4">
@@ -50,14 +52,20 @@ export default function CoordinatorProfileScreen() {
         </HStack>
 
         <RequestView request={dashboard}>
-          {(data) => <Row label="Region" value={data.cooperative.district} />}
+          {(data) => (
+            <Row label={t("coordinator.profile.region")} value={data.cooperative.district} />
+          )}
         </RequestView>
 
-        <Row label="Contact number" value={user.phone} />
+        <Row label={t("coordinator.profile.contact")} value={user.phone} />
       </VStack>
 
       <View className="px-gutter" style={{ paddingBottom: Math.max(insets.bottom, 23) }}>
-        <AppButton label="Log out" variant="outline" onPress={() => void auth.signOut()} />
+        <AppButton
+          label={t("profile.logOut")}
+          variant="outline"
+          onPress={() => void auth.signOut()}
+        />
       </View>
     </View>
   );

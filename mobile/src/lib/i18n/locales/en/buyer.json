@@ -1,1 +1,7 @@
-{}
+{
+  "buyer": {
+    "wanted": {
+      "districtPlaceholder": "e.g. Kurunegala"
+    }
+  }
+}

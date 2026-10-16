@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -18,6 +19,7 @@ import { useAuth } from "@/providers/auth-provider";
  * detail screen; avatar is the one real action, opening Profile.
  */
 export function CoordinatorHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
@@ -40,7 +42,7 @@ export function CoordinatorHeader({ title, subtitle }: { title: string; subtitle
         <Pressable
           onPress={() => router.push("/coordinator-profile")}
           accessibilityRole="button"
-          accessibilityLabel="Profile"
+          accessibilityLabel={t("common.profile")}
           className="h-11 w-11 items-center justify-center rounded-pill bg-card"
         >
           <Text className="type-h4 text-brand-deep">{initial}</Text>

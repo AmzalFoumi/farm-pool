@@ -258,7 +258,7 @@ export default function Step5Logistics({
             </Text>
             <AppTextField
               label={t("listings.step5.readyDateLabel")}
-              placeholder="e.g. 2026-09-25"
+              placeholder={t("listings.step5.datePlaceholder")}
               value={customDate}
               onChangeText={setCustomDate}
             />
@@ -282,7 +282,7 @@ export default function Step5Logistics({
           label={t("listings.step5.districtLabel")}
           value={district}
           onChangeText={setDistrict}
-          placeholder="e.g. Kurunegala"
+          placeholder={t("listings.step5.districtPlaceholder")}
           autoCapitalize="words"
           error={districtError}
         />
