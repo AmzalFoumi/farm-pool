@@ -6,7 +6,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { DetailRow } from "@/features/driver/components/profile/detail-row";
-import { vehicleById } from "@/features/driver/vehicles";
+import { vehicleLabelKey } from "@/features/driver/vehicles";
 import { DriverVerificationPill } from "@/features/orders/status-pill";
 import { ContactCard } from "@/features/logistics/contact-card";
 import { logisticsApi } from "@/features/logistics/api";
@@ -52,7 +52,7 @@ function DriverDetail({ driver }: { driver: AssignedDriver }) {
         <Box className="h-px bg-border" />
         <DetailRow
           label={t("jobs.driverCard.vehicle")}
-          value={vehicleById(driver.vehicleType).label}
+          value={t(vehicleLabelKey(driver.vehicleType))}
         />
       </VStack>
 
@@ -60,7 +60,7 @@ function DriverDetail({ driver }: { driver: AssignedDriver }) {
         heading={t("jobs.driverCard.driver")}
         name={driver.displayName}
         phone={driver.phone}
-        meta={`${vehicleById(driver.vehicleType).label} · ${driver.operatingDistrict}`}
+        meta={`${t(vehicleLabelKey(driver.vehicleType))} · ${driver.operatingDistrict}`}
       />
 
       {driver.verification !== "verified" ? (

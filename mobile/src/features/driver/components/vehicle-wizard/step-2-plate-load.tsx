@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { AppTextField } from "@/components/app/app-text-field";
 import { NumericKeypadModal } from "@/components/app/numeric-keypad-modal";
@@ -32,21 +33,28 @@ export function Step2PlateLoad({
   onBack,
   onContinue
 }: Step2PlateLoadProps) {
+  const { t } = useTranslation();
   const [keypadOpen, setKeypadOpen] = useState(false);
 
   return (
     <WizardShell
       step={2}
       stepCount={3}
-      title="Plate and load"
+      title={t("vehicleWizard.step2.title")}
       onBack={onBack}
-      help="The plate number is checked before you are verified. The load is how much you can carry in one trip."
-      footer={<WizardActions onBack={onBack} continueLabel="Continue" onContinue={onContinue} />}
+      help={t("vehicleWizard.step2.help")}
+      footer={
+        <WizardActions
+          onBack={onBack}
+          continueLabel={t("common.continue")}
+          onContinue={onContinue}
+        />
+      }
       overlay={
         <NumericKeypadModal
           isOpen={keypadOpen}
           onClose={() => setKeypadOpen(false)}
-          title="How much can you carry?"
+          title={t("vehicleWizard.step2.keypadTitle")}
           unitLabel="kg"
           initialValue={capacityKg ?? vehicle?.capacityKg ?? 0}
           presets={loadPresets(vehicle?.capacityKg ?? 1000)}
@@ -55,11 +63,11 @@ export function Step2PlateLoad({
       }
     >
       <AppTextField
-        label="Plate number"
+        label={t("vehicleWizard.step2.plateLabel")}
         value={registration}
         onChangeText={onChangeRegistration}
         error={errors.registration}
-        placeholder="e.g. WP CAB-1234"
+        placeholder={t("vehicleWizard.step2.platePlaceholder")}
         autoCapitalize="characters"
         autoComplete="off"
         returnKeyType="done"

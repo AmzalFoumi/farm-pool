@@ -681,8 +681,18 @@ to the people the research interviewed. `node mobile/scripts/check-locales.mjs` 
 parity and placeholder integrity across the three files and warns while `_review.reviewedBy` is
 empty.
 
-**Converted so far: the driver flow only** — onboarding, sign-up, job board, job detail and the
-cards they share (130 keys). The other ~370 strings across the app are still hard-coded English.
+**Converted so far: the driver flow only** — onboarding, sign-up, job board, job detail, the
+route, the vehicle wizard, the driver profile and the delivery-point picker, plus the cards they
+share (278 keys). Roughly 470 strings across the farmer, buyer and coordinator screens are still
+hard-coded English; `mobile/scripts/check-locales.mjs` does not catch those, because it checks
+parity between the three files rather than coverage of the app.
+
+**A vehicle type's name is a key, not a field.** `features/driver/vehicles.ts` is plain
+TypeScript, so it cannot call `useTranslation`, and the `label` it used to carry stayed English in
+a Sinhala or Tamil UI wherever it was rendered — the wizard, the sign-up tiles, the driver profile
+and the farmer's view of their assigned driver. The table now holds only `id`, `emoji` and
+`capacityKg`, and `vehicleLabelKey(id)` returns the `vehicles.*` key for the caller to translate.
+The keys are named after the `VehicleType` ids so no second lookup table exists to drift.
 
 ### Logging: Nest's own `Logger`, per-domain interceptor, no audit collection
 

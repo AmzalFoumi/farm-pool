@@ -1,5 +1,6 @@
 import type { DropOff, PublicUser, SavedLocation } from "@farm-pool/shared";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/components/app/app-button";
 import { AppTextField } from "@/components/app/app-text-field";
@@ -47,6 +48,7 @@ export function DeliveryLocationField({
   /** Hands the updated user back up so the session's saved list stays current. */
   onUserChanged: (user: PublicUser) => void;
 }) {
+  const { t } = useTranslation();
   const saved = savedLocations;
 
   const [pinning, setPinning] = useState(false);
@@ -74,9 +76,7 @@ export function DeliveryLocationField({
       onChange({ label: label.trim(), point: value.point });
       setLabel("");
     } catch (e) {
-      setError(
-        e instanceof ApiError ? (e.issues[0]?.message ?? e.message) : "Could not save that place."
-      );
+      setError(e instanceof ApiError ? (e.issues[0]?.message ?? e.message) : t("geo.saveError"));
     } finally {
       setSaving(false);
     }
@@ -87,10 +87,8 @@ export function DeliveryLocationField({
   return (
     <VStack className="gap-3">
       <VStack className="gap-0.5">
-        <Text className="type-body-bold text-foreground">Deliver to</Text>
-        <Text className="type-caption text-muted-foreground">
-          Optional. Without it the driver sees the district only, and no distance is shown.
-        </Text>
+        <Text className="type-body-bold text-foreground">{t("geo.deliverTo")}</Text>
+        <Text className="type-caption text-muted-foreground">{t("geo.deliverToNote")}</Text>
       </VStack>
 
       {saved.length > 0 ? (
@@ -112,7 +110,9 @@ export function DeliveryLocationField({
                 </Text>
                 {selected ? (
                   <Box className="rounded-pill bg-primary px-2 py-0.5">
-                    <Text className="type-body-sm-bold text-primary-foreground">Chosen</Text>
+                    <Text className="type-body-sm-bold text-primary-foreground">
+                      {t("geo.chosen")}
+                    </Text>
                   </Box>
                 ) : null}
               </Pressable>
@@ -125,9 +125,9 @@ export function DeliveryLocationField({
         <VStack className="gap-3">
           <PointPicker
             district={district}
-            title="Delivery point"
-            help="Tap the map where the load should be dropped."
-            unsetNote="Nothing pinned yet"
+            title={t("geo.pointTitle")}
+            help={t("geo.pointHelp")}
+            unsetNote={t("geo.pointUnset")}
             value={value?.point}
             onChange={(point) => onChange(point ? { point } : undefined)}
           />
@@ -135,10 +135,10 @@ export function DeliveryLocationField({
           {value ? (
             <VStack className="gap-2">
               <AppTextField
-                label="Save this place for next time (optional)"
+                label={t("geo.saveLabel")}
                 value={label}
                 onChangeText={setLabel}
-                placeholder="e.g. Dambulla economic centre"
+                placeholder={t("geo.savePlaceholder")}
               />
               {error ? (
                 <Text className="type-caption text-destructive" accessibilityRole="alert">
@@ -147,7 +147,7 @@ export function DeliveryLocationField({
               ) : null}
               <AppButton
                 testID="delivery-save-place"
-                label={saving ? "Saving…" : "Save this place"}
+                label={t(saving ? "geo.saveBusy" : "geo.saveAction")}
                 variant="outline"
                 disabled={saving || label.trim().length === 0}
                 onPress={() => void saveForNextTime()}
@@ -159,12 +159,16 @@ export function DeliveryLocationField({
         <HStack className="gap-2">
           <AppButton
             testID="delivery-pin"
-            label={saved.length > 0 ? "Somewhere else" : "Pin the delivery point"}
+            label={t(saved.length > 0 ? "geo.pinElsewhere" : "geo.pin")}
             variant="outline"
             onPress={() => setPinning(true)}
           />
           {value ? (
-            <AppButton label="Clear" variant="outline" onPress={() => onChange(undefined)} />
+            <AppButton
+              label={t("geo.clear")}
+              variant="outline"
+              onPress={() => onChange(undefined)}
+            />
           ) : null}
         </HStack>
       )}

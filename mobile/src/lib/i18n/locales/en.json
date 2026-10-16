@@ -121,6 +121,59 @@
     "failed": "Could not finish sign-up. Please try again.",
     "phoneTakenLogIn": "An account with this number already exists. Log in instead."
   },
+  "vehicles": {
+    "motorbike": "Motorbike",
+    "three-wheeler": "Three-wheeler",
+    "van": "Van",
+    "small-lorry": "Small lorry",
+    "lorry": "Lorry",
+    "tractor": "Tractor trailer",
+    "capacityHint": "Usually up to {{count, number}} kg"
+  },
+  "vehicleWizard": {
+    "step1": {
+      "title": "Your vehicle",
+      "heading": "What do you drive?",
+      "note": "Farmers see this before they hand over their produce.",
+      "help": "Pick the vehicle you collect produce with. You can change it later from your profile."
+    },
+    "step2": {
+      "title": "Plate and load",
+      "help": "The plate number is checked before you are verified. The load is how much you can carry in one trip.",
+      "plateLabel": "Plate number",
+      "platePlaceholder": "e.g. WP CAB-1234",
+      "keypadTitle": "How much can you carry?"
+    },
+    "step3": {
+      "title": "Where you work",
+      "heading": "Which district?",
+      "help": "Pick the district you usually collect produce in. Jobs there are shown to you first."
+    },
+    "review": {
+      "title": "Check and save",
+      "save": "Save vehicle",
+      "saving": "Saving…",
+      "noteFirst": "Your vehicle is checked before farmers see it as verified. You can still see your profile while you wait.",
+      "noteVerified": "Changing the vehicle or plate means it is checked again before farmers see it as verified."
+    },
+    "load": {
+      "label": "Most you can carry",
+      "change": "Change",
+      "unset": "Tap to set",
+      "hint": "Suggested for a {{vehicle}}. Change it if yours carries more or less.",
+      "a11y": "Load, {{count}} kilograms. Tap to change."
+    },
+    "row": {
+      "vehicle": "Vehicle",
+      "plate": "Plate number",
+      "load": "Most you can carry",
+      "district": "District",
+      "edit": "Edit",
+      "a11y": "{{label}}, {{value}}. Tap to change."
+    },
+    "cancel": "Cancel",
+    "editVehicle": "Edit vehicle"
+  },
   "jobs": {
     "title": "Jobs",
     "mine": "My jobs",
@@ -253,6 +306,8 @@
     "stopLabel": "Stop {{position}}, {{name}}, {{place}}"
   },
   "profile": {
+    "title": "Profile",
+    "role": "Delivery partner",
     "deliveries": "Deliveries",
     "deliveriesCount": "{{count}} carried",
     "vehicle": "Vehicle",
@@ -269,6 +324,24 @@
     "title": "Deliveries",
     "emptyTitle": "Nothing carried yet",
     "emptyBody": "Loads you have delivered appear here, newest first."
+  },
+  "geo": {
+    "deliverTo": "Deliver to",
+    "deliverToNote": "Optional. Without it the driver sees the district only, and no distance is shown.",
+    "chosen": "Chosen",
+    "pointTitle": "Delivery point",
+    "pointHelp": "Tap the map where the load should be dropped.",
+    "pointUnset": "Nothing pinned yet",
+    "saveLabel": "Save this place for next time (optional)",
+    "savePlaceholder": "e.g. Dambulla economic centre",
+    "saveAction": "Save this place",
+    "saveBusy": "Saving…",
+    "saveError": "Could not save that place.",
+    "pin": "Pin the delivery point",
+    "pinElsewhere": "Somewhere else",
+    "clear": "Clear",
+    "pinnedAt": "Pinned at {{lat}}, {{lng}}",
+    "noPin": "No pin set"
   },
   "accountStatus": {
     "pendingTitle": "Awaiting approval",

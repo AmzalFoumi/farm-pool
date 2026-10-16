@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { TextInput } from "react-native";
 
 import { HStack } from "@/components/ui/hstack";
@@ -30,6 +31,7 @@ export function CodeInput({
   /** Fired once the sixth digit lands, so the keyboard can submit without a second tap. */
   onComplete?: (code: string) => void;
 }) {
+  const { t } = useTranslation();
   const boxes = useRef<(TextInput | null)[]>([]);
 
   const digits = Array.from({ length: CODE_LENGTH }, (_, i) => value[i] ?? "");
@@ -65,7 +67,7 @@ export function CodeInput({
   };
 
   return (
-    <HStack className="gap-2" accessibilityLabel="Six digit code from the SMS">
+    <HStack className="gap-2" accessibilityLabel={t("driverSignUp.code.inputLabel")}>
       {digits.map((digit, index) => (
         <TextInput
           key={index}
@@ -85,7 +87,7 @@ export function CodeInput({
              before `handleChange` ever sees it. */
           maxLength={CODE_LENGTH}
           selectTextOnFocus
-          accessibilityLabel={`Digit ${index + 1}`}
+          accessibilityLabel={t("driverSignUp.code.digitLabel", { index: index + 1 })}
           className={[
             "type-h3 h-[68px] flex-1 rounded-field border text-center text-foreground",
             digit ? "border-primary bg-secondary" : "border-border bg-card"
