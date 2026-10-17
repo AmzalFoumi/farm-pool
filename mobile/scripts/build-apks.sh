@@ -16,16 +16,20 @@
 #     FarmPool-test-2026-10-17-phone64.apk    64-bit phones only. Smaller download.
 #     FarmPool-test-2026-10-17-emulator.apk   Emulators on a laptop only (x86_64).
 #     BUILD-INFO.txt                          when, which branch and commit, which api host.
-#   The folder is outside the repo on purpose: `prebuild --clean` wipes mobile/android/, and
-#   nothing here can be committed by accident.
+#   The folder is outside the repo on purpose: `--fresh` wipes mobile/android/, and nothing here
+#   can be committed by accident.
 #
 # USAGE (from anywhere; the script moves itself into mobile/)
-#   npm run build:apks -w mobile
+#   npm run build:apks -w mobile                      reuse mobile/android/ (code-only changes)
+#   npm run build:apks -w mobile -- --fresh           wipe and regenerate it first (see below)
 #   npm run build:apks -w mobile -- --only phone,phone64
 #   bash mobile/scripts/build-apks.sh --help
 #
 # OPTIONS
-#   --yes              Do not ask for confirmation before wiping mobile/android/.
+#   --fresh            Delete and regenerate mobile/android/ first (`expo prebuild --clean`), then
+#                      build. Slow (about 13 minutes) and asks for confirmation. Default: off, the
+#                      existing mobile/android/ is reused and only Gradle runs.
+#   --yes              With --fresh, do not ask for confirmation before wiping mobile/android/.
 #   --only <list>      Comma-separated subset of: phone, phone64, emulator. Default: all three.
 #   --out <dir>        Parent folder for the timestamped folder. Default: <repo>/../farmpool-apks
 #   --help             Show this text.
@@ -41,8 +45,30 @@
 #        GOOGLE_MAPS_ANDROID_KEY=...            without it, screens with a map crash
 #      The same two values may instead come from your terminal or from .env.local; see
 #      "WHERE THE VALUES COME FROM" below.
-#   6. About 5 GB of free disk and 15 minutes. The first build downloads the Android NDK and takes
-#      about 13 minutes; the second and third reuse the compiled code and take under a minute each.
+#   6. About 5 GB of free disk. A --fresh build takes about 15 minutes: it downloads the Android
+#      NDK and compiles the native code (about 13 minutes for the first variant; the other two
+#      reuse that work and took under a minute each). A reused build is expected to be shorter, but
+#      that has not been measured yet.
+#
+# WHEN TO USE --fresh (and when you can skip it)
+#   By default the script reuses mobile/android/ and only runs Gradle. That is right when you
+#   changed JavaScript only: screens, styles, translations, api calls. The APK still carries your
+#   new code, because Gradle bundles the JavaScript again.
+#
+#   Use --fresh whenever something the Android project is GENERATED from has changed. `prebuild`
+#   is the only step that reads these, so a reused folder keeps the OLD values without any error:
+#     - mobile/app.json or mobile/app.config.js (app ID, name, icon, splash, permissions, plugins)
+#     - GOOGLE_MAPS_ANDROID_KEY (it goes into the native manifest at prebuild)
+#     - a native library added, removed or upgraded in mobile/package.json (for example
+#       react-native-agora, react-native-maps), or an Expo SDK upgrade
+#     - EXPO_PUBLIC_API_URL: it is baked in when the JavaScript is bundled, and Gradle may not
+#       notice that only an env value changed. Use --fresh to be sure (not verified either way)
+#   Also use --fresh when:
+#     - mobile/android/ does not exist yet (first build on this computer); the script says so
+#     - the last build failed in a strange way and you do not trust the folder
+#     - you are building the APK you will hand to testers and want a build you can fully vouch for
+#   Rule of thumb: if you are unsure, use --fresh. It costs time, never correctness.
+#   Automatic detection of these changes is planned for later; today the choice is yours.
 #
 # WHERE THE VALUES COME FROM
 #   The script asks Expo's own env loader, so it checks the same values the build will use.
@@ -61,8 +87,9 @@
 #     testers use the app.
 #
 # DANGER
-#   `expo prebuild --clean` DELETES and regenerates mobile/android/. That folder is generated and
-#   gitignored, so nothing in git is lost, but any hand edit inside it is. The script asks first.
+#   With --fresh, `expo prebuild --clean` DELETES and regenerates mobile/android/. That folder is
+#   generated and gitignored, so nothing in git is lost, but any hand edit inside it is. The
+#   script asks first (unless you pass --yes). Without --fresh nothing is deleted.
 #
 # The first failing command stops the run (set -e), so a broken build is never copied out as if it
 # were good.
@@ -91,6 +118,7 @@ abis_for() {
 
 # --- Options ------------------------------------------------------------------------------------
 ASSUME_YES=0
+FRESH=0
 ONLY="$ALL_VARIANTS"
 OUT_PARENT="$REPO_DIR/../farmpool-apks"
 
@@ -100,6 +128,7 @@ usage() {
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    --fresh) FRESH=1 ;;
     --yes) ASSUME_YES=1 ;;
     --only)
       [ $# -ge 2 ] || { echo "--only needs a value, e.g. --only phone,phone64" >&2; exit 2; }
@@ -239,6 +268,11 @@ fi
 [ ! -e "$REPO_DIR/android" ] || problem "A stray android/ folder exists at the repo root (from running prebuild in the wrong place). Delete it."
 [ ! -e "$REPO_DIR/app.json" ] || problem "A stray app.json exists at the repo root (from running prebuild in the wrong place). Delete it, then run 'git restore package.json'."
 
+# 6b. Reusing needs a folder to reuse.
+if [ "$FRESH" -ne 1 ] && [ ! -x "$MOBILE_DIR/android/gradlew" ] && [ ! -f "$MOBILE_DIR/android/gradlew" ]; then
+  problem "mobile/android/ does not exist yet (or is incomplete), so there is nothing to reuse. Run once with --fresh."
+fi
+
 # 7. Dependencies installed.
 [ -d "$REPO_DIR/node_modules" ] || problem "node_modules is missing. Run 'npm install' at the repo root."
 
@@ -270,15 +304,26 @@ done
 
 api_host="$(printf '%s' "$api_url" | sed -E 's#^https://([^/]+).*#\1#')"
 
+if [ "$FRESH" -eq 1 ]; then BUILD_KIND="fresh"; else BUILD_KIND="reused"; fi
+
 echo
 echo "About to build: $ONLY"
+echo "  mode     : $BUILD_KIND mobile/android/"
 echo "  api host : $api_host ($(where_label "$api_where"))"
 echo "  maps key : set ($(where_label "$maps_where"))"
 echo "  output   : $OUT_DIR"
 echo
-echo "This DELETES and regenerates mobile/android/ (generated and gitignored; hand edits there are lost)."
-if [ "$ASSUME_YES" -ne 1 ]; then
-  read -r -p "Press Enter to continue, or Ctrl+C to stop. " _
+if [ "$FRESH" -eq 1 ]; then
+  echo "--fresh DELETES and regenerates mobile/android/ (generated and gitignored; hand edits there are lost)."
+  if [ "$ASSUME_YES" -ne 1 ]; then
+    read -r -p "Press Enter to continue, or Ctrl+C to stop. " _
+  fi
+else
+  # Nothing is deleted, so there is nothing to confirm. The risk is the opposite one: a reused
+  # folder silently keeps old native settings, so say it every time.
+  echo "Reusing mobile/android/. Your JavaScript changes are included. Native settings are NOT"
+  echo "re-applied: if app.json, app.config.js, the Maps key, the api URL or a native library"
+  echo "changed since the last build, stop now and run again with --fresh."
 fi
 
 # --- Phase 2: shared package + prebuild ---------------------------------------------------------
@@ -291,10 +336,15 @@ echo "[1/3] Building the shared package..."
 # `prebuild` turns app.json and app.config.js (which injects the Maps key from .env) into the
 # android/ project. It must run inside mobile/: from the repo root it would treat the whole repo
 # as a new empty app. --no-install: dependencies are already installed.
-echo
-echo "[2/3] Generating the Android project (expo prebuild)..."
+# Only with --fresh: it is the slow, destructive step, and a code-only change does not need it.
 cd "$MOBILE_DIR"
-npx expo prebuild --platform android --clean --no-install
+echo
+if [ "$FRESH" -eq 1 ]; then
+  echo "[2/3] Generating the Android project (expo prebuild --clean)..."
+  npx expo prebuild --platform android --clean --no-install
+else
+  echo "[2/3] Reusing the existing Android project (skipping expo prebuild)."
+fi
 
 # --- Phase 3: build each variant ----------------------------------------------------------------
 mkdir -p "$OUT_DIR"
@@ -316,7 +366,7 @@ build_variant() {
 }
 
 echo
-echo "[3/3] Building the APKs (the first one is slow; the rest reuse its work)..."
+echo "[3/3] Building the APKs (a fresh project makes the first one slow; the rest reuse its work)..."
 for v in $ONLY; do build_variant "$v"; done
 
 # --- Phase 4: record and report -----------------------------------------------------------------
@@ -325,6 +375,7 @@ for v in $ONLY; do build_variant "$v"; done
   echo "Branch:   $(git -C "$REPO_DIR" rev-parse --abbrev-ref HEAD 2> /dev/null || echo unknown)"
   echo "Commit:   $(git -C "$REPO_DIR" rev-parse --short HEAD 2> /dev/null || echo unknown)"
   echo "Uncommitted changes: $(git -C "$REPO_DIR" status --porcelain 2> /dev/null | wc -l | tr -d ' ') file(s)"
+  echo "Android project: $BUILD_KIND"
   echo "Api host: $api_host"
   echo "Variants: $ONLY"
 } > "$OUT_DIR/BUILD-INFO.txt"

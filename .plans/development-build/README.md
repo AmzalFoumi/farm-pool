@@ -103,7 +103,8 @@ variable is caught before a 15-minute build, not after.
 Then, from anywhere in the repo:
 
 ```bash
-npm run build:apks -w mobile
+npm run build:apks -w mobile              # reuses mobile/android/: for JavaScript-only changes
+npm run build:apks -w mobile -- --fresh   # wipes and regenerates mobile/android/ first
 ```
 
 The script is written for `bash`, so on Windows run this from **Git Bash** (or any shell where
@@ -115,16 +116,39 @@ The script (`mobile/scripts/build-apks.sh`, documented at its top) does the foll
 1. Checks your setup and lists every problem at once: `ANDROID_HOME`, Java, the two `.env` values
    (`https://` api address, Maps key), a stray root `android/` or `app.json`, a lockfile inside
    `mobile/`, free disk space.
-2. Asks before it deletes and regenerates `mobile/android/` (`--yes` skips the question).
-3. Rebuilds `@farm-pool/shared`, runs `expo prebuild` inside `mobile/`, then builds the three
-   variants and copies each file out immediately, because every build writes to the same
-   `app-release.apk`.
+2. Reuses the existing `mobile/android/` and only runs Gradle. With `--fresh` it first asks, then
+   deletes and regenerates that folder with `expo prebuild --clean` (`--yes` skips the question).
+3. Rebuilds `@farm-pool/shared`, then builds the three variants and copies each file out
+   immediately, because every build writes to the same `app-release.apk`.
 4. Puts them in a new folder, `../farmpool-apks/<YYYY-MM-DD_HHMM>/` (outside the repo), with a
    `BUILD-INFO.txt` (branch, commit, api host; never the Maps key).
 
-Options: `--only phone,phone64` builds a subset; `--out <dir>` changes the parent folder. Pass them
-after `--`: `npm run build:apks -w mobile -- --only phone`. The first build takes about 13 minutes;
-the others reuse the compiled native code and take under a minute.
+Options: `--fresh` (see below), `--only phone,phone64` builds a subset, `--out <dir>` changes the
+parent folder. Pass them after `--`: `npm run build:apks -w mobile -- --only phone`. A `--fresh` build
+took about 13 minutes for the first variant; the other two reuse that work and took under a
+minute. A reused build should be shorter, but that has not been measured yet.
+
+### When to use `--fresh`
+
+Without `--fresh` the script reuses `mobile/android/`. Your JavaScript is bundled again, so screens,
+styles, translations and api calls are included. What it does **not** redo is `expo prebuild`, the
+step that generates the Android project from `app.json` and `.env`. A reused folder keeps its old
+generated values and gives no error, so the APK looks fine and is wrong.
+
+| What changed since the last build | Use |
+| --- | --- |
+| Only JavaScript: screens, styles, translations, api calls | default (reuse) |
+| `mobile/app.json` or `mobile/app.config.js` (app ID, name, icon, splash, permissions, plugins) | `--fresh` |
+| `GOOGLE_MAPS_ANDROID_KEY` | `--fresh` (it goes into the manifest at `prebuild`) |
+| `EXPO_PUBLIC_API_URL` | `--fresh` to be sure. It is baked in when the JavaScript is bundled; we have not verified whether Gradle notices an env-only change |
+| A native library added, removed or upgraded in `mobile/package.json` (Agora, maps…), or an Expo SDK upgrade | `--fresh` |
+| `mobile/android/` does not exist yet | `--fresh` (the script tells you) |
+| The last build failed strangely, or you do not trust the folder | `--fresh` |
+| The APK you hand to testers and want to fully vouch for | `--fresh` |
+
+If unsure, use `--fresh`: it costs time, never correctness. The script cannot yet detect these
+changes for you; it prints a reminder before every reused build. Automatic detection is planned
+later.
 
 The three variants are the same app with the same `.env` values. They differ only in which
 processor types (ABIs) they carry native code for — mostly Agora's video engine, ~90 MB per ABI:
