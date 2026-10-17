@@ -1,5 +1,5 @@
 import type { DropOff, Offer, PublicUser, SavedLocation, SenderType } from "@farm-pool/shared";
-import { cropById } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Dimensions, ScrollView } from "react-native";
 
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/actionsheet";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { DeliveryLocationField } from "@/features/geo/delivery-location-field";
 import { offersApi } from "@/features/offers/api";
 import { offerErrorMessage } from "@/features/offers/error-message";
@@ -48,6 +49,7 @@ export function AcceptOfferSheet({
   onAccepted: (orderId: string) => void;
   bottomInset: number;
 }) {
+  const { t } = useTranslation();
   const [dropOff, setDropOff] = useState<DropOff | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -62,7 +64,7 @@ export function AcceptOfferSheet({
       onClose();
       onAccepted(orderId);
     } catch (e) {
-      setError(offerErrorMessage(e, "Could not accept the offer"));
+      setError(offerErrorMessage(e, t("offers.accept.error")));
     } finally {
       setSubmitting(false);
     }
@@ -87,15 +89,13 @@ export function AcceptOfferSheet({
         >
           <VStack className="w-full gap-4 pt-2">
             <VStack className="gap-1">
-              <Text className="type-h3 text-foreground">Accept this offer?</Text>
+              <Text className="type-h3 text-foreground">{t("offers.accept.title")}</Text>
               <Text className="type-body text-muted-foreground">
-                {cropById(offer.cropId).name} · {offer.quantityKg} kg at{" "}
+                {t(cropLabelKey(offer.cropId))} · {offer.quantityKg} kg at{" "}
                 {formatPrice(offer.pricePerKg)} per kg — {formatPrice(offer.total)} in all.
               </Text>
               <Text className="type-caption text-muted-foreground">
-                {viewer === "BUYER"
-                  ? "This creates the order. You pay from the order screen."
-                  : "This creates the order and takes the quantity off your listing."}
+                {viewer === "BUYER" ? t("offers.accept.buyerNote") : t("offers.accept.farmerNote")}
               </Text>
             </VStack>
 
@@ -114,11 +114,16 @@ export function AcceptOfferSheet({
 
             <AppButton
               testID="offer-accept-confirm"
-              label={submitting ? "Accepting…" : "Accept offer"}
+              label={submitting ? t("offers.accept.accepting") : t("offers.accept.action")}
               onPress={() => void submit()}
               disabled={submitting}
             />
-            <AppButton label="Not now" variant="outline" onPress={onClose} disabled={submitting} />
+            <AppButton
+              label={t("offers.accept.notNow")}
+              variant="outline"
+              onPress={onClose}
+              disabled={submitting}
+            />
           </VStack>
         </ScrollView>
       </ActionsheetContent>

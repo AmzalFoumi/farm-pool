@@ -1,4 +1,5 @@
 import type { Order, Payment } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 
 import { AppButton } from "@/components/app/app-button";
@@ -39,6 +40,7 @@ export function ConfirmReceiptSheet({
   onConfirmed: (payment: Payment) => void;
   bottomInset: number;
 }) {
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -50,7 +52,7 @@ export function ConfirmReceiptSheet({
       onClose();
       onConfirmed(released);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not confirm");
+      setError(e instanceof ApiError ? e.message : t("payments.confirm.error"));
     } finally {
       setSubmitting(false);
     }
@@ -67,7 +69,7 @@ export function ConfirmReceiptSheet({
           <ActionsheetDragIndicator />
         </ActionsheetDragIndicatorWrapper>
         <VStack className="w-full gap-4 pt-2">
-          <Text className="type-h3 text-foreground">Did your order arrive?</Text>
+          <Text className="type-h3 text-foreground">{t("payments.confirm.title")}</Text>
           <Text className="type-body text-muted-foreground">
             Confirming sends the {formatPrice(payment.heldAmount)} still held to {order.farmerName}.
             This cannot be undone.
@@ -81,11 +83,16 @@ export function ConfirmReceiptSheet({
           {error ? <Text className="type-caption text-destructive">{error}</Text> : null}
 
           <AppButton
-            label={submitting ? "Confirming…" : "Yes, it arrived"}
+            label={submitting ? "Confirming…" : t("payments.confirm.yes")}
             onPress={() => void submit()}
             disabled={submitting}
           />
-          <AppButton label="Not yet" variant="outline" onPress={onClose} disabled={submitting} />
+          <AppButton
+            label={t("payments.confirm.notYet")}
+            variant="outline"
+            onPress={onClose}
+            disabled={submitting}
+          />
         </VStack>
       </ActionsheetContent>
     </Actionsheet>

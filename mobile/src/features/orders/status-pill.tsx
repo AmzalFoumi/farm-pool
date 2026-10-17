@@ -8,6 +8,8 @@ import type {
   WantedStatus
 } from "@farm-pool/shared";
 
+import { useTranslation } from "react-i18next";
+
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 
@@ -16,65 +18,65 @@ import { Text } from "@/components/ui/text";
  * done, `destructive` is cancelled or declined. One table so a farmer and a buyer never see the
  * same state in different colours.
  */
-const ORDER: Record<OrderStatus, { label: string; tone: string }> = {
-  requested: { label: "Requested", tone: "warning" },
-  accepted: { label: "Accepted", tone: "info" },
-  declined: { label: "Declined", tone: "destructive" },
-  cancelled: { label: "Cancelled", tone: "destructive" },
-  open: { label: "Open", tone: "info" },
-  assigned: { label: "Driver assigned", tone: "info" },
-  in_transit: { label: "In transit", tone: "info" },
-  delivered: { label: "Delivered", tone: "success" }
+const ORDER: Record<OrderStatus, { labelKey: string; tone: string }> = {
+  requested: { labelKey: "orderStatus.requested", tone: "warning" },
+  accepted: { labelKey: "orderStatus.accepted", tone: "info" },
+  declined: { labelKey: "orderStatus.declined", tone: "destructive" },
+  cancelled: { labelKey: "orderStatus.cancelled", tone: "destructive" },
+  open: { labelKey: "orderStatus.open", tone: "info" },
+  assigned: { labelKey: "orderStatus.assigned", tone: "info" },
+  in_transit: { labelKey: "orderStatus.in_transit", tone: "info" },
+  delivered: { labelKey: "orderStatus.delivered", tone: "success" }
 };
 
-const WANTED: Record<WantedStatus, { label: string; tone: string }> = {
-  open: { label: "Open", tone: "warning" },
-  closed: { label: "Closed", tone: "muted" }
+const WANTED: Record<WantedStatus, { labelKey: string; tone: string }> = {
+  open: { labelKey: "wantedStatus.open", tone: "warning" },
+  closed: { labelKey: "wantedStatus.closed", tone: "muted" }
 };
 
 /* A negotiation (FARM-46). Still being talked about is `warning`, like everything waiting on
    someone; agreed is `success`; declined is `destructive`; lapsed is history, so `muted`. */
-const OFFER: Record<OfferStatus, { label: string; tone: string }> = {
-  PENDING: { label: "Sent", tone: "warning" },
-  NEGOTIATING: { label: "Negotiating", tone: "warning" },
-  ACCEPTED: { label: "Agreed", tone: "success" },
-  DECLINED: { label: "Declined", tone: "destructive" },
-  EXPIRED: { label: "Expired", tone: "muted" }
+const OFFER: Record<OfferStatus, { labelKey: string; tone: string }> = {
+  PENDING: { labelKey: "offerStatus.PENDING", tone: "warning" },
+  NEGOTIATING: { labelKey: "offerStatus.NEGOTIATING", tone: "warning" },
+  ACCEPTED: { labelKey: "offerStatus.ACCEPTED", tone: "success" },
+  DECLINED: { labelKey: "offerStatus.DECLINED", tone: "destructive" },
+  EXPIRED: { labelKey: "offerStatus.EXPIRED", tone: "muted" }
 };
 
 /* A farmer's own listing. Pending approval waits on the coordinator, so it is `warning`;
    approved and live is `success`; a rejection is `destructive`. */
-const LISTING: Record<ListingStatus, { label: string; tone: string }> = {
-  draft: { label: "Draft", tone: "muted" },
-  pending_approval: { label: "Awaiting approval", tone: "warning" },
-  verified: { label: "Live", tone: "success" },
-  paused: { label: "Paused", tone: "muted" },
-  rejected: { label: "Rejected", tone: "destructive" },
-  sold: { label: "Sold", tone: "muted" }
+const LISTING: Record<ListingStatus, { labelKey: string; tone: string }> = {
+  draft: { labelKey: "listingStatus.draft", tone: "muted" },
+  pending_approval: { labelKey: "listingStatus.pending_approval", tone: "warning" },
+  verified: { labelKey: "listingStatus.verified", tone: "success" },
+  paused: { labelKey: "listingStatus.paused", tone: "muted" },
+  rejected: { labelKey: "listingStatus.rejected", tone: "destructive" },
+  sold: { labelKey: "listingStatus.sold", tone: "muted" }
 };
 
 /* A video call. Waiting on the farmer is `warning`, like a requested order; accepted and ready
    to join is `success`; declined is `destructive`; a finished call is history, so `muted`. */
-const CALL: Record<CallStatus, { label: string; tone: string }> = {
-  requested: { label: "Requested", tone: "warning" },
-  active: { label: "Ready to join", tone: "success" },
-  declined: { label: "Declined", tone: "destructive" },
-  ended: { label: "Ended", tone: "muted" }
+const CALL: Record<CallStatus, { labelKey: string; tone: string }> = {
+  requested: { labelKey: "callStatus.requested", tone: "warning" },
+  active: { labelKey: "callStatus.active", tone: "success" },
+  declined: { labelKey: "callStatus.declined", tone: "destructive" },
+  ended: { labelKey: "callStatus.ended", tone: "muted" }
 };
 
 /* A delivery partner's vehicle check (FARM-45). Waiting on a check is `warning`, like every other
    thing waiting on someone; checked is `success`; refused is `destructive`. */
-const DRIVER: Record<DriverVerification, { label: string; tone: string }> = {
-  pending: { label: "Awaiting check", tone: "warning" },
-  verified: { label: "Verified", tone: "success" },
-  rejected: { label: "Not approved", tone: "destructive" }
+const DRIVER: Record<DriverVerification, { labelKey: string; tone: string }> = {
+  pending: { labelKey: "verification.pending", tone: "warning" },
+  verified: { labelKey: "verification.verified", tone: "success" },
+  rejected: { labelKey: "verification.rejected", tone: "destructive" }
 };
 
 /* The money on an order (FARM-41). Held is `info`, like an order on the move: nothing is wrong
    and nothing is finished. Paid out in full is `success`. */
-const PAYMENT: Record<PaymentStatus, { label: string; tone: string }> = {
-  in_escrow: { label: "Held safely", tone: "info" },
-  released: { label: "Paid in full", tone: "success" }
+const PAYMENT: Record<PaymentStatus, { labelKey: string; tone: string }> = {
+  in_escrow: { labelKey: "paymentStatus.in_escrow", tone: "info" },
+  released: { labelKey: "paymentStatus.released", tone: "success" }
 };
 
 /* Written out in full so UniWind can see every class name at build time. */
@@ -86,11 +88,13 @@ const TONE: Record<string, { box: string; text: string }> = {
   muted: { box: "bg-muted", text: "text-muted-foreground" }
 };
 
-function Pill({ label, tone }: { label: string; tone: string }) {
-  const t = TONE[tone] ?? TONE.muted;
+function Pill({ labelKey, tone }: { labelKey: string; tone: string }) {
+  const { t } = useTranslation();
+  /* `styles`, not `t` — that name belongs to the translator now. */
+  const styles = TONE[tone] ?? TONE.muted;
   return (
-    <Box className={`rounded-pill px-3 py-1 ${t.box}`}>
-      <Text className={`type-body-sm-bold ${t.text}`}>{label}</Text>
+    <Box className={`rounded-pill px-3 py-1 ${styles.box}`}>
+      <Text className={`type-body-sm-bold ${styles.text}`}>{t(labelKey)}</Text>
     </Box>
   );
 }
@@ -123,6 +127,7 @@ export function PaymentStatusPill({ status }: { status: PaymentStatus }) {
   return <Pill {...PAYMENT[status]} />;
 }
 
-export function orderStatusLabel(status: OrderStatus) {
-  return ORDER[status].label;
+/** The key for an order's status label, for callers that need the words outside a pill. */
+export function orderStatusLabelKey(status: OrderStatus) {
+  return ORDER[status].labelKey;
 }

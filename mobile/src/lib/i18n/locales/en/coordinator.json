@@ -1,1 +1,126 @@
-{}
+{
+  "coordinator": {
+    "tabs": {
+      "region": "Region",
+      "farmers": "Farmers",
+      "listings": "Listings",
+      "disputes": "Disputes",
+      "prices": "Prices"
+    },
+    "region": {
+      "hello": "Hello",
+      "farmersToVerify": "Farmers to verify",
+      "allVerified": "All verified",
+      "noDisputes": "No disputes",
+      "needsYou": "Needs you today",
+      "checkError": "Could not check right now.",
+      "nothingYet": "Nothing needs your attention yet.",
+      "noBenchmark": "No benchmark price set",
+      "setPrice": "Set price",
+      "updatePrice": "Update price",
+      "newFarmer": "New farmer"
+    },
+    "benchmarkTab": {
+      "title": "Daily benchmark",
+      "stale": "Stale",
+      "searchCrop": "Search crop",
+      "noCrops": "No crops here",
+      "noCropsBody": "Nothing matches this search or filter.",
+      "noPricePublished": "No price published yet"
+    },
+    "listingsTab": {
+      "title": "Listings",
+      "pending": "Pending",
+      "verified": "Verified",
+      "rejected": "Rejected",
+      "thisFarmer": "This farmer",
+      "search": "Search crop or farmer",
+      "none": "No listings here",
+      "noneBody": "Nobody matches this filter yet."
+    },
+    "disputes": {
+      "title": "Disputes",
+      "thisMonth": "This month",
+      "allTime": "All time",
+      "noMismatches": "No mismatches",
+      "allCompleted": "All completed",
+      "noCompare": "Can’t compare — nothing earned last month"
+    },
+    "farmersTab": {
+      "title": "Farmers",
+      "none": "No farmers here",
+      "noneBody": "Nobody matches this filter yet.",
+      "pendingReview": "Pending review",
+      "noListings": "No listings yet"
+    },
+    "review": {
+      "title": "Listing",
+      "notFoundBody": "This listing is no longer in your cooperative.",
+      "approveError": "Could not approve this listing",
+      "rejectError": "Could not reject this listing",
+      "variety": "Variety",
+      "grade": "Grade",
+      "packaging": "Packaging",
+      "certifications": "Certifications",
+      "farmer": "Farmer",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "minimumOrder": "Minimum order",
+      "harvestDate": "Harvest date",
+      "freshness": "Freshness",
+      "produceDetails": "Produce details",
+      "pickup": "Pickup",
+      "location": "Location",
+      "address": "Address",
+      "farmGatePin": "Farm gate pin",
+      "dropped": "Dropped",
+      "transport": "Transport",
+      "rejected": "Rejected",
+      "reasonLabel": "Reason for rejecting",
+      "reasonPlaceholder": "What needs to change before this can be approved?",
+      "approveAnyway": "Yes, approve anyway",
+      "marketPrice": "Market price",
+      "checkingBenchmark": "Checking the benchmark…",
+      "approveAnywayTitle": "Approve this listing anyway?"
+    },
+    "farmerDetail": {
+      "title": "Farmer",
+      "notFoundBody": "This farmer is no longer in your cooperative.",
+      "approveError": "Could not approve this farmer",
+      "rejectError": "Could not reject this farmer",
+      "phone": "Phone number",
+      "district": "District",
+      "registered": "Registered",
+      "listings": "Listings",
+      "reasonLabel": "Reason for rejecting",
+      "reasonPlaceholder": "Why isn't this farmer being approved?"
+    },
+    "profile": {
+      "role": "Area coordinator",
+      "region": "Region",
+      "contact": "Contact number"
+    },
+    "spotlight": {
+      "checking": "Checking this month’s sales…",
+      "error": "Could not check sales right now."
+    },
+    "outlier": {
+      "title": "Priced outside benchmark"
+    },
+    "filters": {
+      "all": "All",
+      "set": "Set"
+    },
+    "stats": {
+      "earnedByFarmers": "earned by farmers",
+      "completedCleanly": "completed cleanly",
+      "completedWithMismatch": "completed with a mismatch",
+      "stillInProgress": "still in progress",
+      "didNotGoThrough": "did not go through",
+      "totalFarmers": "total farmers",
+      "farmersToVerify": "farmers to verify",
+      "currentDisputes": "current disputes",
+      "cropListings": "crop listings"
+    }
+  }
+}

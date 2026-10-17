@@ -10,7 +10,35 @@
     "phone": "Phone",
     "loading": "Loading",
     "signUp": "Sign up",
-    "logIn": "Log in"
+    "logIn": "Log in",
+    "cancel": "Cancel",
+    "more": "More",
+    "edit": "Edit",
+    "decline": "Decline",
+    "accept": "Accept",
+    "tryAgain2": "Please try again.",
+    "profile": "Profile",
+    "reject": "Reject",
+    "approve": "Approve",
+    "approving": "Approving…",
+    "rejecting": "Rejecting…",
+    "confirmReject": "Confirm reject",
+    "notSet": "Not set",
+    "notGiven": "Not given",
+    "review": "Review",
+    "checking": "Checking…",
+    "notFound": "Not found",
+    "search": "Search",
+    "filterA11y": "Filter: {{label}}",
+    "close": "Close",
+    "home": "Home",
+    "orders": "Orders",
+    "calls": "Calls",
+    "listings": "Listings",
+    "showPassword": "Show password",
+    "confirmValue": "Confirm Value",
+    "enterValue": "Enter Value",
+    "stillHeld": "Still held"
   },
   "errors": {
     "network": "Can't reach the server. Check your connection and try again.",
@@ -47,5 +75,47 @@
     "buyer": "Wholesale buyer",
     "coordinator": "Area coordinator",
     "logistics": "Delivery partner"
+  },
+  "party": {
+    "buyer": "Buyer",
+    "farmer": "Farmer"
+  },
+  "farmerStatus": {
+    "verified": "Verified",
+    "pending": "Pending",
+    "suspended": "Suspended"
+  },
+  "wantedStatus": {
+    "open": "Open",
+    "closed": "Closed"
+  },
+  "offerStatus": {
+    "PENDING": "Sent",
+    "NEGOTIATING": "Negotiating",
+    "ACCEPTED": "Agreed",
+    "DECLINED": "Declined",
+    "EXPIRED": "Expired"
+  },
+  "listingStatus": {
+    "draft": "Draft",
+    "pending_approval": "Awaiting approval",
+    "verified": "Live",
+    "paused": "Paused",
+    "rejected": "Rejected",
+    "sold": "Sold"
+  },
+  "callStatus": {
+    "requested": "Requested",
+    "active": "Ready to join",
+    "declined": "Declined",
+    "ended": "Ended"
+  },
+  "paymentStatus": {
+    "in_escrow": "Held safely",
+    "released": "Paid in full"
+  },
+  "brand": {
+    "coordinator": "FarmPool · Coordinator",
+    "farmer": "FarmPool · Farmer"
   }
 }

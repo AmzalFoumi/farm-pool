@@ -1,4 +1,5 @@
 import { cropById, type CropPriceContext, type Listing } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 
 import { Box } from "@/components/ui/box";
@@ -7,6 +8,7 @@ import { Icon, InfoIcon } from "@/components/ui/icon";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { compareToBenchmark } from "@/features/coordination/benchmark-comparison";
 import { formatPrice } from "@/lib/format";
 import type { useRequest } from "@/lib/use-request";
@@ -29,6 +31,7 @@ export function PriceOutlierAlert({
   listings: ReturnType<typeof useRequest<Listing[]>>;
   benchmarks: ReturnType<typeof useRequest<CropPriceContext[]>>;
 }) {
+  const { t } = useTranslation();
   const router = useRouter();
 
   if (listings.status !== "ready" || benchmarks.status !== "ready") return null;
@@ -51,7 +54,7 @@ export function PriceOutlierAlert({
     <VStack className="mx-gutter gap-3 rounded-card border border-border bg-card p-4">
       <HStack className="items-center gap-2">
         <Icon as={InfoIcon} className="text-muted-foreground" size="sm" />
-        <Text className="type-h4 text-foreground">Priced outside benchmark</Text>
+        <Text className="type-h4 text-foreground">{t("coordinator.outlier.title")}</Text>
       </HStack>
       {outliers.map(({ listing, comparison }) => {
         const crop = cropById(listing.cropId);
@@ -70,19 +73,19 @@ export function PriceOutlierAlert({
             key={listing.id}
             onPress={() => router.push(`/listing-review/${listing.id}`)}
             accessibilityRole="button"
-            accessibilityLabel={`Review ${crop.name} listing from ${listing.farmerName} — ${comparison.message}`}
+            accessibilityLabel={`Review ${t(cropLabelKey(crop.id))} listing from ${listing.farmerName} — ${comparison.message}`}
             className="min-h-tap flex-row items-center justify-between"
           >
             <VStack className="flex-1 gap-0.5">
               <Text className="type-body-bold text-foreground" numberOfLines={1}>
-                {`${crop.name} · ${formatPrice(listing.pricePerKg)}/kg`}
+                {`${t(cropLabelKey(crop.id))} · ${formatPrice(listing.pricePerKg)}/kg`}
               </Text>
               <Text className="type-caption text-muted-foreground" numberOfLines={1}>
                 {`${listing.farmerName} · ${comparison.message}`}
               </Text>
             </VStack>
             <Box className={badgeClass}>
-              <Text className={badgeTextClass}>Review</Text>
+              <Text className={badgeTextClass}>{t("common.review")}</Text>
             </Box>
           </Pressable>
         );

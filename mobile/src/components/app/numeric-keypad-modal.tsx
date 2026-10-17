@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AppButton } from "@/components/app/app-button";
 import { AppTextField } from "@/components/app/app-text-field";
 import { HStack } from "@/components/ui/hstack";
@@ -32,6 +33,7 @@ export function NumericKeypadModal({
   presets = [50, 100, 250, 500],
   onConfirm
 }: NumericKeypadModalProps) {
+  const { t } = useTranslation();
   const [inputValue, setInputValue] = useState<string>(String(initialValue ?? "0"));
 
   /* Reset the field each time the modal opens. Done while rendering, not in an effect: React
@@ -59,7 +61,7 @@ export function NumericKeypadModal({
         </ModalHeader>
         <ModalBody className="gap-4 pt-2">
           <AppTextField
-            label={unitLabel ? `Value (${unitLabel})` : "Enter Value"}
+            label={unitLabel ? `Value (${unitLabel})` : t("common.enterValue")}
             value={inputValue}
             onChangeText={setInputValue}
             keyboardType="numeric"
@@ -81,7 +83,7 @@ export function NumericKeypadModal({
             </HStack>
           )}
 
-          <AppButton label="Confirm Value" onPress={handleConfirm} />
+          <AppButton label={t("common.confirmValue")} onPress={handleConfirm} />
         </ModalBody>
       </ModalContent>
     </Modal>

@@ -12,6 +12,7 @@
  */
 
 import { ACTIVE_ORDER_STATUSES, type Order } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useFocusEffect } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -44,6 +45,7 @@ function hasMismatch(order: Order): boolean {
 }
 
 export default function DisputesScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
   const orders = useRequest(() => coordinationApi.orders(token ?? ""), token ?? "");
@@ -74,7 +76,7 @@ export default function DisputesScreen() {
             .reduce((sum, o) => sum + o.total, 0);
 
           /* Compared against last month, not against "all time": "vs last month" only means
-           *  something while viewing "This month" — on "All time" there is no single prior
+           *  something while viewing t("coordinator.disputes.thisMonth") — on t("coordinator.disputes.allTime") there is no single prior
            *  period to compare against, so the line doesn't render there at all. Within "This
            *  month" it always renders something, though: a real percentage when there's a
            *  baseline to divide by, otherwise a plain "can't compare" line rather than silently
@@ -92,7 +94,7 @@ export default function DisputesScreen() {
               contentContainerClassName="gap-3 pb-gutter"
               contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
             >
-              <CoordinatorHeader title="Disputes" />
+              <CoordinatorHeader title={t("coordinator.disputes.title")} />
 
               <HStack className="mx-gutter gap-2">
                 {(["month", "all"] as const).map((id) => {
@@ -103,7 +105,11 @@ export default function DisputesScreen() {
                       onPress={() => setPeriod(id)}
                       accessibilityRole="button"
                       accessibilityState={{ selected }}
-                      accessibilityLabel={id === "month" ? "This month" : "All time"}
+                      accessibilityLabel={
+                        id === "month"
+                          ? t("coordinator.disputes.thisMonth")
+                          : t("coordinator.disputes.allTime")
+                      }
                       className={[
                         "min-h-tap flex-row items-center justify-center gap-1.5 rounded-chip border px-4",
                         selected ? "border-primary bg-primary" : "border-border bg-card"
@@ -121,7 +127,9 @@ export default function DisputesScreen() {
                           selected ? "text-primary-foreground" : "text-foreground"
                         }`}
                       >
-                        {id === "month" ? "This month" : "All time"}
+                        {id === "month"
+                          ? t("coordinator.disputes.thisMonth")
+                          : t("coordinator.disputes.allTime")}
                       </Text>
                     </Pressable>
                   );
@@ -134,7 +142,7 @@ export default function DisputesScreen() {
                     <StatCard
                       tone="success"
                       value={formatPrice(earned)}
-                      label="earned by farmers"
+                      label={t("coordinator.stats.earnedByFarmers")}
                     />
                   </HStack>
                   {period === "month" ? (
@@ -150,7 +158,7 @@ export default function DisputesScreen() {
                       </Text>
                     ) : (
                       <Text className="type-caption pl-1 text-muted-foreground">
-                        Can’t compare — nothing earned last month
+                        {t("coordinator.disputes.noCompare")}
                       </Text>
                     )
                   ) : null}
@@ -159,30 +167,30 @@ export default function DisputesScreen() {
                   <StatCard
                     tone="success"
                     value={completedClean}
-                    label="completed cleanly"
+                    label={t("coordinator.stats.completedCleanly")}
                     icon={<Icon as={CheckCircleIcon} className="text-success" size="md" />}
                   />
                   <StatCard
                     tone="warning"
                     value={completedMismatch}
-                    label="completed with a mismatch"
+                    label={t("coordinator.stats.completedWithMismatch")}
                     icon={<Icon as={AlertCircleIcon} className="text-warning" size="md" />}
-                    zeroLabel="No mismatches"
+                    zeroLabel={t("coordinator.disputes.noMismatches")}
                   />
                 </HStack>
                 <HStack className="gap-3">
                   <StatCard
                     tone="info"
                     value={inProgress}
-                    label="still in progress"
+                    label={t("coordinator.stats.stillInProgress")}
                     icon={<Icon as={ClockIcon} className="text-info" size="md" />}
                   />
                   <StatCard
                     tone="destructive"
                     value={fellThrough}
-                    label="did not go through"
+                    label={t("coordinator.stats.didNotGoThrough")}
                     icon={<Icon as={RemoveIcon} className="text-destructive" size="md" />}
-                    zeroLabel="All completed"
+                    zeroLabel={t("coordinator.disputes.allCompleted")}
                   />
                 </HStack>
               </VStack>

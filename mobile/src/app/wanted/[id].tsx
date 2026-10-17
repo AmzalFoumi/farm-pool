@@ -1,6 +1,7 @@
 /** The responses farmers have sent to one of this buyer's requests (FARM-47). */
 
 import { cropById, type Offer, type WantedListing } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { FlatList, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,6 +12,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { offersApi } from "@/features/offers/api";
 import { OfferStatusPill, WantedStatusPill } from "@/features/orders/status-pill";
 import { wantedApi } from "@/features/wanted/api";
@@ -22,6 +24,7 @@ import { useAuth } from "@/providers/auth-provider";
 type Loaded = { request: WantedListing; responses: Offer[] };
 
 export default function WantedResponsesScreen() {
+  const { t } = useTranslation();
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
   const router = useRouter();
@@ -48,7 +51,7 @@ export default function WantedResponsesScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Responses" />
+      <AppBar title={t("buyer.wanted.responses")} />
       <RequestView request={loaded}>
         {({ request, responses }) => {
           const crop = cropById(request.cropId);
@@ -62,7 +65,7 @@ export default function WantedResponsesScreen() {
                 <HStack className="items-center gap-3 rounded-card border border-border bg-card p-4">
                   <VStack className="flex-1 gap-0.5">
                     <Text className="type-h4 text-foreground">
-                      {crop.name} · {request.quantityKg} kg
+                      {t(cropLabelKey(crop.id))} · {request.quantityKg} kg
                     </Text>
                     <Text className="type-caption text-muted-foreground">
                       By {formatDate(request.neededBy)} · {request.district}
@@ -93,7 +96,9 @@ export default function WantedResponsesScreen() {
                         {formatPrice(item.total)}
                       </Text>
                       {yourTurn ? (
-                        <Text className="type-body-sm-bold text-warning">Your turn to answer</Text>
+                        <Text className="type-body-sm-bold text-warning">
+                          {t("buyer.wanted.yourTurn")}
+                        </Text>
                       ) : null}
                     </VStack>
                     <OfferStatusPill status={item.status} />
@@ -102,11 +107,11 @@ export default function WantedResponsesScreen() {
               }}
               ListEmptyComponent={
                 <EmptyNote
-                  title={request.status === "open" ? "No responses yet" : "Request closed"}
+                  title={request.status === "open" ? "No responses yet" : t("buyer.wanted.closed")}
                   note={
                     request.status === "open"
                       ? "Farmers who can supply this will answer with their price. Check back soon."
-                      : "This request is closed, so farmers can no longer answer it."
+                      : t("buyer.wanted.closedBody")
                   }
                 />
               }

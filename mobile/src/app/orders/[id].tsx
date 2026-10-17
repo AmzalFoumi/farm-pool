@@ -7,6 +7,7 @@
  */
 
 import { can, cropById, type Order } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -18,10 +19,11 @@ import { RequestView } from "@/components/app/request-view";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { AssignedDriverCard } from "@/features/logistics/assigned-driver-card";
 import { ordersApi } from "@/features/orders/api";
-import { OrderStatusPill, orderStatusLabel } from "@/features/orders/status-pill";
+import { OrderStatusPill, orderStatusLabelKey } from "@/features/orders/status-pill";
 import { paymentsApi } from "@/features/payments/api";
 import { ConfirmReceiptSheet } from "@/features/payments/confirm-receipt-sheet";
 import { PaySheet } from "@/features/payments/pay-sheet";
@@ -34,6 +36,7 @@ import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function OrderDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -45,7 +48,7 @@ export default function OrderDetailScreen() {
       {/* After Place order the detail replaced the listing, so "back" means the
           orders list, not the listing that no longer sits under it. */}
       <AppBar
-        title="Order"
+        title={t("buyer.orders.detailTitle")}
         onBack={() => (router.canGoBack() ? router.back() : router.replace("/orders"))}
       />
       <RequestView request={order}>
@@ -73,6 +76,7 @@ function OrderBody({
   bottomInset: number;
   onChanged: () => void;
 }) {
+  const { t } = useTranslation();
   const crop = cropById(order.cropId);
   const { user } = useAuth();
   const router = useRouter();
@@ -122,7 +126,7 @@ function OrderBody({
       await ordersApi.cancel(token, order.id);
       onChanged();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not cancel");
+      setError(e instanceof ApiError ? e.message : t("buyer.orders.cancelError"));
     } finally {
       setBusy(false);
     }
@@ -135,28 +139,28 @@ function OrderBody({
       await ordersApi.respond(token, order.id, answer);
       onChanged();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not do that");
+      setError(e instanceof ApiError ? e.message : t("buyer.orders.genericError"));
     } finally {
       setBusy(false);
     }
   };
 
   const rows = [
-    { label: "Quantity", value: `${order.quantityKg} kg` },
+    { label: t("buyer.orders.quantity"), value: `${order.quantityKg} kg` },
     /* What the driver actually loaded, once they have (LP-50). Shown beside the ordered quantity
        rather than replacing it: the difference between the two is the thing worth seeing. */
     ...(order.collectedKg !== undefined
-      ? [{ label: "Collected", value: `${order.collectedKg} kg` }]
+      ? [{ label: t("buyer.orders.collected"), value: `${order.collectedKg} kg` }]
       : []),
     /* The time the driver promised (FARM-61). This is why a farmer harvests when they do, so it
        belongs with the deal rather than hidden behind the driver card. */
     ...(order.committedWindow
-      ? [{ label: "Collection", value: formatWindow(order.committedWindow) }]
+      ? [{ label: t("buyer.orders.collection"), value: formatWindow(order.committedWindow) }]
       : []),
-    { label: "Unit price", value: `${formatPrice(order.pricePerKg)} / kg` },
+    { label: t("buyer.orders.unitPrice"), value: `${formatPrice(order.pricePerKg)} / kg` },
     { label: "Total", value: formatPrice(order.total) },
-    { label: "Farmer", value: order.farmerName },
-    { label: "Requested on", value: formatDate(order.createdAt) },
+    { label: t("buyer.orders.farmer"), value: order.farmerName },
+    { label: t("buyer.orders.requestedOn"), value: formatDate(order.createdAt) },
     ...(order.note ? [{ label: "Note", value: order.note }] : [])
   ];
 
@@ -166,9 +170,9 @@ function OrderBody({
         <HStack className="items-center gap-3">
           <CropTile emoji={crop.emoji} />
           <VStack className="flex-1">
-            <Text className="type-h3 text-foreground">{crop.name}</Text>
+            <Text className="type-h3 text-foreground">{t(cropLabelKey(crop.id))}</Text>
             <Text className="type-caption text-muted-foreground">
-              {orderStatusLabel(order.status)}
+              {t(orderStatusLabelKey(order.status))}
             </Text>
           </VStack>
           <OrderStatusPill status={order.status} />
@@ -222,7 +226,7 @@ function OrderBody({
           <Text className="type-caption text-muted-foreground">
             {viewer === "buyer"
               ? `${order.farmerName} accepted. Pay to confirm the order and book a driver.`
-              : "You accepted. A driver is booked once the buyer pays."}
+              : t("buyer.orders.acceptedNote")}
           </Text>
         ) : null}
         {error ? <Text className="type-caption text-destructive">{error}</Text> : null}
@@ -234,12 +238,12 @@ function OrderBody({
           style={{ paddingBottom: Math.max(bottomInset, 23) }}
         >
           <AppButton
-            label={busy ? "Sending…" : "Accept order"}
+            label={busy ? "Sending…" : t("buyer.orders.accept")}
             onPress={() => void respond("accept")}
             disabled={busy}
           />
           <AppButton
-            label="Decline"
+            label={t("common.decline")}
             variant="outline"
             onPress={() => void respond("decline")}
             disabled={busy}
@@ -253,7 +257,7 @@ function OrderBody({
           style={{ paddingBottom: Math.max(bottomInset, 23) }}
         >
           <AppButton
-            label={busy ? "Cancelling…" : "Cancel request"}
+            label={busy ? "Cancelling…" : t("buyer.orders.cancelRequest")}
             variant="outline"
             onPress={() => void cancel()}
             disabled={busy}
@@ -276,7 +280,10 @@ function OrderBody({
             className="border-t border-border bg-card px-gutter pt-3"
             style={{ paddingBottom: Math.max(bottomInset, 23) }}
           >
-            <AppButton label="Confirm I received it" onPress={() => setConfirming(true)} />
+            <AppButton
+              label={t("buyer.orders.confirmReceived")}
+              onPress={() => setConfirming(true)}
+            />
           </VStack>
           <ConfirmReceiptSheet
             open={confirming}

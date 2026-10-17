@@ -1,4 +1,5 @@
 import { useFocusEffect, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { View, FlatList, ListRenderItem } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,6 +23,7 @@ import { FarmerListingEmptyState } from "@/features/listings/farmer-listing-empt
 type FilterState = "active" | "paused" | "drafts" | "sold";
 
 export default function FarmerListingsScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -81,10 +83,10 @@ export default function FarmerListingsScreen() {
         <HStack className="items-center justify-between">
           <VStack>
             <Heading className="text-[24px] font-extrabold text-foreground tracking-tight">
-              My Listings
+              {t("listings.farmerListings.title")}
             </Heading>
             <Text className="type-body-sm-bold text-muted-foreground mt-0.5">
-              Manage crop batches, live offers & escrow
+              {t("listings.farmerListings.note")}
             </Text>
           </VStack>
           <HStack className="items-center gap-2">

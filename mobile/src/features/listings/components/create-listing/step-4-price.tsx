@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert } from "react-native";
 import { cropById, getBenchmarkForCrop, type CropId } from "@farm-pool/shared";
 
@@ -8,6 +9,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { formatPrice } from "@/lib/format";
 import { toKg, type BatchUnit } from "@/features/listings/units";
@@ -41,6 +43,7 @@ export default function Step4Price({
   onNext,
   onBack
 }: Step4PriceProps) {
+  const { t } = useTranslation();
   const crop = cropById(cropId) || cropById("tomato");
   const benchmark = getBenchmarkForCrop(cropId);
 
@@ -66,16 +69,16 @@ export default function Step4Price({
   const getMarketFeedbackBadge = () => {
     if (pricePerKg < minBench) {
       return {
-        label: "Below the reference range"
+        label: t("listings.step4.below")
       };
     }
     if (pricePerKg >= minBench && pricePerKg <= maxBench) {
       return {
-        label: "Within the reference range"
+        label: t("listings.step4.within")
       };
     }
     return {
-      label: "Above the reference range"
+      label: t("listings.step4.above")
     };
   };
 
@@ -83,7 +86,7 @@ export default function Step4Price({
 
   const handleContinue = () => {
     if (pricePerKg <= 0) {
-      Alert.alert("Invalid Price", "Please enter a valid asking price per kg.");
+      Alert.alert(t("listings.step4.invalidTitle"), t("listings.step4.invalidBody"));
       return;
     }
     onNext?.({ pricePerKg, grossEarnings, acceptNegotiation });
@@ -92,14 +95,14 @@ export default function Step4Price({
   return (
     <WizardShell
       step={4}
-      title="Set Asking Price"
+      title={t("listings.step4.title")}
       onBack={onBack}
-      help="The price range shown is a sample, not live market data. You choose your own price."
+      help={t("listings.step4.help")}
       footer={
         <>
           <WizardActions
             onBack={onBack}
-            continueLabel="Continue"
+            continueLabel={t("common.continue")}
             onContinue={handleContinue}
             continueDisabled={pricePerKg <= 0}
           />
@@ -112,9 +115,9 @@ export default function Step4Price({
           <NumericKeypadModal
             isOpen={isKeypadVisible}
             onClose={() => setIsKeypadVisible(false)}
-            title="Enter Asking Price"
+            title={t("listings.step4.keypadTitle")}
             initialValue={pricePerKg}
-            unitLabel="Rs / kg"
+            unitLabel={t("listings.step4.unitLabel")}
             presets={[minBench, Math.round((minBench + maxBench) / 2), maxBench, maxBench + 20]}
             onConfirm={(val) => setPricePerKg(Math.max(1, val))}
           />
@@ -127,7 +130,7 @@ export default function Step4Price({
           <CropTile emoji={crop.emoji} />
           <VStack className="flex-1 min-w-0">
             <Text className="type-body-bold text-foreground" numberOfLines={1}>
-              Fresh {crop.name}
+              Fresh {t(cropLabelKey(crop.id))}
             </Text>
             <Text className="type-caption text-muted-foreground" numberOfLines={1}>
               Batch: {quantity} {batchInfo.unit} • Grade {batchInfo.grade} • {batchInfo.variety}
@@ -144,7 +147,7 @@ export default function Step4Price({
       <VStack className="elevation-card gap-2 rounded-card border border-border bg-secondary p-4">
         <HStack className="items-center justify-between">
           <HStack className="items-center gap-1.5">
-            <Text className="type-body-bold text-primary">Sample price range</Text>
+            <Text className="type-body-bold text-primary">{t("listings.step4.sampleRange")}</Text>
           </HStack>
 
           <Box className="rounded-pill bg-card border border-border px-2.5 py-1">
@@ -159,21 +162,21 @@ export default function Step4Price({
           <Text className="type-caption text-muted-foreground">/ kg</Text>
         </HStack>
 
-        <Text className="type-caption text-muted-foreground">
-          Example figures until real market prices are available. Not live data.
-        </Text>
+        <Text className="type-caption text-muted-foreground">{t("listings.step4.sampleNote")}</Text>
       </VStack>
 
       {/* Asking Price Input Card */}
       <VStack className="elevation-card gap-5 rounded-card border border-border bg-card p-6 items-center">
-        <Text className="type-caption-bold uppercase text-muted-foreground">Your Asking Price</Text>
+        <Text className="type-caption-bold uppercase text-muted-foreground">
+          {t("listings.step4.askingPrice")}
+        </Text>
 
         {/* Stepper Controls & Large Display */}
         <HStack className="w-full items-center justify-between gap-3">
           <Pressable
             onPress={() => handleAdjustPrice(-5)}
             accessibilityRole="button"
-            accessibilityLabel="Decrease price"
+            accessibilityLabel={t("listings.step4.decrease")}
             className="h-tap w-tap items-center justify-center rounded-field border border-border bg-background active:opacity-80"
           >
             <Text className="type-h2 text-foreground">-</Text>
@@ -183,7 +186,7 @@ export default function Step4Price({
           <Pressable
             onPress={() => setIsKeypadVisible(true)}
             accessibilityRole="button"
-            accessibilityLabel="Open keypad to edit asking price"
+            accessibilityLabel={t("listings.step4.openKeypad")}
             className="min-h-tap flex-1 items-center px-2 py-1 active:opacity-80"
           >
             <HStack className="items-baseline justify-center gap-1">
@@ -191,14 +194,18 @@ export default function Step4Price({
               <Text className="type-display text-primary">{pricePerKg}</Text>
             </HStack>
             <Box className="my-1.5 h-0.5 w-16 bg-border" />
-            <Text className="type-caption text-muted-foreground">per Kilogram</Text>
-            <Text className="type-caption text-secondary-foreground pt-0.5">Tap to type</Text>
+            <Text className="type-caption text-muted-foreground">
+              {t("listings.step4.perKilogram")}
+            </Text>
+            <Text className="type-caption text-secondary-foreground pt-0.5">
+              {t("listings.step4.tapToType")}
+            </Text>
           </Pressable>
 
           <Pressable
             onPress={() => handleAdjustPrice(5)}
             accessibilityRole="button"
-            accessibilityLabel="Increase price"
+            accessibilityLabel={t("listings.step4.increase")}
             className="h-tap w-tap items-center justify-center rounded-field border border-border bg-background active:opacity-80"
           >
             <Text className="type-h2 text-foreground">+</Text>
@@ -217,15 +224,17 @@ export default function Step4Price({
         onPress={() => setAcceptNegotiation((prev) => !prev)}
         accessibilityRole="switch"
         accessibilityState={{ checked: acceptNegotiation }}
-        accessibilityLabel="Let buyers offer their own price"
+        accessibilityLabel={t("listings.step4.negotiationLabel")}
         className="elevation-card min-h-tap flex-row items-center justify-between gap-3 rounded-card border border-border bg-card p-4 active:opacity-80"
       >
         <VStack className="flex-1 gap-0.5">
-          <Text className="type-body-bold text-foreground">Let buyers offer their own price</Text>
+          <Text className="type-body-bold text-foreground">
+            {t("listings.step4.negotiationLabel")}
+          </Text>
           <Text className="type-caption text-muted-foreground">
             {acceptNegotiation
-              ? "Buyers can send you an offer. You can accept, decline or name another price."
-              : "Buyers can only order at your asking price."}
+              ? t("listings.step4.negotiationOn")
+              : t("listings.step4.negotiationOff")}
           </Text>
         </VStack>
         <Box
@@ -238,7 +247,7 @@ export default function Step4Price({
               acceptNegotiation ? "text-primary-foreground" : "text-muted-foreground"
             }`}
           >
-            {acceptNegotiation ? "On" : "Off"}
+            {t(acceptNegotiation ? "listings.step4.on" : "listings.step4.off")}
           </Text>
         </Box>
       </Pressable>
@@ -248,7 +257,7 @@ export default function Step4Price({
         <HStack className="items-center gap-3">
           <VStack className="gap-0.5">
             <Text className="type-caption-bold uppercase text-brand-deep-muted">
-              Total Est. Earnings
+              {t("listings.step4.totalEarnings")}
             </Text>
             <Text className="type-body-sm text-brand-deep-foreground">
               {totalQuantityKg} kg × {formatPrice(pricePerKg)}

@@ -1,0 +1,25 @@
+{
+  "crops": {
+    "onion": "Big onion",
+    "carrot": "Carrot",
+    "tomato": "Tomatoes",
+    "green-chilli": "Green chillies",
+    "leeks": "Leeks",
+    "beans": "Green Beans",
+    "brinjal": "Brinjal",
+    "pumpkin": "Pumpkin",
+    "potato": "Potato",
+    "mango": "Mango",
+    "banana": "Banana",
+    "papaya": "Papaya",
+    "rice": "Rice (paddy)",
+    "coconut": "Coconut"
+  },
+  "cropCategories": {
+    "Vegetables": "Vegetables",
+    "Fruits": "Fruits",
+    "Grains": "Grains",
+    "Other": "Other",
+    "All": "All"
+  }
+}

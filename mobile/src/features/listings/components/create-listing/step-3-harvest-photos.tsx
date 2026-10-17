@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Image } from "react-native";
 import { cropById, type CropId } from "@farm-pool/shared";
 
@@ -17,6 +18,7 @@ import {
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 
 import { SampleBadge } from "./sample-badge";
@@ -50,21 +52,6 @@ const SAMPLE_IMAGES = {
     "https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=600&auto=format&fit=crop&q=80"
 };
 
-const SAMPLE_GUIDES = {
-  wide: {
-    title: "1. Field / Wide Harvest Shot",
-    desc: "Stand 2-3 meters back from harvest pile or crate stack. Ensure natural sunlight is behind you so the whole yield is visible."
-  },
-  closeup: {
-    title: "2. Close-up Produce Quality",
-    desc: "Hold camera 20cm away from individual produce. Focus clearly on skin texture, color firmness, and fresh condition."
-  },
-  packaging: {
-    title: "3. Packaging / Crates",
-    desc: "Show produce neatly packed inside standard 25kg plastic crates, wooden boxes, or sacks ready for transport loading."
-  }
-};
-
 export default function Step3HarvestPhotos({
   cropId = "tomato",
   batchInfo = { quantity: 300, unit: "kg", grade: "A", variety: "Roma" },
@@ -72,6 +59,7 @@ export default function Step3HarvestPhotos({
   onNext,
   onBack
 }: Step3HarvestPhotosProps) {
+  const { t } = useTranslation();
   const crop = cropById(cropId) || cropById("tomato");
 
   const [widePhoto, setWidePhoto] = useState<string | null>(initialData?.widePhotoUri ?? null);
@@ -103,10 +91,7 @@ export default function Step3HarvestPhotos({
 
   const handleContinue = () => {
     if (!isReady) {
-      Alert.alert(
-        "Photos Required",
-        "Please attach both Wide shot and Close-up quality photos to proceed."
-      );
+      Alert.alert(t("listings.step3.alertTitle"), t("listings.step3.alertBody"));
       return;
     }
     onNext?.({
@@ -119,23 +104,27 @@ export default function Step3HarvestPhotos({
   return (
     <WizardShell
       step={3}
-      title="Add Harvest Photos"
+      title={t("listings.step3.title")}
       onBack={onBack}
-      help="Attach clear photos of your harvest. Buyers look for clear photos taken in natural light."
+      help={t("listings.step3.help")}
       footer={
         <>
           {" "}
           <HStack className="items-center justify-between px-1">
-            <Text className="type-caption text-muted-foreground">Required Photos:</Text>
+            <Text className="type-caption text-muted-foreground">
+              {t("listings.step3.requiredFooter")}
+            </Text>
             <Text
               className={`type-body-bold ${isReady ? "text-primary" : "text-muted-foreground"}`}
             >
-              {isReady ? "2/2 Ready" : `${completedCount}/2 Completed`}
+              {isReady
+                ? t("listings.step3.ready")
+                : t("listings.step3.progress", { done: completedCount })}
             </Text>
           </HStack>
           <WizardActions
             onBack={onBack}
-            continueLabel="Continue"
+            continueLabel={t("common.continue")}
             onContinue={handleContinue}
             continueDisabled={!isReady}
           />
@@ -150,7 +139,9 @@ export default function Step3HarvestPhotos({
             <ModalContent className="bg-card p-4 rounded-card">
               <ModalHeader>
                 <Text className="type-h3 text-foreground">
-                  {sampleGuideKey ? SAMPLE_GUIDES[sampleGuideKey].title : "Sample Guide"}
+                  {sampleGuideKey
+                    ? t(`listings.step3.guides.${sampleGuideKey}.title`)
+                    : t("listings.step3.sampleGuide")}
                 </Text>
                 <ModalCloseButton />
               </ModalHeader>
@@ -165,12 +156,15 @@ export default function Step3HarvestPhotos({
                     </Box>
                     <Box className="rounded-card border border-border bg-secondary p-3">
                       <Text className="type-caption text-foreground">
-                        {SAMPLE_GUIDES[sampleGuideKey].desc}
+                        {t(`listings.step3.guides.${sampleGuideKey}.desc`)}
                       </Text>
                     </Box>
                   </>
                 )}
-                <AppButton label="Got It, Thanks!" onPress={() => setSampleGuideKey(null)} />
+                <AppButton
+                  label={t("listings.step3.gotIt")}
+                  onPress={() => setSampleGuideKey(null)}
+                />
               </ModalBody>
             </ModalContent>
           </Modal>
@@ -183,7 +177,7 @@ export default function Step3HarvestPhotos({
           <CropTile emoji={crop.emoji} />
           <VStack className="flex-1 min-w-0">
             <Text className="type-body-bold text-foreground" numberOfLines={1}>
-              Fresh {crop.name}
+              Fresh {t(cropLabelKey(crop.id))}
             </Text>
             <Text className="type-caption text-muted-foreground" numberOfLines={1}>
               Batch: {batchInfo.quantity} {batchInfo.unit} • Grade {batchInfo.grade} •{" "}
@@ -197,11 +191,10 @@ export default function Step3HarvestPhotos({
       <HStack className="rounded-card bg-brand-deep p-4 items-start gap-3">
         <VStack className="flex-1 gap-0.5">
           <Text className="type-body-bold text-brand-deep-foreground">
-            Photo upload is not built yet
+            {t("listings.step3.uploadNotBuilt")}
           </Text>
           <Text className="type-caption text-brand-deep-muted">
-            The buttons below attach a sample photo so you can try the flow. Sample photos are not
-            saved with your listing.
+            {t("listings.step3.sampleNote")}
           </Text>
         </VStack>
       </HStack>
@@ -209,14 +202,16 @@ export default function Step3HarvestPhotos({
       {/* Section Title & Completion Counter */}
       <HStack className="items-center justify-between px-1">
         <HStack className="items-center gap-2">
-          <Text className="type-h4 text-foreground">Required Photos</Text>
+          <Text className="type-h4 text-foreground">{t("listings.step3.requiredHeading")}</Text>
         </HStack>
 
         <Box className="rounded-chip border border-border bg-secondary px-3 py-1">
           <Text
             className={`type-body-sm-bold ${isReady ? "text-primary" : "text-muted-foreground"}`}
           >
-            {isReady ? "2 of 2 ready" : `${completedCount} of 2 Uploaded`}
+            {isReady
+              ? t("listings.step3.readyChip")
+              : t("listings.step3.uploadedChip", { done: completedCount })}
           </Text>
         </Box>
       </HStack>
@@ -233,11 +228,13 @@ export default function Step3HarvestPhotos({
             <HStack className="items-center gap-2 flex-wrap">
               <Text className="type-body-bold text-foreground">1. Field / Wide Harvest Shot</Text>
               <Box className="rounded-chip bg-destructive-subtle px-2 py-0.5 border border-destructive">
-                <Text className="type-body-sm-bold text-destructive">Required</Text>
+                <Text className="type-body-sm-bold text-destructive">
+                  {t("listings.step3.required")}
+                </Text>
               </Box>
             </HStack>
             <Text className="type-caption text-muted-foreground">
-              Capture the entire crop pile, crates, or scale of harvest.
+              {t("listings.step3.wideHint")}
             </Text>
           </VStack>
 
@@ -246,7 +243,9 @@ export default function Step3HarvestPhotos({
             accessibilityRole="button"
             className="min-h-tap flex-row items-center gap-1 rounded-chip border border-border bg-secondary px-2.5 py-1"
           >
-            <Text className="type-body-sm-bold text-secondary-foreground">Sample</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">
+              {t("listings.step3.sample")}
+            </Text>
           </Pressable>
         </HStack>
 
@@ -261,14 +260,18 @@ export default function Step3HarvestPhotos({
                 <Box className="h-5 w-5 items-center justify-center rounded-pill bg-primary">
                   <CheckIcon />
                 </Box>
-                <Text className="type-body-sm-bold text-primary">Wide Shot Attached</Text>
+                <Text className="type-body-sm-bold text-primary">
+                  {t("listings.step3.wideAttached")}
+                </Text>
               </HStack>
               <Pressable
                 onPress={() => handleRemovePhoto("wide")}
                 accessibilityRole="button"
                 className="min-h-tap px-3 justify-center"
               >
-                <Text className="type-body-sm-bold text-destructive">Remove</Text>
+                <Text className="type-body-sm-bold text-destructive">
+                  {t("listings.step3.remove")}
+                </Text>
               </Pressable>
             </HStack>
           </VStack>
@@ -279,7 +282,9 @@ export default function Step3HarvestPhotos({
               accessibilityRole="button"
               className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
             >
-              <Text className="type-body-bold text-foreground">Use sample photo</Text>
+              <Text className="type-body-bold text-foreground">
+                {t("listings.step3.useSample")}
+              </Text>
             </Pressable>
           </HStack>
         )}
@@ -297,11 +302,13 @@ export default function Step3HarvestPhotos({
             <HStack className="items-center gap-2 flex-wrap">
               <Text className="type-body-bold text-foreground">2. Close-up Produce Quality</Text>
               <Box className="rounded-chip bg-destructive-subtle px-2 py-0.5 border border-destructive">
-                <Text className="type-body-sm-bold text-destructive">Required</Text>
+                <Text className="type-body-sm-bold text-destructive">
+                  {t("listings.step3.required")}
+                </Text>
               </Box>
             </HStack>
             <Text className="type-caption text-muted-foreground">
-              Show skin color, firmness, texture & absence of rot.
+              {t("listings.step3.closeupHint")}
             </Text>
           </VStack>
 
@@ -310,7 +317,9 @@ export default function Step3HarvestPhotos({
             accessibilityRole="button"
             className="min-h-tap flex-row items-center gap-1 rounded-chip border border-border bg-secondary px-2.5 py-1"
           >
-            <Text className="type-body-sm-bold text-secondary-foreground">Sample</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">
+              {t("listings.step3.sample")}
+            </Text>
           </Pressable>
         </HStack>
 
@@ -325,14 +334,18 @@ export default function Step3HarvestPhotos({
                 <Box className="h-5 w-5 items-center justify-center rounded-pill bg-primary">
                   <CheckIcon />
                 </Box>
-                <Text className="type-body-sm-bold text-primary">Close-up Attached</Text>
+                <Text className="type-body-sm-bold text-primary">
+                  {t("listings.step3.closeupAttached")}
+                </Text>
               </HStack>
               <Pressable
                 onPress={() => handleRemovePhoto("closeup")}
                 accessibilityRole="button"
                 className="min-h-tap px-3 justify-center"
               >
-                <Text className="type-body-sm-bold text-destructive">Remove</Text>
+                <Text className="type-body-sm-bold text-destructive">
+                  {t("listings.step3.remove")}
+                </Text>
               </Pressable>
             </HStack>
           </VStack>
@@ -343,7 +356,9 @@ export default function Step3HarvestPhotos({
               accessibilityRole="button"
               className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
             >
-              <Text className="type-body-bold text-foreground">Use sample photo</Text>
+              <Text className="type-body-bold text-foreground">
+                {t("listings.step3.useSample")}
+              </Text>
             </Pressable>
           </HStack>
         )}
@@ -361,11 +376,13 @@ export default function Step3HarvestPhotos({
             <HStack className="items-center gap-2 flex-wrap">
               <Text className="type-body-bold text-foreground">3. Packaging / Crates</Text>
               <Box className="rounded-chip bg-muted px-2 py-0.5 border border-border">
-                <Text className="type-body-sm-bold text-muted-foreground">Optional</Text>
+                <Text className="type-body-sm-bold text-muted-foreground">
+                  {t("listings.step3.optional")}
+                </Text>
               </Box>
             </HStack>
             <Text className="type-caption text-muted-foreground">
-              Show how produce is stacked or packed in crates.
+              {t("listings.step3.packagingHint")}
             </Text>
           </VStack>
 
@@ -374,7 +391,9 @@ export default function Step3HarvestPhotos({
             accessibilityRole="button"
             className="min-h-tap flex-row items-center gap-1 rounded-chip border border-border bg-secondary px-2.5 py-1"
           >
-            <Text className="type-body-sm-bold text-secondary-foreground">Sample</Text>
+            <Text className="type-body-sm-bold text-secondary-foreground">
+              {t("listings.step3.sample")}
+            </Text>
           </Pressable>
         </HStack>
 
@@ -389,14 +408,18 @@ export default function Step3HarvestPhotos({
                 <Box className="h-5 w-5 items-center justify-center rounded-pill bg-primary">
                   <CheckIcon />
                 </Box>
-                <Text className="type-body-sm-bold text-primary">Packaging Attached</Text>
+                <Text className="type-body-sm-bold text-primary">
+                  {t("listings.step3.packagingAttached")}
+                </Text>
               </HStack>
               <Pressable
                 onPress={() => handleRemovePhoto("packaging")}
                 accessibilityRole="button"
                 className="min-h-tap px-3 justify-center"
               >
-                <Text className="type-body-sm-bold text-destructive">Remove</Text>
+                <Text className="type-body-sm-bold text-destructive">
+                  {t("listings.step3.remove")}
+                </Text>
               </Pressable>
             </HStack>
           </VStack>
@@ -407,7 +430,9 @@ export default function Step3HarvestPhotos({
               accessibilityRole="button"
               className="min-h-tap flex-1 flex-row items-center justify-center gap-1.5 rounded-field border border-border bg-background p-2 active:opacity-80"
             >
-              <Text className="type-body-bold text-foreground">Use sample photo</Text>
+              <Text className="type-body-bold text-foreground">
+                {t("listings.step3.useSample")}
+              </Text>
             </Pressable>
           </HStack>
         )}
@@ -415,24 +440,30 @@ export default function Step3HarvestPhotos({
 
       {/* Farmer Photo Tips Card */}
       <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
-        <Text className="type-h4 text-foreground">Tips for Sri Lankan Farmers</Text>
+        <Text className="type-h4 text-foreground">{t("listings.step3.tipsTitle")}</Text>
         <VStack className="gap-2">
           <HStack className="items-start gap-2">
-            <Text className="type-body-bold text-secondary-foreground">Use Sunlight:</Text>
+            <Text className="type-body-bold text-secondary-foreground">
+              {t("listings.step3.tips.sunLabel")}
+            </Text>
             <Text className="type-caption flex-1 text-muted-foreground">
-              Shoot outdoors under daylight instead of dim indoor rooms.
+              {t("listings.step3.tips.sunBody")}
             </Text>
           </HStack>
           <HStack className="items-start gap-2">
-            <Text className="type-body-bold text-secondary-foreground">Show Real Scale:</Text>
+            <Text className="type-body-bold text-secondary-foreground">
+              {t("listings.step3.tips.scaleLabel")}
+            </Text>
             <Text className="type-caption flex-1 text-muted-foreground">
-              Place a 25kg crate next to produce for buyer scale context.
+              {t("listings.step3.tips.scaleBody")}
             </Text>
           </HStack>
           <HStack className="items-start gap-2">
-            <Text className="type-body-bold text-secondary-foreground">No Filters:</Text>
+            <Text className="type-body-bold text-secondary-foreground">
+              {t("listings.step3.tips.filterLabel")}
+            </Text>
             <Text className="type-caption flex-1 text-muted-foreground">
-              Buyers need authentic photos without artificial color editing.
+              {t("listings.step3.tips.filterBody")}
             </Text>
           </HStack>
         </VStack>

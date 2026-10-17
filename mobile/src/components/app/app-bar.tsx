@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BackIcon } from "@/components/app/icons";
@@ -13,6 +14,7 @@ import { Text } from "@/components/ui/text";
  * stack precisely because this bar cannot be expressed as a native header.
  */
 export function AppBar({ title, onBack }: { title: string; onBack?: () => void }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -24,7 +26,7 @@ export function AppBar({ title, onBack }: { title: string; onBack?: () => void }
       <Pressable
         onPress={onBack ?? (() => router.back())}
         accessibilityRole="button"
-        accessibilityLabel="Go back"
+        accessibilityLabel={t("common.back")}
         className="h-tap w-tap items-center justify-center rounded-pill border border-border"
       >
         <BackIcon />

@@ -1,4 +1,5 @@
 import type { Listing, Order } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 import Animated, {
@@ -52,6 +53,7 @@ export function FarmerSpotlight({
   listings: ReturnType<typeof useRequest<Listing[]>>;
   orders: ReturnType<typeof useRequest<Order[]>>;
 }) {
+  const { t } = useTranslation();
   const router = useRouter();
 
   const progress = useSharedValue(0);
@@ -117,12 +119,12 @@ export function FarmerSpotlight({
     return card(
       <HStack className="items-center gap-2 py-2">
         <Spinner size="small" />
-        <Text className="type-body text-success">Checking this month’s sales…</Text>
+        <Text className="type-body text-success">{t("coordinator.spotlight.checking")}</Text>
       </HStack>
     );
   }
   if (listings.status === "error" || orders.status === "error") {
-    return card(<Text className="type-body text-success">Could not check sales right now.</Text>);
+    return card(<Text className="type-body text-success">{t("coordinator.spotlight.error")}</Text>);
   }
 
   if (ranked.length === 0) {

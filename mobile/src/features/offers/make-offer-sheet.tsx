@@ -6,6 +6,7 @@ import {
   type SavedLocation
 } from "@farm-pool/shared";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dimensions, ScrollView } from "react-native";
 
 import { AppButton } from "@/components/app/app-button";
@@ -52,6 +53,7 @@ export function MakeOfferSheet({
   onMade: (offerId: string) => void;
   bottomInset: number;
 }) {
+  const { t } = useTranslation();
   const [price, setPrice] = useState(String(listing.pricePerKg));
   const [quantity, setQuantity] = useState(String(listing.minOrderKg));
   const [note, setNote] = useState("");
@@ -113,7 +115,7 @@ export function MakeOfferSheet({
         }
       }
       if (e instanceof ApiError && e.code === "quantity_out_of_range") setQuantityError(e.message);
-      else setError(offerErrorMessage(e, "Could not send the offer"));
+      else setError(offerErrorMessage(e, t("offers.make.error")));
     } finally {
       setSubmitting(false);
     }
@@ -138,7 +140,7 @@ export function MakeOfferSheet({
         >
           <VStack className="w-full gap-4 pt-2">
             <VStack className="gap-1">
-              <Text className="type-h3 text-foreground">Make an offer</Text>
+              <Text className="type-h3 text-foreground">{t("offers.make.title")}</Text>
               <Text className="type-caption text-muted-foreground">
                 {listing.farmerName} is asking {formatPrice(listing.pricePerKg)} per kg.
               </Text>
@@ -146,7 +148,7 @@ export function MakeOfferSheet({
 
             <AppTextField
               testID="offer-price"
-              label="Your price per kg (Rs.)"
+              label={t("offers.make.priceLabel")}
               value={price}
               onChangeText={setPrice}
               keyboardType="decimal-pad"
@@ -154,7 +156,7 @@ export function MakeOfferSheet({
             />
             <AppTextField
               testID="offer-quantity"
-              label="Quantity (kg)"
+              label={t("offers.make.quantityLabel")}
               value={quantity}
               onChangeText={setQuantity}
               keyboardType="number-pad"
@@ -169,7 +171,7 @@ export function MakeOfferSheet({
 
             <AppTextField
               testID="offer-note"
-              label="Note to the farmer (optional)"
+              label={t("offers.make.noteLabel")}
               value={note}
               onChangeText={setNote}
             />
@@ -187,7 +189,7 @@ export function MakeOfferSheet({
 
             <AppButton
               testID="offer-send"
-              label={submitting ? "Sending…" : "Send offer"}
+              label={submitting ? t("offers.make.sending") : t("offers.make.action")}
               onPress={() => void submit()}
               disabled={submitting}
             />

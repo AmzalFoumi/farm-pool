@@ -15,6 +15,7 @@ import {
   type PaymentEntryKind
 } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -24,6 +25,7 @@ import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { ordersApi } from "@/features/orders/api";
 import { PaymentStatusPill } from "@/features/orders/status-pill";
@@ -35,6 +37,7 @@ import { useAuth } from "@/providers/auth-provider";
 type Viewer = "buyer" | "farmer";
 
 export default function ReceiptScreen() {
+  const { t } = useTranslation();
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -51,7 +54,7 @@ export default function ReceiptScreen() {
   return (
     <View className="flex-1 bg-background">
       <AppBar
-        title="Receipt"
+        title={t("payments.receipt.title")}
         onBack={() => (router.canGoBack() ? router.back() : router.replace("/orders"))}
       />
       <RequestView request={receipt}>
@@ -107,6 +110,7 @@ function ReceiptBody({
   viewer: Viewer;
   bottomInset: number;
 }) {
+  const { t } = useTranslation();
   const crop = cropById(order.cropId);
   const farmer = viewer === "farmer";
 
@@ -117,7 +121,7 @@ function ReceiptBody({
       label: farmer ? "Paid to you" : `Paid to ${order.farmerName}`,
       value: formatPrice(payment.total - payment.heldAmount)
     },
-    { label: "Still held", value: formatPrice(payment.heldAmount) }
+    { label: t("common.stillHeld"), value: formatPrice(payment.heldAmount) }
   ];
 
   return (
@@ -128,7 +132,7 @@ function ReceiptBody({
       <HStack className="items-center gap-3">
         <CropTile emoji={crop.emoji} />
         <VStack className="flex-1">
-          <Text className="type-h3 text-foreground">{crop.name}</Text>
+          <Text className="type-h3 text-foreground">{t(cropLabelKey(crop.id))}</Text>
           <Text className="type-caption text-muted-foreground">
             {farmer ? "Sold by you" : `From ${order.farmerName}`}
           </Text>
@@ -148,7 +152,7 @@ function ReceiptBody({
         ))}
       </VStack>
 
-      <Text className="type-body-bold text-foreground">What happened</Text>
+      <Text className="type-body-bold text-foreground">{t("payments.receipt.whatHappened")}</Text>
       {payment.entries.map((entry) => (
         <EntryCard
           key={entry.receiptNo}
@@ -159,9 +163,7 @@ function ReceiptBody({
       ))}
 
       <Box className="rounded-field bg-muted p-3">
-        <Text className="type-caption text-muted-foreground">
-          This was a demo payment. No real money moved.
-        </Text>
+        <Text className="type-caption text-muted-foreground">{t("payments.receipt.demo")}</Text>
       </Box>
     </ScrollView>
   );

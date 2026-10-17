@@ -14,7 +14,7 @@
  * actual to-do list — the longest-waiting farmer should surface first.
  *
  * Optionally scoped to one farmer's listings via `listing-scope.ts` — the farmer detail screen's
- * "Listings" row sets it, then pushes here. Not a route param: `/farmer/:id` sits outside
+ * t("coordinator.listingsTab.title") row sets it, then pushes here. Not a route param: `/farmer/:id` sits outside
  * `(coordinator-tabs)`, and pushing into a `NativeTabs` route from there did not reliably carry
  * `params` through (confirmed twice — the tab kept showing every farmer's listings regardless).
  * The scope is consumed once per focus, so arriving via the tab bar directly (nothing pending)
@@ -22,6 +22,7 @@
  */
 
 import { cropById, type Listing, type ListingStatus } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { FlatList, View } from "react-native";
@@ -34,6 +35,7 @@ import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { coordinationApi } from "@/features/coordination/api";
 import { CoordinatorHeader } from "@/features/coordination/coordinator-header";
 import { consumeScopedFarmerId } from "@/features/coordination/listing-scope";
@@ -45,24 +47,27 @@ import { useAuth } from "@/providers/auth-provider";
 
 type Filter = "all" | "pending_approval" | "verified" | "rejected";
 
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "pending_approval", label: "Pending" },
-  { id: "verified", label: "Verified" },
-  { id: "rejected", label: "Rejected" }
+/* Ids and key paths only — see benchmark.tsx. */
+const FILTERS: { id: Filter; labelKey: string }[] = [
+  { id: "all", labelKey: "coordinator.filters.all" },
+  { id: "pending_approval", labelKey: "coordinator.listingsTab.pending" },
+  { id: "verified", labelKey: "coordinator.listingsTab.verified" },
+  { id: "rejected", labelKey: "coordinator.listingsTab.rejected" }
 ];
 
 /** Same lowercased-substring match the buyer's browse screen uses (`(tabs)/listings.tsx`). */
-function matches(listing: Listing, needle: string) {
-  const crop = cropById(listing.cropId).name.toLowerCase();
+function matches(listing: Listing, needle: string, t: (key: string) => string) {
+  const crop = cropById(listing.cropId);
   return (
-    crop.includes(needle) ||
+    crop.name.toLowerCase().includes(needle) ||
+    t(cropLabelKey(crop.id)).toLowerCase().includes(needle) ||
     listing.farmerName.toLowerCase().includes(needle) ||
     listing.district.toLowerCase().includes(needle)
   );
 }
 
 export default function CooperativeListingsScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
   const listingsVersion = useListingsVersion();
@@ -91,10 +96,10 @@ export default function CooperativeListingsScreen() {
   return (
     <View className="flex-1 bg-background">
       <CoordinatorHeader
-        title="Listings"
+        title={t("coordinator.listingsTab.title")}
         subtitle={
           scoped
-            ? `${scoped[0]?.farmerName ?? "This farmer"} · ${scoped.length} ${scoped.length === 1 ? "listing" : "listings"}`
+            ? `${scoped[0]?.farmerName ?? t("coordinator.listingsTab.thisFarmer")} · ${scoped.length} ${scoped.length === 1 ? "listing" : "listings"}`
             : listings.status === "ready"
               ? `${listings.data.length} ${listings.data.length === 1 ? "listing" : "listings"}`
               : undefined
@@ -109,7 +114,7 @@ export default function CooperativeListingsScreen() {
           <InputField
             value={query}
             onChangeText={setQuery}
-            placeholder="Search crop or farmer"
+            placeholder={t("coordinator.listingsTab.search")}
             returnKeyType="search"
             autoCorrect={false}
             className="type-body"
@@ -122,7 +127,7 @@ export default function CooperativeListingsScreen() {
           const needle = query.trim().toLowerCase();
           let filtered = farmerId ? rows.filter((l) => l.farmerId === farmerId) : rows;
           filtered = filtered.filter((l) => filter === "all" || l.status === filter);
-          if (needle) filtered = filtered.filter((l) => matches(l, needle));
+          if (needle) filtered = filtered.filter((l) => matches(l, needle, t));
           if (filter === "pending_approval") {
             filtered = [...filtered].sort(
               (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -138,7 +143,7 @@ export default function CooperativeListingsScreen() {
               refreshing={refreshing}
               ListHeaderComponent={
                 <HStack className="mb-3 gap-2">
-                  {FILTERS.map(({ id, label }) => {
+                  {FILTERS.map(({ id, labelKey }) => {
                     const selected = filter === id;
                     return (
                       <Pressable
@@ -146,7 +151,7 @@ export default function CooperativeListingsScreen() {
                         onPress={() => setFilter(id)}
                         accessibilityRole="button"
                         accessibilityState={{ selected }}
-                        accessibilityLabel={`Filter: ${label}`}
+                        accessibilityLabel={t("common.filterA11y", { label: t(labelKey) })}
                         className={[
                           "min-h-tap items-center justify-center rounded-chip border px-4",
                           selected ? "border-primary bg-primary" : "border-border bg-card"
@@ -157,7 +162,7 @@ export default function CooperativeListingsScreen() {
                             selected ? "text-primary-foreground" : "text-foreground"
                           }`}
                         >
-                          {label}
+                          {t(labelKey)}
                         </Text>
                       </Pressable>
                     );
@@ -166,7 +171,10 @@ export default function CooperativeListingsScreen() {
               }
               renderItem={({ item }) => <ListingRow listing={item} />}
               ListEmptyComponent={
-                <EmptyNote title="No listings here" note="Nobody matches this filter yet." />
+                <EmptyNote
+                  title={t("coordinator.listingsTab.none")}
+                  note={t("coordinator.listingsTab.noneBody")}
+                />
               }
             />
           );
@@ -177,6 +185,7 @@ export default function CooperativeListingsScreen() {
 }
 
 function ListingRow({ listing }: { listing: Listing }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const crop = cropById(listing.cropId);
   const needsWarningTone: ListingStatus[] = ["pending_approval"];
@@ -186,7 +195,7 @@ function ListingRow({ listing }: { listing: Listing }) {
     <Pressable
       onPress={() => router.push(`/listing-review/${listing.id}`)}
       accessibilityRole="button"
-      accessibilityLabel={`Review ${crop.name} listing from ${listing.farmerName}`}
+      accessibilityLabel={`Review ${t(cropLabelKey(crop.id))} listing from ${listing.farmerName}`}
       className={[
         "elevation-card min-h-tap items-center gap-3 rounded-card border p-3",
         "flex-row",
@@ -198,7 +207,7 @@ function ListingRow({ listing }: { listing: Listing }) {
       <Text className="type-h3">{crop.emoji}</Text>
       <VStack className="flex-1 gap-0.5">
         <Text className="type-body-bold text-foreground" numberOfLines={1}>
-          {`${crop.name} · ${listing.quantityKg} kg`}
+          {`${t(cropLabelKey(crop.id))} · ${listing.quantityKg} kg`}
         </Text>
         <Text className="type-caption text-muted-foreground" numberOfLines={1}>
           {`${listing.farmerName} · ${formatPrice(listing.pricePerKg)}/kg`}

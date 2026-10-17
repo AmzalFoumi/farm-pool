@@ -1,4 +1,5 @@
 import { splitTotal, type Order, type Payment } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 
 import { AppButton } from "@/components/app/app-button";
@@ -43,6 +44,7 @@ export function PaySheet({
   onPaid: (payment: Payment) => void;
   bottomInset: number;
 }) {
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const { advanceAmount, heldAmount } = splitTotal(order.total);
@@ -55,7 +57,7 @@ export function PaySheet({
       onClose();
       onPaid(payment);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not make the payment");
+      setError(e instanceof ApiError ? e.message : t("payments.pay.error"));
     } finally {
       setSubmitting(false);
     }
@@ -63,7 +65,7 @@ export function PaySheet({
 
   const rows = [
     { label: `Goes to ${order.farmerName} now`, value: formatPrice(advanceAmount) },
-    { label: "Held until you confirm it arrived", value: formatPrice(heldAmount) }
+    { label: t("payments.pay.held"), value: formatPrice(heldAmount) }
   ];
 
   return (
@@ -77,11 +79,11 @@ export function PaySheet({
           <ActionsheetDragIndicator />
         </ActionsheetDragIndicatorWrapper>
         <VStack className="w-full gap-4 pt-2">
-          <Text className="type-h3 text-foreground">Pay for this order</Text>
+          <Text className="type-h3 text-foreground">{t("payments.pay.title")}</Text>
 
           <VStack className="gap-3 rounded-card border border-border bg-background p-4">
             <HStack className="items-start justify-between gap-4">
-              <Text className="type-body-bold text-foreground">You pay</Text>
+              <Text className="type-body-bold text-foreground">{t("payments.pay.youPay")}</Text>
               <Text className="type-h4 text-foreground">{formatPrice(order.total)}</Text>
             </HStack>
             {rows.map(({ label, value }) => (
@@ -96,9 +98,7 @@ export function PaySheet({
           </VStack>
 
           <Box className="rounded-field bg-muted p-3">
-            <Text className="type-caption text-muted-foreground">
-              This is a demo payment. No real money moves.
-            </Text>
+            <Text className="type-caption text-muted-foreground">{t("payments.pay.demo")}</Text>
           </Box>
 
           {error ? <Text className="type-caption text-destructive">{error}</Text> : null}

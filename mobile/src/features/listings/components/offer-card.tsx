@@ -1,4 +1,5 @@
 import type { SenderType } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { View, Animated, Easing } from "react-native";
 import { useEffect, useRef } from "react";
 import { Text } from "@/components/ui/text";
@@ -82,14 +83,17 @@ export function OfferCard({
   onAccept?: () => void;
   onDecline?: () => void;
 }) {
-  const other = offer.viewer === "FARMER" ? "Buyer" : "Farmer";
+  const { t } = useTranslation();
+  const other = offer.viewer === "FARMER" ? t("party.buyer") : t("party.farmer");
   if (offer.status === "new") {
     return (
       <Card className="p-4 bg-card rounded-2xl shadow-sm gap-3">
         <HStack className="items-center justify-between gap-3">
           <View className="flex-row items-center gap-1.5 rounded-full bg-info-subtle px-2.5 py-1">
             <View className="w-2 h-2 rounded-full bg-info" />
-            <Text className="text-[11px] font-bold text-info tracking-wide">New Offer</Text>
+            <Text className="text-[11px] font-bold text-info tracking-wide">
+              {t("listings.offerCard.newOffer")}
+            </Text>
           </View>
           {offer.expiresIn && (
             <Text className="text-[11px] font-semibold text-destructive">
@@ -121,14 +125,18 @@ export function OfferCard({
 
         <HStack className="items-center justify-between rounded-xl bg-muted p-3">
           <VStack>
-            <Text className="text-[11px] font-medium text-muted-foreground">Offered Rate</Text>
+            <Text className="text-[11px] font-medium text-muted-foreground">
+              {t("listings.offerCard.offeredRate")}
+            </Text>
             <HStack className="items-baseline gap-1 mt-0.5">
               <Text className="text-[20px] font-bold text-primary">Rs. {offer.rate}</Text>
               <Text className="text-[12px] text-muted-foreground">/ kg</Text>
             </HStack>
           </VStack>
           <VStack className="items-end">
-            <Text className="text-[11px] font-medium text-muted-foreground">Gross Total</Text>
+            <Text className="text-[11px] font-medium text-muted-foreground">
+              {t("listings.offerCard.grossTotal")}
+            </Text>
             <Text className="mt-0.5 text-[16px] font-bold text-foreground">
               Rs. {offer.total.toLocaleString()}
             </Text>
@@ -156,13 +164,15 @@ export function OfferCard({
               <View className="text-foreground">
                 <EditIcon />
               </View>
-              <Text className="text-[12px] font-bold text-foreground">Negotiate</Text>
+              <Text className="text-[12px] font-bold text-foreground">
+                {t("listings.offerCard.negotiate")}
+              </Text>
             </Pressable>
             <Pressable
               onPress={onDecline}
               className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-destructive-subtle px-3 py-2.5 active:scale-95"
             >
-              <Text className="text-[12px] font-bold text-destructive">Decline</Text>
+              <Text className="text-[12px] font-bold text-destructive">{t("common.decline")}</Text>
             </Pressable>
           </HStack>
         </VStack>
@@ -176,7 +186,7 @@ export function OfferCard({
         <HStack className="items-center justify-between gap-3">
           <View className="flex-row items-center gap-1.5 rounded-full bg-warning-subtle px-2.5 py-1">
             <Text className="text-[11px] font-bold text-warning tracking-wide">
-              Your Turn to Respond
+              {t("listings.offerCard.yourTurn")}
             </Text>
           </View>
           {offer.round && <Text className="text-[11px] text-muted-foreground">{offer.round}</Text>}
@@ -213,7 +223,7 @@ export function OfferCard({
           </VStack>
           <VStack className="items-end">
             <Text className="text-[11px] font-medium text-muted-foreground">
-              Your Previous Counter
+              {t("listings.offerCard.previousCounter")}
             </Text>
             <Text className="mt-0.5 text-[14px] font-bold text-muted-foreground">
               Rs. {offer.yourCounter}/kg
@@ -224,7 +234,7 @@ export function OfferCard({
         {offer.latestMessage && (
           <View className="rounded-xl bg-background p-3 shadow-sm border border-border">
             <Text className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              Latest message
+              {t("listings.offerCard.latestMessage")}
             </Text>
             <Text className="mt-1 text-[12px] leading-5 text-foreground">
               “{offer.latestMessage}”
@@ -237,7 +247,7 @@ export function OfferCard({
           className="flex-row items-center justify-center rounded-xl bg-brand-deep/10 px-3 py-2.5 active:scale-95"
         >
           <Text className="text-[12px] font-bold text-brand-deep">
-            View Full Negotiation History
+            {t("listings.offerCard.viewFullHistory")}
           </Text>
         </Pressable>
 
@@ -246,19 +256,23 @@ export function OfferCard({
             onPress={onAccept}
             className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-primary px-2 py-2.5 active:scale-95"
           >
-            <Text className="text-[12px] font-bold text-primary-foreground">Accept</Text>
+            <Text className="text-[12px] font-bold text-primary-foreground">
+              {t("common.accept")}
+            </Text>
           </Pressable>
           <Pressable
             onPress={onNegotiate}
             className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-muted px-2 py-2.5 active:scale-95"
           >
-            <Text className="text-[12px] font-bold text-foreground">Negotiate</Text>
+            <Text className="text-[12px] font-bold text-foreground">
+              {t("listings.offerCard.negotiate")}
+            </Text>
           </Pressable>
           <Pressable
             onPress={onDecline}
             className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-destructive-subtle px-2 py-2.5 active:scale-95"
           >
-            <Text className="text-[12px] font-bold text-destructive">Decline</Text>
+            <Text className="text-[12px] font-bold text-destructive">{t("common.decline")}</Text>
           </Pressable>
         </HStack>
       </Card>
@@ -300,14 +314,18 @@ export function OfferCard({
 
         <HStack className="items-center justify-between rounded-xl bg-muted p-3">
           <VStack>
-            <Text className="text-[11px] font-medium text-muted-foreground">Your Counter</Text>
+            <Text className="text-[11px] font-medium text-muted-foreground">
+              {t("listings.offerCard.yourCounter")}
+            </Text>
             <HStack className="items-baseline gap-1 mt-0.5">
               <Text className="text-[20px] font-bold text-primary">Rs. {offer.yourCounter}</Text>
               <Text className="text-[12px] text-muted-foreground">/ kg</Text>
             </HStack>
           </VStack>
           <VStack className="items-end">
-            <Text className="text-[11px] font-medium text-muted-foreground">Payout</Text>
+            <Text className="text-[11px] font-medium text-muted-foreground">
+              {t("listings.offerCard.payout")}
+            </Text>
             <Text className="mt-0.5 text-[16px] font-bold text-foreground">
               Rs. {offer.total.toLocaleString()}
             </Text>
@@ -328,7 +346,7 @@ export function OfferCard({
               className="flex-[3] flex-row items-center justify-center rounded-xl bg-brand-deep px-3 py-2.5 active:scale-95"
             >
               <Text className="text-[13px] font-bold text-brand-deep-foreground">
-                View Negotiation
+                {t("listings.offerCard.viewNegotiation")}
               </Text>
             </Pressable>
             <Pressable className="flex-1 h-11 items-center justify-center rounded-xl bg-muted active:scale-95">
@@ -348,7 +366,7 @@ export function OfferCard({
         <HStack className="items-center justify-between gap-3">
           <View className="flex-row items-center gap-1.5 rounded-full bg-success-subtle px-2.5 py-1">
             <Text className="text-[11px] font-bold text-success tracking-wide">
-              Contract Confirmed
+              {t("listings.offerCard.contractConfirmed")}
             </Text>
           </View>
           {offer.contractId && (
@@ -380,14 +398,18 @@ export function OfferCard({
         <View className="rounded-xl bg-muted p-3">
           <HStack className="justify-between">
             <VStack>
-              <Text className="text-[11px] font-medium text-muted-foreground">Agreed Rate</Text>
+              <Text className="text-[11px] font-medium text-muted-foreground">
+                {t("listings.offerCard.agreedRate")}
+              </Text>
               <HStack className="items-baseline gap-1 mt-0.5">
                 <Text className="text-[20px] font-bold text-primary">Rs. {offer.rate}</Text>
                 <Text className="text-[12px] text-muted-foreground">/ kg</Text>
               </HStack>
             </VStack>
             <VStack className="items-end">
-              <Text className="text-[11px] font-medium text-muted-foreground">Secured Amount</Text>
+              <Text className="text-[11px] font-medium text-muted-foreground">
+                {t("listings.offerCard.securedAmount")}
+              </Text>
               <Text className="mt-0.5 text-[16px] font-bold text-foreground">
                 Rs. {offer.total.toLocaleString()}
               </Text>
@@ -398,18 +420,20 @@ export function OfferCard({
         <VStack className="pt-1 gap-2">
           <Pressable className="w-full flex-row items-center justify-center gap-1.5 rounded-xl bg-brand-deep px-3 py-2.5 active:scale-95">
             <Text className="text-[13px] font-bold text-brand-deep-foreground">
-              View Contract & QR
+              {t("listings.offerCard.viewContract")}
             </Text>
           </Pressable>
           <HStack className="gap-2">
             <Pressable className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-muted px-3 py-2.5 active:scale-95">
-              <Text className="text-[12px] font-bold text-foreground">Pickup Details</Text>
+              <Text className="text-[12px] font-bold text-foreground">
+                {t("listings.offerCard.pickupDetails")}
+              </Text>
             </Pressable>
             <Pressable className="flex-1 flex-row items-center justify-center gap-1 rounded-xl bg-muted px-3 py-2.5 active:scale-95">
               <View className="text-foreground">
                 <DotsIcon />
               </View>
-              <Text className="text-[12px] font-bold text-foreground">More</Text>
+              <Text className="text-[12px] font-bold text-foreground">{t("common.more")}</Text>
             </Pressable>
           </HStack>
         </VStack>
@@ -423,7 +447,7 @@ export function OfferCard({
       <HStack className="items-center justify-between gap-3">
         <View className="flex-row items-center gap-1.5 rounded-full bg-destructive-subtle px-2.5 py-1">
           <Text className="text-[11px] font-bold text-destructive tracking-wide">
-            Offer Declined
+            {t("listings.offerCard.offerDeclined")}
           </Text>
         </View>
         {offer.timeAgo && (
@@ -447,11 +471,15 @@ export function OfferCard({
 
       <HStack className="items-center justify-between rounded-xl bg-muted p-3">
         <VStack>
-          <Text className="text-[11px] font-medium text-muted-foreground">Last Offer</Text>
+          <Text className="text-[11px] font-medium text-muted-foreground">
+            {t("listings.offerCard.lastOffer")}
+          </Text>
           <Text className="mt-0.5 text-[19px] font-bold text-foreground">Rs. {offer.rate}/kg</Text>
         </VStack>
         <VStack className="items-end">
-          <Text className="text-[11px] font-medium text-muted-foreground">Quantity</Text>
+          <Text className="text-[11px] font-medium text-muted-foreground">
+            {t("listings.offerCard.quantity")}
+          </Text>
           <Text className="mt-0.5 text-[14px] font-bold text-foreground">
             {offer.quantityKg} kg
           </Text>
@@ -460,8 +488,8 @@ export function OfferCard({
 
       <Text className="text-[12px] leading-5 text-muted-foreground">
         {offer.viewer === "FARMER"
-          ? "This offer is no longer active. Your listing can continue receiving offers from other buyers."
-          : "This offer is no longer active. You can make a new offer from the listing."}
+          ? t("listings.offerCard.inactiveFarmer")
+          : t("listings.offerCard.inactiveBuyer")}
       </Text>
 
       <HStack className="gap-2 pt-1">
@@ -469,11 +497,13 @@ export function OfferCard({
           onPress={onViewHistory}
           className="flex-1 rounded-xl bg-muted px-3 py-2.5 items-center justify-center active:scale-95"
         >
-          <Text className="text-[12px] font-bold text-foreground">View Negotiation History</Text>
+          <Text className="text-[12px] font-bold text-foreground">
+            {t("listings.offerCard.viewHistory")}
+          </Text>
         </Pressable>
         <Pressable className="flex-1 rounded-xl bg-brand-deep px-3 py-2.5 items-center justify-center active:scale-95">
           <Text className="text-[12px] font-bold text-brand-deep-foreground">
-            View Other Offers
+            {t("listings.offerCard.viewOtherOffers")}
           </Text>
         </Pressable>
       </HStack>

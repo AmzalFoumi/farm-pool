@@ -4,6 +4,7 @@
  */
 
 import { createOfferSchema, cropById, type Listing, type WantedListing } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -17,6 +18,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { listingsApi } from "@/features/listings/api";
 import { offersApi } from "@/features/offers/api";
 import { offerErrorMessage } from "@/features/offers/error-message";
@@ -29,6 +31,7 @@ import { useAuth } from "@/providers/auth-provider";
 type Loaded = { request: WantedListing; listings: Listing[] };
 
 export default function RespondScreen() {
+  const { t } = useTranslation();
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
   const router = useRouter();
@@ -52,7 +55,7 @@ export default function RespondScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Respond" />
+      <AppBar title={t("farmer.requests.respond")} />
       <RequestView request={loaded}>
         {(data) => (
           <RespondForm
@@ -86,6 +89,7 @@ function RespondForm({
   onCreateListing: () => void;
   onSent: (offerId: string) => void;
 }) {
+  const { t } = useTranslation();
   const crop = cropById(request.cropId);
   const [listingId, setListingId] = useState(listings[0]?.id ?? "");
   const listing = listings.find((l) => l.id === listingId);
@@ -103,7 +107,7 @@ function RespondForm({
   const summary = (
     <VStack className="gap-1 rounded-card border border-border bg-card p-4">
       <Text className="type-h4 text-foreground">
-        {crop.name} · {request.quantityKg} kg
+        {t(cropLabelKey(crop.id))} · {request.quantityKg} kg
       </Text>
       <Text className="type-caption text-muted-foreground">
         Needed by {formatDate(request.neededBy)} · deliver to {request.district}
@@ -122,10 +126,10 @@ function RespondForm({
       <ScrollView contentContainerClassName="gap-4 p-gutter">
         {summary}
         <EmptyNote
-          title={`No approved ${crop.name.toLowerCase()} listing`}
-          note="You answer a request from one of your own approved listings, so the driver knows where to collect. Create a listing for this crop, wait for your coordinator to approve it, then come back."
+          title={`No approved ${t(cropLabelKey(crop.id)).toLowerCase()} listing`}
+          note={t("farmer.requests.detailNote")}
         />
-        <AppButton label="Create a listing" onPress={onCreateListing} />
+        <AppButton label={t("farmer.requests.createListing")} onPress={onCreateListing} />
       </ScrollView>
     );
   }
@@ -189,7 +193,7 @@ function RespondForm({
         {summary}
 
         <VStack className="gap-2">
-          <Text className="type-body-bold text-foreground">Sell from</Text>
+          <Text className="type-body-bold text-foreground">{t("farmer.requests.sellFrom")}</Text>
           {listings.map((item) => {
             const selected = item.id === listingId;
             return (
@@ -215,7 +219,11 @@ function RespondForm({
                     {item.town ? `${item.town}, ${item.district}` : item.district}
                   </Text>
                 </VStack>
-                {selected ? <Text className="type-body-sm-bold text-primary">Selected</Text> : null}
+                {selected ? (
+                  <Text className="type-body-sm-bold text-primary">
+                    {t("farmer.requests.selected")}
+                  </Text>
+                ) : null}
               </Pressable>
             );
           })}
@@ -223,7 +231,7 @@ function RespondForm({
 
         <AppTextField
           testID="response-price"
-          label="Your price per kg (Rs.)"
+          label={t("farmer.requests.priceLabel")}
           value={price}
           onChangeText={setPrice}
           keyboardType="decimal-pad"
@@ -231,7 +239,7 @@ function RespondForm({
         />
         <AppTextField
           testID="response-quantity"
-          label="Quantity you can supply (kg)"
+          label={t("farmer.requests.quantityLabel")}
           value={quantity}
           onChangeText={setQuantity}
           keyboardType="number-pad"
@@ -245,7 +253,7 @@ function RespondForm({
         </HStack>
         <AppTextField
           testID="response-note"
-          label="Note to the buyer (optional)"
+          label={t("farmer.requests.noteLabel")}
           value={note}
           onChangeText={setNote}
         />
@@ -258,12 +266,12 @@ function RespondForm({
       >
         <AppButton
           testID="response-send"
-          label={submitting ? "Sending…" : "Send response"}
+          label={submitting ? "Sending…" : t("farmer.requests.send")}
           onPress={() => void submit()}
           disabled={submitting}
         />
         <Text className="type-caption text-center text-muted-foreground">
-          The buyer can accept, decline or name another price.
+          {t("farmer.requests.buyerCan")}
         </Text>
       </VStack>
     </>

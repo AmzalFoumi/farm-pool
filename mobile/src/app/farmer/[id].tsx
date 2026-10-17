@@ -9,6 +9,7 @@
  */
 
 import type { CooperativeFarmer } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -32,6 +33,7 @@ import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function FarmerDetailScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { token } = useAuth();
@@ -39,13 +41,16 @@ export default function FarmerDetailScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Farmer" onBack={() => router.back()} />
+      <AppBar title={t("coordinator.farmerDetail.title")} onBack={() => router.back()} />
       <RequestView request={farmers}>
         {(rows) => {
           const farmer = rows.find((f) => f.id === id);
           if (!farmer) {
             return (
-              <EmptyNote title="Not found" note="This farmer is no longer in your cooperative." />
+              <EmptyNote
+                title={t("common.notFound")}
+                note={t("coordinator.farmerDetail.notFoundBody")}
+              />
             );
           }
           return (
@@ -66,6 +71,7 @@ function FarmerDetail({
   token: string;
   onDecided: () => void;
 }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [reason, setReason] = useState("");
@@ -80,7 +86,7 @@ function FarmerDetail({
       await coordinationApi.approveFarmer(token, farmer.id);
       onDecided();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not approve this farmer");
+      setError(e instanceof ApiError ? e.message : t("coordinator.farmerDetail.approveError"));
     } finally {
       setDeciding(null);
     }
@@ -94,7 +100,7 @@ function FarmerDetail({
       await coordinationApi.rejectFarmer(token, farmer.id, reason.trim());
       onDecided();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not reject this farmer");
+      setError(e instanceof ApiError ? e.message : t("coordinator.farmerDetail.rejectError"));
     } finally {
       setDeciding(null);
     }
@@ -112,11 +118,17 @@ function FarmerDetail({
           </Text>
           <FarmerStatusPill status={farmer.status} />
         </HStack>
-        <DetailRow label="Phone number" value={farmer.phone} />
-        <DetailRow label="District" value={farmer.district ?? "Not given"} />
-        <DetailRow label="Registered" value={formatDate(farmer.createdAt)} />
+        <DetailRow label={t("coordinator.farmerDetail.phone")} value={farmer.phone} />
         <DetailRow
-          label="Listings"
+          label={t("coordinator.farmerDetail.district")}
+          value={farmer.district ?? t("common.notGiven")}
+        />
+        <DetailRow
+          label={t("coordinator.farmerDetail.registered")}
+          value={formatDate(farmer.createdAt)}
+        />
+        <DetailRow
+          label={t("coordinator.farmerDetail.listings")}
           value={`${farmer.listingCount} ${farmer.listingCount === 1 ? "listing" : "listings"}`}
           onPress={() => {
             setScopedFarmerId(farmer.id);
@@ -131,15 +143,15 @@ function FarmerDetail({
         confirmingReject ? (
           <VStack className="gap-3 rounded-card border border-border bg-card p-4">
             <AppTextField
-              label="Reason for rejecting"
+              label={t("coordinator.farmerDetail.reasonLabel")}
               value={reason}
               onChangeText={setReason}
-              placeholder="Why isn't this farmer being approved?"
+              placeholder={t("coordinator.farmerDetail.reasonPlaceholder")}
             />
             <HStack className="gap-2">
               <View className="flex-1">
                 <AppButton
-                  label="Cancel"
+                  label={t("common.cancel")}
                   variant="outline"
                   disabled={deciding !== null}
                   onPress={() => setConfirmingReject(false)}
@@ -147,7 +159,7 @@ function FarmerDetail({
               </View>
               <View className="flex-1">
                 <AppButton
-                  label={deciding === "reject" ? "Rejecting…" : "Confirm reject"}
+                  label={deciding === "reject" ? t("common.rejecting") : t("common.confirmReject")}
                   disabled={deciding !== null || !reason.trim()}
                   onPress={() => void reject()}
                 />
@@ -158,7 +170,7 @@ function FarmerDetail({
           <HStack className="gap-2">
             <View className="flex-1">
               <AppButton
-                label="Reject"
+                label={t("common.reject")}
                 variant="outline"
                 disabled={deciding !== null}
                 onPress={() => setConfirmingReject(true)}
@@ -166,7 +178,7 @@ function FarmerDetail({
             </View>
             <View className="flex-1">
               <AppButton
-                label={deciding === "approve" ? "Approving…" : "Approve"}
+                label={deciding === "approve" ? t("common.approving") : t("common.approve")}
                 disabled={deciding !== null}
                 onPress={() => void approve()}
               />
@@ -185,7 +197,7 @@ function DetailRow({
 }: {
   label: string;
   value: string;
-  /** Only the "Listings" row passes this — it opens that farmer's listings (the Listings tab,
+  /** Only the t("coordinator.farmerDetail.listings") row passes this — it opens that farmer's listings (the Listings tab,
    *  scoped by `?farmerId=`) rather than this screen duplicating a second listings view. */
   onPress?: () => void;
 }) {

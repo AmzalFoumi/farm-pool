@@ -1,0 +1,43 @@
+{
+  "offers": {
+    "accept": {
+      "error": "Could not accept the offer",
+      "title": "Accept this offer?",
+      "buyerNote": "This creates the order. You pay from the order screen.",
+      "farmerNote": "This creates the order and takes the quantity off your listing.",
+      "accepting": "Accepting…",
+      "action": "Accept offer",
+      "notNow": "Not now"
+    },
+    "make": {
+      "error": "Could not send the offer",
+      "title": "Make an offer",
+      "priceLabel": "Your price per kg (Rs.)",
+      "quantityLabel": "Quantity (kg)",
+      "noteLabel": "Note to the farmer (optional)",
+      "sending": "Sending…",
+      "action": "Send offer"
+    },
+    "mine": {
+      "title": "My offers",
+      "yourTurn": "Your turn to answer",
+      "noneYet": "No offers yet",
+      "noneYetBody": "Open a listing marked Price negotiable and tap Make an offer."
+    },
+    "detail": {
+      "declineTitle": "Decline this offer?",
+      "declineBody": "This cannot be undone.",
+      "declineConfirm": "Yes, decline",
+      "declineError": "Could not decline",
+      "viewOrder": "View the order",
+      "sendError": "Could not send",
+      "title": "Offer",
+      "agreedNote": "This offer was agreed and is now an order.",
+      "pageTitle": "Offers & Negotiations",
+      "listingError": "Failed to load listing",
+      "loading": "Loading offers...",
+      "loadError": "Failed to load offers.",
+      "none": "No offers yet."
+    }
+  }
+}

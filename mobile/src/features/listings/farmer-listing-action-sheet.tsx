@@ -1,4 +1,5 @@
 import { type Listing, cropById } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { View } from "react-native";
 import { formatPrice } from "@/lib/format";
 
@@ -15,6 +16,7 @@ import { Text } from "@/components/ui/text";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { CropTile } from "./crop-tile";
+import { cropLabelKey } from "@/features/listings/crop-label";
 
 import {
   EditIcon,
@@ -52,6 +54,7 @@ export function FarmerListingActionSheet({
   onMarkAsSold,
   onDelete
 }: FarmerListingActionSheetProps) {
+  const { t } = useTranslation();
   if (!listing) return null;
 
   const crop = cropById(listing.cropId);
@@ -81,7 +84,9 @@ export function FarmerListingActionSheet({
             </View>
             <VStack className="flex-1 min-w-0">
               <HStack className="items-center gap-2">
-                <Text className="type-body-sm-bold text-foreground truncate">{crop.name}</Text>
+                <Text className="type-body-sm-bold text-foreground truncate">
+                  {t(cropLabelKey(crop.id))}
+                </Text>
                 <View className="px-1.5 py-0.5 bg-success-subtle rounded-md">
                   <Text className="text-[10px] font-bold text-success whitespace-nowrap">
                     {formatPrice(listing.pricePerKg)}/kg
@@ -112,10 +117,10 @@ export function FarmerListingActionSheet({
               </View>
               <VStack className="flex-1">
                 <Text className="text-xs font-bold text-warning-foreground">
-                  Listing is currently inactive.
+                  {t("listings.actionSheet.inactive")}
                 </Text>
                 <Text className="text-[11px] text-warning-foreground/80 leading-tight">
-                  Buyers and wholesale aggregators cannot discover or place bids on this batch.
+                  {t("listings.actionSheet.inactiveNote")}
                 </Text>
               </VStack>
             </View>
@@ -140,14 +145,16 @@ export function FarmerListingActionSheet({
               <VStack className="flex-1 min-w-0">
                 <HStack className="items-center gap-2">
                   <Text className="text-xs font-bold text-foreground">
-                    Resume / Reactivate Listing
+                    {t("listings.actionSheet.resume")}
                   </Text>
                   <View className="px-1.5 py-0.5 bg-brand-deep rounded">
-                    <Text className="text-[9px] font-bold text-brand-deep-foreground">Primary</Text>
+                    <Text className="text-[9px] font-bold text-brand-deep-foreground">
+                      {t("listings.actionSheet.primary")}
+                    </Text>
                   </View>
                 </HStack>
                 <Text className="text-[11px] text-muted-foreground font-medium truncate">
-                  Make visible to buyers again to start receiving bids
+                  {t("listings.actionSheet.resumeNote")}
                 </Text>
               </VStack>
               <View className="text-muted-foreground shrink-0">
@@ -167,9 +174,11 @@ export function FarmerListingActionSheet({
               <EditIcon />
             </View>
             <VStack className="flex-1 min-w-0">
-              <Text className="text-xs font-bold text-foreground">Edit Listing Details</Text>
+              <Text className="text-xs font-bold text-foreground">
+                {t("listings.actionSheet.editDetails")}
+              </Text>
               <Text className="text-[11px] text-muted-foreground font-medium truncate">
-                Adjust price, batch quantity, grade & harvest date
+                {t("listings.actionSheet.editNote")}
               </Text>
             </VStack>
             <View className="text-muted-foreground shrink-0">
@@ -190,10 +199,10 @@ export function FarmerListingActionSheet({
               </View>
               <VStack className="flex-1 min-w-0">
                 <Text className="text-xs font-bold text-foreground">
-                  Pause / Hide from Marketplace
+                  {t("listings.actionSheet.pause")}
                 </Text>
                 <Text className="text-[11px] text-muted-foreground font-medium truncate">
-                  Temporarily hide from buyers without deleting batch data
+                  {t("listings.actionSheet.pauseNote")}
                 </Text>
               </VStack>
               <View className="text-muted-foreground shrink-0">
@@ -213,11 +222,13 @@ export function FarmerListingActionSheet({
               <CheckCircleIcon />
             </View>
             <VStack className="flex-1 min-w-0">
-              <Text className="text-xs font-bold text-foreground">Mark as Sold</Text>
+              <Text className="text-xs font-bold text-foreground">
+                {t("listings.actionSheet.markSold")}
+              </Text>
               <Text className="text-[11px] text-muted-foreground font-medium truncate">
                 {isPaused
-                  ? "Record offline / direct settlement receipt"
-                  : "Conclude crop escrow & record settlement receipt"}
+                  ? t("listings.actionSheet.offlineReceipt")
+                  : t("listings.actionSheet.escrowReceipt")}
               </Text>
             </VStack>
             <View className="text-muted-foreground shrink-0">
@@ -238,9 +249,11 @@ export function FarmerListingActionSheet({
               <TrashIcon />
             </View>
             <VStack className="flex-1 min-w-0">
-              <Text className="text-xs font-bold text-destructive">Delete Listing</Text>
+              <Text className="text-xs font-bold text-destructive">
+                {t("listings.actionSheet.deleteListing")}
+              </Text>
               <Text className="text-[11px] text-destructive/80 font-medium truncate">
-                Permanently remove this batch from FarmPool LK
+                {t("listings.actionSheet.deleteNote")}
               </Text>
             </VStack>
             <View className="text-destructive/60 shrink-0">
@@ -253,7 +266,7 @@ export function FarmerListingActionSheet({
             onPress={onClose}
             className="w-full py-3 rounded-xl bg-background border border-border items-center justify-center active:bg-secondary transition-colors shadow-sm"
           >
-            <Text className="text-xs font-bold text-foreground">Cancel</Text>
+            <Text className="text-xs font-bold text-foreground">{t("common.cancel")}</Text>
           </Pressable>
         </View>
       </ActionsheetContent>

@@ -10,6 +10,7 @@
  */
 
 import type { CooperativeFarmer } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { FlatList, View } from "react-native";
@@ -30,10 +31,12 @@ import { useAuth } from "@/providers/auth-provider";
 
 type Filter = "all" | "active" | "pending_review";
 
-const FILTERS: { id: Filter; label: string; icon?: typeof CheckCircleIcon }[] = [
-  { id: "all", label: "All" },
-  { id: "active", label: "Verified", icon: CheckCircleIcon },
-  { id: "pending_review", label: "Pending", icon: ClockIcon }
+/* Ids and key paths only — a `label` here would be resolved at module load, before i18next has
+   a language, and would not change when the user switches one. */
+const FILTERS: { id: Filter; labelKey: string; icon?: typeof CheckCircleIcon }[] = [
+  { id: "all", labelKey: "coordinator.filters.all" },
+  { id: "active", labelKey: "farmerStatus.verified", icon: CheckCircleIcon },
+  { id: "pending_review", labelKey: "farmerStatus.pending", icon: ClockIcon }
 ];
 
 function isFilter(value: string | undefined): value is Filter {
@@ -41,6 +44,7 @@ function isFilter(value: string | undefined): value is Filter {
 }
 
 export default function FarmersScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
   const { filter: requestedFilter } = useLocalSearchParams<{ filter?: string }>();
@@ -52,7 +56,7 @@ export default function FarmersScreen() {
   return (
     <View className="flex-1 bg-background">
       <CoordinatorHeader
-        title="Farmers"
+        title={t("coordinator.farmersTab.title")}
         subtitle={
           farmers.status === "ready"
             ? `${farmers.data.length} ${farmers.data.length === 1 ? "farmer" : "farmers"}`
@@ -93,7 +97,7 @@ export default function FarmersScreen() {
                   </HStack>
 
                   <HStack className="gap-2">
-                    {FILTERS.map(({ id, label, icon }) => {
+                    {FILTERS.map(({ id, labelKey, icon }) => {
                       const selected = filter === id;
                       return (
                         <Pressable
@@ -118,7 +122,7 @@ export default function FarmersScreen() {
                               selected ? "text-primary-foreground" : "text-foreground"
                             }`}
                           >
-                            {label}
+                            {t(labelKey)}
                           </Text>
                         </Pressable>
                       );
@@ -128,7 +132,10 @@ export default function FarmersScreen() {
               }
               renderItem={({ item }) => <FarmerRow farmer={item} />}
               ListEmptyComponent={
-                <EmptyNote title="No farmers here" note="Nobody matches this filter yet." />
+                <EmptyNote
+                  title={t("coordinator.farmersTab.none")}
+                  note={t("coordinator.farmersTab.noneBody")}
+                />
               }
             />
           );
@@ -139,14 +146,15 @@ export default function FarmersScreen() {
 }
 
 function FarmerRow({ farmer }: { farmer: CooperativeFarmer }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const initial = farmer.displayName.trim().charAt(0).toUpperCase() || "?";
   const secondLine =
     farmer.status === "pending_review"
-      ? "Pending review"
+      ? t("coordinator.farmersTab.pendingReview")
       : farmer.district
         ? `${farmer.district} · 🌿 ${farmer.listingCount} ${farmer.listingCount === 1 ? "listing" : "listings"}`
-        : "No listings yet";
+        : t("coordinator.farmersTab.noListings");
 
   return (
     <Pressable

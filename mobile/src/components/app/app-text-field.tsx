@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { TextInputProps } from "react-native";
 
 import {
@@ -51,6 +52,7 @@ export function AppTextField({
   testID,
   ...inputProps
 }: AppTextFieldProps) {
+  const { t } = useTranslation();
   const [revealed, setRevealed] = useState(false);
   const invalid = Boolean(error);
 
@@ -82,7 +84,7 @@ export function AppTextField({
           <InputSlot
             onPress={() => setRevealed((v) => !v)}
             accessibilityRole="button"
-            accessibilityLabel={revealed ? "Hide password" : "Show password"}
+            accessibilityLabel={revealed ? "Hide password" : t("common.showPassword")}
             className="min-h-tap min-w-tap items-center justify-center"
           >
             <InputIcon

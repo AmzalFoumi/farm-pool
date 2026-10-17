@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Image, View } from "react-native";
 import { cropById, type CropId } from "@farm-pool/shared";
 
@@ -6,6 +7,7 @@ import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { formatPrice } from "@/lib/format";
 import { toKg } from "@/features/listings/units";
@@ -53,6 +55,7 @@ export default function StepReview({
   error,
   onBack
 }: StepReviewProps) {
+  const { t } = useTranslation();
   const crop = cropById(cropId) || cropById("tomato");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -78,29 +81,31 @@ export default function StepReview({
   const getFulfillmentLabel = () => {
     switch (step5.fulfillmentOption) {
       case "solo":
-        return "Solo Transport";
+        return t("listings.step5.solo");
       case "shared":
       default:
-        return "Shared Transport";
+        return t("listings.step5.shared");
     }
   };
 
   return (
     <WizardShell
       step={"review"}
-      title="Review & Publish"
+      title={t("listings.review.title")}
       onBack={onBack}
       footer={
         <>
           {error ? (
             <Text className="type-caption text-destructive" accessibilityRole="alert">
-              Could not publish: {error}
+              {t("listings.review.couldNotPublish", { error })}
             </Text>
           ) : null}
           <WizardActions
             onBack={onBack}
-            backLabel="Edit"
-            continueLabel={isSubmitting ? "Publishing..." : "Publish Listing"}
+            backLabel={t("listings.review.edit")}
+            continueLabel={t(
+              isSubmitting ? "listings.review.publishing" : "listings.review.publish"
+            )}
             onContinue={handleConfirmPublish}
             continueDisabled={isSubmitting}
           />
@@ -136,10 +141,10 @@ export default function StepReview({
           <VStack className="flex-1 min-w-0 gap-1">
             <HStack className="items-center justify-between">
               <Text className="type-h3 text-foreground flex-1" numberOfLines={1}>
-                Fresh {crop.name}
+                Fresh {t(cropLabelKey(crop.id))}
               </Text>
               <Box className="rounded-chip bg-secondary border border-border px-2 py-0.5">
-                <Text className="type-caption-bold text-primary">Ready</Text>
+                <Text className="type-caption-bold text-primary">{t("listings.review.ready")}</Text>
               </Box>
             </HStack>
 
@@ -173,7 +178,9 @@ export default function StepReview({
           {/* Quality Grade */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">Quality Grade</Text>
+              <Text className="type-caption text-muted-foreground">
+                {t("listings.review.qualityGrade")}
+              </Text>
             </HStack>
             <HStack className="items-center gap-2">
               <Text className="type-body-sm-bold text-foreground">Grade {step2.grade || "A"}</Text>
@@ -190,7 +197,9 @@ export default function StepReview({
           {/* Variety */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">{crop.name} Variety</Text>
+              <Text className="type-caption text-muted-foreground">
+                {t(cropLabelKey(crop.id))} Variety
+              </Text>
             </HStack>
             <Text className="type-body-sm-bold text-foreground">
               {step2.variety || "Roma / Plum"}
@@ -201,9 +210,13 @@ export default function StepReview({
 
           {/* Minimum order */}
           <HStack className="items-center justify-between">
-            <Text className="type-caption text-muted-foreground">Minimum Order</Text>
+            <Text className="type-caption text-muted-foreground">
+              {t("listings.review.minimumOrder")}
+            </Text>
             <Text className="type-body-sm-bold text-foreground">
-              {step2.moqKg === undefined ? "No minimum" : `${step2.moqKg} kg`}
+              {step2.moqKg === undefined
+                ? t("listings.review.noMinimum")
+                : t("listings.step2.kgValue", { kg: step2.moqKg })}
             </Text>
           </HStack>
 
@@ -212,7 +225,9 @@ export default function StepReview({
           {/* Scheduled Date */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">Scheduled Date</Text>
+              <Text className="type-caption text-muted-foreground">
+                {t("listings.review.scheduledDate")}
+              </Text>
             </HStack>
             <HStack className="items-center gap-1.5">
               <Text className="type-body-sm-bold text-foreground">
@@ -226,10 +241,14 @@ export default function StepReview({
           {/* Packaging */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">Packaging</Text>
+              <Text className="type-caption text-muted-foreground">
+                {t("listings.review.packaging")}
+              </Text>
             </HStack>
             <Text className="type-body-sm-bold text-foreground">
-              {step2.packaging || "Plastic Crates (25kg)"}
+              {step2.packaging
+                ? t(`listings.packaging.${step2.packaging}`)
+                : t("listings.packaging.plastic-crate")}
             </Text>
           </HStack>
 
@@ -238,7 +257,9 @@ export default function StepReview({
           {/* Transportation */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">Transportation</Text>
+              <Text className="type-caption text-muted-foreground">
+                {t("listings.review.transportation")}
+              </Text>
             </HStack>
             <Box className="rounded-chip bg-secondary px-2.5 py-1">
               <Text className="type-caption-bold text-primary">{getFulfillmentLabel()}</Text>
@@ -250,7 +271,9 @@ export default function StepReview({
           {/* Dropoff Hub */}
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
-              <Text className="type-caption text-muted-foreground">District</Text>
+              <Text className="type-caption text-muted-foreground">
+                {t("listings.review.district")}
+              </Text>
             </HStack>
             <Text className="type-body-sm-bold text-foreground">{step5.district}</Text>
           </HStack>
@@ -261,7 +284,9 @@ export default function StepReview({
           <HStack className="items-center justify-between">
             <HStack className="items-center gap-2">
               <Text className="type-caption text-muted-foreground">
-                {photoUris.length > 0 ? "Harvest Photos (samples)" : "Harvest Photos"}
+                {t(
+                  photoUris.length > 0 ? "listings.review.photosSamples" : "listings.review.photos"
+                )}
               </Text>
             </HStack>
             <HStack className="items-center gap-1.5">
@@ -275,7 +300,9 @@ export default function StepReview({
                   </View>
                 ))
               ) : (
-                <Text className="type-caption text-muted-foreground">None attached</Text>
+                <Text className="type-caption text-muted-foreground">
+                  {t("listings.review.noneAttached")}
+                </Text>
               )}
             </HStack>
           </HStack>

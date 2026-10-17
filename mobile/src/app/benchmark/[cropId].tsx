@@ -6,7 +6,8 @@
  * invented. `source` is always `"manual"`, see `benchmark-price.ts` in `packages/shared` for why.
  */
 
-import { cropById, cropIdSchema, setBenchmarkPriceSchema } from "@farm-pool/shared";
+import { cropIdSchema, setBenchmarkPriceSchema } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import type { BenchmarkPrice, CropId, CropPriceContext } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
@@ -23,6 +24,7 @@ import { Pressable } from "@/components/ui/pressable";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { coordinationApi } from "@/features/coordination/api";
 import { ApiError } from "@/lib/api";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -30,6 +32,7 @@ import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function SetCropPriceScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { cropId: rawCropId } = useLocalSearchParams<{ cropId: string }>();
   const { token } = useAuth();
@@ -40,12 +43,19 @@ export default function SetCropPriceScreen() {
   return (
     <View className="flex-1 bg-background">
       <AppBar
-        title={parsedCropId.success ? cropById(parsedCropId.data).name : "Set price"}
+        title={
+          parsedCropId.success
+            ? t(cropLabelKey(parsedCropId.data))
+            : t("listings.benchmark.setPrice")
+        }
         onBack={() => router.back()}
       />
 
       {!parsedCropId.success ? (
-        <EmptyNote title="Unknown crop" note="This crop isn't recognised." />
+        <EmptyNote
+          title={t("listings.benchmark.unknownCrop")}
+          note={t("listings.benchmark.unknownCropBody")}
+        />
       ) : (
         <RequestView request={prices}>
           {(rows) => (
@@ -73,9 +83,10 @@ function SetCropPriceForm({
   context: CropPriceContext | null;
   onSaved: () => void;
 }) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
-  const cropName = cropById(cropId).name;
+  const cropName = t(cropLabelKey(cropId));
   const history = useRequest(
     () => coordinationApi.benchmarkHistory(token ?? "", cropId),
     `${token ?? ""}|${cropId}`
@@ -113,7 +124,7 @@ function SetCropPriceForm({
         for (const issue of e.issues) next[issue.path as Field] ??= issue.message;
         setErrors(next);
       } else {
-        setFormError(e instanceof ApiError ? e.message : "Could not save the price");
+        setFormError(e instanceof ApiError ? e.message : t("listings.benchmark.saveError"));
       }
     } finally {
       setSubmitting(false);
@@ -131,13 +142,15 @@ function SetCropPriceForm({
         keyboardShouldPersistTaps="handled"
       >
         <VStack className="gap-1 rounded-card border border-border bg-card p-4">
-          <Text className="type-body-bold text-foreground">What you already have to go on</Text>
+          <Text className="type-body-bold text-foreground">
+            {t("listings.benchmark.whatYouHave")}
+          </Text>
           <Text className="type-caption text-muted-foreground">
             {context?.current
               ? `Last published ${formatDate(context.current.publishedAt)}: ${formatPrice(
                   context.current.lowPricePerKg
                 )}–${formatPrice(context.current.highPricePerKg)}`
-              : "No price has been published for this crop yet."}
+              : t("listings.benchmark.noPublished")}
           </Text>
           <Text className="type-caption text-muted-foreground">
             {context?.activeListingRange
@@ -146,10 +159,10 @@ function SetCropPriceForm({
                 )}–${formatPrice(context.activeListingRange.highPricePerKg)} across ${
                   context.activeListingRange.listingCount
                 } ${context.activeListingRange.listingCount === 1 ? "listing" : "listings"}.`
-              : "None of your farmers have an active listing for this crop right now."}
+              : t("listings.benchmark.noActiveListing")}
           </Text>
           <Text className="type-caption text-muted-foreground">
-            No live market feed exists yet — this is set from what you already know.
+            {t("listings.benchmark.noFeed")}
           </Text>
         </VStack>
 
@@ -171,7 +184,9 @@ function SetCropPriceForm({
         >
           <Icon as={GlobeIcon} className="text-muted-foreground" size="md" />
           <VStack className="flex-1 gap-0.5">
-            <Text className="type-body-bold text-foreground">Check other sources</Text>
+            <Text className="type-body-bold text-foreground">
+              {t("listings.benchmark.checkOther")}
+            </Text>
             <Text className="type-caption text-muted-foreground">
               See what {cropName} is selling for elsewhere today
             </Text>
@@ -179,19 +194,21 @@ function SetCropPriceForm({
         </Pressable>
 
         <VStack className="gap-2 rounded-card border border-border bg-card p-4">
-          <Text className="type-body-bold text-foreground">Price history</Text>
+          <Text className="type-body-bold text-foreground">
+            {t("listings.benchmark.priceHistory")}
+          </Text>
           <PriceHistorySection history={history} />
         </VStack>
 
         <AppTextField
-          label="Low price (Rs / kg)"
+          label={t("listings.benchmark.lowPrice")}
           value={low}
           onChangeText={setLow}
           keyboardType="decimal-pad"
           error={errors.lowPricePerKg}
         />
         <AppTextField
-          label="High price (Rs / kg)"
+          label={t("listings.benchmark.highPrice")}
           value={high}
           onChangeText={setHigh}
           keyboardType="decimal-pad"
@@ -203,7 +220,7 @@ function SetCropPriceForm({
         {formError ? <Text className="type-caption text-destructive">{formError}</Text> : null}
 
         <AppButton
-          label={submitting ? "Saving…" : "Publish price"}
+          label={submitting ? t("listings.benchmark.saving") : t("listings.benchmark.publishPrice")}
           onPress={() => void submit()}
           disabled={submitting}
         />
@@ -219,16 +236,23 @@ function PriceHistorySection({
 }: {
   history: ReturnType<typeof useRequest<BenchmarkPrice[]>>;
 }) {
+  const { t } = useTranslation();
   if (history.status === "loading") {
     return (
       <HStack className="items-center gap-2 py-2">
         <Spinner size="small" />
-        <Text className="type-body text-muted-foreground">Loading history…</Text>
+        <Text className="type-body text-muted-foreground">
+          {t("listings.benchmark.loadingHistory")}
+        </Text>
       </HStack>
     );
   }
   if (history.status === "error") {
-    return <Text className="type-body text-muted-foreground">Could not load price history.</Text>;
+    return (
+      <Text className="type-body text-muted-foreground">
+        {t("listings.benchmark.historyError")}
+      </Text>
+    );
   }
   return <PriceHistoryChart history={history.data} />;
 }
@@ -239,13 +263,12 @@ const CHART_POINTS = 12;
 const MIN_BAR_HEIGHT_PCT = 6;
 
 function PriceHistoryChart({ history }: { history: BenchmarkPrice[] }) {
+  const { t } = useTranslation();
   const points = [...history].reverse().slice(-CHART_POINTS);
 
   if (points.length < 2) {
     return (
-      <Text className="type-body text-muted-foreground">
-        Not enough history yet to show a trend.
-      </Text>
+      <Text className="type-body text-muted-foreground">{t("listings.benchmark.noTrend")}</Text>
     );
   }
 

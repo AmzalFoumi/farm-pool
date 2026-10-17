@@ -17,6 +17,7 @@ import {
   type ListingPackaging
 } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -37,6 +38,7 @@ import {
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { coordinationApi } from "@/features/coordination/api";
 import {
   compareToBenchmark,
@@ -50,20 +52,16 @@ import { daysSince, formatDate, formatPrice } from "@/lib/format";
 import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
-/* Same wording as the buyer's listing detail and the listing wizard's review step. */
-const PACKAGING_LABELS: Record<ListingPackaging, string> = {
-  "plastic-crate": "Plastic crates",
-  "wooden-box": "Wooden boxes",
-  cardboard: "Cardboard cartons",
-  "mesh-bag": "Mesh bags"
-};
+/* Same wording as the buyer's listing detail and the listing wizard's review step, so they share
+   its keys. Key paths, not resolved strings: a module-level `t()` runs before i18next has a
+   language and would never update when the user changes one. */
+const packagingLabelKey = (p: ListingPackaging) => `listings.packagingShort.${p}` as const;
 
-const FULFILLMENT_LABELS: Record<FulfillmentOption, string> = {
-  shared: "Shared transport",
-  solo: "Solo transport"
-};
+const fulfillmentLabelKey = (f: FulfillmentOption) =>
+  f === "shared" ? "listings.step5.shared" : "listings.step5.solo";
 
 export default function ListingReviewScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { token } = useAuth();
@@ -72,13 +70,13 @@ export default function ListingReviewScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Listing" onBack={() => router.back()} />
+      <AppBar title={t("coordinator.review.title")} onBack={() => router.back()} />
       <RequestView request={listings}>
         {(rows) => {
           const listing = rows.find((l) => l.id === id);
           if (!listing) {
             return (
-              <EmptyNote title="Not found" note="This listing is no longer in your cooperative." />
+              <EmptyNote title={t("common.notFound")} note={t("coordinator.review.notFoundBody")} />
             );
           }
           return (
@@ -109,6 +107,7 @@ function ListingReview({
   benchmarks: ReturnType<typeof useRequest<CropPriceContext[]>>;
   onDecided: () => void;
 }) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const crop = cropById(listing.cropId);
   const [reason, setReason] = useState("");
@@ -125,7 +124,7 @@ function ListingReview({
       await coordinationApi.approveListing(token, listing.id);
       onDecided();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not approve this listing");
+      setError(e instanceof ApiError ? e.message : t("coordinator.review.approveError"));
     } finally {
       setDeciding(null);
     }
@@ -139,7 +138,7 @@ function ListingReview({
       await coordinationApi.rejectListing(token, listing.id, reason.trim());
       onDecided();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not reject this listing");
+      setError(e instanceof ApiError ? e.message : t("coordinator.review.rejectError"));
     } finally {
       setDeciding(null);
     }
@@ -171,11 +170,15 @@ function ListingReview({
       : null;
 
   const produceDetails = [
-    listing.variety ? { label: "Variety", value: listing.variety } : null,
-    listing.grade ? { label: "Grade", value: `Grade ${listing.grade}` } : null,
-    listing.packaging ? { label: "Packaging", value: PACKAGING_LABELS[listing.packaging] } : null,
+    listing.variety ? { label: t("coordinator.review.variety"), value: listing.variety } : null,
+    listing.grade
+      ? { label: t("coordinator.review.grade"), value: `Grade ${listing.grade}` }
+      : null,
+    listing.packaging
+      ? { label: t("coordinator.review.packaging"), value: t(packagingLabelKey(listing.packaging)) }
+      : null,
     listing.certifications?.length
-      ? { label: "Certifications", value: listing.certifications.join(", ") }
+      ? { label: t("coordinator.review.certifications"), value: listing.certifications.join(", ") }
       : null
   ].filter((row) => row !== null);
 
@@ -196,13 +199,13 @@ function ListingReview({
                 key={uri}
                 onPress={() => setZoomedPhoto(uri)}
                 accessibilityRole="button"
-                accessibilityLabel={`View ${crop.name} photo ${i + 1} larger`}
+                accessibilityLabel={`View ${t(cropLabelKey(crop.id))} photo ${i + 1} larger`}
               >
                 <Image
                   source={{ uri }}
                   size="2xl"
                   className="rounded-card bg-muted"
-                  alt={`${crop.name} photo ${i + 1}`}
+                  alt={`${t(cropLabelKey(crop.id))} photo ${i + 1}`}
                 />
               </Pressable>
             ))}
@@ -214,18 +217,27 @@ function ListingReview({
         <VStack className="gap-3 rounded-card border border-border bg-card p-4">
           <HStack className="items-center justify-between">
             <Text className="type-h3 text-foreground" numberOfLines={1}>
-              {crop.name}
+              {t(cropLabelKey(crop.id))}
             </Text>
             <ListingStatusPill status={listing.status} />
           </HStack>
-          <DetailRow label="Farmer" value={listing.farmerName} />
-          <DetailRow label="Quantity" value={`${listing.quantityKg} kg`} />
-          <DetailRow label="Unit price" value={`${formatPrice(listing.pricePerKg)} / kg`} />
-          <DetailRow label="Minimum order" value={`${listing.minOrderKg} kg`} />
-          <DetailRow label="Harvest date" value={formatDate(listing.harvestDate)} />
+          <DetailRow label={t("coordinator.review.farmer")} value={listing.farmerName} />
+          <DetailRow label={t("coordinator.review.quantity")} value={`${listing.quantityKg} kg`} />
+          <DetailRow
+            label={t("coordinator.review.unitPrice")}
+            value={`${formatPrice(listing.pricePerKg)} / kg`}
+          />
+          <DetailRow
+            label={t("coordinator.review.minimumOrder")}
+            value={`${listing.minOrderKg} kg`}
+          />
+          <DetailRow
+            label={t("coordinator.review.harvestDate")}
+            value={formatDate(listing.harvestDate)}
+          />
           {freshness !== null ? (
             <DetailRow
-              label="Freshness"
+              label={t("coordinator.review.freshness")}
               value={
                 freshness >= 0
                   ? `Fresh for ${freshness} more ${freshness === 1 ? "day" : "days"}`
@@ -240,7 +252,9 @@ function ListingReview({
 
         {produceDetails.length > 0 ? (
           <VStack className="gap-3 rounded-card border border-border bg-card p-4">
-            <Text className="type-h4 text-foreground">Produce details</Text>
+            <Text className="type-h4 text-foreground">
+              {t("coordinator.review.produceDetails")}
+            </Text>
             {produceDetails.map((row) => (
               <DetailRow key={row.label} label={row.label} value={row.value} />
             ))}
@@ -248,12 +262,20 @@ function ListingReview({
         ) : null}
 
         <VStack className="gap-3 rounded-card border border-border bg-card p-4">
-          <Text className="type-h4 text-foreground">Pickup</Text>
-          <DetailRow label="Location" value={place} />
-          {listing.address ? <DetailRow label="Address" value={listing.address} /> : null}
-          <DetailRow label="Farm gate pin" value={listing.pickupPoint ? "Dropped" : "Not set"} />
+          <Text className="type-h4 text-foreground">{t("coordinator.review.pickup")}</Text>
+          <DetailRow label={t("coordinator.review.location")} value={place} />
+          {listing.address ? (
+            <DetailRow label={t("coordinator.review.address")} value={listing.address} />
+          ) : null}
+          <DetailRow
+            label={t("coordinator.review.farmGatePin")}
+            value={listing.pickupPoint ? t("coordinator.review.dropped") : t("common.notSet")}
+          />
           {listing.fulfillmentOption ? (
-            <DetailRow label="Transport" value={FULFILLMENT_LABELS[listing.fulfillmentOption]} />
+            <DetailRow
+              label={t("coordinator.review.transport")}
+              value={t(fulfillmentLabelKey(listing.fulfillmentOption))}
+            />
           ) : null}
           {listing.farmgateNotes ? (
             <Text className="type-body pt-1 text-foreground">{listing.farmgateNotes}</Text>
@@ -262,7 +284,9 @@ function ListingReview({
 
         {listing.status === "rejected" && listing.rejectionReason ? (
           <VStack className="gap-1 rounded-card border border-destructive bg-destructive-subtle p-4">
-            <Text className="type-body-bold text-destructive">Rejected</Text>
+            <Text className="type-body-bold text-destructive">
+              {t("coordinator.review.rejected")}
+            </Text>
             <Text className="type-body text-destructive">{listing.rejectionReason}</Text>
           </VStack>
         ) : null}
@@ -273,15 +297,15 @@ function ListingReview({
           confirmingReject ? (
             <VStack className="gap-3 rounded-card border border-border bg-card p-4">
               <AppTextField
-                label="Reason for rejecting"
+                label={t("coordinator.review.reasonLabel")}
                 value={reason}
                 onChangeText={setReason}
-                placeholder="What needs to change before this can be approved?"
+                placeholder={t("coordinator.review.reasonPlaceholder")}
               />
               <HStack className="gap-2">
                 <View className="flex-1">
                   <AppButton
-                    label="Cancel"
+                    label={t("common.cancel")}
                     variant="outline"
                     disabled={deciding !== null}
                     onPress={() => setConfirmingReject(false)}
@@ -289,7 +313,9 @@ function ListingReview({
                 </View>
                 <View className="flex-1">
                   <AppButton
-                    label={deciding === "reject" ? "Rejecting…" : "Confirm reject"}
+                    label={
+                      deciding === "reject" ? t("common.rejecting") : t("common.confirmReject")
+                    }
                     disabled={deciding !== null || !reason.trim()}
                     onPress={() => void reject()}
                   />
@@ -320,12 +346,12 @@ function ListingReview({
                     : "type-caption text-info"
                 }
               >
-                Approve this listing anyway?
+                {t("coordinator.review.approveAnywayTitle")}
               </Text>
               <HStack className="gap-2">
                 <View className="flex-1">
                   <AppButton
-                    label="Cancel"
+                    label={t("common.cancel")}
                     variant="outline"
                     disabled={deciding !== null}
                     onPress={() => setConfirmingApprove(false)}
@@ -333,7 +359,11 @@ function ListingReview({
                 </View>
                 <View className="flex-1">
                   <AppButton
-                    label={deciding === "approve" ? "Approving…" : "Yes, approve anyway"}
+                    label={
+                      deciding === "approve"
+                        ? t("common.approving")
+                        : t("coordinator.review.approveAnyway")
+                    }
                     disabled={deciding !== null}
                     onPress={() => void approve()}
                   />
@@ -344,7 +374,7 @@ function ListingReview({
             <HStack className="gap-2">
               <View className="flex-1">
                 <AppButton
-                  label="Reject"
+                  label={t("common.reject")}
                   variant="outline"
                   disabled={deciding !== null}
                   onPress={() => setConfirmingReject(true)}
@@ -352,7 +382,7 @@ function ListingReview({
               </View>
               <View className="flex-1">
                 <AppButton
-                  label={deciding === "approve" ? "Approving…" : "Approve"}
+                  label={deciding === "approve" ? t("common.approving") : t("common.approve")}
                   disabled={deciding !== null}
                   onPress={onApprovePressed}
                 />
@@ -371,7 +401,7 @@ function ListingReview({
               <Image
                 source={{ uri: zoomedPhoto }}
                 className="aspect-square w-full rounded-card"
-                alt={`${crop.name} photo, full size`}
+                alt={`${t(cropLabelKey(crop.id))} photo, full size`}
               />
             ) : null}
           </ModalBody>
@@ -424,11 +454,14 @@ function PriceBenchmarkCard({
   status: "loading" | "error" | "ready";
   comparison: BenchmarkComparison | null;
 }) {
+  const { t } = useTranslation();
   if (status === "loading") {
     return (
       <VStack className="gap-1 rounded-card border border-border bg-card p-4">
-        <Text className="type-h4 text-foreground">Market price</Text>
-        <Text className="type-caption text-muted-foreground">Checking the benchmark…</Text>
+        <Text className="type-h4 text-foreground">{t("coordinator.review.marketPrice")}</Text>
+        <Text className="type-caption text-muted-foreground">
+          {t("coordinator.review.checkingBenchmark")}
+        </Text>
       </VStack>
     );
   }
@@ -437,7 +470,7 @@ function PriceBenchmarkCard({
   const { box, text } = BENCHMARK_TONE[comparison.tone];
   return (
     <VStack className={`gap-1 rounded-card p-4 ${box}`}>
-      <Text className={`type-h4 ${text}`}>Market price</Text>
+      <Text className={`type-h4 ${text}`}>{t("coordinator.review.marketPrice")}</Text>
       <Text className={`type-caption ${text}`}>{comparison.message}</Text>
     </VStack>
   );

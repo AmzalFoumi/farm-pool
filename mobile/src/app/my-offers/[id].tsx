@@ -4,6 +4,7 @@
  */
 
 import type { Offer, PublicUser, SavedLocation, SenderType } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, ScrollView, View } from "react-native";
@@ -26,6 +27,7 @@ import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function OfferScreen() {
+  const { t } = useTranslation();
   const { id: rawId } = useLocalSearchParams<{ id: string }>();
   const id = Array.isArray(rawId) ? rawId[0] : rawId;
   const router = useRouter();
@@ -45,7 +47,7 @@ export default function OfferScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="Offer" />
+      <AppBar title={t("offers.detail.title")} />
       <RequestView request={offer}>
         {(data) => (
           <OfferBody
@@ -85,6 +87,7 @@ function OfferBody({
   onOpenOrder: (orderId: string) => void;
   bottomInset: number;
 }) {
+  const { t } = useTranslation();
   const [countering, setCountering] = useState(false);
   const [history, setHistory] = useState(false);
   const [accepting, setAccepting] = useState(false);
@@ -99,10 +102,10 @@ function OfferBody({
   const ui = toUiOffer(offer, viewer);
 
   const decline = () => {
-    Alert.alert("Decline this offer?", "This cannot be undone.", [
+    Alert.alert(t("offers.detail.declineTitle"), t("offers.detail.declineBody"), [
       { text: "No", style: "cancel" },
       {
-        text: "Yes, decline",
+        text: t("offers.detail.declineConfirm"),
         style: "destructive",
         onPress: async () => {
           if (declining) return;
@@ -111,7 +114,10 @@ function OfferBody({
             await offersApi.decline(token, offer.id);
             onChanged();
           } catch (e) {
-            Alert.alert("Could not decline", offerErrorMessage(e, "Please try again."));
+            Alert.alert(
+              t("offers.detail.declineError"),
+              offerErrorMessage(e, t("common.tryAgain2"))
+            );
           } finally {
             setDeclining(false);
           }
@@ -137,9 +143,12 @@ function OfferBody({
         {offer.orderId ? (
           <VStack className="gap-2">
             <Text className="type-caption text-muted-foreground">
-              This offer was agreed and is now an order.
+              {t("offers.detail.agreedNote")}
             </Text>
-            <AppButton label="View the order" onPress={() => onOpenOrder(offer.orderId!)} />
+            <AppButton
+              label={t("offers.detail.viewOrder")}
+              onPress={() => onOpenOrder(offer.orderId!)}
+            />
           </VStack>
         ) : null}
       </ScrollView>
@@ -161,7 +170,7 @@ function OfferBody({
             onChanged();
           } catch (e) {
             // The sheet stays open so what was typed is not lost.
-            Alert.alert("Could not send", offerErrorMessage(e, "Please try again."));
+            Alert.alert(t("offers.detail.sendError"), offerErrorMessage(e, t("common.tryAgain2")));
           }
         }}
       />

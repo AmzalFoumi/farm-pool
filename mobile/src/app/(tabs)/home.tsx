@@ -7,6 +7,7 @@
  */
 
 import { useRouter, type Href } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -17,18 +18,17 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { useAuth } from "@/providers/auth-provider";
 
-const CARDS: { title: string; note: string; href: Href }[] = [
-  {
-    title: "Browse today’s listings",
-    note: "Verified produce, priced per kilo",
-    href: "/listings"
-  },
-  { title: "My orders", note: "Requests you have sent to farmers", href: "/orders" },
-  { title: "My offers", note: "Prices you are negotiating with farmers", href: "/my-offers" },
-  { title: "My requests", note: "Crops you are looking for", href: "/wanted" }
+/* Key paths, not resolved strings: a module-level `t()` runs before i18next has a language and
+   the value would be captured once, so the cards would keep their first-render language. */
+const CARDS: { titleKey: string; noteKey: string; href: Href }[] = [
+  { titleKey: "buyer.home.browse", noteKey: "buyer.home.browseNote", href: "/listings" },
+  { titleKey: "buyer.home.orders", noteKey: "buyer.home.ordersNote", href: "/orders" },
+  { titleKey: "buyer.home.offers", noteKey: "buyer.home.offersNote", href: "/my-offers" },
+  { titleKey: "buyer.home.requests", noteKey: "buyer.home.requestsNote", href: "/wanted" }
 ];
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
@@ -45,7 +45,7 @@ export default function HomeScreen() {
             <Text className="type-h3 text-brand-deep-foreground">
               Hello{name ? `, ${name}` : ""}
             </Text>
-            <Text className="type-caption text-brand-deep-muted">Buyer</Text>
+            <Text className="type-caption text-brand-deep-muted">{t("buyer.home.role")}</Text>
           </VStack>
           <Box className="h-11 w-11 items-center justify-center rounded-pill bg-card">
             <Text className="type-h4 text-brand-deep">{name.charAt(0).toUpperCase() || "?"}</Text>
@@ -54,16 +54,16 @@ export default function HomeScreen() {
       </VStack>
 
       <ScrollView contentContainerClassName="gap-3 p-gutter">
-        {CARDS.map(({ title, note, href }) => (
+        {CARDS.map(({ titleKey, noteKey, href }) => (
           <Pressable
-            key={title}
+            key={titleKey}
             onPress={() => router.push(href)}
             accessibilityRole="button"
-            accessibilityLabel={title}
+            accessibilityLabel={t(titleKey)}
             className="elevation-card min-h-tap justify-center rounded-card border border-border bg-card p-4 active:opacity-80"
           >
-            <Text className="type-h4 text-foreground">{title}</Text>
-            <Text className="type-caption mt-1 text-muted-foreground">{note}</Text>
+            <Text className="type-h4 text-foreground">{t(titleKey)}</Text>
+            <Text className="type-caption mt-1 text-muted-foreground">{t(noteKey)}</Text>
           </Pressable>
         ))}
       </ScrollView>

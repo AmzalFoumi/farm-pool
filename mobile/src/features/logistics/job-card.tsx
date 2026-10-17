@@ -5,6 +5,7 @@ import { Box } from "@/components/ui/box";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { OrderStatusPill } from "@/features/orders/status-pill";
 import { formatPrice } from "@/lib/format";
@@ -28,7 +29,7 @@ export function JobCard({ job, onPress }: { job: JobSummary; onPress: () => void
       accessibilityRole="button"
       accessibilityLabel={t("jobs.cardLabel", {
         count: job.quantityKg,
-        crop: crop.name,
+        crop: t(cropLabelKey(crop.id)),
         place,
         total: formatPrice(job.total)
       })}
@@ -37,7 +38,7 @@ export function JobCard({ job, onPress }: { job: JobSummary; onPress: () => void
       <CropTile emoji={crop.emoji} />
       <VStack className="flex-1 gap-0.5">
         <Text className="type-body-bold text-foreground" numberOfLines={1}>
-          {job.quantityKg} kg · {crop.name}
+          {job.quantityKg} kg · {t(cropLabelKey(crop.id))}
         </Text>
         <Text className="type-caption text-muted-foreground" numberOfLines={1}>
           {place} · {formatPrice(job.total)}

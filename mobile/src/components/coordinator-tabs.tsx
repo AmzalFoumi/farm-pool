@@ -1,4 +1,5 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
+import { useTranslation } from "react-i18next";
 import { useColorScheme } from "react-native";
 
 import { Colors } from "@/constants/theme";
@@ -16,6 +17,7 @@ import { Colors } from "@/constants/theme";
    visibly distorted through the bar instead of sitting cleanly above it. Every coordinator
    screen shares this one tab bar, so the fix belongs here rather than per screen. */
 export default function CoordinatorTabs() {
+  const { t } = useTranslation();
   const scheme = useColorScheme();
   const colors = Colors[scheme === "unspecified" ? "light" : scheme];
 
@@ -27,7 +29,7 @@ export default function CoordinatorTabs() {
       disableTransparentOnScrollEdge
     >
       <NativeTabs.Trigger name="region">
-        <NativeTabs.Trigger.Label>Region</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("coordinator.tabs.region")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf={{ default: "mappin", selected: "mappin.circle.fill" }}
           md="location_on"
@@ -35,7 +37,7 @@ export default function CoordinatorTabs() {
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="farmers">
-        <NativeTabs.Trigger.Label>Farmers</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("coordinator.tabs.farmers")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf={{ default: "person.2", selected: "person.2.fill" }}
           md="group"
@@ -43,17 +45,17 @@ export default function CoordinatorTabs() {
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="cooperative-listings">
-        <NativeTabs.Trigger.Label>Listings</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("coordinator.tabs.listings")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="list.bullet" md="list" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="disputes">
-        <NativeTabs.Trigger.Label>Disputes</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("coordinator.tabs.disputes")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="exclamationmark.triangle" md="warning" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="benchmark">
-        <NativeTabs.Trigger.Label>Prices</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("coordinator.tabs.prices")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="chart.bar" md="bar_chart" />
       </NativeTabs.Trigger>
     </NativeTabs>

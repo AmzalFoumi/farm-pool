@@ -2,7 +2,7 @@
  * Region — the coordinator's tab-shell home. Header greets the signed-in coordinator by last
  * name, with their region as the subtitle (`data.cooperative.district`, the same field the
  * header used to lead with) — personal first, place second. Farmer count, active listing count,
- * and "Needs you today" — all real. Figma (node 202:139) also draws a full per-listing list here;
+ * and t("coordinator.region.needsYou") — all real. Figma (node 202:139) also draws a full per-listing list here;
  * that belongs on a farmer's own detail screen instead (not built yet), not duplicated on a
  * dashboard. A disputes count is drawn too — disputes has no backend at all yet
  * (`.plans/coordination/OPEN.md`), so it stays at an honest zero rather than being hidden or
@@ -20,6 +20,7 @@
  */
 
 import type { CoordinatorTask } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { cropById } from "@farm-pool/shared";
 import { useFocusEffect, useRouter } from "expo-router";
 import { ScrollView, View } from "react-native";
@@ -34,6 +35,7 @@ import { Pressable } from "@/components/ui/pressable";
 import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { coordinationApi } from "@/features/coordination/api";
 import { CoordinatorHeader } from "@/features/coordination/coordinator-header";
 import { FarmerSpotlight } from "@/features/coordination/farmer-spotlight";
@@ -46,6 +48,7 @@ import { useReloadOnRefocus, useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function RegionScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token, user } = useAuth();
@@ -88,12 +91,12 @@ export default function RegionScreen() {
             contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
           >
             <CoordinatorHeader
-              title={user ? `Hello, ${lastName(user.displayName)}` : "Hello"}
+              title={user ? `Hello, ${lastName(user.displayName)}` : t("coordinator.region.hello")}
               subtitle={`${data.cooperative.district} region`}
             />
 
             {/* 2×2. Info for a headcount, warning for something pending your action, destructive
-                for a problem, success for supply that is live. "Farmers to verify" is real
+                for a problem, success for supply that is live. t("coordinator.region.farmersToVerify") is real
                 (pending-review accounts); "disputes" has no backend at all, so it stays at an
                 honest zero rather than being hidden or invented. */}
             <VStack className="gap-3 px-gutter">
@@ -101,16 +104,16 @@ export default function RegionScreen() {
                 <StatCard
                   tone="info"
                   value={data.farmerCount}
-                  label="total farmers"
+                  label={t("coordinator.stats.totalFarmers")}
                   icon={<FarmerIcon size={22} />}
                   onPress={() => router.push("/farmers")}
                 />
                 <StatCard
                   tone="warning"
                   value={farmersToVerify ?? "–"}
-                  label="farmers to verify"
+                  label={t("coordinator.stats.farmersToVerify")}
                   icon={<Icon as={ClockIcon} className="text-warning" size="md" />}
-                  zeroLabel="All verified"
+                  zeroLabel={t("coordinator.region.allVerified")}
                   onPress={() =>
                     router.push({ pathname: "/farmers", params: { filter: "pending_review" } })
                   }
@@ -120,15 +123,15 @@ export default function RegionScreen() {
                 <StatCard
                   tone="destructive"
                   value={0}
-                  label="current disputes"
+                  label={t("coordinator.stats.currentDisputes")}
                   icon={<Icon as={AlertCircleIcon} className="text-destructive" size="md" />}
-                  zeroLabel="No disputes"
+                  zeroLabel={t("coordinator.region.noDisputes")}
                   onPress={() => router.push("/disputes")}
                 />
                 <StatCard
                   tone="success"
                   value={data.listingCount}
-                  label="crop listings"
+                  label={t("coordinator.stats.cropListings")}
                   icon={<LeafIcon />}
                   onPress={() => router.push("/cooperative-listings")}
                 />
@@ -142,7 +145,7 @@ export default function RegionScreen() {
             <VStack className="mx-gutter gap-3 rounded-card border border-border bg-card p-4">
               <HStack className="items-center gap-2">
                 <Icon as={ClockIcon} className="text-muted-foreground" size="sm" />
-                <Text className="type-h4 text-foreground">Needs you today</Text>
+                <Text className="type-h4 text-foreground">{t("coordinator.region.needsYou")}</Text>
               </HStack>
               <TasksSection tasks={tasks} />
             </VStack>
@@ -158,6 +161,7 @@ export default function RegionScreen() {
  * fill a whole screen (`flex-1`), which collapses to nothing inside a card this size.
  */
 function TasksSection({ tasks }: { tasks: ReturnType<typeof useRequest<CoordinatorTask[]>> }) {
+  const { t } = useTranslation();
   if (tasks.status === "loading") {
     return (
       <HStack className="items-center gap-2 py-2">
@@ -167,11 +171,13 @@ function TasksSection({ tasks }: { tasks: ReturnType<typeof useRequest<Coordinat
     );
   }
   if (tasks.status === "error") {
-    return <Text className="type-body text-muted-foreground">Could not check right now.</Text>;
+    return (
+      <Text className="type-body text-muted-foreground">{t("coordinator.region.checkError")}</Text>
+    );
   }
   if (tasks.data.length === 0) {
     return (
-      <Text className="type-body text-muted-foreground">Nothing needs your attention yet.</Text>
+      <Text className="type-body text-muted-foreground">{t("coordinator.region.nothingYet")}</Text>
     );
   }
   return (
@@ -184,25 +190,26 @@ function TasksSection({ tasks }: { tasks: ReturnType<typeof useRequest<Coordinat
 }
 
 function TaskRow({ task }: { task: CoordinatorTask }) {
+  const { t } = useTranslation();
   const router = useRouter();
 
   if (task.kind === "benchmark_missing" || task.kind === "benchmark_stale") {
     const crop = cropById(task.cropId);
     const subtitle =
       task.kind === "benchmark_missing"
-        ? "No benchmark price set"
+        ? t("coordinator.region.noBenchmark")
         : `Set ${formatDate(task.publishedAt)} · due for a refresh`;
     return (
       <Pressable
         onPress={() => router.push(`/benchmark/${task.cropId}`)}
         accessibilityRole="button"
-        accessibilityLabel={`Set price for ${crop.name}`}
+        accessibilityLabel={`Set price for ${t(cropLabelKey(crop.id))}`}
         className="min-h-tap flex-row items-center gap-3"
       >
         <CropTile emoji={crop.emoji} />
         <VStack className="flex-1 gap-0.5">
           <Text className="type-body-bold text-foreground" numberOfLines={1}>
-            {crop.name}
+            {t(cropLabelKey(crop.id))}
           </Text>
           <Text className="type-caption text-muted-foreground" numberOfLines={1}>
             {subtitle}
@@ -210,7 +217,9 @@ function TaskRow({ task }: { task: CoordinatorTask }) {
         </VStack>
         <Box className="rounded-pill bg-info-subtle px-3 py-1">
           <Text className="type-body-sm-bold text-info">
-            {task.kind === "benchmark_missing" ? "Set price" : "Update price"}
+            {task.kind === "benchmark_missing"
+              ? t("coordinator.region.setPrice")
+              : t("coordinator.region.updatePrice")}
           </Text>
         </Box>
       </Pressable>
@@ -234,11 +243,11 @@ function TaskRow({ task }: { task: CoordinatorTask }) {
             {task.farmerName}
           </Text>
           <Text className="type-caption text-muted-foreground" numberOfLines={1}>
-            New farmer
+            {t("coordinator.region.newFarmer")}
           </Text>
         </VStack>
         <Box className="rounded-pill bg-info-subtle px-3 py-1">
-          <Text className="type-body-sm-bold text-info">Review</Text>
+          <Text className="type-body-sm-bold text-info">{t("common.review")}</Text>
         </Box>
       </Pressable>
     );
@@ -249,20 +258,20 @@ function TaskRow({ task }: { task: CoordinatorTask }) {
     <Pressable
       onPress={() => router.push(`/listing-review/${task.listingId}`)}
       accessibilityRole="button"
-      accessibilityLabel={`Review ${crop.name} listing from ${task.farmerName}`}
+      accessibilityLabel={`Review ${t(cropLabelKey(crop.id))} listing from ${task.farmerName}`}
       className="min-h-tap flex-row items-center gap-3"
     >
       <CropTile emoji={crop.emoji} />
       <VStack className="flex-1 gap-0.5">
         <Text className="type-body-bold text-foreground" numberOfLines={1}>
-          {`${crop.name} · ${task.quantityKg} kg`}
+          {`${t(cropLabelKey(crop.id))} · ${task.quantityKg} kg`}
         </Text>
         <Text className="type-caption text-muted-foreground" numberOfLines={1}>
           {`From ${task.farmerName}`}
         </Text>
       </VStack>
       <Box className="rounded-pill bg-info-subtle px-3 py-1">
-        <Text className="type-body-sm-bold text-info">Review</Text>
+        <Text className="type-body-sm-bold text-info">{t("common.review")}</Text>
       </Box>
     </Pressable>
   );

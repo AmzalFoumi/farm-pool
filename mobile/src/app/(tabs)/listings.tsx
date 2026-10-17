@@ -7,6 +7,7 @@
  */
 
 import { CROPS, cropById, type CropId, type Listing } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { FlatList, ScrollView, View } from "react-native";
@@ -25,6 +26,7 @@ import { FilterChip } from "@/features/listings/filter-chip";
 import { ListingGridCard, ListingListRow } from "@/features/listings/listing-card";
 import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
+import { cropLabelKey } from "@/features/listings/crop-label";
 
 type ViewMode = "grid" | "list";
 
@@ -44,30 +46,38 @@ function GridGlyph({ className }: { className: string }) {
 /** A component, not an inline `VStack`: FlatList clones its empty element with a native `style`
  *  prop, which the web `VStack` (a plain `div`) cannot accept and crashes on. */
 function NoFilterMatches({ onClear }: { onClear: () => void }) {
+  const { t } = useTranslation();
   return (
     <VStack className="items-center">
-      <EmptyNote title="No listings match these filters" note="Try another crop or district." />
+      <EmptyNote
+        title={t("listings.browse.noMatchFilters")}
+        note={t("listings.browse.tryAnother")}
+      />
       <Pressable
         onPress={onClear}
         accessibilityRole="button"
         className="min-h-tap items-center justify-center rounded-pill border border-primary px-6 active:opacity-80"
       >
-        <Text className="type-body-bold text-primary">Clear filters</Text>
+        <Text className="type-body-bold text-primary">{t("listings.browse.clearFilters")}</Text>
       </Pressable>
     </VStack>
   );
 }
 
-function matches(listing: Listing, needle: string) {
-  const crop = cropById(listing.cropId).name.toLowerCase();
+function matches(listing: Listing, needle: string, t: (key: string) => string) {
+  /* Both names: a Sinhala user types Sinhala, but someone who knows the crop by its English
+     name should still find it. */
+  const crop = cropById(listing.cropId);
   return (
-    crop.includes(needle) ||
+    crop.name.toLowerCase().includes(needle) ||
+    t(cropLabelKey(crop.id)).toLowerCase().includes(needle) ||
     listing.farmerName.toLowerCase().includes(needle) ||
     listing.district.toLowerCase().includes(needle)
   );
 }
 
 export default function ListingsScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { token } = useAuth();
@@ -105,7 +115,7 @@ export default function ListingsScreen() {
         style={{ paddingTop: insets.top + 16 }}
       >
         <HStack className="items-center justify-between">
-          <Text className="type-title text-brand-deep-foreground">Listings</Text>
+          <Text className="type-title text-brand-deep-foreground">{t("buyer.listingsTitle")}</Text>
 
           {/* View toggle. Each half is 40dp tall to match the wireframe, and
               `hitSlop={4}` extends the touch area to the 48dp rule 4 requires. */}
@@ -115,7 +125,7 @@ export default function ListingsScreen() {
               hitSlop={4}
               accessibilityRole="button"
               accessibilityState={{ selected: view === "grid" }}
-              accessibilityLabel="Grid view"
+              accessibilityLabel={t("listings.browse.gridView")}
               className={`h-10 w-12 items-center justify-center rounded-chip ${
                 view === "grid" ? "bg-card" : ""
               }`}
@@ -128,7 +138,7 @@ export default function ListingsScreen() {
               hitSlop={4}
               accessibilityRole="button"
               accessibilityState={{ selected: view === "list" }}
-              accessibilityLabel="List view"
+              accessibilityLabel={t("listings.browse.listView")}
               className={`h-10 w-12 items-center justify-center rounded-chip ${
                 view === "list" ? "bg-card" : ""
               }`}
@@ -148,7 +158,7 @@ export default function ListingsScreen() {
           <InputField
             value={query}
             onChangeText={setQuery}
-            placeholder="Search produce, farmer or district"
+            placeholder={t("listings.browse.searchPlaceholder")}
             returnKeyType="search"
             autoCorrect={false}
             className="type-body"
@@ -165,7 +175,11 @@ export default function ListingsScreen() {
           className="shrink-0 grow-0"
           contentContainerClassName="gap-2 px-gutter"
         >
-          <FilterChip label="All crops" selected={!crop} onPress={() => setCrop(undefined)} />
+          <FilterChip
+            label={t("listings.browse.allCrops")}
+            selected={!crop}
+            onPress={() => setCrop(undefined)}
+          />
           {CROPS.map((c) => (
             <FilterChip
               key={c.id}
@@ -184,7 +198,7 @@ export default function ListingsScreen() {
             contentContainerClassName="gap-2 px-gutter"
           >
             <FilterChip
-              label="All districts"
+              label={t("listings.browse.allDistricts")}
               selected={!district}
               onPress={() => setDistrict(undefined)}
             />
@@ -202,7 +216,7 @@ export default function ListingsScreen() {
 
       <RequestView request={listings}>
         {(all) => {
-          const results = needle ? all.filter((l) => matches(l, needle)) : all;
+          const results = needle ? all.filter((l) => matches(l, needle, t)) : all;
           return (
             /* `key={view}` is load-bearing: FlatList caches its layout and will
                not re-measure when `numColumns` changes. */
@@ -227,13 +241,16 @@ export default function ListingsScreen() {
               }}
               ListEmptyComponent={
                 needle ? (
-                  <EmptyNote title="No matches" note={`Nothing matches “${query.trim()}”.`} />
+                  <EmptyNote
+                    title={t("listings.browse.noMatches")}
+                    note={`Nothing matches “${query.trim()}”.`}
+                  />
                 ) : filtered ? (
                   <NoFilterMatches onClear={clearFilters} />
                 ) : (
                   <EmptyNote
-                    title="No listings yet"
-                    note="Verified farmer listings will appear here."
+                    title={t("listings.browse.noneYet")}
+                    note={t("listings.browse.noneYetBody")}
                   />
                 )
               }

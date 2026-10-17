@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native";
 import {
   CROPS,
@@ -18,6 +19,7 @@ import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 
 import { WizardShell } from "./wizard-shell";
@@ -34,6 +36,7 @@ const RECENT_CROP_IDS: CropId[] = ["beans", "carrot", "leeks"];
 type CategoryFilter = CropCategory | "All";
 
 export default function Step1CategoryInfo({ initialData, onNext, onBack }: Step1CategoryInfoProps) {
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>(
     initialData?.category ?? "Vegetables"
   );
@@ -44,7 +47,10 @@ export default function Step1CategoryInfo({ initialData, onNext, onBack }: Step1
 
   const filteredCrops = CROPS.filter((crop) => {
     const matchesCategory = selectedCategory === "All" || crop.category === selectedCategory;
-    const matchesSearch = crop.name.toLowerCase().includes(searchQuery.trim().toLowerCase());
+    const needle = searchQuery.trim().toLowerCase();
+    const matchesSearch =
+      crop.name.toLowerCase().includes(needle) ||
+      t(cropLabelKey(crop.id)).toLowerCase().includes(needle);
     return matchesCategory && matchesSearch;
   });
 
@@ -63,19 +69,23 @@ export default function Step1CategoryInfo({ initialData, onNext, onBack }: Step1
   return (
     <WizardShell
       step={1}
-      title="Produce"
+      title={t("listings.step1.title")}
       onBack={onBack}
-      help="First choose a crop category (e.g. Vegetables), then tap the specific crop you want to sell from the list."
+      help={t("listings.step1.help")}
       footer={
         <>
-          <AppButton label="Continue" disabled={!selectedCropId} onPress={handleContinue} />
+          <AppButton
+            label={t("common.continue")}
+            disabled={!selectedCropId}
+            onPress={handleContinue}
+          />
         </>
       }
     >
       {/* Headline & Subtitle */}
       <VStack className="gap-1">
-        <Text className="type-h2 text-foreground">What would you like to sell?</Text>
-        <Text className="type-caption text-muted-foreground">Choose a crop category</Text>
+        <Text className="type-h2 text-foreground">{t("listings.step1.heading")}</Text>
+        <Text className="type-caption text-muted-foreground">{t("listings.step1.note")}</Text>
       </VStack>
 
       {/* Category Cards Grid */}
@@ -125,14 +135,14 @@ export default function Step1CategoryInfo({ initialData, onNext, onBack }: Step1
         <InputField
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholder="Search crops (e.g. Beans, Leeks)..."
+          placeholder={t("listings.step1.searchPlaceholder")}
           className="type-body text-foreground"
         />
       </Input>
 
       {/* Recently Selected */}
       <VStack className="gap-2">
-        <Text className="type-h4 text-foreground">Recently Selected</Text>
+        <Text className="type-h4 text-foreground">{t("listings.step1.recent")}</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -161,7 +171,7 @@ export default function Step1CategoryInfo({ initialData, onNext, onBack }: Step1
                       isSelected ? "text-primary" : "text-foreground"
                     }`}
                   >
-                    {crop.name}
+                    {t(cropLabelKey(crop.id))}
                   </Text>
                 </Pressable>
               );
@@ -174,16 +184,20 @@ export default function Step1CategoryInfo({ initialData, onNext, onBack }: Step1
       <VStack className="gap-3">
         <HStack className="items-center justify-between">
           <HStack className="items-center gap-2">
-            <Text className="type-h3 text-foreground">Crops</Text>
+            <Text className="type-h3 text-foreground">{t("listings.step1.cropsHeading")}</Text>
             <Box className="h-2 w-2 rounded-pill bg-primary" />
           </HStack>
-          <Text className="type-caption-bold uppercase text-muted-foreground">Top Traded</Text>
+          <Text className="type-caption-bold uppercase text-muted-foreground">
+            {t("listings.step1.topTraded")}
+          </Text>
         </HStack>
 
         <VStack className="gap-2.5">
           {filteredCrops.length === 0 ? (
             <Box className="rounded-card border border-border bg-card p-6 items-center">
-              <Text className="type-body text-muted-foreground">No crops found</Text>
+              <Text className="type-body text-muted-foreground">
+                {t("listings.step1.noResults")}
+              </Text>
             </Box>
           ) : (
             filteredCrops.map((crop) => {
@@ -206,7 +220,9 @@ export default function Step1CategoryInfo({ initialData, onNext, onBack }: Step1
                     <CropTile emoji={crop.emoji} />
                     <VStack className="flex-1 gap-0.5">
                       <HStack className="items-center gap-2">
-                        <Text className="type-body-bold text-foreground">{crop.name}</Text>
+                        <Text className="type-body-bold text-foreground">
+                          {t(cropLabelKey(crop.id))}
+                        </Text>
                       </HStack>
                       <Text className="type-caption text-muted-foreground">
                         Sample price:{" "}

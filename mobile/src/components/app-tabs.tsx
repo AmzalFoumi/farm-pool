@@ -1,4 +1,5 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
+import { useTranslation } from "react-i18next";
 import { useColorScheme } from "react-native";
 
 import { Colors } from "@/constants/theme";
@@ -13,6 +14,7 @@ import { Colors } from "@/constants/theme";
    branded icons are exported from Figma, each `sf`/`md` pair becomes one
    `src={require(...)}`. See `.plans/DECISIONS.md`, open question 1. */
 export default function AppTabs() {
+  const { t } = useTranslation();
   const scheme = useColorScheme();
   const colors = Colors[scheme === "unspecified" ? "light" : scheme];
 
@@ -25,12 +27,12 @@ export default function AppTabs() {
       {/* `home`, not `index`: the root `index` route is now the welcome screen,
           so the tab shell's first screen is `(tabs)/home.tsx`. */}
       <NativeTabs.Trigger name="home">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("buyer.tabs.home")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: "house", selected: "house.fill" }} md="home" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="listings">
-        <NativeTabs.Trigger.Label>Listings</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("buyer.tabs.listings")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="list.bullet" md="list" />
       </NativeTabs.Trigger>
 
@@ -40,12 +42,12 @@ export default function AppTabs() {
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="calls">
-        <NativeTabs.Trigger.Label>Calls</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("buyer.tabs.calls")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: "phone", selected: "phone.fill" }} md="call" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="profile">
-        <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>{t("buyer.tabs.profile")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf={{ default: "person", selected: "person.fill" }} md="person" />
       </NativeTabs.Trigger>
     </NativeTabs>

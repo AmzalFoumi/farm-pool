@@ -8,8 +8,8 @@
  * photos, fulfilment…) each show only when set (FARM-60); seeded listings have none of them.
  * `address` is deliberately not shown — it is the farm's pickup address, not browse information.
  *
- * "Place order" opens a sheet with one quantity field and sends `POST /orders`. "Request call"
- * asks the farmer for a video call (FARM-24). "Make an offer" shows on a negotiable listing and
+ * t("listings.detail.placeOrder") opens a sheet with one quantity field and sends `POST /orders`. t("listings.detail.requestCall")
+ * asks the farmer for a video call (FARM-24). t("listings.detail.makeOffer") shows on a negotiable listing and
  * opens the buyer's own-price sheet (FARM-46).
  */
 
@@ -25,6 +25,7 @@ import {
   type SavedLocation
 } from "@farm-pool/shared";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Dimensions, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -47,6 +48,7 @@ import { Image } from "@/components/ui/image";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { callsApi } from "@/features/calls/api";
 import { listingsApi } from "@/features/listings/api";
 import { CropTile } from "@/features/listings/crop-tile";
@@ -58,20 +60,14 @@ import { formatDate, formatPrice } from "@/lib/format";
 import { useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
-/* Short buyer-facing names. The wizard's own labels are longer ("Reusable Plastic Crates
-   (Standard 25kg)") and live inside its step components, so they are not importable. */
-const PACKAGING_LABELS: Record<ListingPackaging, string> = {
-  "plastic-crate": "Plastic crates",
-  "wooden-box": "Wooden boxes",
-  cardboard: "Cardboard cartons",
-  "mesh-bag": "Mesh bags"
-};
+/* Short buyer-facing names, deliberately a different (shorter) set from the wizard's own
+   `listings.packaging.*` — "Plastic crates" rather than "Reusable Plastic Crates (Standard
+   25kg)" — so they live under their own keys rather than being shared. */
+const packagingLabelKey = (p: ListingPackaging) => `listings.packagingShort.${p}` as const;
 
-/* Same wording as the wizard's review step. */
-const FULFILLMENT_LABELS: Record<FulfillmentOption, string> = {
-  shared: "Shared transport",
-  solo: "Solo transport"
-};
+/* Same wording as the wizard's review step, so it shares the step-5 keys. */
+const fulfillmentLabelKey = (f: FulfillmentOption) =>
+  f === "shared" ? "listings.step5.shared" : "listings.step5.solo";
 
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -147,6 +143,7 @@ function ListingBody({
   topInset: number;
   bottomInset: number;
 }) {
+  const { t } = useTranslation();
   const crop = cropById(listing.cropId);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [offerOpen, setOfferOpen] = useState(false);
@@ -162,25 +159,27 @@ function ListingBody({
       onCallRequested();
     } catch (e) {
       if (e instanceof ApiError && e.code === "call_already_open") onCallRequested();
-      else setCallError(e instanceof ApiError ? e.message : "Could not request a call");
+      else setCallError(e instanceof ApiError ? e.message : t("listings.detail.callError"));
     } finally {
       setCalling(false);
     }
   };
 
   const rows = [
-    { label: "Unit price", value: `${formatPrice(listing.pricePerKg)} / kg` },
-    { label: "Available", value: `${listing.quantityKg} kg` },
-    { label: "Minimum order", value: `${listing.minOrderKg} kg` },
-    { label: "Harvest date", value: formatDate(listing.harvestDate) }
+    { label: t("listings.detail.unitPrice"), value: `${formatPrice(listing.pricePerKg)} / kg` },
+    { label: t("listings.detail.available"), value: `${listing.quantityKg} kg` },
+    { label: t("listings.detail.minimumOrder"), value: `${listing.minOrderKg} kg` },
+    { label: t("listings.detail.harvestDate"), value: formatDate(listing.harvestDate) }
   ];
 
   const details = [
-    listing.variety ? { label: "Variety", value: listing.variety } : null,
-    listing.grade ? { label: "Grade", value: `Grade ${listing.grade}` } : null,
-    listing.packaging ? { label: "Packaging", value: PACKAGING_LABELS[listing.packaging] } : null,
+    listing.variety ? { label: t("listings.detail.variety"), value: listing.variety } : null,
+    listing.grade ? { label: t("listings.detail.grade"), value: `Grade ${listing.grade}` } : null,
+    listing.packaging
+      ? { label: t("listings.detail.packaging"), value: t(packagingLabelKey(listing.packaging)) }
+      : null,
     listing.certifications?.length
-      ? { label: "Certifications", value: listing.certifications.join(", ") }
+      ? { label: t("listings.detail.certifications"), value: listing.certifications.join(", ") }
       : null
   ].filter((row) => row !== null);
 
@@ -196,14 +195,14 @@ function ListingBody({
         <Pressable
           onPress={onBack}
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel={t("common.back")}
           className="h-tap w-tap items-center justify-center rounded-pill border border-border"
         >
           <BackIcon />
         </Pressable>
         <VStack className="flex-1">
           <Text className="type-title text-foreground" numberOfLines={1}>
-            {crop.name}
+            {t(cropLabelKey(crop.id))}
           </Text>
           <Text className="type-caption text-muted-foreground" numberOfLines={1}>
             {listing.farmerName} · {place}
@@ -226,7 +225,7 @@ function ListingBody({
                 source={{ uri }}
                 size="2xl"
                 className="rounded-card bg-muted"
-                alt={`${crop.name} photo ${i + 1}`}
+                alt={`${t(cropLabelKey(crop.id))} photo ${i + 1}`}
               />
             ))}
           </ScrollView>
@@ -236,20 +235,22 @@ function ListingBody({
 
         {listing.acceptNegotiation ? (
           <Box className="self-start rounded-pill bg-info-subtle px-3 py-1">
-            <Text className="type-body-sm-bold text-info">Price negotiable</Text>
+            <Text className="type-body-sm-bold text-info">{t("listings.detail.negotiable")}</Text>
           </Box>
         ) : null}
 
-        <DetailCard title="Quantity & price" rows={rows} />
+        <DetailCard title={t("listings.detail.quantityAndPrice")} rows={rows} />
 
-        {details.length > 0 ? <DetailCard title="Produce details" rows={details} /> : null}
+        {details.length > 0 ? (
+          <DetailCard title={t("listings.detail.produceDetails")} rows={details} />
+        ) : null}
 
         <VStack className="gap-1 rounded-card border border-border bg-card p-4">
           <Text className="type-h4 text-foreground">{listing.farmerName}</Text>
           <Text className="type-caption text-muted-foreground">Pickup in {place} district</Text>
           {listing.fulfillmentOption ? (
             <Text className="type-caption text-muted-foreground">
-              {FULFILLMENT_LABELS[listing.fulfillmentOption]}
+              {t(fulfillmentLabelKey(listing.fulfillmentOption))}
             </Text>
           ) : null}
           {listing.farmgateNotes ? (
@@ -263,7 +264,7 @@ function ListingBody({
       ) : null}
 
       {/* Footer. `AppButton` is full-width with no size axis, so the pair mirrors
-          its construction (`h-control rounded-field`). "Request call" is for buyers
+          its construction (`h-control rounded-field`). t("listings.detail.requestCall") is for buyers
           (FARM-24); for anyone else it stays visible but disabled. */}
       {canOffer && listing.acceptNegotiation ? (
         <VStack className="border-t border-border bg-card px-gutter pt-3">
@@ -274,7 +275,7 @@ function ListingBody({
             accessibilityLabel={`Offer your own price to ${listing.farmerName}`}
             className="min-h-tap flex-row items-center justify-center rounded-field border border-border bg-card active:opacity-80"
           >
-            <Text className="type-body-bold text-foreground">Make an offer</Text>
+            <Text className="type-body-bold text-foreground">{t("listings.detail.makeOffer")}</Text>
           </Pressable>
         </VStack>
       ) : null}
@@ -296,7 +297,7 @@ function ListingBody({
         >
           <Icon as={PhoneIcon} className="text-brand-deep" />
           <Text className="type-h4 text-brand-deep">
-            {calling ? "Requesting…" : "Request call"}
+            {calling ? t("listings.detail.requesting") : t("listings.detail.requestCall")}
           </Text>
         </Pressable>
 
@@ -305,10 +306,12 @@ function ListingBody({
             testID="open-place-order"
             onPress={() => setSheetOpen(true)}
             accessibilityRole="button"
-            accessibilityLabel="Place an order for this listing"
+            accessibilityLabel={t("listings.detail.placeOrderFor")}
             className="h-control flex-1 flex-row items-center justify-center rounded-field bg-primary active:opacity-80"
           >
-            <Text className="type-h4 text-primary-foreground">Place order</Text>
+            <Text className="type-h4 text-primary-foreground">
+              {t("listings.detail.placeOrder")}
+            </Text>
           </Pressable>
         ) : null}
       </HStack>
@@ -376,6 +379,7 @@ function PlaceOrderSheet({
   onPlaced: (orderId: string) => void;
   bottomInset: number;
 }) {
+  const { t } = useTranslation();
   const [quantity, setQuantity] = useState(String(listing.minOrderKg));
   const [dropOff, setDropOff] = useState<DropOff | undefined>();
   const [error, setError] = useState<string | null>(null);
@@ -395,7 +399,7 @@ function PlaceOrderSheet({
       ...(dropOff ? { dropOff } : {})
     });
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Enter a quantity");
+      setError(parsed.error.issues[0]?.message ?? t("listings.detail.enterQuantity"));
       return;
     }
     if (!inRange) {
@@ -408,7 +412,7 @@ function PlaceOrderSheet({
       onClose();
       onPlaced(order.id);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Could not place the order");
+      setError(e instanceof ApiError ? e.message : t("listings.detail.orderError"));
     } finally {
       setSubmitting(false);
     }
@@ -436,10 +440,10 @@ function PlaceOrderSheet({
           showsVerticalScrollIndicator={false}
         >
           <VStack className="w-full gap-4 pt-2">
-            <Text className="type-h3 text-foreground">Place order</Text>
+            <Text className="type-h3 text-foreground">{t("listings.detail.placeOrder")}</Text>
             <AppTextField
               testID="order-quantity"
-              label="Quantity (kg)"
+              label={t("listings.detail.quantityKg")}
               value={quantity}
               onChangeText={setQuantity}
               keyboardType="number-pad"
@@ -466,7 +470,7 @@ function PlaceOrderSheet({
             />
             <AppButton
               testID="order-send"
-              label={submitting ? "Sending…" : "Send request"}
+              label={submitting ? t("listings.detail.sending") : t("listings.detail.sendRequest")}
               onPress={() => void submit()}
               disabled={submitting}
             />

@@ -7,6 +7,7 @@ import {
   TabListProps
 } from "expo-router/ui";
 import { Pressable, View, StyleSheet } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { ThemedText } from "./themed-text";
 import { ThemedView } from "./themed-view";
@@ -15,25 +16,26 @@ import { MaxContentWidth, Spacing } from "@/constants/theme";
 
 /** Web fallback for the coordinator tabs — same structure as `app-tabs.web.tsx`. */
 export default function CoordinatorTabs() {
+  const { t } = useTranslation();
   return (
     <Tabs>
       <TabSlot style={{ height: "100%" }} />
       <TabList asChild>
         <CustomTabList>
           <TabTrigger name="region" href="/region" asChild>
-            <TabButton>Region</TabButton>
+            <TabButton>{t("coordinator.tabs.region")}</TabButton>
           </TabTrigger>
           <TabTrigger name="farmers" href="/farmers" asChild>
-            <TabButton>Farmers</TabButton>
+            <TabButton>{t("coordinator.tabs.farmers")}</TabButton>
           </TabTrigger>
           <TabTrigger name="cooperative-listings" href="/cooperative-listings" asChild>
-            <TabButton>Listings</TabButton>
+            <TabButton>{t("coordinator.tabs.listings")}</TabButton>
           </TabTrigger>
           <TabTrigger name="disputes" href="/disputes" asChild>
-            <TabButton>Disputes</TabButton>
+            <TabButton>{t("coordinator.tabs.disputes")}</TabButton>
           </TabTrigger>
           <TabTrigger name="benchmark" href="/benchmark" asChild>
-            <TabButton>Prices</TabButton>
+            <TabButton>{t("coordinator.tabs.prices")}</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -57,11 +59,12 @@ export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps
 }
 
 export function CustomTabList(props: TabListProps) {
+  const { t } = useTranslation();
   return (
     <View {...props} style={styles.tabListContainer}>
       <ThemedView type="backgroundElement" style={styles.innerContainer}>
         <ThemedText type="smallBold" style={styles.brandText}>
-          FarmPool · Coordinator
+          {t("brand.coordinator")}
         </ThemedText>
         {props.children}
       </ThemedView>

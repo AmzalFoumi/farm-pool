@@ -23,6 +23,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { logisticsApi } from "@/features/logistics/api";
 import { RouteMap } from "@/features/logistics/route-map";
 import { useReloadOnRefocus, useRequest } from "@/lib/use-request";
@@ -183,7 +184,7 @@ function RouteStopRow({
 
       <VStack className="flex-1 gap-0.5 pb-4">
         <Text className="type-body-bold text-foreground" numberOfLines={1}>
-          {stop.farmerName} · {stop.quantityKg} kg {crop.name}
+          {stop.farmerName} · {stop.quantityKg} kg {t(cropLabelKey(crop.id))}
         </Text>
         <Text className="type-caption text-muted-foreground" numberOfLines={1}>
           {place}

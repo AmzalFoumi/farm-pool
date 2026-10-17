@@ -1,6 +1,7 @@
 /** My requests — the crops this buyer has asked for, the responses to each, and a way to close one. */
 
 import { cropById, type WantedListing } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useState } from "react";
 import { FlatList, View } from "react-native";
@@ -13,6 +14,7 @@ import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { cropLabelKey } from "@/features/listings/crop-label";
 import { CropTile } from "@/features/listings/crop-tile";
 import { WantedStatusPill } from "@/features/orders/status-pill";
 import { wantedApi } from "@/features/wanted/api";
@@ -21,6 +23,7 @@ import { useReloadOnRefocus, useRequest } from "@/lib/use-request";
 import { useAuth } from "@/providers/auth-provider";
 
 export default function WantedScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
@@ -41,7 +44,7 @@ export default function WantedScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <AppBar title="My requests" />
+      <AppBar title={t("buyer.wanted.listTitle")} />
       <RequestView request={wanted}>
         {(rows) => (
           <FlatList
@@ -57,7 +60,7 @@ export default function WantedScreen() {
                     <CropTile emoji={crop.emoji} />
                     <VStack className="flex-1 gap-0.5">
                       <Text className="type-body-bold text-foreground" numberOfLines={1}>
-                        {crop.name} · {item.quantityKg} kg
+                        {t(cropLabelKey(crop.id))} · {item.quantityKg} kg
                       </Text>
                       <Text className="type-caption text-muted-foreground" numberOfLines={2}>
                         By {formatDate(item.neededBy)} · {item.district}
@@ -71,21 +74,23 @@ export default function WantedScreen() {
                       router.push({ pathname: "/wanted/[id]", params: { id: item.id } })
                     }
                     accessibilityRole="button"
-                    accessibilityLabel={`See responses to your request for ${crop.name}`}
+                    accessibilityLabel={`See responses to your request for ${t(cropLabelKey(crop.id))}`}
                     className="min-h-tap items-center justify-center rounded-field border border-brand-deep"
                   >
-                    <Text className="type-body-bold text-brand-deep">View responses</Text>
+                    <Text className="type-body-bold text-brand-deep">
+                      {t("buyer.wanted.viewResponses")}
+                    </Text>
                   </Pressable>
                   {item.status === "open" ? (
                     <Pressable
                       onPress={() => void close(item)}
                       disabled={closing === item.id}
                       accessibilityRole="button"
-                      accessibilityLabel={`Close request for ${crop.name}`}
+                      accessibilityLabel={`Close request for ${t(cropLabelKey(crop.id))}`}
                       className="min-h-tap items-center justify-center rounded-field border border-border"
                     >
                       <Text className="type-body-bold text-muted-foreground">
-                        {closing === item.id ? "Closing…" : "Close request"}
+                        {closing === item.id ? "Closing…" : t("buyer.wanted.close")}
                       </Text>
                     </Pressable>
                   ) : null}
@@ -93,10 +98,7 @@ export default function WantedScreen() {
               );
             }}
             ListEmptyComponent={
-              <EmptyNote
-                title="No requests yet"
-                note="Tell farmers what you are looking for and they can respond."
-              />
+              <EmptyNote title={t("buyer.wanted.none")} note={t("buyer.wanted.noneBody")} />
             }
           />
         )}
@@ -105,7 +107,7 @@ export default function WantedScreen() {
         className="border-t border-border bg-card px-gutter pt-3"
         style={{ paddingBottom: Math.max(insets.bottom, 23) }}
       >
-        <AppButton label="New request" onPress={() => router.push("/wanted/new")} />
+        <AppButton label={t("buyer.wanted.new")} onPress={() => router.push("/wanted/new")} />
       </VStack>
     </View>
   );

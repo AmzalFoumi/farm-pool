@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { View, ScrollView } from "react-native";
 import {
   Actionsheet,
@@ -25,6 +26,7 @@ export function NegotiationHistorySheet({
   /** Whose phone this is: their own entries read "You" and sit on the right. */
   viewer: SenderType;
 }) {
+  const { t } = useTranslation();
   if (!offer) return null;
 
   return (
@@ -37,8 +39,12 @@ export function NegotiationHistorySheet({
 
         <HStack className="items-start justify-between w-full mb-6">
           <VStack>
-            <Text className="text-[17px] font-bold text-primary">Negotiation History</Text>
-            <Text className="mt-0.5 text-[12px] text-muted-foreground">Timeline of offers</Text>
+            <Text className="text-[17px] font-bold text-primary">
+              {t("listings.history.title")}
+            </Text>
+            <Text className="mt-0.5 text-[12px] text-muted-foreground">
+              {t("listings.history.subtitle")}
+            </Text>
           </VStack>
           <Pressable
             onPress={onClose}
@@ -54,7 +60,7 @@ export function NegotiationHistorySheet({
               const isMine = entry.senderType === viewer;
               const otherName =
                 (viewer === "FARMER" ? offer.buyerName : offer.farmerName) ??
-                (viewer === "FARMER" ? "Buyer" : "Farmer");
+                (viewer === "FARMER" ? t("party.buyer") : t("party.farmer"));
               return (
                 <View
                   key={index}
@@ -77,13 +83,17 @@ export function NegotiationHistorySheet({
 
                   <HStack className="justify-between items-end mb-2">
                     <VStack>
-                      <Text className="text-[11px] text-muted-foreground">Price</Text>
+                      <Text className="text-[11px] text-muted-foreground">
+                        {t("listings.history.price")}
+                      </Text>
                       <Text className="text-[16px] font-bold text-foreground">
                         Rs. {entry.proposedPrice}/kg
                       </Text>
                     </VStack>
                     <VStack className="items-end">
-                      <Text className="text-[11px] text-muted-foreground">Quantity</Text>
+                      <Text className="text-[11px] text-muted-foreground">
+                        {t("listings.history.quantity")}
+                      </Text>
                       <Text className="text-[14px] font-bold text-foreground">
                         {entry.proposedQuantityKg} kg
                       </Text>
