@@ -106,6 +106,10 @@ Then, from anywhere in the repo:
 npm run build:apks -w mobile
 ```
 
+The script is written for `bash`, so on Windows run this from **Git Bash** (or any shell where
+`bash` is on the PATH). In plain PowerShell or cmd without Git Bash, npm cannot start it and fails
+before the script's own checks run.
+
 The script (`mobile/scripts/build-apks.sh`, documented at its top) does the following:
 
 1. Checks your setup and lists every problem at once: `ANDROID_HOME`, Java, the two `.env` values
@@ -183,7 +187,7 @@ Check each row against your own machine; the steps above assume Amzal's.
 | --- | --- | --- | --- |
 | Windows, Path has room | `C:\Users\<you>\AppData\Local\Android\Sdk` | Windows user Path: add `%ANDROID_HOME%\platform-tools` | Then `adb` works in every terminal and `~/.bashrc` is not needed |
 | Windows, Path full (Amzal's case) | same | `~/.bashrc` (Git Bash) | `adb` only in Git Bash |
-| Windows, PowerShell only | same | user environment variables (as above) | Git Bash steps do not apply |
+| Windows, PowerShell only | same | user environment variables (as above) | Git Bash steps do not apply. `npm run build:apks` still needs Git Bash installed (it runs `bash`) |
 | macOS | `$HOME/Library/Android/sdk` | `~/.zshrc` (zsh is the default shell) | Also builds iOS: Xcode + `npx expo run:ios`. The Simulator needs no Apple account. A real iPhone works with a free Apple ID, but the app must be re-run from Xcode every 7 days, with at most 3 devices |
 | Linux | `$HOME/Android/Sdk` | `~/.bashrc` or `~/.zshrc` | Needs KVM enabled for a fast emulator |
 
