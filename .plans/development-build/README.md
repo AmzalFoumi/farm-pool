@@ -93,25 +93,27 @@ Before building, set two values in `mobile/.env` (gitignored; never commit them)
 | `EXPO_PUBLIC_API_URL` | The api's public `https://` address | Baked in at build time. A release build refuses a non-`https` URL and stops at launch (`mobile/src/lib/api.ts`), so a LAN address does not work. Changing it means rebuilding |
 | `GOOGLE_MAPS_ANDROID_KEY` | Google Maps key (Maps SDK for Android) | `mobile/app.config.js` puts it in the manifest. Without it, screens with a map stop the app (create listing, step 5) |
 
-Then, starting in `mobile/`:
+Then, from anywhere in the repo:
 
 ```bash
-npx expo prebuild --platform android --clean   # regenerates android/ with the .env values and app.json
-cd android
-mkdir -p ../../../farmpool-apks                # outside the repo: prebuild --clean wipes android/
-
-./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
-cp app/build/outputs/apk/release/app-release.apk ../../../farmpool-apks/FarmPool-test-<date>-phone.apk
-
-./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
-cp app/build/outputs/apk/release/app-release.apk ../../../farmpool-apks/FarmPool-test-<date>-phone64.apk
-
-./gradlew assembleRelease -PreactNativeArchitectures=x86_64
-cp app/build/outputs/apk/release/app-release.apk ../../../farmpool-apks/FarmPool-test-<date>-emulator.apk
+npm run build:apks -w mobile
 ```
 
-Every build writes to the same `app-release.apk`, so copy each one out before the next build. The
-first build took 13 min; the others reuse the compiled native code and take under a minute.
+The script (`mobile/scripts/build-apks.sh`, documented at its top) does the following:
+
+1. Checks your setup and lists every problem at once: `ANDROID_HOME`, Java, the two `.env` values
+   (`https://` api address, Maps key), a stray root `android/` or `app.json`, a lockfile inside
+   `mobile/`, free disk space.
+2. Asks before it deletes and regenerates `mobile/android/` (`--yes` skips the question).
+3. Rebuilds `@farm-pool/shared`, runs `expo prebuild` inside `mobile/`, then builds the three
+   variants and copies each file out immediately, because every build writes to the same
+   `app-release.apk`.
+4. Puts them in a new folder, `../farmpool-apks/<YYYY-MM-DD_HHMM>/` (outside the repo), with a
+   `BUILD-INFO.txt` (branch, commit, api host; never the Maps key).
+
+Options: `--only phone,phone64` builds a subset; `--out <dir>` changes the parent folder. Pass them
+after `--`: `npm run build:apks -w mobile -- --only phone`. The first build takes about 13 minutes;
+the others reuse the compiled native code and take under a minute.
 
 The three variants are the same app with the same `.env` values. They differ only in which
 processor types (ABIs) they carry native code for — mostly Agora's video engine, ~90 MB per ABI:
@@ -122,10 +124,10 @@ processor types (ABIs) they carry native code for — mostly Agora's video engin
 | `…-phone64.apk` | `arm64-v8a` | 121 MB | Testers on limited data. Almost every phone since ~2017; a 32-bit one says "App not installed" — send `phone` instead |
 | `…-emulator.apk` | `x86_64` | 102 MB | Emulators on a laptop only. No real phone uses this ABI |
 
-Name files `FarmPool-test-<YYYY-MM-DD>-<variant>.apk` (add `-b2` for a second build that day), so
-testers can tell which is newest. Listing all three ABIs in one build gives a universal APK (~270 MB).
+Files are named `FarmPool-test-<YYYY-MM-DD>-<variant>.apk` inside a timestamped folder (a second build
+in the same minute gets a `-b2` folder), so testers can tell which is newest. Listing all three ABIs in one build gives a universal APK (~270 MB).
 
-- Run `prebuild` **inside `mobile/`**. From the repo root it treats the root as a new empty app: it
+- `prebuild` must run **inside `mobile/`** (the script does this). From the repo root it treats the root as a new empty app: it
   reports `com.anonymous.<name>`, edits the root `package.json` and creates a root `android/` and
   `app.json`. Answer `n` to its install prompt, then `git restore package.json` and delete the two
   new root entries.
@@ -135,7 +137,7 @@ testers can tell which is newest. Listing all three ABIs in one build gives a un
 Install on a running emulator or a USB-connected phone:
 
 ```bash
-adb install -r ../../../farmpool-apks/FarmPool-test-<date>-emulator.apk   # or -phone / -phone64 on a phone
+adb install -r ../farmpool-apks/<timestamp>/FarmPool-test-<date>-emulator.apk   # or -phone / -phone64 on a phone
 ```
 
 - `-r` replaces an installed copy. If it fails with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, a build
