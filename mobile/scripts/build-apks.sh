@@ -39,8 +39,20 @@
 #   5. mobile/.env (copy mobile/.env.example) containing:
 #        EXPO_PUBLIC_API_URL=https://...        must be https; a release build refuses http
 #        GOOGLE_MAPS_ANDROID_KEY=...            without it, screens with a map crash
+#      The same two values may instead come from your terminal or from .env.local; see
+#      "WHERE THE VALUES COME FROM" below.
 #   6. About 5 GB of free disk and 15 minutes. The first build downloads the Android NDK and takes
 #      about 13 minutes; the second and third reuse the compiled code and take under a minute each.
+#
+# WHERE THE VALUES COME FROM
+#   The script asks Expo's own env loader, so it checks the same values the build will use.
+#   Highest priority first:
+#     1. A variable already set in your terminal (for example an old `export EXPO_PUBLIC_API_URL=...`
+#        left over from another session). Files never overwrite it, so check `env | grep EXPO`.
+#     2. .env.<mode>.local   3. .env.local   4. .env.<mode>   5. .env
+#   <mode> is "development" while `expo prebuild` runs (this decides the Maps key) and
+#   "production" while Gradle bundles the JavaScript (this decides the api URL). A NODE_ENV set in
+#   your terminal replaces both. The summary before the build says where each value came from.
 #
 # WHAT IT DOES NOT DO
 #   - It never runs git commit, git push or anything else that changes git history.
@@ -120,11 +132,44 @@ WARNINGS=()
 problem() { PROBLEMS+=("$1"); }
 warn() { WARNINGS+=("$1"); }
 
-# Read one KEY=value from .env without loading the whole file into the shell (a .env is not
-# guaranteed to be valid shell). Strips surrounding quotes and spaces. Prints nothing if absent.
-env_value() {
-  [ -f "$ENV_FILE" ] || return 0
-  grep -E "^[[:space:]]*$1[[:space:]]*=" "$ENV_FILE" | tail -n 1 | sed -E "s/^[^=]*=[[:space:]]*//; s/[[:space:]]+\$//; s/^[\"']//; s/[\"']\$//" || true
+# Ask Expo itself which value a key will have, instead of re-reading .env by hand.
+# Expo's rules (checked against @expo/env 2.4.x, and re-check them if Expo is upgraded):
+#   - A variable already set in your terminal wins. Files never overwrite it.
+#   - Otherwise the first file that has the key wins, in this order:
+#       .env.<mode>.local, .env.local, .env.<mode>, .env
+#   - The mode (a name Expo gives each stage) differs per stage:
+#       prebuild         -> "development"  (decides GOOGLE_MAPS_ANDROID_KEY via app.config.js)
+#       Gradle's bundler -> "production"   (bakes in EXPO_PUBLIC_API_URL)
+#     A NODE_ENV set in your terminal replaces both.
+# Usage: expo_env_value KEY MODE
+# Prints "<where>:<value>", where <where> is "terminal", "files" or "unset". A value with a line
+# break in it is cut at the break; fine here, because we only test for empty and for https://.
+# Exits non-zero, with Expo's own message on stderr, if Expo cannot read the files.
+expo_env_value() {
+  local mode="${NODE_ENV:-$2}" root="$MOBILE_DIR"
+  # Windows Node needs C:/... paths, not the /c/... paths Git Bash uses.
+  root="$(cygpath -m "$MOBILE_DIR" 2> /dev/null || printf '%s' "$MOBILE_DIR")"
+  node -e '
+    const [key, mode, root] = process.argv.slice(1);
+    const expoPkg = require.resolve("expo/package.json", { paths: [root] });
+    const { parseProjectEnv } = require(require.resolve("@expo/env", { paths: [expoPkg] }));
+    const out = (where, value) => console.log(where + ":" + String(value ?? "").split(/\r?\n/)[0]);
+    if (process.env[key] !== undefined) {
+      out("terminal", process.env[key]);
+    } else {
+      const { env } = parseProjectEnv(root, { mode, silent: true });
+      env[key] === undefined ? out("unset", "") : out("files", env[key]);
+    }
+  ' "$1" "$mode" "$root"
+}
+
+# Human wording for where a value came from.
+where_label() {
+  case "$1" in
+    terminal) echo "from your terminal, not .env" ;;
+    files) echo "from your .env files" ;;
+    *) echo "not set" ;;
+  esac
 }
 
 echo "Checking your setup..."
@@ -157,20 +202,34 @@ fi
 command -v adb > /dev/null 2>&1 || warn "'adb' is not on your PATH. Building works without it; you will need it only to install onto a device."
 
 # 4. mobile/.env values that are baked into the app at build time.
-if [ ! -f "$ENV_FILE" ]; then
+api_url=""
+maps_key=""
+api_where="unset"
+maps_where="unset"
+if [ ! -f "$ENV_FILE" ] && [ -z "${EXPO_PUBLIC_API_URL:-}" ] && [ -z "${GOOGLE_MAPS_ANDROID_KEY:-}" ]; then
   problem "mobile/.env is missing. Copy mobile/.env.example to mobile/.env and fill it in."
+elif [ ! -d "$REPO_DIR/node_modules" ] || ! command -v node > /dev/null 2>&1; then
+  : # already reported above; Expo cannot be asked until dependencies are installed
 else
-  api_url="$(env_value EXPO_PUBLIC_API_URL)"
-  maps_key="$(env_value GOOGLE_MAPS_ANDROID_KEY)"
-  if [ -z "$api_url" ]; then
-    problem "EXPO_PUBLIC_API_URL is empty in mobile/.env. Testers need the api's public https:// address (for example your ngrok URL)."
+  if ! api_out="$(expo_env_value EXPO_PUBLIC_API_URL production 2>&1)"; then
+    problem "Expo could not read your env files: $api_out"
+  elif ! maps_out="$(expo_env_value GOOGLE_MAPS_ANDROID_KEY development 2>&1)"; then
+    problem "Expo could not read your env files: $maps_out"
   else
-    case "$api_url" in
-      https://*) ;;
-      *) problem "EXPO_PUBLIC_API_URL must start with https:// for a release build (it is '$api_url'). The app stops at launch otherwise." ;;
-    esac
+    api_where="${api_out%%:*}"
+    api_url="${api_out#*:}"
+    maps_where="${maps_out%%:*}"
+    maps_key="${maps_out#*:}"
+    if [ -z "$api_url" ]; then
+      problem "EXPO_PUBLIC_API_URL is empty (${api_where/unset/not set}). Testers need the api's public https:// address (for example your ngrok URL)."
+    else
+      case "$api_url" in
+        https://*) ;;
+        *) problem "EXPO_PUBLIC_API_URL must start with https:// for a release build, but it is '$api_url' ($(where_label "$api_where")). The app stops at launch otherwise." ;;
+      esac
+    fi
+    [ -n "$maps_key" ] || problem "GOOGLE_MAPS_ANDROID_KEY is empty ($(where_label "$maps_where")). Without it, the create-listing map screen crashes."
   fi
-  [ -n "$maps_key" ] || problem "GOOGLE_MAPS_ANDROID_KEY is empty in mobile/.env. Without it, the create-listing map screen crashes."
 fi
 
 # 5. A lockfile inside mobile/ breaks the npm workspace.
@@ -213,8 +272,8 @@ api_host="$(printf '%s' "$api_url" | sed -E 's#^https://([^/]+).*#\1#')"
 
 echo
 echo "About to build: $ONLY"
-echo "  api host : $api_host"
-echo "  maps key : set"
+echo "  api host : $api_host ($(where_label "$api_where"))"
+echo "  maps key : set ($(where_label "$maps_where"))"
 echo "  output   : $OUT_DIR"
 echo
 echo "This DELETES and regenerates mobile/android/ (generated and gitignored; hand edits there are lost)."

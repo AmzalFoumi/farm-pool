@@ -93,6 +93,13 @@ Before building, set two values in `mobile/.env` (gitignored; never commit them)
 | `EXPO_PUBLIC_API_URL` | The api's public `https://` address | Baked in at build time. A release build refuses a non-`https` URL and stops at launch (`mobile/src/lib/api.ts`), so a LAN address does not work. Changing it means rebuilding |
 | `GOOGLE_MAPS_ANDROID_KEY` | Google Maps key (Maps SDK for Android) | `mobile/app.config.js` puts it in the manifest. Without it, screens with a map stop the app (create listing, step 5) |
 
+The values do not have to be in `mobile/.env`. Expo takes each one from the first place that has it:
+your terminal (a leftover `export EXPO_PUBLIC_API_URL=...` beats every file), then `.env.local`, then
+`.env`. The two values are read at different steps (Maps key at `prebuild`, api address when the
+JavaScript is bundled), so a mode file such as `.env.production` can change one and not the other.
+The script asks Expo which value it will use and prints where each came from, so a stale terminal
+variable is caught before a 15-minute build, not after.
+
 Then, from anywhere in the repo:
 
 ```bash
