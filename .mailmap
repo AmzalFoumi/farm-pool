@@ -1,0 +1,19 @@
+# Corrects the author shown for commits whose git identity was wrong when they were made.
+#
+# `git shortlog`, `git log` and `git blame` all read this file, so the history reports the right
+# author without a single commit being rewritten. That matters here: the two commits below sit
+# 115 commits deep in main and appear in 15 branches, so re-authoring them would mean rewriting
+# all of them, force-pushing a protected branch, and invalidating every other member's checkout.
+#
+# Format: canonical identity, then the identity to map from.
+#
+# b6fedd6 "feat: FARM-45 capture a driver's vehicle after sign-up" and ce8a3e5, its merge, were
+# committed from a session whose git config had not been set, so an AI assistant's default
+# identity was recorded as the author instead of the person who did the work. The eight files in
+# b6fedd6 are the driver vehicle wizard, which is Lakindu's; both commits are his.
+lakindu62 <lakindu62@gmail.com> Claude <noreply@anthropic.com>
+
+# Lakindu's commits are split across two identities — the local git config's address and the
+# GitHub web UI's noreply one, which is what a merge or an edit made in the browser records.
+# `git shortlog -sne` counts those as two contributors; this folds them into one.
+lakindu62 <lakindu62@gmail.com> lakindu62 <127472865+lakindu62@users.noreply.github.com>
