@@ -752,6 +752,55 @@ cannot read CSS tokens, so the same hex is written there for the native splash a
 
 **The launch animation is the designer's animated SVG, replayed in code, not the video.** The video is landscape and would be cropped on a portrait phone, and adds weight to a 3G download. `farmpool-logo-animated.svg` draws each letter through a mask whose line "writes" itself — but with CSS, which React Native does not run. `wordmark-strokes.ts` holds its paths and timings unaltered, and `AnimatedWordmark` replays them with reanimated (≈2.1 s). It is reusable for any branded wait (`loop` redraws it). The launch screen holds the drawn logo 0.5 s rather than the video's 3 s, and with reduced motion the logo appears whole. The native splash is the same green with a transparent image, so the hand-off is invisible.
 
+### The welcome hero plays a bundled story clip, with `expo-video`
+
+Decided 16 October 2026 (FARM-0). A 22-second 2:3 clip loops, muted and without controls, above
+the wordmark on the welcome screen. `StoryVideo` (`components/app/story-video.tsx`) owns it.
+
+**This narrows the decision above rather than contradicting it.** That one rejected a video for
+two reasons: it was landscape and would crop on a portrait phone, and it added weight on 3G. The
+first does not apply here — this clip is portrait, shot 2:3, and fills the hero. The second still
+does, and is the reason the asset is re-encoded rather than shipped as delivered: 1080×1620 at
+3.6 MB becomes 720×1080 at **1.17 MB** (`-vf scale=720:-2 -crf 26 -preset slow -an -movflags
++faststart`). 720px wide is more than any phone in the target range needs for a hero, `-an` drops
+an audio track the file never had, and faststart puts the moov atom first so the first frame
+decodes without reading the whole file. It is still 1.17 MB that every first-time user downloads
+with the app, which is the cost being accepted here — not a cost being waved away.
+
+**`expo-video`, not a WebView and not Lottie.**
+
+- A `WebView` would mean an HTML document, a browser engine and a `<video>` tag to play a file
+  that is already on the device, and `react-native-webview` is a heavier native dependency than
+  the player. It also makes muting, looping and "no controls" a question of what that engine
+  happens to honour rather than three properties.
+- **Lottie is the wrong format, not merely a heavier one.** It plays vector JSON; this is
+  photographic footage of actual farms, which is the whole point of showing it. Converting it to
+  Lottie is not possible in any useful sense.
+- `expo-video` is the maintained successor to `expo-av`'s `Video`, needs no config plugin for
+  inline playback, and **runs in Expo Go** — so it does not fall under the native-only-library
+  rule in `CLAUDE.md` and the QR-code demo keeps working.
+
+**No `expo-video` config plugin entry.** `npx expo install` suggests one, but the plugin's only
+job is to request the native background-playback and picture-in-picture capabilities, and this
+component switches both off. Adding it would widen what the app declares for nothing.
+
+**The asset is bundled, not streamed.** `require()`d from `assets/videos/`, so it is in the app
+download and the hero never waits on a network that rural users often do not have. Streaming would
+have been cheaper to install and worse exactly where it matters.
+
+**Paused on the first frame with "reduce motion" on**, through the same `useReducedMotion` hook
+`AnimatedWordmark` uses, so the two brand animations answer that setting the same way. It is
+paused rather than unmounted: the frame still shows, so the hero keeps its composition.
+
+**It shrinks before the sheet moves.** 2:3 is the clip's natural shape, but the hero is `flex-1`
+above a content-height sheet and the layout note in `app/index.tsx` requires the hero to give way
+first on a short screen. The box is therefore `aspect-[2/3] shrink`, and `contentFit="cover"`
+crops when it is compressed rather than letterboxing.
+
+**Hidden from screen readers** (`accessible={false}`, `importantForAccessibility="no-hide-
+descendants"`). It is decorative; everything a user acts on is the wordmark, the tagline and the
+sheet. A caption would be inventing meaning the clip does not carry.
+
 **The icon is the wide wordmark on the logo green — a stopgap.** Icons are square and the wordmark
 is 3.5 : 1, so it is small on a home screen. A square mark from the designer should replace it.
 
