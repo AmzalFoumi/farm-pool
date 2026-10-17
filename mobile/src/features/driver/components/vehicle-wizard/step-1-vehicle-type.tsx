@@ -1,4 +1,5 @@
 import type { VehicleType } from "@farm-pool/shared";
+import { useTranslation } from "react-i18next";
 
 import { AppButton } from "@/components/app/app-button";
 import { Text } from "@/components/ui/text";
@@ -8,7 +9,7 @@ import {
   WizardShell
 } from "@/features/listings/components/create-listing/wizard-shell";
 
-import { VEHICLES } from "../../vehicles";
+import { VEHICLES, vehicleLabelKey } from "../../vehicles";
 import { VehicleOptionCard } from "./vehicle-option-card";
 
 type Step1VehicleTypeProps = {
@@ -31,24 +32,26 @@ export function Step1VehicleType({
   onCancel,
   onSignOut
 }: Step1VehicleTypeProps) {
+  const { t } = useTranslation();
+
   return (
     <WizardShell
       step={1}
       stepCount={3}
-      title="Your vehicle"
+      title={t("vehicleWizard.step1.title")}
       onBack={firstTime ? undefined : onCancel}
-      help="Pick the vehicle you collect produce with. You can change it later from your profile."
+      help={t("vehicleWizard.step1.help")}
       footer={
         firstTime ? (
           <VStack className="gap-2">
-            <AppButton label="Continue" disabled={!vehicleType} onPress={onContinue} />
-            <AppButton label="Log out" variant="outline" onPress={onSignOut} />
+            <AppButton label={t("common.continue")} disabled={!vehicleType} onPress={onContinue} />
+            <AppButton label={t("profile.logOut")} variant="outline" onPress={onSignOut} />
           </VStack>
         ) : (
           <WizardActions
             onBack={onCancel}
-            backLabel="Cancel"
-            continueLabel="Continue"
+            backLabel={t("vehicleWizard.cancel")}
+            continueLabel={t("common.continue")}
             continueDisabled={!vehicleType}
             onContinue={onContinue}
           />
@@ -56,17 +59,15 @@ export function Step1VehicleType({
       }
     >
       <VStack className="gap-1">
-        <Text className="type-h2 text-foreground">What do you drive?</Text>
-        <Text className="type-caption text-muted-foreground">
-          Farmers see this before they hand over their produce.
-        </Text>
+        <Text className="type-h2 text-foreground">{t("vehicleWizard.step1.heading")}</Text>
+        <Text className="type-caption text-muted-foreground">{t("vehicleWizard.step1.note")}</Text>
       </VStack>
 
       <VStack className="gap-3" accessibilityRole="radiogroup">
-        {VEHICLES.map(({ id, label, emoji, capacityKg }) => (
+        {VEHICLES.map(({ id, emoji, capacityKg }) => (
           <VehicleOptionCard
             key={id}
-            label={label}
+            label={t(vehicleLabelKey(id))}
             emoji={emoji}
             typicalCapacityKg={capacityKg}
             selected={vehicleType === id}

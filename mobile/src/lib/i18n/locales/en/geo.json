@@ -1,0 +1,20 @@
+{
+  "geo": {
+    "deliverTo": "Deliver to",
+    "deliverToNote": "Optional. Without it the driver sees the district only, and no distance is shown.",
+    "chosen": "Chosen",
+    "pointTitle": "Delivery point",
+    "pointHelp": "Tap the map where the load should be dropped.",
+    "pointUnset": "Nothing pinned yet",
+    "saveLabel": "Save this place for next time (optional)",
+    "savePlaceholder": "e.g. Dambulla economic centre",
+    "saveAction": "Save this place",
+    "saveBusy": "Saving…",
+    "saveError": "Could not save that place.",
+    "pin": "Pin the delivery point",
+    "pinElsewhere": "Somewhere else",
+    "clear": "Clear",
+    "pinnedAt": "Pinned at {{lat}}, {{lng}}",
+    "noPin": "No pin set"
+  }
+}

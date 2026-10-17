@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { HStack } from "@/components/ui/hstack";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -24,24 +26,26 @@ export function Step3District({
   onBack,
   onContinue
 }: Step3DistrictProps) {
+  const { t } = useTranslation();
+
   return (
     <WizardShell
       step={3}
       stepCount={3}
-      title="Where you work"
+      title={t("vehicleWizard.step3.title")}
       onBack={onBack}
-      help="Pick the district you usually collect produce in. Jobs there are shown to you first."
+      help={t("vehicleWizard.step3.help")}
       footer={
         <WizardActions
           onBack={onBack}
-          continueLabel="Continue"
+          continueLabel={t("common.continue")}
           continueDisabled={!district}
           onContinue={onContinue}
         />
       }
     >
       <VStack className="gap-1">
-        <Text className="type-h2 text-foreground">Which district?</Text>
+        <Text className="type-h2 text-foreground">{t("vehicleWizard.step3.heading")}</Text>
         {error ? <Text className="type-caption text-destructive">{error}</Text> : null}
       </VStack>
 

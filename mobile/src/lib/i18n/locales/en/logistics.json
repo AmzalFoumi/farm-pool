@@ -1,0 +1,75 @@
+{
+  "jobs": {
+    "title": "Jobs",
+    "mine": "My jobs",
+    "mineEmpty": "Nothing accepted yet.",
+    "available": "Available near you",
+    "availableEmpty": "No jobs in your district right now. New ones appear when a buyer's order is ready to collect.",
+    "noneTitle": "No jobs yet",
+    "noneBody": "Jobs appear here once buyers' orders in your district are ready to collect.",
+    "cardLabel": "{{count, number}} kilos of {{crop}} from {{place}}, {{total}}",
+    "shared": "Shared",
+    "detail": {
+      "title": "Job",
+      "heading": "{{count, number}} kg {{crop}}",
+      "collectFrom": "Collect from {{name}}",
+      "ordered": "Ordered",
+      "collected": "Actually loaded",
+      "orderValue": "Order value",
+      "trip": "Trip",
+      "tripSolo": "Dedicated vehicle",
+      "tripShared": "Shared",
+      "buyerNote": "Note from the buyer",
+      "pickup": "Pickup",
+      "pickupLocked": "The farmer's phone number and directions to the gate appear once you take this job.",
+      "finding": "Finding the place",
+      "approximate": "Approximate — this is {{district}} district, not the farm gate. Call the farmer for directions.",
+      "directions": "Directions in Google Maps",
+      "directionsLabel": "Open directions to {{place}} in Google Maps",
+      "exactPin": "The farmer pinned this gate. Tap for directions.",
+      "pinLabel": "Farm gate",
+      "distance": "{{km}} km straight line",
+      "dropOff": "Deliver to",
+      "dropOffUnset": "No delivery point set",
+      "tripLength": "Trip length"
+    },
+    "actions": {
+      "take": "Take this job",
+      "takeBusy": "Taking this job…",
+      "pickup": "Confirm pickup",
+      "deliver": "Confirm delivery",
+      "busy": "Confirming…",
+      "weightLabel": "Weight loaded",
+      "weightError": "Enter the weight in whole kilograms",
+      "failed": "Could not do that. Please try again."
+    },
+    "driverCard": {
+      "heading": "Collecting this order",
+      "plate": "Plate number",
+      "vehicle": "Vehicle",
+      "driver": "Driver",
+      "unverified": "This driver's vehicle has not been checked yet. Match the plate number above against the vehicle before you hand over produce."
+    },
+    "window": {
+      "title": "Promise a collection time",
+      "help": "The farmer can be ready {{window}}. Pick the slot you will be there.",
+      "promise": "The farmer harvests for this time. You cannot move it later without telling them.",
+      "committed": "You promised",
+      "farmerWindow": "Farmer is ready"
+    }
+  },
+  "route": {
+    "title": "Route",
+    "emptyTitle": "Nothing on today's run",
+    "emptyBody": "Take a job from the Jobs tab and it appears here, in the order you promised.",
+    "summary": "{{km}} km · {{kg}} kg",
+    "estimateNote": "Times are estimated from straight-line distance, so allow for the road.",
+    "fits": "Every promise fits · {{minutes}} min spare",
+    "tight": "Tight · only {{minutes}} min spare",
+    "willNotFit": "This run does not fit — tell a farmer before they harvest",
+    "leg": "{{minutes}} min from the last stop",
+    "late": "{{minutes}} min late",
+    "collected": "Collected",
+    "stopLabel": "Stop {{position}}, {{name}}, {{place}}"
+  }
+}

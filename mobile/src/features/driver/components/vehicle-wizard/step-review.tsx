@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -33,39 +35,53 @@ export function StepReview({
   onEdit,
   onSubmit
 }: StepReviewProps) {
+  const { t } = useTranslation();
+
   return (
     <WizardShell
       step="review"
       stepCount={3}
-      title="Check and save"
+      title={t("vehicleWizard.review.title")}
       onBack={() => onEdit(3)}
       footer={
         <WizardActions
           onBack={() => onEdit(3)}
-          continueLabel={submitting ? "Saving…" : "Save vehicle"}
+          continueLabel={t(
+            submitting ? "vehicleWizard.review.saving" : "vehicleWizard.review.save"
+          )}
           continueDisabled={submitting}
           onContinue={onSubmit}
         />
       }
     >
       <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
-        <ReviewRow label="Vehicle" value={vehicleLabel} onEdit={() => onEdit(1)} />
-        <Box className="h-px bg-border" />
-        <ReviewRow label="Plate number" value={registration} onEdit={() => onEdit(2)} />
+        <ReviewRow
+          label={t("vehicleWizard.row.vehicle")}
+          value={vehicleLabel}
+          onEdit={() => onEdit(1)}
+        />
         <Box className="h-px bg-border" />
         <ReviewRow
-          label="Most you can carry"
+          label={t("vehicleWizard.row.plate")}
+          value={registration}
+          onEdit={() => onEdit(2)}
+        />
+        <Box className="h-px bg-border" />
+        <ReviewRow
+          label={t("vehicleWizard.row.load")}
           value={`${capacityKg.toLocaleString()} kg`}
           onEdit={() => onEdit(2)}
         />
         <Box className="h-px bg-border" />
-        <ReviewRow label="District" value={district} onEdit={() => onEdit(3)} />
+        <ReviewRow
+          label={t("vehicleWizard.row.district")}
+          value={district}
+          onEdit={() => onEdit(3)}
+        />
       </VStack>
 
       <Text className="type-caption text-muted-foreground">
-        {wasVerified
-          ? "Changing the vehicle or plate means it is checked again before farmers see it as verified."
-          : "Your vehicle is checked before farmers see it as verified. You can still see your profile while you wait."}
+        {t(wasVerified ? "vehicleWizard.review.noteVerified" : "vehicleWizard.review.noteFirst")}
       </Text>
 
       {error ? (

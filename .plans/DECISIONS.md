@@ -675,14 +675,41 @@ codes (`job_taken`, `phone_taken`), so the client maps code to string and the ap
 change. Unknown codes fall through to a generic message.
 
 **The Sinhala and Tamil files are unreviewed drafts.** They were written by an AI assistant as a
-starting point and say so in a `_review` block at the top of each file. They must not be treated
-as shippable: produce, weight and payment terms are exactly where a wrong word reads as careless
+starting point and say so in `locales/<lang>/_review.json`. They must not be treated as
+shippable: produce, weight and payment terms are exactly where a wrong word reads as careless
 to the people the research interviewed. `node mobile/scripts/check-locales.mjs` enforces key
-parity and placeholder integrity across the three files and warns while `_review.reviewedBy` is
-empty.
+parity and placeholder integrity across the three languages and warns while `_review.reviewedBy`
+is empty.
 
-**Converted so far: the driver flow only** — onboarding, sign-up, job board, job detail and the
-cards they share (130 keys). The other ~370 strings across the app are still hard-coded English.
+**One file per area, not one file per language** — `locales/<lang>/{common,onboarding,driver,
+logistics,geo,farmer,buyer,coordinator}.json`. A single `en.json` meant every member's strings
+lived in one object and new keys all landed at the same point, at its end; two branches adding
+keys conflicted every time, and it happened twice in one day on FARM-61 alone. Split by area, the
+driver work and the listing work touch different files and merge cleanly.
+
+The **keys did not change**. `index.ts` spreads the files into one flat resource, so
+`t("jobs.title")` resolves exactly as before and no screen carries a namespace prefix — the split
+is a maintenance decision, not an API change. The cost is that two files in one language must
+never declare the same top-level namespace, because the second would silently overwrite the first;
+`check-locales.mjs` fails on that, on a key present in one language only, and on an area file that
+exists for one language and not another.
+
+`farmer.json`, `buyer.json` and `coordinator.json` are deliberately empty. They are the homes for
+screens still hard-coded in English, so the first person to localise one does not have to invent a
+file name and two people on two branches do not invent different ones.
+
+**Converted so far: the driver flow only** — onboarding, sign-up, job board, job detail, the
+route, the vehicle wizard, the driver profile and the delivery-point picker, plus the cards they
+share (278 keys). Roughly 470 strings across the farmer, buyer and coordinator screens are still
+hard-coded English; `mobile/scripts/check-locales.mjs` does not catch those, because it checks
+parity between the three files rather than coverage of the app.
+
+**A vehicle type's name is a key, not a field.** `features/driver/vehicles.ts` is plain
+TypeScript, so it cannot call `useTranslation`, and the `label` it used to carry stayed English in
+a Sinhala or Tamil UI wherever it was rendered — the wizard, the sign-up tiles, the driver profile
+and the farmer's view of their assigned driver. The table now holds only `id`, `emoji` and
+`capacityKg`, and `vehicleLabelKey(id)` returns the `vehicles.*` key for the caller to translate.
+The keys are named after the `VehicleType` ids so no second lookup table exists to drift.
 
 ### Logging: Nest's own `Logger`, per-domain interceptor, no audit collection
 

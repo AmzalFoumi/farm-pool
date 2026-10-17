@@ -12,17 +12,28 @@ import type { VehicleType } from "@farm-pool/shared";
  */
 export const VEHICLES: readonly {
   id: VehicleType;
-  label: string;
   emoji: string;
   capacityKg: number;
 }[] = [
-  { id: "motorbike", label: "Motorbike", emoji: "🏍️", capacityKg: 100 },
-  { id: "three-wheeler", label: "Three-wheeler", emoji: "🛺", capacityKg: 300 },
-  { id: "van", label: "Van", emoji: "🚐", capacityKg: 1500 },
-  { id: "small-lorry", label: "Small lorry", emoji: "🛻", capacityKg: 1500 },
-  { id: "lorry", label: "Lorry", emoji: "🚚", capacityKg: 5000 },
-  { id: "tractor", label: "Tractor trailer", emoji: "🚜", capacityKg: 2500 }
+  { id: "motorbike", emoji: "🏍️", capacityKg: 100 },
+  { id: "three-wheeler", emoji: "🛺", capacityKg: 300 },
+  { id: "van", emoji: "🚐", capacityKg: 1500 },
+  { id: "small-lorry", emoji: "🛻", capacityKg: 1500 },
+  { id: "lorry", emoji: "🚚", capacityKg: 5000 },
+  { id: "tractor", emoji: "🚜", capacityKg: 2500 }
 ];
+
+/**
+ * The translation key for a vehicle type's name — `t(vehicleLabelKey(id))`.
+ *
+ * The name is deliberately *not* a field on the table above. This module is plain TypeScript with
+ * no React, so it cannot call `useTranslation`, and a `label` here is a string that silently stays
+ * English in a Sinhala or Tamil UI — which is what it did until FARM-58. The `vehicles.*` keys are
+ * named after the `VehicleType` ids, so the mapping needs no table of its own.
+ */
+export function vehicleLabelKey(id: VehicleType) {
+  return `vehicles.${id}` as const;
+}
 
 export function vehicleById(id: VehicleType) {
   return VEHICLES.find((vehicle) => vehicle.id === id) ?? VEHICLES[0];
