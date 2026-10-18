@@ -89,8 +89,10 @@ export function CodeInput({
           selectTextOnFocus
           accessibilityLabel={t("driverSignUp.code.digitLabel", { index: index + 1 })}
           className={[
-            "type-h3 h-[68px] flex-1 rounded-field border text-center text-foreground",
-            digit ? "border-primary bg-secondary" : "border-border bg-card"
+            "type-h3 h-[68px] flex-1 rounded-field text-center text-foreground",
+            /* An empty box is the off-white fill alone; a filled one keeps its primary border,
+               because that border is what marks how far through the code the driver is. */
+            digit ? "border border-primary bg-secondary" : "bg-card-muted"
           ].join(" ")}
         />
       ))}

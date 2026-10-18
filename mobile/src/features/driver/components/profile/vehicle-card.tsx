@@ -22,7 +22,7 @@ export function VehicleCard({ driver, onEdit }: { driver: DriverProfile; onEdit:
         <DriverVerificationPill status={driver.verification} />
       </HStack>
 
-      <VStack className="elevation-card gap-3 rounded-card border border-border bg-card p-4">
+      <VStack className="gap-3 rounded-card bg-card-muted p-4">
         <DetailRow
           label={t("vehicleWizard.row.vehicle")}
           value={t(vehicleLabelKey(driver.vehicleType))}

@@ -34,12 +34,23 @@ import { VStack } from "@/components/ui/vstack";
  *
  * The ratio is tighter than Figma's 484/852. At that height the sheet is mostly empty space
  * below the text on every slide, and the space is worth more to the illustration above it. The
- * floor is the tallest slide's actual content — 28 top pad, 6 dots, 16 gap, 188 of two-line
- * heading plus four-line body, 16 gap, 58 button, 16 bottom pad — so the sheet can shrink to
- * exactly what the worst case needs and no further. Going below it clips text on slide 2.
+ * floor is the tallest slide's actual content — 20 top pad, 48 for the dots row, 16 gap, 188 of
+ * two-line heading plus four-line body, 16 gap, 58 button, 16 bottom pad — so the sheet can shrink
+ * to exactly what the worst case needs and no further. Going below it clips text on slide 2.
+ *
+ * The dots row is 48 rather than the dots' own 6 because Skip sits in it now, and Skip is a tap
+ * target: `min-h-tap` is a floor under every interactive element (CLAUDE.md rule 4), and a plain
+ * word is no exception — it is the styling that changed, not what a thumb has to hit.
+ *
+ * **The sheet is rounded on all four corners, not just the top.** It is a card lying on the
+ * screen rather than a panel welded to its bottom edge, which is what the shorter height makes it
+ * — at 0.46 it reached far enough up to read as the lower half of the screen, and a bottom corner
+ * on something that size looks like a mistake. `--radius-sheet` is the same 28 the welcome
+ * screen's sheet uses, so the two read as one family. The screen's own safe-area padding is what
+ * leaves the gap underneath for the bottom corners to show against.
  */
-const SHEET_RATIO = 0.46;
-const SHEET_MIN_HEIGHT = 328;
+const SHEET_RATIO = 0.42;
+const SHEET_MIN_HEIGHT = 362;
 
 /** Long enough to read as motion, short enough not to delay a driver tapping through. */
 const DURATION_MS = 260;
@@ -50,7 +61,8 @@ export function OnboardingSlide({
   body,
   index,
   count,
-  actions
+  actions,
+  topRight
 }: {
   art: ReactNode;
   title: string;
@@ -58,9 +70,15 @@ export function OnboardingSlide({
   /** Which slide is showing. Drives the dots and the direction of the transition. */
   index: number;
   count: number;
-  /** Skip + Next, or the single commitment button on the last slide. Static: same height on
+  /** Back + Next, or the commitment button on the last slide. Static: same height on
    *  every slide, so it never moves. */
   actions: ReactNode;
+  /**
+   * Sits opposite the dots at the top of the sheet. Skip lives here rather than over the
+   * illustration: the panel above is a single flat colour behind a drawing, and a word floating on
+   * it belongs to neither. In the sheet it is on the surface that holds every other control.
+   */
+  topRight?: ReactNode;
 }) {
   const { height } = useWindowDimensions();
   const sheetHeight = Math.max(SHEET_MIN_HEIGHT, Math.round(height * SHEET_RATIO));
@@ -75,10 +93,15 @@ export function OnboardingSlide({
       </View>
 
       <VStack
-        className="gap-4 rounded-t-sheet bg-card px-gutter pb-4 pt-7"
+        className="gap-4 rounded-sheet bg-card px-gutter pb-4 pt-5"
         style={{ height: sheetHeight }}
       >
-        <SlideDots count={count} index={index} />
+        {/* `min-h-tap` on the row, not on Skip alone, so the dots stay vertically centred against
+            it and the row is one height whether or not Skip is passed. */}
+        <HStack className="min-h-tap items-center justify-between">
+          <SlideDots count={count} index={index} />
+          {topRight}
+        </HStack>
 
         {/* `flex-1` is what pins the actions to the bottom of the sheet: the text takes the
             slack, so a shorter body leaves space below it rather than pulling the button up. */}

@@ -30,7 +30,7 @@ export function DocumentRow({
 }) {
   const { t } = useTranslation();
   return (
-    <HStack className="items-center gap-3 rounded-card border border-border bg-card p-3.5">
+    <HStack className="items-center gap-3 rounded-card bg-card-muted p-3.5">
       <Box
         className={`h-13 w-13 items-center justify-center rounded-field ${
           captured ? "bg-success-subtle" : "bg-secondary"

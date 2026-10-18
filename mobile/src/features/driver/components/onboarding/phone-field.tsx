@@ -29,7 +29,7 @@ export function PhoneField({
   return (
     <VStack className="gap-1.5">
       <HStack className="gap-2.5">
-        <HStack className="h-[62px] items-center justify-center rounded-field border border-border bg-muted px-5">
+        <HStack className="h-[62px] items-center justify-center rounded-field bg-card-muted px-5">
           <Text className="type-body-bold text-muted-foreground">+94</Text>
         </HStack>
 
@@ -44,8 +44,9 @@ export function PhoneField({
           returnKeyType="done"
           accessibilityLabel={t("driverSignUp.phone.numberLabel")}
           className={[
-            "type-body-lg h-[62px] flex-1 rounded-field border px-4 text-foreground",
-            error ? "border-destructive bg-card" : "border-border bg-card"
+            "type-body-lg h-[62px] flex-1 rounded-field bg-card-muted px-4 text-foreground",
+            /* Borderless unless it is wrong — see `step-1-phone.tsx`. */
+            error ? "border-2 border-destructive" : ""
           ].join(" ")}
         />
       </HStack>

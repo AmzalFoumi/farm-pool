@@ -4,11 +4,12 @@ import { useColorScheme } from "react-native";
 
 import { Colors } from "@/constants/theme";
 
-/* The delivery partner tabs. Jobs is the board and what they hold (FARM-49, FARM-54); Route is
-   the day in the order they promised it (FARM-61); Profile holds the vehicle and its check
+/* The delivery partner tabs. Route is the day in the order they promised it (FARM-61); Jobs is
+   the board and what they hold (FARM-49, FARM-54); Profile holds the vehicle and its check
    (FARM-45). Jobs and Route are deliberately separate: one answers "what work is there", the
-   other "what am I doing next", and the second is the one open while driving. Same NativeTabs
-   mechanism as the other shells — platform symbol sets, theme colours. */
+   other "what am I doing next". Route comes first because the second question is the one open
+   while driving, and a driver who opens the app mid-run should already be looking at it. Same
+   NativeTabs mechanism as the other shells — platform symbol sets, theme colours. */
 export default function DriverTabs() {
   const { t } = useTranslation();
   const scheme = useColorScheme();
@@ -20,17 +21,17 @@ export default function DriverTabs() {
       indicatorColor={colors.backgroundElement}
       labelStyle={{ selected: { color: colors.text } }}
     >
+      <NativeTabs.Trigger name="driver-route">
+        <NativeTabs.Trigger.Label>{t("route.title")}</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf={{ default: "map", selected: "map.fill" }} md="route" />
+      </NativeTabs.Trigger>
+
       <NativeTabs.Trigger name="driver-jobs">
         <NativeTabs.Trigger.Label>{t("jobs.title")}</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           sf={{ default: "box.truck", selected: "box.truck.fill" }}
           md="local_shipping"
         />
-      </NativeTabs.Trigger>
-
-      <NativeTabs.Trigger name="driver-route">
-        <NativeTabs.Trigger.Label>{t("route.title")}</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf={{ default: "map", selected: "map.fill" }} md="route" />
       </NativeTabs.Trigger>
 
       <NativeTabs.Trigger name="driver-profile">

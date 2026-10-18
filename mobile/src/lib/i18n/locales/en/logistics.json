@@ -70,6 +70,9 @@
     "leg": "{{minutes}} min from the last stop",
     "late": "{{minutes}} min late",
     "collected": "Collected",
-    "stopLabel": "Stop {{position}}, {{name}}, {{place}}"
+    "stopLabel": "Stop {{position}}, {{name}}, {{place}}",
+    "openInMaps": "Open in Maps",
+    "openFirstInMaps": "First {{count}} stops",
+    "openInMapsLabel": "Open {{count}} stops as one trip in Google Maps"
   }
 }

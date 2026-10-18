@@ -70,6 +70,9 @@
     "leg": "අවසන් නැවතුමේ සිට විනාඩි {{minutes}}",
     "late": "විනාඩි {{minutes}}ක් ප්‍රමාදයි",
     "collected": "එකතු කළා",
-    "stopLabel": "නැවතුම {{position}}, {{name}}, {{place}}"
+    "stopLabel": "නැවතුම {{position}}, {{name}}, {{place}}",
+    "openInMaps": "සිතියමේ විවෘත කරන්න",
+    "openFirstInMaps": "පළමු නැවතුම් {{count}}",
+    "openInMapsLabel": "නැවතුම් {{count}} එක් ගමනක් ලෙස Google Maps හි විවෘත කරන්න"
   }
 }

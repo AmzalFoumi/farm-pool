@@ -47,8 +47,10 @@ export default function DriverJobsScreen() {
     router.push({ pathname: "/(driver)/job/[id]", params: { id: job.id } });
 
   return (
-    <View className="flex-1 bg-background">
-      <AppBar title={t("jobs.title")} />
+    <View className="flex-1 bg-card">
+      {/* Plain: no rule under the bar. The job cards below carry their own off-white fill, so the
+          screen separates itself by what is a card and what is not, rather than by lines. */}
+      <AppBar title={t("jobs.title")} variant="plain" />
       <RequestView request={jobs}>
         {({ mine, board }) => (
           <SectionList

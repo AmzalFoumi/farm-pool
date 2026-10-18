@@ -16,7 +16,9 @@
   --radius-field: 14px; /* buttons, inputs, selects */
   --radius-card: 16px; /* cards, list rows, icon tiles */
   --radius-tile: 20px; /* the logo lockup tile — a squircle, not a card */
-  --radius-sheet: 28px; /* the top corners of a sheet that rises over a panel */
+  --radius-sheet: 28px; /* a sheet over a panel — top corners only when it is
+                           pinned to the screen edge (welcome), all four when it
+                           lies clear of it (driver onboarding) */
   --radius-pill: 999px; /* badges, avatars, check marks, status dots */
 
   /* ── Minimum tap target → `h-tap`, `min-h-tap`, `w-tap`, `p-tap` ──

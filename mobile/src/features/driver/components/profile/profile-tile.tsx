@@ -32,7 +32,7 @@ export function ProfileTile({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={value ? `${label}, ${value}` : label}
-      className="min-h-tap flex-1 items-center justify-center gap-1.5 rounded-card border border-border bg-card px-2 py-4 active:opacity-80"
+      className="min-h-tap flex-1 items-center justify-center gap-1.5 rounded-card bg-card-muted px-2 py-4 active:opacity-80"
     >
       {/* On a tinted square, because the exported icons are drawn `stroke="white"` for the dark
           role-picker tiles and are invisible on a white card. CLAUDE.md rule 7 says do not redraw

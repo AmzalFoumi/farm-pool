@@ -13,8 +13,9 @@
  * design intends. On a shorter one the hero shrinks first.
  *
  * The hero is now a story clip behind a scrim, with the wordmark over it. The clip is
- * absolutely positioned so it takes the hero's box without being able to push the sheet;
- * the tagline it replaced is gone (its `welcome.tagline` key is still in the locale files).
+ * absolutely positioned so it takes the hero's box without being able to push the sheet.
+ * The tagline it displaced moved into the sheet, under a heading — words over footage would
+ * have needed a heavier scrim than the clip can take.
  */
 
 import { useRouter } from "expo-router";
@@ -24,10 +25,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
 import { AppButton } from "@/components/app/app-button";
-import { LoginIcon, MailIcon, PlusIcon, WordmarkIcon } from "@/components/app/icons";
+import { PlusIcon, SparkleIcon, WordmarkIcon } from "@/components/app/icons";
+import { SegmentedToggle } from "@/components/app/segmented-toggle";
 import { StoryVideo } from "@/components/app/story-video";
 import { Box } from "@/components/ui/box";
-import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -47,6 +48,8 @@ export default function WelcomeScreen() {
   /* The wordmark is an SVG, so it takes a colour value rather than a className; resolving the
      token keeps it on the design system. */
   const wordmarkColor = useResolveClassNames("text-brand-deep-foreground").color as string;
+  /* Same reason as the wordmark: an SvgXml takes a colour value, not a className. */
+  const tileIconColor = useResolveClassNames("text-icon-tile-foreground").color as string;
 
   return (
     <View className="flex-1 bg-brand-deep">
@@ -82,38 +85,42 @@ export default function WelcomeScreen() {
         className="-mt-7 gap-3.5 rounded-t-sheet bg-card px-5 pt-6.5"
         style={{ paddingBottom: insets.bottom + 24 }}
       >
-        {/* Language picker. Each chip is min-h-tap and flex-1 so all three are
-            the same width and none is harder to hit than its neighbours.
-            Each label is in its own script — see `lib/i18n/languages.ts`. */}
-        <HStack className="gap-2" accessibilityRole="radiogroup">
-          {LANGUAGES.map(({ code, label, endonym }) => {
-            const selected = language === code;
-            return (
-              <Pressable
-                key={code}
-                onPress={() => setLanguage(code)}
-                accessibilityRole="radio"
-                accessibilityState={{ selected }}
-                /* The visible label is in its own script; the screen reader gets the English
-                   name too, so a user whose reader has no Sinhala voice still hears which
-                   chip is which. */
-                accessibilityLabel={endonym}
-                className={[
-                  "min-h-tap flex-1 items-center justify-center rounded-chip",
-                  selected ? "bg-secondary" : "border border-border bg-card"
-                ].join(" ")}
-              >
-                <Text
-                  className={`type-body-bold ${
-                    selected ? "text-secondary-foreground" : "text-muted-foreground"
-                  }`}
-                >
-                  {label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </HStack>
+        {/* What the sheet is for, before the controls in it. The hero carries the brand and the
+            clip but says nothing in words — someone who opens the app for the first time needs one
+            line telling them what it is, and it belongs here rather than over the footage, where
+            the scrim would have to get heavier to make it legible.
+
+            `rounded-tile` is the token that exists for exactly this — the logo tile squircle,
+            not a card — and `icon-tile` is a new token rather than a hex at the call site: the
+            glyph is the normal near-black foreground and the tile behind it is barely off white,
+            so the mark carries and the tile stays quiet. */}
+        <VStack className="gap-3">
+          <Box className="h-14 w-14 items-center justify-center rounded-tile bg-icon-tile">
+            <SparkleIcon color={tileIconColor} />
+          </Box>
+          <VStack className="gap-1">
+            <Text className="type-h3 text-foreground">{t("welcome.title")}</Text>
+            {/* `welcome.tagline` came back: it was the line under the wordmark before the clip
+                replaced it, it is already translated in all three languages, and it says exactly
+                what this section needs to say. */}
+            <Text className="type-body text-muted-foreground">{t("welcome.tagline")}</Text>
+          </VStack>
+        </VStack>
+
+        {/* Language picker. One track with a pill that travels, rather than three chips that each
+            light up: only one language can be on, and a single moving marker is what says so.
+            Each label is in its own script — see `lib/i18n/languages.ts`. The screen reader gets
+            the English endonym too, so a user whose reader has no Sinhala voice still hears which
+            segment is which. */}
+        <SegmentedToggle
+          segments={LANGUAGES.map(({ code, label, endonym }) => ({
+            value: code,
+            label,
+            accessibilityLabel: endonym
+          }))}
+          value={language}
+          onChange={setLanguage}
+        />
 
         <AppButton
           label={t("common.signUp")}
@@ -121,17 +128,17 @@ export default function WelcomeScreen() {
           onPress={() => router.push("/sign-up-as")}
         />
 
-        <AppButton
-          label={t("common.logIn")}
-          variant="outline"
-          icon={<LoginIcon />}
+        {/* Log in is a text link, not a second button. Two full-width buttons of equal weight make
+            the screen ask a question it does not mean to ask: signing up is what this screen is
+            for, and logging in is the way back for someone who already has an account. The row
+            still clears `min-h-tap` — demoting it visually must not demote it as a target. */}
+        <Pressable
           onPress={() => router.push("/log-in")}
-        />
-
-        <HStack className="mt-0.5 items-center gap-2.5">
-          <MailIcon />
-          <Text className="type-caption text-muted-foreground">{t("welcome.help")}</Text>
-        </HStack>
+          accessibilityRole="button"
+          className="min-h-tap items-center justify-center"
+        >
+          <Text className="type-body-bold text-primary">{t("common.logIn")}</Text>
+        </Pressable>
       </VStack>
     </View>
   );

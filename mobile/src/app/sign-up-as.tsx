@@ -9,30 +9,38 @@
  * delivery partner" is that template filled in with the mock's selection.
  *
  * All four roles are offered (decided 18 September 2026 — `.plans/auth/README.md`).
- * The Figma frame predates that and draws three; the coordinator card follows
- * the same anatomy with its own persona tint. Each role's onboarding after the
- * account exists belongs to the developer owning that role — this screen and
+ * The Figma frame predates that and draws three. Each role's onboarding after
+ * the account exists belongs to the developer owning that role — this screen and
  * `sign-up.tsx` only get the account created and the session started.
+ *
+ * THE CARDS NO LONGER FOLLOW THE FIGMA ANATOMY. Figma draws four 88px rows, each
+ * an icon tile beside two lines of text inside a bordered white card on the off
+ * white screen. They are now borderless `card-muted` cards on a white screen,
+ * carrying a character illustration instead of an icon tile, dividing the full
+ * height between them. The screen is a choice of four people, and a figure says
+ * which one you are faster than a glyph does. `rolePicker.note` lost its line and
+ * is unused — the cards say what they are.
  */
 
 import type { Role } from "@farm-pool/shared";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { Image, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useResolveClassNames } from "uniwind";
 
 import { AppBar } from "@/components/app/app-bar";
 import { AppButton } from "@/components/app/app-button";
-import {
-  BuyerIcon,
-  CheckIcon,
-  ChevronIcon,
-  DeliveryIcon,
-  FarmerIcon
-} from "@/components/app/icons";
+import { ArrowUpRightIcon, CheckIcon } from "@/components/app/icons";
 import { Box } from "@/components/ui/box";
-import { GlobeIcon, Icon } from "@/components/ui/icon";
 import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -46,24 +54,74 @@ import { VStack } from "@/components/ui/vstack";
 type RoleOption = {
   /** The shared `Role` this card creates. */
   id: Role;
-  /** Tile colour per persona. See `src/styles/colors.css`. */
-  tile: string;
-  Icon: (props: { size?: number }) => React.JSX.Element;
+  /**
+   * The character illustration for this role. `require`d at module scope so Metro resolves it at
+   * build time, and the files ship in the download rather than being fetched — a user picking a
+   * role has an account to create next and should not be waiting on a network for a picture.
+   * `assets/illustrations/README.md` says what each one is and how to replace it.
+   */
+  art: number;
 };
 
-/** Coordinator has no Figma export; the vendored gluestack glyph is recoloured
- *  through the persona token rather than redrawn. Recorded in DECISIONS
- *  (open question 1, iconography). */
-const CoordinatorIcon = () => (
-  <Icon as={GlobeIcon} className="h-7 w-7 text-persona-coordinator-foreground" />
-);
-
 const ROLES: readonly RoleOption[] = [
-  { id: "farmer", tile: "bg-secondary", Icon: FarmerIcon },
-  { id: "buyer", tile: "bg-persona-buyer", Icon: BuyerIcon },
-  { id: "coordinator", tile: "bg-persona-coordinator", Icon: CoordinatorIcon },
-  { id: "logistics", tile: "bg-brand-deep", Icon: DeliveryIcon }
+  { id: "farmer", art: require("../../assets/illustrations/role-farmer.png") },
+  { id: "buyer", art: require("../../assets/illustrations/role-buyer.png") },
+  { id: "coordinator", art: require("../../assets/illustrations/role-coordinator.png") },
+  { id: "logistics", art: require("../../assets/illustrations/role-logistics.png") }
 ];
+
+/** `--ease-out-quart`, the curve for something arriving. Named because there are no motion tokens. */
+const EASE_OUT_QUART = Easing.bezier(0.165, 0.84, 0.44, 1);
+const DURATION = 180;
+
+/**
+ * The card's corner mark: an arrow that becomes a tick.
+ *
+ * Both are mounted and cross-faded in place rather than swapped, because the swap was the thing
+ * that looked wrong — one glyph vanishing and another appearing in the same 28px square reads as
+ * a glitch, not as an answer to a tap. Fading one out as the other scales up says the mark
+ * changed rather than that it was replaced.
+ *
+ * The scale is deliberately shallow (0.8, not 0) and the direction differs: the arrow shrinks as
+ * it leaves, the tick grows as it arrives, so the two never look like the same object. 180ms with
+ * an ease-out — this is feedback on a tap and anything slower lags behind the finger.
+ */
+function RoleAffordance({ selected, arrowColor }: { selected: boolean; arrowColor: string }) {
+  const reduceMotion = useReducedMotion();
+  const progress = useSharedValue(selected ? 1 : 0);
+
+  useEffect(() => {
+    const next = selected ? 1 : 0;
+    progress.value = reduceMotion
+      ? next
+      : withTiming(next, { duration: DURATION, easing: EASE_OUT_QUART });
+  }, [selected, progress, reduceMotion]);
+
+  const arrowStyle = useAnimatedStyle(() => ({
+    opacity: 1 - progress.value,
+    transform: [{ scale: 1 - progress.value * 0.2 }]
+  }));
+  const checkStyle = useAnimatedStyle(() => ({
+    opacity: progress.value,
+    transform: [{ scale: 0.8 + progress.value * 0.2 }]
+  }));
+
+  return (
+    /* A fixed box the size of the larger of the two, with both stacked inside it. Laying them out
+       on top of each other is what keeps the card's text from shifting as the mark changes. */
+    <Box className="h-7 w-7 items-center justify-center">
+      <Animated.View style={arrowStyle} className="absolute">
+        <ArrowUpRightIcon color={arrowColor} />
+      </Animated.View>
+      <Animated.View
+        style={checkStyle}
+        className="absolute h-7 w-7 items-center justify-center rounded-pill bg-brand-deep"
+      >
+        <CheckIcon />
+      </Animated.View>
+    </Box>
+  );
+}
 
 export default function SignUpAsScreen() {
   const router = useRouter();
@@ -72,60 +130,62 @@ export default function SignUpAsScreen() {
   const { t } = useTranslation();
 
   const selectedRole = ROLES.find((role) => role.id === selected);
+  /* An SvgXml takes a colour value, not a className — same as the wordmark on the welcome screen. */
+  const arrowColor = useResolveClassNames("text-muted-foreground").color as string;
 
   return (
-    <View className="flex-1 bg-background">
-      <AppBar title={t("rolePicker.title")} />
+    <View className="flex-1 bg-card">
+      {/* `plain`: no rule under the bar and no outline on the back button. The four tinted cards
+          below already draw their own edges, and a ruled header over them was one box too many. */}
+      <AppBar title={t("rolePicker.title")} variant="plain" />
 
       {/* ── Roles ────────────────────────────────────────────────────── */}
-      <VStack className="flex-1 px-4">
-        <Text className="type-body mt-5 text-muted-foreground">{t("rolePicker.note")}</Text>
+      {/* The four cards divide the screen between them rather than stacking at a fixed height:
+          each is `flex-1`, so they grow and shrink together and the set always reaches the footer.
+          That is what the illustrations need — a card tall enough to hold a figure — and it means
+          the screen has no leftover space to explain away at the bottom. */}
+      <VStack className="flex-1 gap-2.5 px-4 py-4" accessibilityRole="radiogroup">
+        {ROLES.map(({ id, art }) => {
+          const isSelected = selected === id;
+          const title = t(`roles.${id}`);
+          const description = t(`rolePicker.${id}.description`);
+          return (
+            <Pressable
+              key={id}
+              onPress={() => setSelected(id)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: isSelected }}
+              accessibilityLabel={t("rolePicker.cardLabel", { title, description })}
+              className={[
+                "relative flex-1 flex-row items-center gap-3 overflow-hidden rounded-card py-2 pl-2 pr-4",
+                /* No border, selected or not. Selection is a fill change instead: a border that
+                   appears on selection grows inward and shifts everything in the card by its
+                   width, and with four cards filling the screen that shift is visible. The mint
+                   is `secondary`, the same "this one is chosen" surface the language picker
+                   uses. */
+                isSelected ? "bg-secondary" : "bg-card-muted"
+              ].join(" ")}
+            >
+              {/* `contain`, not `cover`: these are figures, and cropping one at the chin to fill a
+                  box is worse than letterboxing it. The column is a fixed share of the card so the
+                  four titles start on the same x — a ragged left edge down the list reads as four
+                  unrelated cards. */}
+              <Image source={art} className="h-full w-24" resizeMode="contain" />
 
-        <VStack className="mt-4 gap-3" accessibilityRole="radiogroup">
-          {ROLES.map(({ id, tile, Icon: RoleIcon }) => {
-            const isSelected = selected === id;
-            const title = t(`roles.${id}`);
-            const description = t(`rolePicker.${id}.description`);
-            return (
-              <Pressable
-                key={id}
-                onPress={() => setSelected(id)}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={t("rolePicker.cardLabel", { title, description })}
-                className={[
-                  // py-4.5 rather than p-4: with the 52px tile that lands the
-                  // card at exactly the 88px Figma draws.
-                  "flex-row items-center gap-3.5 rounded-card bg-card px-4 py-4.5",
-                  // The selected card's 2px border grows inward, so the row
-                  // shifts by 1px on selection. Figma draws exactly the same
-                  // shift (tile left 16 → 15), so it is left as-is.
-                  isSelected ? "border-2 border-brand-deep" : "border border-border"
-                ].join(" ")}
-              >
-                <Box className={`h-13 w-13 items-center justify-center rounded-card ${tile}`}>
-                  <RoleIcon />
-                </Box>
+              {/* `pr-6` keeps the longest Sinhala title clear of the corner arrow. */}
+              <VStack className="flex-1 gap-1.5 pr-6">
+                <Text className="type-h4 text-foreground">{title}</Text>
+                <Text className="type-caption text-muted-foreground">{description}</Text>
+              </VStack>
 
-                <VStack className="flex-1 gap-1.5">
-                  <Text className="type-h4 text-foreground">{title}</Text>
-                  <Text className="type-caption text-muted-foreground">{description}</Text>
-                </VStack>
-
-                {/* The affordance swaps rather than stacks: a chevron says
-                    "there is more this way", a check says "this one is chosen".
-                    Showing both at once would say neither clearly. */}
-                {isSelected ? (
-                  <Box className="h-7 w-7 items-center justify-center rounded-pill bg-brand-deep">
-                    <CheckIcon />
-                  </Box>
-                ) : (
-                  <ChevronIcon />
-                )}
-              </Pressable>
-            );
-          })}
-        </VStack>
+              {/* Pinned to the corner, out of the flow, so the text block's height is the card's
+                  and the mark never pushes a description onto another line. */}
+              <Box className="absolute right-3 top-3">
+                <RoleAffordance selected={isSelected} arrowColor={arrowColor} />
+              </Box>
+            </Pressable>
+          );
+        })}
       </VStack>
 
       {/* ── Footer ───────────────────────────────────────────────────── */}

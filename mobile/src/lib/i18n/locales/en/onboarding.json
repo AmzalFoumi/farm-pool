@@ -1,7 +1,8 @@
 {
   "welcome": {
     "tagline": "Farm produce, straight from the field to wholesale buyers.",
-    "help": "Need help? Call your area coordinator"
+    "help": "Need help? Call your area coordinator",
+    "title": "Get started"
   },
   "rolePicker": {
     "title": "Sign up as",
@@ -44,7 +45,12 @@
     "passwordLabel": "Password",
     "newHere": "New to FarmPool?",
     "action": "Log in",
-    "actionBusy": "Logging in…"
+    "actionBusy": "Logging in…",
+    "heading": "Welcome back",
+    "note": "Sign in with the phone number you registered and your password.",
+    "forgot": "Forgot your password?",
+    "forgotHelp": "Call your area coordinator — they can reset it for you.",
+    "or": "or"
   },
   "accountStatus": {
     "pendingTitle": "Awaiting approval",

@@ -804,6 +804,83 @@ sheet. A caption would be inventing meaning the clip does not carry.
 **The icon is the wide wordmark on the logo green — a stopgap.** Icons are square and the wordmark
 is 3.5 : 1, so it is small on a home screen. A square mark from the designer should replace it.
 
+### The route planner minimises driving, under the deadlines — not the window start order
+
+Decided 18 October 2026 (FARM-61). `packages/shared/src/logistics/route-plan.ts` used to sort a
+driver's stops by `window.from` — when each promised window *opens* — and treat distance as a
+tie-break for stops opening in the same minute. It now searches the orderings that keep every
+promise and takes the one with the least driving.
+
+**The old rule sorted on a field that is not the constraint.** Feasibility here is, and always was,
+`arrival <= window.to`. Ordering by `window.from` is ordering by release time. The original comment
+argued that pulling a 10 am stop ahead of an 8 am one "would break exactly what FARM-61 protects",
+but it would not: the promise is the window, and a farmer told 08:00–12:00 who is collected at
+11:00 has had it kept. Nothing about the order was ever promised to anyone.
+
+**It cost two things, both measured before the change.**
+
+- **Driving.** Kurunegala promised 08:00–17:00 and Gampaha 08:30–17:00, starting from Colombo:
+  215.3 km planned, against 124.8 km for the other order with both promises still kept. 42% of the
+  day's diesel, for nothing.
+- **Work the driver never saw.** `canInsert` built one ordering and tested it, so a held Kandy job
+  promised 09:00–17:00 plus a new Colombo job promised 10:00–10:30 came back `null` — refused as
+  unreachable. Colombo first keeps both with 30 and 158 minutes to spare and halves the driving.
+  Its own doc said "or `null` if no arrangement works"; it tried one arrangement. That job never
+  reached the board, and nothing anywhere said why.
+
+**Depth-first over the orderings, with two prunes, rather than a heuristic.** A branch dies when its
+driving passes the best complete route already found, and when a stop is reached after its window
+has closed. An earliest-deadline-first greedy is computed first and handed in as the opening bound,
+so the distance prune bites immediately. Measured on the board path — 50 open jobs against 7 held
+stops, all within one district, which is the worst realistic case — the whole pass is 51 ms. One
+8-stop route plan is 0.08 ms.
+
+**Above eight stops it stops searching and takes the greedy order, and says so.** `RoutePlan` now
+carries `exhaustive`. A lorry-day of more than eight collections is not a day anyone is planning,
+but a weaker guarantee returned under an unchanged shape is exactly the kind of thing that should
+not be invisible. This also bounds the board: once a driver holds eight stops, `canInsert` is past
+the limit and costs less, not more.
+
+**Windowless stops are no longer pinned to the end of the day.** That was never a decision — the
+clock started at the first promised window, so any windowless stop placed before one could not be
+scheduled at all, and "they go last, where they cannot displace a promise" described the artefact
+rather than a rule. The day now starts early enough to reach the first promise on time, and the
+stops before it are fitted into that run-up. A loose Kurunegala collection with a Colombo promise at
+14:00 goes from 285 km to 125 km.
+
+**Two gaps this did not close**, both recorded rather than fixed:
+
+- `GetDriverRoute` passes no start point and `ListOpenJobs` passes the last held stop, so the board
+  prices a first leg the route screen does not. The board is therefore the stricter of the two,
+  which is the safe direction, but they are not the single answer `get-driver-route.ts` claims.
+- **The drop-off is not a stop.** The plan covers collections only, so no buyer-side delivery
+  deadline is modelled anywhere. Any claim that a run "fits the buyer's window" is currently
+  unfounded — the planner has never been told what that window is.
+
+### The welcome sheet opens with an icon tile, and `icon-tile` is a token
+
+Decided 18 October 2026 (FARM-0). The sheet now leads with a rounded tile, a heading
+(`welcome.title`) and a line of body copy, above the language picker. The hero carries the brand
+and the clip but says nothing in words, and a first-time user needs one sentence telling them what
+the app is. It sits in the sheet rather than over the footage because text on the clip would need
+a heavier scrim than the clip can afford — see the entry above for why 30% is already a trade.
+
+**`--icon-tile` and `--icon-tile-foreground` are new semantic tokens, not a hex at the call site.**
+The tile is `#FBF8FB` in light mode: deliberately lighter than `muted`, so it reads as a tile
+against a white card without becoming a grey block. Nothing in the ramps was close — `lilac-50` is
+several steps deeper — and the value is a surface that will recur wherever an icon heads a sheet or
+a card, which is what a token is for. Dark mode does not invert it: `#FBF8FB` on a dark card is a
+glare, so it takes the lifted neutral and the glyph flips with it.
+
+**The glyph on it is the plain foreground, near-black, not a brand colour.** The tile is the quiet
+part and the mark is what carries, which is the opposite of the old leaf lockup where the mint tile
+did the work.
+
+**The sparkle in `icons.tsx` is the one glyph in that file with no Figma node.** It is drawn in
+code because the section it heads is not in the design yet. Replace it with the exported asset when
+the screen is drawn — this is the gap open question 1 ("Iconography beyond the Figma exports")
+already describes, and this is now a concrete instance of it.
+
 ### Tester backend: an ngrok tunnel, started with `concurrently`
 
 Decided 15 October 2026 (FARM-0). The api is not hosted. To put a release APK on testers' phones,

@@ -138,7 +138,7 @@
   },
   "profile": {
     "title": "Profile",
-    "role": "Delivery partner",
+    "role": "Role",
     "deliveries": "Deliveries",
     "deliveriesCount": "{{count}} carried",
     "vehicle": "Vehicle",
@@ -149,6 +149,24 @@
       "pending": "Your vehicle is waiting to be checked. Farmers see it as not yet verified.",
       "verified": "Farmers see your vehicle as verified when you come to collect.",
       "rejected": "Your vehicle was not approved. Check the plate number and save it again."
+    },
+    "groupWork": "Your work",
+    "groupApp": "App",
+    "accountDetails": "Account details",
+    "name": "Name",
+    "accountReadOnly": "Your name and number were set when the account was created. Ask your area coordinator to change either one.",
+    "languageNote": "The app speaks this language everywhere, including the job board and your route.",
+    "languageSaved": "Saved on this phone, so it stays after you close the app.",
+    "appVersion": "FarmPool {{version}}",
+    "verificationHeading": {
+      "pending": "Vehicle being checked",
+      "verified": "Verified partner",
+      "rejected": "Vehicle not approved"
+    },
+    "verificationAction": {
+      "pending": "View vehicle",
+      "verified": "View vehicle",
+      "rejected": "Fix the details"
     }
   },
   "deliveries": {

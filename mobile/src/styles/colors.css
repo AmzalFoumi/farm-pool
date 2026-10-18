@@ -103,6 +103,22 @@
       --accent: 227 239 232;
       --accent-foreground: 14 58 38;
 
+      /* Icon tile — the rounded square an icon sits in at the head of a sheet or
+         a card. Lighter than `muted` on purpose: it has to read as a tile
+         against a white card without becoming a grey block, so it is barely off
+         white with a faint lilac cast picked up from the `lilac` ramp. The
+         glyph on it is the normal foreground, near-black, not a brand colour —
+         the tile is the quiet part and the icon is the mark. */
+      --icon-tile: 251 248 251; /* #FBF8FB */
+      --icon-tile-foreground: 25 31 27; /* #191F1B — same near-black as `foreground` */
+
+      /* Card muted — a card that sits on a white screen rather than on the off
+         white `background`. `card` is white and would vanish there, so this is
+         the surface a borderless card uses to show its own edge. Darker than
+         `icon-tile` because a whole card has to hold a shape at arm's length,
+         where a 56px tile only has to be visible. */
+      --card-muted: 247 247 247; /* #F7F7F7 */
+
       /* Brand deep — full-bleed green panels (welcome hero, onboarding), the
          selected-card border, and icon tiles on a selected row.
          Not `primary`: this is a surface, primary is an action. */
@@ -189,6 +205,16 @@
       --accent: 22 48 37;
       --accent-foreground: 159 225 203;
 
+      /* #FBF8FB is a light-mode value and inverts to a glare on a dark card, so
+         dark mode takes the lifted neutral instead and the glyph flips with it.
+         The tile keeps its job — a hair above the surface it sits on. */
+      --icon-tile: 28 42 35;
+      --icon-tile-foreground: 237 242 239;
+
+      /* On dark the screen is already near-black, so a card lifts by getting
+         lighter — the opposite direction from light mode, same job. */
+      --card-muted: 24 38 31;
+
       --brand-deep: 30 107 72;
       --brand-deep-foreground: 255 255 255;
       --brand-deep-muted: 220 235 227;
@@ -244,6 +270,9 @@
   --color-muted-foreground: rgb(var(--muted-foreground));
   --color-accent: rgb(var(--accent));
   --color-accent-foreground: rgb(var(--accent-foreground));
+  --color-icon-tile: rgb(var(--icon-tile));
+  --color-icon-tile-foreground: rgb(var(--icon-tile-foreground));
+  --color-card-muted: rgb(var(--card-muted));
 
   --color-tertiary: rgb(var(--tertiary));
   --color-tertiary-foreground: rgb(var(--tertiary-foreground));
