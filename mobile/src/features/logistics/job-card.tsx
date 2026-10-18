@@ -33,7 +33,7 @@ export function JobCard({ job, onPress }: { job: JobSummary; onPress: () => void
         place,
         total: formatPrice(job.total)
       })}
-      className="elevation-card min-h-tap flex-row items-center gap-3 rounded-card border border-border bg-card p-3"
+      className="min-h-tap flex-row items-center gap-3 rounded-card bg-card-muted p-3"
     >
       <CropTile emoji={crop.emoji} />
       <VStack className="flex-1 gap-0.5">
@@ -49,8 +49,10 @@ export function JobCard({ job, onPress }: { job: JobSummary; onPress: () => void
       </VStack>
       <VStack className="items-end gap-1">
         <OrderStatusPill status={job.status} />
+        {/* White on the off-white card, not `bg-muted`: at #F2F2F2 against #F7F7F7 the pill all
+            but disappeared once the card stopped being white. */}
         {job.fulfillmentOption === "shared" ? (
-          <Box className="rounded-pill bg-muted px-2 py-0.5">
+          <Box className="rounded-pill bg-card px-2 py-0.5">
             <Text className="type-body-sm text-muted-foreground">{t("jobs.shared")}</Text>
           </Box>
         ) : null}

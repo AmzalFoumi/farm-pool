@@ -51,8 +51,12 @@ export function Step1Phone({
           textContentType="name"
           accessibilityLabel={t("driverSignUp.phone.nameLabel")}
           className={[
-            "type-body-lg h-control rounded-field border px-4 text-foreground",
-            errors.displayName ? "border-destructive bg-card" : "border-border bg-card"
+            "type-body-lg h-control rounded-field bg-card-muted px-4 text-foreground",
+            /* No border when the field is fine — the off-white fill is what says "type here", and
+               a hairline around it on a white screen was a second, quieter way of saying the same
+               thing. The border comes back only to carry an error, which is the one state that
+               needs more than a fill to read at a glance. */
+            errors.displayName ? "border-2 border-destructive" : ""
           ].join(" ")}
         />
         {errors.displayName ? (

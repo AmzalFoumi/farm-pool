@@ -30,9 +30,7 @@ export function SummaryRow({
 
   return (
     <HStack
-      className={`items-center gap-3 rounded-card p-4 ${
-        done ? "border border-border bg-card" : "bg-secondary"
-      }`}
+      className={`items-center gap-3 rounded-card p-4 ${done ? "bg-card-muted" : "bg-secondary"}`}
       accessibilityLabel={note ? `${label}. ${note}` : label}
     >
       <Box

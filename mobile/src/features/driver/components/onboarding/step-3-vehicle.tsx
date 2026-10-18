@@ -87,8 +87,9 @@ export function Step3Vehicle({
           autoCorrect={false}
           accessibilityLabel={t("driverSignUp.vehicle.plateLabel")}
           className={[
-            "type-body-lg h-control rounded-field border px-4 text-foreground",
-            errors.registration ? "border-destructive bg-card" : "border-border bg-card"
+            "type-body-lg h-control rounded-field bg-card-muted px-4 text-foreground",
+            /* Borderless unless it is wrong — see `step-1-phone.tsx`. */
+            errors.registration ? "border-2 border-destructive" : ""
           ].join(" ")}
         />
         {errors.registration ? (

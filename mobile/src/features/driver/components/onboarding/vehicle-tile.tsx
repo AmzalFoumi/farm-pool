@@ -39,7 +39,10 @@ export function VehicleTile({
       accessibilityLabel={t("driverSignUp.vehicle.tileLabel", { label, count: capacityKg })}
       className={[
         "h-[120px] flex-1 justify-between rounded-card p-3.5",
-        selected ? "border-2 border-primary bg-secondary" : "border border-border bg-card"
+        /* Selection is the mint fill, the green label and the check badge — three statements
+           already. A border was a fourth, and it was also the only one that changed the tile
+           size, nudging the grid by 2px as the driver tapped between them. */
+        selected ? "bg-secondary" : "bg-card-muted"
       ].join(" ")}
     >
       <Text className="type-h3">{emoji}</Text>

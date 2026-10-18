@@ -11,7 +11,7 @@ export function DriverIdentityCard({ name, phone }: { name: string; phone: strin
   const { t } = useTranslation();
 
   return (
-    <HStack className="elevation-card items-center gap-3.5 rounded-card border border-border bg-card p-4">
+    <HStack className="items-center gap-3.5 rounded-card bg-card-muted p-4">
       <Box className="h-14 w-14 items-center justify-center rounded-pill bg-brand-deep">
         <DeliveryIcon />
       </Box>

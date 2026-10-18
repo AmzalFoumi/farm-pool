@@ -27,6 +27,10 @@ export default function DriverLayout() {
         {/* History, reached from the profile. Behind the same guard: a driver with no vehicle has
             no deliveries to look back on. */}
         <Stack.Screen name="deliveries" />
+        {/* The profile's own screens. Behind the guard with the rest of the tab shell, because the
+            profile they open from is inside it — a driver still in the wizard cannot reach either. */}
+        <Stack.Screen name="settings/language" />
+        <Stack.Screen name="settings/account" />
       </Stack.Protected>
       <Stack.Screen name="driver-vehicle" />
     </Stack>

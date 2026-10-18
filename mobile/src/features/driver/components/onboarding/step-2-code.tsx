@@ -91,7 +91,7 @@ export function Step2Code({
         accessibilityRole="button"
         accessibilityState={{ disabled: !canResend }}
         className={[
-          "min-h-tap flex-row items-center justify-center gap-2 rounded-field border border-border bg-card",
+          "min-h-tap flex-row items-center justify-center gap-2 rounded-field bg-card-muted",
           canResend ? "" : "opacity-40"
         ].join(" ")}
       >

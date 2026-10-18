@@ -15,8 +15,8 @@ export function DistrictChip({ name, selected, onPress }: DistrictChipProps) {
       accessibilityRole="radio"
       accessibilityState={{ selected }}
       className={[
-        "min-h-tap justify-center rounded-chip border px-4",
-        selected ? "border-primary bg-secondary" : "border-border bg-card"
+        "min-h-tap justify-center rounded-chip px-4",
+        selected ? "bg-secondary" : "bg-card-muted"
       ].join(" ")}
     >
       <Text className={`type-body-sm-bold ${selected ? "text-primary" : "text-foreground"}`}>
