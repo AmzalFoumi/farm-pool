@@ -70,6 +70,9 @@
     "leg": "கடைசி நிறுத்தத்தில் இருந்து {{minutes}} நிமிடம்",
     "late": "{{minutes}} நிமிடம் தாமதம்",
     "collected": "சேகரிக்கப்பட்டது",
-    "stopLabel": "நிறுத்தம் {{position}}, {{name}}, {{place}}"
+    "stopLabel": "நிறுத்தம் {{position}}, {{name}}, {{place}}",
+    "openInMaps": "வரைபடத்தில் திற",
+    "openFirstInMaps": "முதல் {{count}} நிறுத்தங்கள்",
+    "openInMapsLabel": "{{count}} நிறுத்தங்களை ஒரே பயணமாக Google Maps இல் திற"
   }
 }
